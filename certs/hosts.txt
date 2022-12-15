@@ -1,0 +1,8 @@
+127.0.0.1 www.epicgames.com
+127.0.0.1 account-public-service-prod03.ol.epicgames.com
+127.0.0.1 cdn1.unrealengine.com
+127.0.0.1 content-controls-prod.ol.epicgames.net
+127.0.0.1 datarouter.ol.epicgames.com
+127.0.0.1 entitlement-public-service-prod08.ol.epicgames.com
+127.0.0.1 friends-public-service-prod06.ol.epicgames.com
+127.0.0.1 ut-public-service-prod10.ol.epicgames.com

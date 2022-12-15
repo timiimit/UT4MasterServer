@@ -1,0 +1,13 @@
+{	
+	"ActiveRankedPlaylists": [
+		2
+	],
+	
+	"RankedEloRange":50,
+	"RankedMinEloRangeBeforeHosting":250,
+	"RankedMinEloSearchStep":50,
+
+	"QMEloRange":125,
+	"QMMinEloRangeBeforeHosting":500,
+	"QMMinEloSearchStep":100
+}

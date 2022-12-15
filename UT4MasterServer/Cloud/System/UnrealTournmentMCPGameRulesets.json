@@ -1,0 +1,30 @@
+{
+	"rules": [
+		{
+			"uniqueTag": "DEATHMATCH",
+			"Categories": [
+				"Featured"
+			],
+			"Title": "Deathmatch",
+			"ToolTip": "Standard free-for-all Deathmatch.",
+			"Description": "Standard free-for-all deathmatch.\n\n<UT.Hub.RulesText_Small>TimeLimit : %TimeLimit% minutes</>\n<UT.Hub.RulesText_Small>Maximum players : %MaxPlayers%</>",
+			"MaxPlayers": "6",
+			"DisplayTexture": "Texture2D'/Game/RestrictedAssets/UI/GameModeBadges/GB_DM.GB_DM'",
+			"GameMode": "/Script/UnrealTournament.UTDMGameMode",
+			"GameOptions": "?TimeLimit=10?GoalScore=0",
+			"bTeamGame": "false",
+			"OptionFlags": "65535",
+			"MaxMapsInList": "16",
+			"EpicMaps": "/Game/RestrictedAssets/Maps/DM-Outpost23,/Game/RestrictedAssets/Maps/DM-Chill,/Game/RestrictedAssets/Maps/DM-Underland,/Game/EpicInternal/Lea/DM-Lea,/Game/EpicInternal/Unsaved/DM-Unsaved,/Game/EpicInternal/Backspace/DM-Backspace,/Game/EpicInternal/Batrankus/DM-Batrankus,/Game/RestrictedAssets/Maps/WIP/DM-Sand,/Game/RestrictedAssets/Maps/DM-BioTower,/Game/RestrictedAssets/Maps/WIP/DM-Spacer,/Game/RestrictedAssets/Maps/WIP/DM-Cannon,/Game/RestrictedAssets/Maps/WIP/DM-Deadfall,/Game/RestrictedAssets/Maps/WIP/DM-Focus,/Game/RestrictedAssets/Maps/WIP/DM-NickTest1,/Game/RestrictedAssets/Maps/WIP/DM-Solo,/Game/RestrictedAssets/Maps/WIP/DM-Decktest,/Game/RestrictedAssets/Maps/WIP/DM-ASDF",
+			"DefaultMap": "/Game/RestrictedAssets/Maps/DM-Chill",
+			"quickPlayMaps": [
+				"/Game/RestrictedAssets/Maps/DM-Chill",
+				"/Game/RestrictedAssets/Maps/DM-Outpost23",
+				"/Game/EpicInternal/Backspace/DM-Backspace",
+				"/Game/EpicInternal/Salt/DM-Salt",
+				"/Game/RestrictedAssets/Maps/DM-Outpost23",
+				"/Game/EpicInternal/Batrankus/DM-Batrankus"
+			]
+		}
+	]
+}

@@ -1,0 +1,82 @@
+{
+	"NewItems": [
+		{
+			"RulesetTag": "Ranked_TEAMSHOWDOWN",
+			"FriendlyName": "Ranked Showdown",
+			"bRanked": true,
+			"PlaylistId": 1,
+			"TeamEloRating": "RankedShowdownSkillRating"
+		},
+		{
+			"RulesetTag": "Ranked_DUEL",
+			"FriendlyName": "Ranked Duel",
+			"bRanked": true,
+			"PlaylistId": 2,
+			"TeamEloRating": "RankedDuelSkillRating"
+		},
+		{
+			"RulesetTag": "Ranked_CTF",
+			"FriendlyName": "Ranked Capture the flag",
+			"bRanked": true,
+			"PlaylistId": 3,
+			"TeamEloRating": "RankedCTFSkillRating"		
+		},
+		{
+			"RulesetTag": "Ranked_FlagRun",
+			"FriendlyName": "Ranked Blitz",
+			"bRanked": true,
+			"PlaylistId": 4,
+			"TeamEloRating": "RankedFlagRunSkillRating"
+		},
+		{
+			"RulesetTag": "QuickPlay_FlagRun",
+			"FriendlyName": "QuickPlay Blitz",
+			"bSkipEloChecks": true,
+			"bRanked": false,
+			"PlaylistId": 14,
+			"TeamEloRating": "FlagRunSkillRating",
+			"SlateBadgeName": "UT.HomePanel.CTFBadge",
+			"SortWeight": 0.2
+		},
+		{
+			"RulesetTag": "QuickPlay_DEATHMATCH",
+			"FriendlyName": "QuickPlay Deathmatch",
+			"bSkipEloChecks": true,
+			"bRanked": false,
+			"PlaylistId": 12,
+			"TeamEloRating": "DMSkillRating",
+			"SlateBadgeName": "UT.HomePanel.DMBadge",
+			"SortWeight": 0.3
+		},
+		{
+			"RulesetTag": "FlagRunVSAI",
+			"FriendlyName": "QuickPlay Blitz Co-Op",
+			"bSkipEloChecks": true,
+			"bRanked": false,
+			"PlaylistId": 15,
+			"TeamEloRating": "FlagRunSkillRating",
+			"SlateBadgeName": "UT.HomePanel.TeamShowdownBadge",
+			"SortWeight": 0.1
+		},
+		{
+			"RulesetTag": "QuickPlay_FlagRunVSAINormal",
+			"FriendlyName": "QuickPlay Blitz Co-Op (Normal)",
+			"bSkipEloChecks": true,
+			"bRanked": false,
+			"PlaylistId": 16,
+			"TeamEloRating": "FlagRunSkillRating",
+			"SortWeight": 1.0,
+			"bHideInUI": true
+		},
+		{
+			"RulesetTag": "QuickPlay_FlagRunVSAIHard",
+			"FriendlyName": "QuickPlay Blitz Co-Op (Hard)",
+			"bSkipEloChecks": true,
+			"bRanked": false,
+			"PlaylistId": 17,
+			"TeamEloRating": "FlagRunSkillRating",
+			"SortWeight": 1.0,
+			"bHideInUI": true
+		}	
+	]
+}
