@@ -55,13 +55,13 @@ namespace UT4MasterServer
 			JObject obj = new JObject();
 			obj.Add("access_token", new JValue(AccessToken.Value));
 			obj.Add("expires_in", new JValue(AccessToken.ExpirySeconds));
-			obj.Add("expires_at", new JValue(AccessToken.ExpirationString));
+			obj.Add("expires_at", new JValue(AccessToken.Expiration.ToStringEpic()));
 			obj.Add("token_type", new JValue("bearer"));
 			if (!User.ID.IsSystem)
 			{
 				obj.Add("refresh_token", new JValue(RefreshToken.Value));
 				obj.Add("refresh_expires", new JValue(RefreshToken.ExpirySeconds));
-				obj.Add("refresh_expires_at", new JValue(RefreshToken.ExpirationString));
+				obj.Add("refresh_expires_at", new JValue(RefreshToken.Expiration.ToStringEpic()));
 				obj.Add("account_id", new JValue(User.ID.ToString()));
 			}
 			obj.Add("client_id", new JValue(ClientID));

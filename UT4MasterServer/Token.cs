@@ -10,14 +10,6 @@ namespace UT4MasterServer
 	{
 		public string Value { get; set; }
 		public DateTime Expiration { get; set; }
-		public string ExpirationString
-		{
-			get
-			{
-				// this is the only format accepted by the game
-				return Expiration.ToString("yyyy-MM-dd'T'HH:mm:ss.fffK");
-			}
-		}
 		public int ExpirySeconds
 		{
 			get
