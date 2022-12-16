@@ -57,7 +57,7 @@ namespace UT4MasterServer
 			obj.Add("expires_in", new JValue(AccessToken.ExpirySeconds));
 			obj.Add("expires_at", new JValue(AccessToken.Expiration.ToStringEpic()));
 			obj.Add("token_type", new JValue("bearer"));
-			if (!User.ID.IsSystem)
+			if (!User.ID.IsInvalid)
 			{
 				obj.Add("refresh_token", new JValue(RefreshToken.Value));
 				obj.Add("refresh_expires", new JValue(RefreshToken.ExpirySeconds));
@@ -67,7 +67,7 @@ namespace UT4MasterServer
 			obj.Add("client_id", new JValue(ClientID));
 			obj.Add("internal_client", new JValue(false));
 			obj.Add("client_service", new JValue("ut"));
-			if (!User.ID.IsSystem)
+			if (!User.ID.IsInvalid)
 			{
 				obj.Add("displayName", new JValue(User.Username));
 				obj.Add("app", new JValue("ut"));

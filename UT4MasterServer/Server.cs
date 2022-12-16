@@ -245,7 +245,7 @@ namespace UT4MasterServer
 			if (segments.Length == 6)
 			{
 				string accountID = segments[5];
-				User? user = users.GetUserByID(new UserID(accountID));
+				User? user = users.GetUserByID(new CommonID(accountID));
 				if (user == null)
 					return;
 
@@ -337,7 +337,7 @@ namespace UT4MasterServer
 					{
 						string accountID = kvp[1];
 
-						User? user = users.GetUserByID(new UserID(accountID));
+						User? user = users.GetUserByID(new CommonID(accountID));
 						if (user == null)
 							continue;
 
@@ -542,7 +542,7 @@ namespace UT4MasterServer
 			if (segments.Length == 6)
 			{
 				var accountID = segments[4];
-				User? user = users.GetUserByID(new UserID(accountID));
+				User? user = users.GetUserByID(new CommonID(accountID));
 				if (user == null)
 					return;
 
@@ -654,7 +654,7 @@ namespace UT4MasterServer
 			{
 				string accountID = segments[6];
 				accountID = accountID.Substring(0, accountID.Length - 1);
-				User? user = users.GetUserByID(new UserID(accountID));
+				User? user = users.GetUserByID(new CommonID(accountID));
 				if (user == null)
 					return;
 				// TODO: extra checks to make sure QueryProfile request was made

@@ -8,7 +8,7 @@ namespace UT4MasterServer
 {
 	public class User
 	{
-		public UserID ID { get; private set; }
+		public CommonID ID { get; private set; }
 		public string Username { get; private set; }
 		public byte[] Hash { get; private set; }
 		public int XP { get; private set; }
@@ -16,7 +16,7 @@ namespace UT4MasterServer
 		public List<string> Friends { get; private set; }
 		public List<string> BlockedUsers { get; private set; }
 
-		public User(UserID id, string username, byte[] hash)
+		public User(CommonID id, string username, byte[] hash)
 		{
 			ID = id;
 			Username = username;

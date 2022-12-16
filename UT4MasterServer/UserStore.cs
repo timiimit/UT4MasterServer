@@ -12,7 +12,7 @@ namespace UT4MasterServer
 		// we create a dummy user which acts as system user and has access
 		// to anything that can be accessed publicly without an account (such as cloudstorage)
 		// basically for this: https://github.com/MixV2/EpicResearch/blob/master/docs/auth/grant_types/client_credentials.md
-		public static readonly User SystemUser = new User(UserID.GetSystem(), string.Empty, new byte[0]);
+		public static readonly User SystemUser = new User(CommonID.GetInvalid(), string.Empty, new byte[0]);
 
 		private List<User> users;
 
@@ -36,7 +36,7 @@ namespace UT4MasterServer
 			return user;
 		}
 
-		public User? GetUserByID(UserID id)
+		public User? GetUserByID(CommonID id)
 		{
 			for (int i = 0; i < users.Count; i++)
 			{
@@ -70,10 +70,10 @@ namespace UT4MasterServer
 
 
 
-		private UserID GenerateUniqueUserID()
+		private CommonID GenerateUniqueUserID()
 		{
 			// TODO: missing implementation
-			return UserID.GenerateNew();
+			return CommonID.GenerateNew();
 		}
 
 		private static byte[] GetPasswordHash(string password)

@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 
 namespace UT4MasterServer
 {
-	public struct UserID
+	public struct CommonID
 	{
 		public string ID { get; private set; }
 
-		public bool IsSystem
+		public bool IsInvalid
 		{
 			get
 			{
-				return ID == GetSystem().ID;
+				return ID == GetInvalid().ID;
 			}
 		}
 
-		public UserID(string id)
+		public CommonID(string id)
 		{
 			// TODO: verify that id is hex string
 			if (id.Length != 32)
@@ -27,26 +27,26 @@ namespace UT4MasterServer
 			ID = id;
 		}
 
-		public static UserID GenerateNew()
+		public static CommonID GenerateNew()
 		{
 			Random r = new Random();
 			byte[] bytes = new byte[16];
 			r.NextBytes(bytes);
 			string? id = Convert.ToHexString(bytes);
 
-			return new UserID(id);
+			return new CommonID(id);
 		}
 
-		public static UserID GetSystem()
+		public static CommonID GetInvalid()
 		{
-			return new UserID("00000000000000000000000000000000");
+			return new CommonID("00000000000000000000000000000000");
 		}
 
-		public static bool operator ==(UserID lhs, UserID rhs)
+		public static bool operator ==(CommonID lhs, CommonID rhs)
 		{
 			return lhs.Equals(rhs);
 		}
-		public static bool operator !=(UserID lhs, UserID rhs)
+		public static bool operator !=(CommonID lhs, CommonID rhs)
 		{
 			return !lhs.Equals(rhs);
 		}
@@ -56,10 +56,10 @@ namespace UT4MasterServer
 			if (obj == null)
 				return false;
 
-			if (obj is not UserID)
+			if (obj is not UT4MasterServer.CommonID)
 				return false;
 
-			var objUserID = (UserID)obj;
+			var objUserID = (CommonID)obj;
 
 			return string.Equals(ID, objUserID.ID);
 		}
