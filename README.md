@@ -4,6 +4,7 @@ This is the first iteration of epic's server reimplementation just enough to be 
 ## Very basic build instructions
  - Install dotnet 6.0 SDK
  - Use `dotnet` command to build project
+ 
  OR
  - Install Visual Studio 2022 with C#
  - Build Project
