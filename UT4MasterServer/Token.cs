@@ -10,12 +10,36 @@ namespace UT4MasterServer
 	{
 		public string Value { get; set; }
 		public DateTime Expiration { get; set; }
+		public string ExpirationString
+		{
+			get
+			{
+				// this is the only format accepted by the game
+				return Expiration.ToString("yyyy-MM-dd'T'HH:mm:ss.fffK");
+			}
+		}
+		public int ExpirySeconds
+		{
+			get
+			{
+				return (int)(Expiration - DateTime.UtcNow).TotalSeconds;
+			}
+		}
+
+		public bool IsExpired { get => DateTime.UtcNow > Expiration; }
 
 		public Token(string value, DateTime expiration)
 		{
 			Value = value;
 			Expiration = expiration;
 		}
+
+		public override string ToString()
+		{
+			return Value;
+		}
+
+
 
 		public static Token Generate(TimeSpan expirationDuration)
 		{
@@ -33,7 +57,7 @@ namespace UT4MasterServer
 			byte[] bytes = new byte[32];
 			random.NextBytes(bytes);
 
-			var tokenString = Encoding.UTF8.GetString(bytes);
+			var tokenString = Convert.ToHexString(bytes);
 
 			return new Token(tokenString, expirationTime);
 		}

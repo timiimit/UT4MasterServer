@@ -14,6 +14,8 @@ namespace UT4MasterServer
 	{
 		private HttpListener listener;
 
+		private UserStore users;
+		private SessionStore sessions;
 
 		public Server()
 		{
@@ -32,17 +34,26 @@ namespace UT4MasterServer
 			*/
 
 
-			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 			listener = new HttpListener();
 			string domain = "*";//"*.epicgames.com";
 			listener.Prefixes.Add($"http://{domain}:80/");
 			listener.Prefixes.Add($"https://{domain}:443/");
+
+			users = new UserStore();
+			sessions = new SessionStore();
 		}
 
 		public void StartAsync()
 		{
 			listener.Start();
 			listener.BeginGetContext(new AsyncCallback(NewConnection), null);
+
+#if DEBUG
+			// temporarily create users and valid auth codes
+			sessions.CreateAuthCode(users.CreateUser("user1", "user1"));
+			sessions.CreateAuthCode(users.CreateUser("user2", "user2"));
+#endif
 		}
 
 
@@ -61,103 +72,127 @@ namespace UT4MasterServer
 				var decoded = HttpUtility.UrlDecode(body);
 				var parameters = HttpUtility.ParseQueryString(decoded);
 
-				TimeSpan accessTokenDuration = TimeSpan.FromSeconds(28800);
-				TimeSpan refreshTokenDuration = TimeSpan.FromSeconds(86400);
-				bool isValid = false;
+				var authorization = new HttpAuthorization(req);
+
 				if (parameters["grant_type"] == "authorization_code")
 				{
+					// https://github.com/MixV2/EpicResearch/blob/master/docs/auth/grant_types/authorization_code.md
+
 					var authCode = parameters["code"];
 
-					accessTokenDuration = TimeSpan.FromDays(1); // NOTE: not sure about actual value...
-					refreshTokenDuration = TimeSpan.FromDays(20); // NOTE: not sure about actual value...
-					isValid = true;
-				}
-				else if (parameters["grant_type"] == "exchange_code")
-				{
-					var exchangeCode = parameters["exchange_code"];
+					if (!authorization.IsBasic)
+						return;
 
-					accessTokenDuration = TimeSpan.FromHours(8);
-					refreshTokenDuration = TimeSpan.FromDays(1);
+					var code = parameters["code"];
+					if (code == null)
+						return;
 
-					// TODO: check if code matches stored value
-					isValid = true;
-				}
-				else if (parameters["grant_type"] == "client_credentials")
-				{
-					var authorization = req.Headers["Authorization"];
-
-					accessTokenDuration = TimeSpan.FromHours(8);
-					refreshTokenDuration = TimeSpan.FromDays(1);
-					isValid = true;
-				}
-
-				if (isValid)
-				{
-					// TODO: generate and store token values
-					var accountID = "12345678901234567890123456789012";
-
-					JObject obj = new JObject();
-					obj.Add("access_token", new JValue("StaticAccessTokenValue"));
-					obj.Add("expires_in", new JValue(accessTokenDuration.TotalSeconds));
-					obj.Add("expires_at", new JValue((DateTime.UtcNow + accessTokenDuration).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK")));
-					obj.Add("token_type", new JValue("bearer"));
-					obj.Add("refresh_token", new JValue("StaticRefreshTokenValue"));
-					obj.Add("refresh_expires", new JValue(refreshTokenDuration.TotalSeconds));
-					obj.Add("refresh_expires_at", new JValue((DateTime.UtcNow + refreshTokenDuration).ToString("yyyy-MM-dd'T'HH:mm:ss.fffK")));
-					obj.Add("account_id", new JValue(accountID));
-					obj.Add("client_id", new JValue("1252412dc7704a9690f6ea4611bc81ee"));
-					obj.Add("internal_client", new JValue(false));
-					obj.Add("client_service", new JValue("ut"));
-					obj.Add("displayName", new JValue("I can be anyone"));
-					obj.Add("app", new JValue("ut"));
-					obj.Add("in_app_id", new JValue(accountID));
-					obj.Add("device_id", new JValue("465a117c2b144b5c8222ee71b9bc8da2"));
+					var session = sessions.CreateSessionWithAuthCode(code, new ClientIdentification(authorization.Value).ID);
+					if (session == null)
+						return;
 
 					resp.StatusCode = 200;
 					resp.ContentType = "application/json";
-					output.Write(obj.ToString());
+					output.Write(session.ToJson());
+					return;
+				}
+				else if (parameters["grant_type"] == "client_credentials")
+				{
+					// https://github.com/MixV2/EpicResearch/blob/master/docs/auth/grant_types/client_credentials.md
+					// this request only asks for publicly accessible stuff like cloud storage
+
+					if (!authorization.IsBasic)
+						return;
+
+					var session = sessions.CreateSessionWithPublicAccess(new ClientIdentification(authorization.Value).ID);
+					if (session == null)
+						return;
+
+					resp.StatusCode = 200;
+					resp.ContentType = "application/json";
+					output.Write(session.ToJson());
+					return;
+				}
+				else if (parameters["grant_type"] == "exchange_code")
+				{
+					// https://github.com/MixV2/EpicResearch/blob/master/docs/auth/grant_types/exchange_code.md
+
+					var code = parameters["exchange_code"];
+					if (code == null)
+						return;
+
+					if (!authorization.IsBasic)
+						return;
+
+					var session = sessions.CreateSessionWithExchangeCode(code, new ClientIdentification(authorization.Value).ID);
+					if (session == null)
+						return;
+
+					resp.StatusCode = 200;
+					resp.ContentType = "application/json";
+					output.Write(session.ToJson());
 					return;
 				}
 			}
 			resp.StatusCode = 400;
 		}
+
 		private void HandleEpicAuthExchange(HttpListenerRequest req, StreamReader input, HttpListenerResponse resp, StreamWriter output)
 		{
 			if (req.HttpMethod == "GET")
 			{
-				string? auth = req.Headers["Authorization"];
-				if (auth != null)
-				{
-					// TODO: find stored token and return associated info
-
-					JObject obj = new JObject();
-					obj.Add("expiresInSeconds", new JValue(299));
-					obj.Add("code", new JValue("StaticExchangeCode"));
-					obj.Add("creatingClientId", new JValue("34a02cf8f4414e29b15921876da36f9a")); // client_id representing "web login launcher"
-
-					resp.StatusCode = 200;
-					resp.ContentType = "application/json";
-					output.Write(obj.ToString());
+				HttpAuthorization auth = new HttpAuthorization(req.Headers["Authorization"]);
+				if (!auth.IsBearer)
 					return;
-				}
+
+				var session = sessions.GetSession(auth.Value);
+				if (session == null)
+					return;
+
+				var exchangeCode = sessions.CreateExchangeCode(session.AccessToken.Value);
+				if (exchangeCode == null)
+					return;
+
+				resp.StatusCode = 200;
+				resp.ContentType = "application/json";
+				output.Write(exchangeCode.ToJson());
+				return;
 			}
 
 			resp.StatusCode = 400;
 		}
 		private void HandleEpicAuthVerify(HttpListenerRequest req, StreamReader input, HttpListenerResponse resp, StreamWriter output)
 		{
-			var task = input.ReadToEndAsync();
-			task.Wait();
-			var body = task.Result;
+			var authorization = new HttpAuthorization(req);
+			if (authorization.IsBearer)
+			{
+				var session = sessions.GetSession(authorization.Value);
+				if (session == null)
+					return;
+
+
+			}
 		}
 		private void HandleEpicSessionsKill(HttpListenerRequest req, StreamReader input, HttpListenerResponse resp, StreamWriter output)
 		{
 			if (req.HttpMethod == "DELETE")
 			{
-				string? auth = req.Headers["Authorization"];
+				var authorization = new HttpAuthorization(req);
 
 				var killType = req.QueryString["killType"];
+				if (killType == "OTHERS_ACCOUNT_CLIENT_SERVICE")
+				{
+					// kill all other sessions that exist for this client
+					if (authorization.IsBearer)
+					{
+						sessions.KillOtherSessions(authorization.Value);
+					}
 
+				}
+				else if (authorization.IsBearer)
+				{
+					sessions.KillSession(authorization.Value);
+				}
 
 				// URL: DELETE /account/api/oauth/sessions/kill/759877be30554dd09a8dfc2c232a0bd7
 				// TODO
@@ -210,9 +245,13 @@ namespace UT4MasterServer
 			if (segments.Length == 6)
 			{
 				string accountID = segments[5];
+				User? user = users.GetUserByID(new UserID(accountID));
+				if (user == null)
+					return;
+
 				JObject obj = new JObject();
-				obj.Add("id", accountID);
-				obj.Add("displayName", "username");
+				obj.Add("id", user.ID.ToString());
+				obj.Add("displayName", user.Username);
 				obj.Add("name", "actual_name");
 				obj.Add("email", "actual_email");
 				obj.Add("failedLoginAttempts", 0);
@@ -298,9 +337,13 @@ namespace UT4MasterServer
 					{
 						string accountID = kvp[1];
 
+						User? user = users.GetUserByID(new UserID(accountID));
+						if (user == null)
+							continue;
+
 						JObject obj = new JObject();
 						obj.Add("id", accountID);
-						obj.Add("displayName", "username");
+						obj.Add("displayName", user.Username);
 						if (true)
 						{
 							// this is returned only when you ask about yourself
@@ -499,6 +542,10 @@ namespace UT4MasterServer
 			if (segments.Length == 6)
 			{
 				var accountID = segments[4];
+				User? user = users.GetUserByID(new UserID(accountID));
+				if (user == null)
+					return;
+
 				JArray arr = new JArray();
 				//foreach{
 				JObject obj = new JObject();
@@ -506,8 +553,8 @@ namespace UT4MasterServer
 				obj.Add("entitlementName", "UnrealTournamentEditor");
 				obj.Add("namespace", "ut");
 				obj.Add("catalogItemId", "0cae1a97d47f4ee2ba4e112b9601637f");
-				obj.Add("accountId", accountID);
-				obj.Add("identityId", accountID);
+				obj.Add("accountId", user.ID.ToString());
+				obj.Add("identityId", user.ID.ToString());
 				obj.Add("entitlementType", "EXECUTABLE"); // always?
 				obj.Add("grantDate", "2017-10-19T10:14:31.737Z");
 				obj.Add("startDate", "2015-01-01T00:00:00.000Z");
@@ -606,6 +653,10 @@ namespace UT4MasterServer
 			if (segments.Length >= 7)
 			{
 				string accountID = segments[6];
+				accountID = accountID.Substring(0, accountID.Length - 1);
+				User? user = users.GetUserByID(new UserID(accountID));
+				if (user == null)
+					return;
 				// TODO: extra checks to make sure QueryProfile request was made
 
 				JObject obj = new JObject();
@@ -622,7 +673,7 @@ namespace UT4MasterServer
 				profile.Add("updated", "2022-12-05T17:45:56.027Z");
 				profile.Add("rvn", 7152);
 				profile.Add("wipeNumber", 4);
-				profile.Add("accountId", accountID);
+				profile.Add("accountId", user.ID.ToString());
 				profile.Add("profileId", "profile0");
 				profile.Add("version", "ut_base");
 				JObject items = new JObject();
@@ -673,7 +724,10 @@ namespace UT4MasterServer
 			if (segments.Length >= 8)
 			{
 				accountID = segments[7];
+				accountID = accountID.Substring(0, accountID.Length - 1);
 			}
+
+
 
 			// URL: POST /ut/api/game/v2/ratings/account/0b0f09b400854b9b98932dd9e5abe7c5/mmrbulk
 			// INPUT: {"ratingTypes": ["SkillRating","TDMSkillRating","DMSkillRating","CTFSkillRating","ShowdownSkillRating","FlagRunSkillRating","RankedDuelSkillRating","RankedCTFSkillRating","RankedShowdownSkillRating","RankedFlagRunSkillRating"]}
@@ -772,6 +826,7 @@ namespace UT4MasterServer
 			if (segments.Length == 6)
 			{
 				var accountID = segments[5];
+				accountID = accountID.Substring(0, accountID.Length - 1);
 				JArray arr = new JArray();
 				// foreach {
 				{
