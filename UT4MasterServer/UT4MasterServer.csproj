@@ -9,7 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Database\**" />
+    <Compile Remove="Server\**" />
+    <EmbeddedResource Remove="Database\**" />
+    <EmbeddedResource Remove="Server\**" />
+    <None Remove="Database\**" />
+    <None Remove="Server\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Realm" Version="10.18.0" />
   </ItemGroup>
 	
  <PropertyGroup>

@@ -56,6 +56,106 @@ namespace UT4MasterServer
 #endif
 		}
 
+		private async void NewConnection(IAsyncResult result)
+		{
+			HttpListenerContext context;
+			try
+			{
+				context = listener.EndGetContext(result);
+			}
+			catch (ObjectDisposedException ex)
+			{
+				return;
+			}
+
+			listener.BeginGetContext(new AsyncCallback(NewConnection), null);
+
+			Console.WriteLine(context.Request.RawUrl);
+
+
+			var req = context.Request;
+			var resp = context.Response;
+
+			if (req.Url == null)
+				return;
+
+			using (var output = new StreamWriter(context.Response.OutputStream))
+			{
+				using (var input = new StreamReader(req.InputStream))
+				{
+
+					if (req.Url.AbsolutePath.StartsWith("/id/api/redirect"))
+					{
+						HandleEpicRedirect(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/token"))
+					{
+						await HandleEpicAuthToken(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/exchange"))
+					{
+						HandleEpicAuthExchange(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/verify"))
+					{
+						HandleEpicAuthVerify(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/sessions/kill"))
+					{
+						HandleEpicSessionsKill(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/account/api/public/account"))
+					{
+						HandleEpicPublicAccount(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/account/api/accounts"))
+					{
+						HandleEpicAccounts(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/account/api/epicdomains/ssodomains"))
+					{
+						HandleEpicSSODomains(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/datarouter/api/v1/public/data"))
+					{
+						HandleEpicDatarouter(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/entitlement/api/account"))
+					{
+						HandleEpicEntitlements(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/friends/api/public"))
+					{
+						HandleEpicFriends(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/ut/api/game/v2/profile"))
+					{
+						HandleUTQueryProfile(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/ut/api/game/v2/ratings"))
+					{
+						HandleUTGameRatings(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/ut/api/cloudstorage"))
+					{
+						HandleEpicEntitlements(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/entitlement/api/account"))
+					{
+						HandleEpicEntitlements(req, input, resp, output);
+					}
+					else if (req.Url.AbsolutePath.StartsWith("/ut/api/matchmaking/session/matchMakingRequest"))
+					{
+						HandleEpicEntitlements(req, input, resp, output);
+					}
+					else
+					{
+						HandleOtherMisc(req, input, resp, output);
+					}
+				}
+			}
+		}
+
 
 		private void HandleEpicRedirect(HttpListenerRequest req, StreamReader input, HttpListenerResponse resp, StreamWriter output)
 		{
@@ -936,103 +1036,6 @@ namespace UT4MasterServer
 		}
 
 
-		private async void NewConnection(IAsyncResult result)
-		{
-			HttpListenerContext context;
-			try
-			{
-				context = listener.EndGetContext(result);
-			}
-			catch (ObjectDisposedException ex)
-			{
-				return;
-			}
-
-			listener.BeginGetContext(new AsyncCallback(NewConnection), null);
-
-			Console.WriteLine(context.Request.RawUrl);
-
-
-			var req = context.Request;
-			var resp = context.Response;
-
-			if (req.Url == null)
-				return;
-
-			using (var output = new StreamWriter(context.Response.OutputStream))
-			{
-				using (var input = new StreamReader(req.InputStream))
-				{
-					if (req.Url.AbsolutePath.StartsWith("/id/api/redirect"))
-					{
-						HandleEpicRedirect(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/token"))
-					{
-						await HandleEpicAuthToken(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/exchange"))
-					{
-						HandleEpicAuthExchange(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/verify"))
-					{
-						HandleEpicAuthVerify(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/account/api/oauth/sessions/kill"))
-					{
-						HandleEpicSessionsKill(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/account/api/public/account"))
-					{
-						HandleEpicPublicAccount(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/account/api/accounts"))
-					{
-						HandleEpicAccounts(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/account/api/epicdomains/ssodomains"))
-					{
-						HandleEpicSSODomains(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/datarouter/api/v1/public/data"))
-					{
-						HandleEpicDatarouter(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/entitlement/api/account"))
-					{
-						HandleEpicEntitlements(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/friends/api/public"))
-					{
-						HandleEpicFriends(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/ut/api/game/v2/profile"))
-					{
-						HandleUTQueryProfile(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/ut/api/game/v2/ratings"))
-					{
-						HandleUTGameRatings(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/ut/api/cloudstorage"))
-					{
-						HandleEpicEntitlements(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/entitlement/api/account"))
-					{
-						HandleEpicEntitlements(req, input, resp, output);
-					}
-					else if (req.Url.AbsolutePath.StartsWith("/ut/api/matchmaking/session/matchMakingRequest"))
-					{
-						HandleEpicEntitlements(req, input, resp, output);
-					}
-					else
-					{
-						HandleOtherMisc(req, input, resp, output);
-					}
-				}
-			}
-		}
+		
 	}
 }
