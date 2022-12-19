@@ -13,18 +13,21 @@ namespace UT4MasterServer
 		public string Value { get; set; }
 
 		[BsonElement("Expiration")]
-		public DateTime Expiration { get; set; }
+		public DateTime ExpirationTime { get; set; }
 
 		[BsonIgnore]
-		public int ExpirySeconds { get => (int)(Expiration - DateTime.UtcNow).TotalSeconds; }
+		public TimeSpan ExpirationDuration { get => ExpirationTime - DateTime.UtcNow; }
 
 		[BsonIgnore]
-		public bool IsExpired { get => DateTime.UtcNow > Expiration; }
+		public int ExpirationDurationInSeconds { get => (int)ExpirationDuration.TotalSeconds; }
+
+		[BsonIgnore]
+		public bool HasExpired { get => DateTime.UtcNow > ExpirationTime; }
 
 		public Token(string value, DateTime expiration)
 		{
 			Value = value;
-			Expiration = expiration;
+			ExpirationTime = expiration;
 		}
 
 		public override string ToString()

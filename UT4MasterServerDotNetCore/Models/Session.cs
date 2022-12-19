@@ -13,7 +13,8 @@ namespace UT4MasterServer.Models
 	{
 		AuthorizationCode,
 		ExchangeCode,
-		ClientCredentials
+		ClientCredentials,
+		Password
 	}
 
 	public class Session
@@ -56,6 +57,7 @@ namespace UT4MasterServer.Models
 			// we generate different durations for how long session lasts.
 			switch (CreationMethod)
 			{
+				case SessionCreationMethod.Password: // unsure about duration of this
 				case SessionCreationMethod.AuthorizationCode:
 					AccessToken = Token.Generate(TimeSpan.FromDays(1)); // TODO: unsure if same as epic
 					RefreshToken = Token.Generate(TimeSpan.FromDays(20)); // TODO: unsure if same as epic

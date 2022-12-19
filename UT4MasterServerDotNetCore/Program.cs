@@ -22,6 +22,7 @@ namespace UT4MasterServer
 				builder.Configuration.GetSection("UT4EverDatabase")
 			);
 			builder.Services.AddSingleton<AccountService>();
+			builder.Services.AddSingleton<SessionService>();
 			builder.Host.ConfigureLogging(logging =>
 			{
 				logging.ClearProviders();
