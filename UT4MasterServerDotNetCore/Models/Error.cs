@@ -1,34 +1,33 @@
 
 using Newtonsoft.Json;
-using System.Web.Http;
 
 namespace UT4MasterServer.Models
 {
-	public class ErrorResponse : IHttpActionResult
+	public class ErrorResponse
 	{
 		[JsonProperty("errorCode")]
-		public string ErrorCode { get; set; }
+		public string? ErrorCode { get; set; }
 
 		[JsonProperty("errorMessage")]
-		public string ErrorMessage { get; set; }
+		public string? ErrorMessage { get; set; }
 
 		[JsonProperty("messageVars")]
-		public string[] MessageVars { get; set; } // any value inside errorMessage is listed in this array
+		public string[] MessageVars { get; set; } = Array.Empty<string>(); // any value inside errorMessage is listed in this array
 
 		[JsonProperty("numericErrorCode")]
 		public int NumericErrorCode { get; set; }
 
 		[JsonProperty("originatingService")]
-		public string OriginatingService { get; set; }
+		public string? OriginatingService { get; set; }
 
 		[JsonProperty("intent")]
-		public string Intent { get; set; }
+		public string? Intent { get; set; }
 
 		[JsonProperty("error_description")]
-		public string ErrorDescription { get; set; }
+		public string? ErrorDescription { get; set; }
 
 		[JsonProperty("error")]
-		public string Error { get; set; }
+		public string? Error { get; set; }
 
 		public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
 		{

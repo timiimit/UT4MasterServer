@@ -2,19 +2,13 @@
 
 namespace UT4MasterServer
 {
-	public static partial class Program
+	public class EpicIDSerializationProvider : IBsonSerializationProvider
 	{
-		public class EpicIDSerializationProvider : IBsonSerializationProvider
+		public IBsonSerializer GetSerializer(Type type)
 		{
-			public IBsonSerializer GetSerializer(Type type)
-			{
-				if (type == typeof(EpicID))
-					return new EpicIDSerializer();
-				return null;
-			}
+			if (type == typeof(EpicID))
+				return new EpicIDSerializer();
+			throw new ArgumentException("Unexpected type");
 		}
-
-#if true
-#endif
 	}
 }

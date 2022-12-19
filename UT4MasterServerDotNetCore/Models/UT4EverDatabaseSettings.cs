@@ -2,11 +2,11 @@
 {
 	public class UT4EverDatabaseSettings
 	{
-		public string ConnectionString { get; set; } = null!;
-		public string DatabaseName { get; set; } = null!;
+		public string ConnectionString { get; set; } = string.Empty;
+		public string DatabaseName { get; set; } = string.Empty;
 
-		public string AccountCollectionName { get; set; } = null!;
-		public string CodeCollectionName { get; set; } = null!;
-		public string SessionCollectionName { get; set; } = null!;
+		public string AccountCollectionName { get; set; } = string.Empty;
+		public string CodeCollectionName { get; set; } = string.Empty;
+		public string SessionCollectionName { get; set; } = string.Empty;
 	}
 }
