@@ -30,17 +30,9 @@ namespace UT4MasterServer.Controllers
 			this.sessionService = sessionService;
 		}
 
-		// IMPORATANT TODO: all methods which have parameter accessToken need to retrieve the value from Authorization header.
-		//                  resources: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization
-		//                             https://devblogs.microsoft.com/dotnet/bearer-token-authentication-in-asp-net-core/
-		//                  we need to figure out how to use [Authorize] attribute. header is composed out of two parts <bearer|basic> <token>.
-		//                  if it starts with "bearer" then <token> is the value of AccessToken.
-		//                  if it starts with "basic" then <token> is composed of ClientID and ClientSecret. these can be parsed with ClientIdentification class.
-
 		#region ACCOUNT LISTING API
 
-		[HttpGet]
-		[Route("public/account/{id}")]
+		[HttpGet("public/account/{id}")]
 		public async Task<ActionResult<string>> GetAccount(EpicID id)
 		{
 			logger.Log(LogLevel.Information, $"Looking for account {id}");
@@ -72,8 +64,7 @@ namespace UT4MasterServer.Controllers
 			return obj.ToString(Newtonsoft.Json.Formatting.None);
 		}
 
-		[HttpGet]
-		[Route("public/account")]
+		[HttpGet("public/account")]
 		public async Task<ActionResult<string>> GetAccounts([FromQuery(Name = "accountId")] List<EpicID> accountIDs)
 		{
 			logger.LogInformation($"List accounts: {string.Join(", ", accountIDs)}");
@@ -109,8 +100,7 @@ namespace UT4MasterServer.Controllers
 
 		#region UNIMPORTANT API
 
-		[HttpGet]
-		[Route("accounts/{idString}/metadata")]
+		[HttpGet("accounts/{idString}/metadata")]
 		public ActionResult<string> GetMetadata(string idString)
 		{
 			EpicID id = new EpicID(idString);
@@ -121,8 +111,7 @@ namespace UT4MasterServer.Controllers
 			return "{}";
 		}
 
-		[HttpGet]
-		[Route("public/account/{idString}/externalAuths")]
+		[HttpGet("public/account/{idString}/externalAuths")]
 		public ActionResult<string> GetExternalAuths(string idString)
 		{
 			EpicID id = new EpicID(idString);
@@ -140,8 +129,7 @@ namespace UT4MasterServer.Controllers
 			return "[]";
 		}
 
-		[HttpGet]
-		[Route("epicdomains/ssodomains")]
+		[HttpGet("epicdomains/ssodomains")]
 		public ActionResult<string> GetSSODomains()
 		{
 			logger.LogInformation(@"Get SSO domains");
@@ -155,8 +143,7 @@ namespace UT4MasterServer.Controllers
 
 		#region NON-EPIC API
 
-		[HttpPost]
-		[Route("create/account")]
+		[HttpPost("create/account")]
 		public async Task<NoContentResult> RegisterAccount([FromForm] string username, [FromForm] string password)
 		{
 			// TODO: should we also get user's email?

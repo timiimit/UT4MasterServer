@@ -1,32 +1,46 @@
 
 using Newtonsoft.Json;
+using System.Web.Http;
 
 namespace UT4MasterServer.Models
 {
-	public class ErrorResponse
+	public class ErrorResponse : IHttpActionResult
 	{
 		[JsonProperty("errorCode")]
-		public string ErrorCode { get; set; } // errors.com.epicgames.account.oauth.authorization_code_not_found
+		public string ErrorCode { get; set; }
 
 		[JsonProperty("errorMessage")]
-		public string ErrorMessage { get; set; } // Sorry the authorization code you supplied was not found. It is possible that it was no longer valid
+		public string ErrorMessage { get; set; }
 
 		[JsonProperty("messageVars")]
-		public string[] MessageVars { get; set; } // unknown type of objects in array
+		public string[] MessageVars { get; set; } // any value inside errorMessage is listed in this array
 
 		[JsonProperty("numericErrorCode")]
-		public int NumericErrorCode { get; set; } // 18059
+		public int NumericErrorCode { get; set; }
 
 		[JsonProperty("originatingService")]
-		public string OriginatingService { get; set; } // com.epicgames.account.public
+		public string OriginatingService { get; set; }
 
 		[JsonProperty("intent")]
-		public string Intent { get; set; } // prod
+		public string Intent { get; set; }
 
 		[JsonProperty("error_description")]
-		public string ErrorDescription { get; set; } // Sorry the authorization code you supplied was not found. It is possible that it was no longer valid
+		public string ErrorDescription { get; set; }
 
 		[JsonProperty("error")]
-		public string Error { get; set; } // invalid_grant
+		public string Error { get; set; }
+
+		public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+		{
+			return new Task<HttpResponseMessage>(() => new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest));
+		}
+
+
+
+		/*
+		some examples:
+		{"errorCode":"errors.com.epicgames.account.auth_token.invalid_refresh_token","errorMessage":"Sorry the refresh token '971A38DCCBBA60E51F4AB04A09BE7B3F3D9D983C8814D279CF41321C8D3906B5' is invalid","messageVars":["971A38DCCBBA60E51F4AB04A09BE7B3F3D9D983C8814D279CF41321C8D3906B5"],"numericErrorCode":18036,"originatingService":"com.epicgames.account.public","intent":"prod","error_description":"Sorry the refresh token '971A38DCCBBA60E51F4AB04A09BE7B3F3D9D983C8814D279CF41321C8D3906B5' is invalid","error":"invalid_grant"}
+
+		*/
 	}
 }
