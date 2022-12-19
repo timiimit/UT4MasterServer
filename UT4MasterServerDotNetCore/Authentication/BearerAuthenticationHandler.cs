@@ -6,50 +6,48 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using UT4MasterServer.Authorization;
 using System.Security.Claims;
-using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
-namespace UT4MasterServer.Authentication
+namespace UT4MasterServer.Authentication;
+
+public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-	public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+	private readonly SessionService sessionService;
+
+	public BearerAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
+		UrlEncoder encoder, ISystemClock clock, SessionService sessionService) : base(options, logger, encoder, clock)
 	{
-		private readonly SessionService sessionService;
+		this.sessionService = sessionService;
+	}
 
-		public BearerAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
-			UrlEncoder encoder, ISystemClock clock, SessionService sessionService) : base(options, logger, encoder, clock)
+	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+	{
+		var authorizationHeader = Request.Headers["Authorization"];
+		var authorization = new HttpAuthorization(authorizationHeader);
+		if (!authorization.IsBearer)
 		{
-			this.sessionService = sessionService;
+			const string errMessage = $"trying to handle a scheme that is not 'bearer' inside bearer scheme handler";
+			Logger.LogInformation(errMessage);
+			return AuthenticateResult.Fail(errMessage);
 		}
 
-		protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+		var session = await sessionService.GetSessionAsync(authorization.Value);
+		if (session == null)
 		{
-			var authorizationHeader = Request.Headers["Authorization"];
-			var authorization = new HttpAuthorization(authorizationHeader);
-			if (!authorization.IsBearer)
-			{
-				const string errMessage = $"trying to handle a scheme that is not 'bearer' inside bearer scheme handler";
-				Logger.LogInformation(errMessage);
-				return AuthenticateResult.Fail(errMessage);
-			}
-
-			var session = await sessionService.GetSessionAsync(authorization.Value);
-			if (session == null)
-			{
-				const string errMessage = $"invalid token";
-				Logger.LogInformation(errMessage);
-				return AuthenticateResult.Fail(errMessage);
-			}
-
-			var principal = new ClaimsPrincipal(new EpicUserIdentity(authorization.Value, session));
-			var ticket = new AuthenticationTicket(principal, Scheme.Name);
-			return AuthenticateResult.Success(ticket);
+			const string errMessage = $"invalid token";
+			Logger.LogInformation(errMessage);
+			return AuthenticateResult.Fail(errMessage);
 		}
 
-		protected override Task HandleChallengeAsync(AuthenticationProperties properties)
-		{
-			// when the scheme is not present, return 401 Unauthorized
-			Response.StatusCode = 401;
-			return Task.CompletedTask;
-		}
+		var principal = new ClaimsPrincipal(new EpicUserIdentity(authorization.Value, session));
+		var ticket = new AuthenticationTicket(principal, Scheme.Name);
+		return AuthenticateResult.Success(ticket);
+	}
+
+	protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+	{
+		// when the scheme is not present, return 401 Unauthorized
+		Response.StatusCode = 401;
+		return Task.CompletedTask;
 	}
 }

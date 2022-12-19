@@ -1,210 +1,197 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
+﻿using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson.Serialization.IdGenerators;
-using MongoDB.Bson.Serialization.Serializers;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace UT4MasterServer
+namespace UT4MasterServer;
+
+[Serializable]
+public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IBsonClassMapAttribute
 {
-	[Serializable]
-	public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IBsonClassMapAttribute
+	private readonly static Random r = new Random();
+
+	public string ID { get; set; }
+
+	[BsonIgnore]
+	public bool IsEmpty
 	{
-		private readonly static Random r = new Random();
-
-		public string ID { get; set; }
-
-		[BsonIgnore]
-		public bool IsEmpty
+		get
 		{
-			get
-			{
-				return ID == Empty.ID;
-			}
+			return ID == Empty.ID;
 		}
+	}
 
-		public EpicID(string id)
-		{
-			// TODO: verify that id is hex string
-			if (id.Length != 32)
-				throw new ArgumentException("id needs to be 32 hexadecimal characters long");
-			this.ID = id;
-		}
+	public EpicID(string id)
+	{
+		// TODO: verify that id is hex string
+		if (id.Length != 32)
+			throw new ArgumentException("id needs to be 32 hexadecimal characters long");
+		this.ID = id;
+	}
 
-		public static EpicID GenerateNew()
-		{
-			// MongoDB driver seems to do a similar thing, except that
-			// it uses custom randomness generation instead of Random.
-			byte[] bytes = new byte[16];
-			r.NextBytes(bytes);
-			string? id = Convert.ToHexString(bytes).ToLower();
+	public static EpicID GenerateNew()
+	{
+		// MongoDB driver seems to do a similar thing, except that
+		// it uses custom randomness generation instead of Random.
+		byte[] bytes = new byte[16];
+		r.NextBytes(bytes);
+		string? id = Convert.ToHexString(bytes).ToLower();
 
-			return new EpicID(id);
-		}
+		return new EpicID(id);
+	}
 
-		public static EpicID Empty
-		{
-			get { return new EpicID("00000000000000000000000000000000"); }
-		}
+	public static EpicID Empty
+	{
+		get { return new EpicID("00000000000000000000000000000000"); }
+	}
 
-		public static bool operator ==(EpicID lhs, EpicID rhs)
-		{
-			return lhs.Equals(rhs);
-		}
-		public static bool operator !=(EpicID lhs, EpicID rhs)
-		{
-			return !lhs.Equals(rhs);
-		}
+	public static bool operator ==(EpicID lhs, EpicID rhs)
+	{
+		return lhs.Equals(rhs);
+	}
+	public static bool operator !=(EpicID lhs, EpicID rhs)
+	{
+		return !lhs.Equals(rhs);
+	}
 
-		public override bool Equals(object? obj)
-		{
-			if (obj == null)
-				return false;
+	public override bool Equals(object? obj)
+	{
+		if (obj == null)
+			return false;
 
-			if (obj is not UT4MasterServer.EpicID)
-				return false;
+		if (obj is not UT4MasterServer.EpicID)
+			return false;
 
-			var objUserID = (EpicID)obj;
+		var objUserID = (EpicID)obj;
 
-			return string.Equals(ID, objUserID.ID, StringComparison.OrdinalIgnoreCase);
-		}
+		return string.Equals(ID, objUserID.ID, StringComparison.OrdinalIgnoreCase);
+	}
 
-		public override int GetHashCode()
-		{
-			return ID.GetHashCode();
-		}
+	public override int GetHashCode()
+	{
+		return ID.GetHashCode();
+	}
 
-		public override string ToString()
-		{
-			return ID;
-		}
+	public override string ToString()
+	{
+		return ID;
+	}
 
-		public int CompareTo(EpicID other)
-		{
-			return ID.CompareTo(other.ID);
-		}
+	public int CompareTo(EpicID other)
+	{
+		return ID.CompareTo(other.ID);
+	}
 
-		public bool Equals(EpicID other)
-		{
-			return ID.Equals(other.ID);
-		}
+	public bool Equals(EpicID other)
+	{
+		return ID.Equals(other.ID);
+	}
 
-		public TypeCode GetTypeCode()
-		{
-			return ID.GetTypeCode();
-		}
+	public TypeCode GetTypeCode()
+	{
+		return ID.GetTypeCode();
+	}
 
-		public bool ToBoolean(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToBoolean(provider);
-		}
+	public bool ToBoolean(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToBoolean(provider);
+	}
 
-		public byte ToByte(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToByte(provider);
-		}
+	public byte ToByte(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToByte(provider);
+	}
 
-		public char ToChar(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToChar(provider);
-		}
+	public char ToChar(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToChar(provider);
+	}
 
-		public DateTime ToDateTime(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToDateTime(provider);
-		}
+	public DateTime ToDateTime(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToDateTime(provider);
+	}
 
-		public decimal ToDecimal(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToDecimal(provider);
-		}
+	public decimal ToDecimal(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToDecimal(provider);
+	}
 
-		public double ToDouble(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToDouble(provider);
-		}
+	public double ToDouble(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToDouble(provider);
+	}
 
-		public short ToInt16(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToInt16(provider);
-		}
+	public short ToInt16(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToInt16(provider);
+	}
 
-		public int ToInt32(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToInt32(provider);
-		}
+	public int ToInt32(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToInt32(provider);
+	}
 
-		public long ToInt64(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToInt64(provider);
-		}
+	public long ToInt64(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToInt64(provider);
+	}
 
-		public sbyte ToSByte(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToSByte(provider);
-		}
+	public sbyte ToSByte(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToSByte(provider);
+	}
 
-		public float ToSingle(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToSingle(provider);
-		}
+	public float ToSingle(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToSingle(provider);
+	}
 
-		public string ToString(IFormatProvider? provider)
-		{
-			return ID.ToString(provider);
-		}
+	public string ToString(IFormatProvider? provider)
+	{
+		return ID.ToString(provider);
+	}
 
-		public object ToType(Type conversionType, IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToType(conversionType, provider);
-		}
+	public object ToType(Type conversionType, IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToType(conversionType, provider);
+	}
 
-		public ushort ToUInt16(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToUInt16(provider);
-		}
+	public ushort ToUInt16(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToUInt16(provider);
+	}
 
-		public uint ToUInt32(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToUInt32(provider);
-		}
+	public uint ToUInt32(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToUInt32(provider);
+	}
 
-		public ulong ToUInt64(IFormatProvider? provider)
-		{
-			return ((IConvertible)ID).ToUInt64(provider);
-		}
+	public ulong ToUInt64(IFormatProvider? provider)
+	{
+		return ((IConvertible)ID).ToUInt64(provider);
+	}
 
-		public void Apply(BsonClassMap classMap)
-		{
-			throw new NotImplementedException();
-		}
+	public void Apply(BsonClassMap classMap)
+	{
+		throw new NotImplementedException();
+	}
 
-		public static bool operator <(EpicID left, EpicID right)
-		{
-			return left.CompareTo(right) < 0;
-		}
+	public static bool operator <(EpicID left, EpicID right)
+	{
+		return left.CompareTo(right) < 0;
+	}
 
-		public static bool operator <=(EpicID left, EpicID right)
-		{
-			return left.CompareTo(right) <= 0;
-		}
+	public static bool operator <=(EpicID left, EpicID right)
+	{
+		return left.CompareTo(right) <= 0;
+	}
 
-		public static bool operator >(EpicID left, EpicID right)
-		{
-			return left.CompareTo(right) > 0;
-		}
+	public static bool operator >(EpicID left, EpicID right)
+	{
+		return left.CompareTo(right) > 0;
+	}
 
-		public static bool operator >=(EpicID left, EpicID right)
-		{
-			return left.CompareTo(right) >= 0;
-		}
+	public static bool operator >=(EpicID left, EpicID right)
+	{
+		return left.CompareTo(right) >= 0;
 	}
 }

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
-namespace UT4MasterServer.Authorization
-{
-    public class HttpAuthorization
+namespace UT4MasterServer.Authorization;
+
+public class HttpAuthorization
     {
         public string Type { get; set; } = string.Empty;
         public string Value { get; set; } = string.Empty;
@@ -35,4 +30,3 @@ namespace UT4MasterServer.Authorization
             Value = authorizationHeader.Substring(space + 1);
         }
     }
-}

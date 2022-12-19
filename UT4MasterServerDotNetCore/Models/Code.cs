@@ -1,37 +1,30 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace UT4MasterServer.Models
+namespace UT4MasterServer.Models;
+
+public enum CodeKind
 {
-	public enum CodeKind
-	{
-		Authorization,
-		Exchange
-	}
+	Authorization,
+	Exchange
+}
 
-	/// <summary>
-	/// class common for all types of codes. these basically exchange identity of user between applications.
-	/// they expire after certain amount of time.
-	/// </summary>
-	[BsonNoId]
-	public class Code
-	{
-		public EpicID AccountID { get; set; }
-		public EpicID CreatingClientID { get; set; }
-		public Token Token { get; set; }
-		public CodeKind Kind { get; set; }
+/// <summary>
+/// class common for all types of codes. these basically exchange identity of user between applications.
+/// they expire after certain amount of time.
+/// </summary>
+[BsonNoId]
+public class Code
+{
+	public EpicID AccountID { get; set; }
+	public EpicID CreatingClientID { get; set; }
+	public Token Token { get; set; }
+	public CodeKind Kind { get; set; }
 
-		public Code(EpicID accountID, EpicID creatingClientID, Token token, CodeKind kind)
-		{
-			AccountID = accountID;
-			CreatingClientID = creatingClientID;
-			Token = token;
-			Kind = kind;
-		}
+	public Code(EpicID accountID, EpicID creatingClientID, Token token, CodeKind kind)
+	{
+		AccountID = accountID;
+		CreatingClientID = creatingClientID;
+		Token = token;
+		Kind = kind;
 	}
 }
