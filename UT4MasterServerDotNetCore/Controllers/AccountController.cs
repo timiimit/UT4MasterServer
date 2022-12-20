@@ -8,6 +8,7 @@ namespace UT4MasterServer.Controllers;
 
 [ApiController]
 [Route("account/api")]
+[AuthorizeBearer]
 public class AccountController : ControllerBase
 {
 	private readonly ILogger<AccountController> logger;
@@ -24,7 +25,6 @@ public class AccountController : ControllerBase
 	#region ACCOUNT LISTING API
 
 	[HttpGet("public/account/{id}")]
-	[AuthorizeBearer]
 	public async Task<ActionResult<string>> GetAccount(string id)
 	{
 		logger.Log(LogLevel.Information, $"Looking for account {id}");
@@ -137,6 +137,7 @@ public class AccountController : ControllerBase
 	#region NON-EPIC API
 
 	[HttpPost("create/account")]
+	[AllowAnonymous]
 	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password)
 	{
 		if (await accountService.GetAccountAsync(username) != null)
