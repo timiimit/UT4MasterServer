@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authorization;
 using UT4MasterServer.Models;
@@ -214,6 +203,14 @@ namespace UT4MasterServer.Controllers
 			// TODO: find other valid strings
 
 			return NoContent();
+		}
+
+		// TODO: Make sure this does what it's supposed to. 200 OK should be enough for the client to know the session is still valid.
+		[HttpGet]
+		[Route("verify")]
+		public OkResult Verify()
+		{
+			return new OkResult();
 		}
 
 		//[HttpPost]

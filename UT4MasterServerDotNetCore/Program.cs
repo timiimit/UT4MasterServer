@@ -57,7 +57,9 @@ namespace UT4MasterServer
 			//});
 			builder.Services
 				.AddSingleton<AccountService>()
-				.AddSingleton<SessionService>();
+				.AddSingleton<SessionService>()
+				.AddSingleton<AccountDataService>();	
+
 			builder.Services
 				.AddAuthentication(/*by default there is no authentication*/)
 				.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null)

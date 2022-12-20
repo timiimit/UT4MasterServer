@@ -8,7 +8,7 @@ namespace UT4MasterServer
 		{
 			if (type == typeof(EpicID))
 				return new EpicIDSerializer();
-			throw new ArgumentException("Unexpected type");
+			return null;
 		}
 	}
 }
