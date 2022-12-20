@@ -95,7 +95,7 @@ public class AccountController : JsonAPIController
 			arr.Add(obj);
 		}
 
-		return Content(arr.ToString(Newtonsoft.Json.Formatting.None));
+		return Json(arr);
 	}
 
 	#endregion
