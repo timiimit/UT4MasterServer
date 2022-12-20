@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using UT4MasterServer.Authorization;
 using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
@@ -33,10 +24,12 @@ namespace UT4MasterServer.Controllers
 		#region ACCOUNT LISTING API
 
 		[HttpGet("public/account/{id}")]
-		public async Task<ActionResult<string>> GetAccount(EpicID id)
+		[AuthorizeBearer]
+		public async Task<ActionResult<string>> GetAccount(string id)
 		{
 			logger.Log(LogLevel.Information, $"Looking for account {id}");
-			var account = await accountService.GetAccountAsync(id);
+			var epicID = new EpicID(id);
+			var account = await accountService.GetAccountAsync(epicID);
 			if (account == null)
 				return NotFound();
 
@@ -144,8 +137,17 @@ namespace UT4MasterServer.Controllers
 		#region NON-EPIC API
 
 		[HttpPost("create/account")]
-		public async Task<NoContentResult> RegisterAccount([FromForm] string username, [FromForm] string password)
+		public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password)
 		{
+			if (await accountService.GetAccountAsync(username) != null)
+			{
+				logger.LogInformation($"Could not register duplicate account: {username}");
+				// This is a generic HTTP 400. A 409 (Conflict) might be more appropriate?	
+				// Depends how our create account form is built. It will need to know why
+				// it failed (dupe account, invalid name, bad password, etc)
+				return new BadRequestObjectResult("Username already exists");
+			}
+
 			// TODO: should we also get user's email?
 			await accountService.CreateAccountAsync(username, password); // TODO: this cannot fail?
 

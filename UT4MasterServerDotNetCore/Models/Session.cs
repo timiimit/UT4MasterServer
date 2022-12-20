@@ -1,11 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UT4MasterServer.Models
 {
@@ -73,6 +67,11 @@ namespace UT4MasterServer.Models
 				default:
 					throw new ArgumentException("invalid sessionType");
 			}
+		}
+
+		public bool HasExpired
+		{
+			get { return AccessToken.HasExpired; }
 		}
 	}
 }
