@@ -42,22 +42,46 @@ public class SessionService
 		return session;
 	}
 
-	public async Task<Session> GetSessionAsync(EpicID account, EpicID client)
+	public async Task<Session?> GetSessionAsync(EpicID account, EpicID client)
 	{
-		return await sessionCollection.Find(x =>
-			x.AccountID == account &&
-			x.ClientID == client
+		var session = await sessionCollection.Find(s =>
+			s.AccountID == account &&
+			s.ClientID == client
 		).FirstOrDefaultAsync();
+		return await InvalidateExpiredSession(session);
 	}
 
-	public async Task<Session> GetSessionAsync(EpicID id)
+	public async Task<Session?> GetSessionAsync(EpicID id)
 	{
-		return await sessionCollection.Find(session => session.ID == id).FirstOrDefaultAsync();
+		var session = await sessionCollection.Find(session => 
+			session.ID == id
+		).FirstOrDefaultAsync();
+
+		return await InvalidateExpiredSession(session);
 	}
 
-	public async Task<Session> GetSessionAsync(string accessToken)
+	public async Task<Session?> GetSessionAsync(string accessToken)
 	{
-		return await sessionCollection.Find(x => x.AccessToken.Value == accessToken).FirstOrDefaultAsync();
+		var session = await sessionCollection.Find(session => 
+			session.AccessToken.Value == accessToken
+		).FirstOrDefaultAsync();
+		return await InvalidateExpiredSession(session);
+	}
+
+	public async Task<Session?> RefreshSessionAsync(string refreshToken)
+	{
+		var session = await sessionCollection.Find(session =>
+			session.RefreshToken.Value == refreshToken
+		).FirstOrDefaultAsync();
+
+		if (session != null)
+		{
+            session.Refresh();
+			await UpdateSessionAsync(session);
+            return session;
+        }
+
+		return null;
 	}
 
 	public async Task UpdateSessionAsync(Session updatedSession)
@@ -80,6 +104,17 @@ public class SessionService
 	public async Task RemoveOtherSessionsAsync(EpicID clientID, EpicID sessionID)
 	{
 		await sessionCollection.DeleteManyAsync(x => x.ClientID == clientID && x.ID != sessionID);
+	}
+
+	public async Task<Session?> InvalidateExpiredSession(Session session)
+	{
+		if (!session.HasExpired)
+		{
+			return session;
+		}
+
+		await sessionCollection.DeleteOneAsync(_session => _session.AccessToken == session.AccessToken);
+		return null;
 	}
 
 	#endregion

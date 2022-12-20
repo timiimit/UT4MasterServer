@@ -28,6 +28,7 @@ public class SessionController : ControllerBase
 		[FromForm(Name = "grant_type")] string grantType,
 		[FromForm(Name = "includePerms")] bool? includePerms,
 		[FromForm(Name = "code")] string? code,
+		[FromForm(Name = "refresh_token")] string? refreshToken,
 		[FromForm(Name = "username")] string? username,
 		[FromForm(Name = "password")] string? password)
 	{
@@ -47,7 +48,13 @@ public class SessionController : ControllerBase
 						session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
 				}
 				break;
-			case "exchange_code":
+            case "refresh_token":
+				if (refreshToken != null)
+				{
+					session = await sessionService.RefreshSessionAsync(refreshToken);
+				}
+				break;
+            case "exchange_code":
 				if (code != null)
 				{
 					var codeExchange = await sessionService.TakeCodeAsync(CodeKind.Exchange, code);

@@ -68,4 +68,9 @@ public class Session
 				throw new ArgumentException("invalid sessionType");
 		}
 	}
+
+	public bool HasExpired
+	{
+		get { return AccessToken.HasExpired; }
+	}
 }
