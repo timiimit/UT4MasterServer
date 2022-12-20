@@ -18,14 +18,14 @@ namespace UT4MasterServer.Controllers
 
         [HttpPost]
         [Route("profile/{id}/client/QueryProfile")]
-        public ActionResult QueryProfile(string id)
+        public IActionResult QueryProfile(string id)
         {
             return Ok(new { });
         }
 
         [HttpPost]
         [Route("ratings/account/{id}/mmrbulk")]
-        public ActionResult MmrBulk(string id)
+        public IActionResult MmrBulk(string id)
         {
             // TODO: Figure out empty responses
             // Empty JSON crashes the game, NoContentResult or "{}" does not.
@@ -36,7 +36,7 @@ namespace UT4MasterServer.Controllers
 
         [HttpGet]
         [Route("ratings/account/{id}/league/{leagueName}")]
-        public ActionResult LeagueRating(string id, string leagueName)
+        public IActionResult LeagueRating(string id, string leagueName)
         {
             return Ok(new { });
         }

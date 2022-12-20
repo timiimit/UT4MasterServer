@@ -25,7 +25,7 @@ public class SessionController : JsonAPIController
 
 	[AuthorizeBasic]
 	[HttpPost("token")]
-	public async Task<ActionResult<string>> Authenticate(
+	public async Task<IActionResult> Authenticate(
 		[FromForm(Name = "grant_type")] string grantType,
 		[FromForm(Name = "includePerms")] bool? includePerms,
 		[FromForm(Name = "code")] string? code,
@@ -128,11 +128,11 @@ public class SessionController : JsonAPIController
 			obj.Add("in_app_id", account.ID.ToString());
 			obj.Add("device_id", "465a117c2b144b5c8222ee71b9bc8da2"); // unsure about this, probably some ip tracking feature
 		}
-		return obj.ToString(Newtonsoft.Json.Formatting.None);
+		return Json(obj);
 	}
 
 	[HttpGet("exchange")]
-	public async Task<ActionResult<string>> CreateExchangeCode()
+	public async Task<IActionResult> CreateExchangeCode()
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -148,11 +148,11 @@ public class SessionController : JsonAPIController
 		obj.Add("expiresInSeconds", code.Token.ExpirationDurationInSeconds);
 		obj.Add("code", code.Token.Value);
 		obj.Add("creatingClientId", code.CreatingClientID.ToString());
-		return obj.ToString(Newtonsoft.Json.Formatting.None);
+		return Json(obj);
 	}
 
 	[HttpGet("auth")] // this action is originally on "www.epicgames.com/id/api/redirect" + some query specifying client_id and something else, forgot what
-	public async Task<ActionResult<string>> CreateAuthorizationCode()
+	public async Task<IActionResult> CreateAuthorizationCode()
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -169,12 +169,12 @@ public class SessionController : JsonAPIController
 		obj.Add("redirectUrl", $"https://localhost/launcher/authorized?code={authCode.Token}");
 		obj.Add("authorizationCode", authCode.Token.ToString());
 		obj.Add("sid", null);
-		return obj.ToString(Newtonsoft.Json.Formatting.None);
+		return Json(obj);
 	}
 
 
 	[HttpDelete("sessions/kill/{accessToken}")] // we dont need to use token in url because we have it in 
-	public async Task<NoContentResult> KillSession(string accessToken)
+	public async Task<IActionResult> KillSession(string accessToken)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return NoContent();
@@ -191,7 +191,7 @@ public class SessionController : JsonAPIController
 	}
 
 	[HttpDelete("sessions/kill")]
-	public async Task<NoContentResult> KillSessions([FromQuery] string killType)
+	public async Task<IActionResult> KillSessions([FromQuery] string killType)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return NoContent();
@@ -209,7 +209,7 @@ public class SessionController : JsonAPIController
 	// TODO: Make sure this does what it's supposed to. 200 OK should be enough for the client to know the session is still valid.
 	[HttpGet]
 	[Route("verify")]
-	public OkResult Verify()
+	public IActionResult Verify()
 	{
 		return new OkResult();
 	}

@@ -49,7 +49,7 @@ public class AccountService
 
 	public async Task<List<Account>> GetAccountsAsync(List<EpicID> ids)
 	{
-		var filter = Builders<Account>.Filter.In("AccountID", ids);
+		var filter = Builders<Account>.Filter.In(nameof(Account.ID), ids);
 		var result = await accountCollection.FindAsync(filter);
 		return await result.ToListAsync();
 	}

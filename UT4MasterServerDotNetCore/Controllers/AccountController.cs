@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.MSIdentity.Shared;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authorization;
 using UT4MasterServer.Models;
@@ -26,7 +28,7 @@ public class AccountController : JsonAPIController
 	#region ACCOUNT LISTING API
 
 	[HttpGet("public/account/{id}")]
-	public async Task<ActionResult<string>> GetAccount(string id)
+	public async Task<IActionResult> GetAccount(string id)
 	{
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
@@ -48,9 +50,9 @@ public class AccountController : JsonAPIController
 		obj.Add("numberOfDisplayNameChanges", 0);
 		obj.Add("ageGroup", "UNKNOWN");
 		obj.Add("headless", false);
-		obj.Add("country", "SI"); // two letter country code
+		obj.Add("country", "US"); // two letter country code
 		obj.Add("lastName", $"{account.Username}"); // fake a random one
-		obj.Add("preferredLanguage", "en");
+		obj.Add("preferredLanguage", "en"); // two letter language code
 		obj.Add("canUpdateDisplayName", true);
 		obj.Add("tfaEnabled", true);
 		obj.Add("emailVerified", true);
@@ -59,28 +61,30 @@ public class AccountController : JsonAPIController
 		obj.Add("cabinedMode", false);
 		obj.Add("hasHashedEmail", false);
 
-		return obj.ToString(Newtonsoft.Json.Formatting.None);
+		return Json(obj.ToString(Newtonsoft.Json.Formatting.None));
 	}
 
 	[HttpGet("public/account")]
-	public async Task<ActionResult<string>> GetAccounts([FromQuery(Name = "accountId")] List<EpicID> accountIDs)
+	public async Task<IActionResult> GetAccounts([FromQuery(Name = "accountId")] List<string> accountIDs)
 	{
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
 
 		// TODO: remove duplicates from accountIDs
-		var accounts = await accountService.GetAccountsAsync(accountIDs);
+		var ids = accountIDs.Select(x => EpicID.FromString(x));
+		var accounts = await accountService.GetAccountsAsync(ids.ToList());
 
-		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for {string.Join(", ", accounts.Select(x => x.ID.ToString()))}");
+		var retrievedAccountIDs = accounts.Select(x => x.ID.ToString());
+		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for {string.Join(", ", retrievedAccountIDs)}");
 
 		// create json response
-		JArray arr = new JArray();
+		var arr = new JArray();
 		foreach (var account in accounts)
 		{
 			var obj = new JObject();
 			obj.Add("id", account.ID.ToString());
 			obj.Add("displayName", account.Username);
-			//if (account.ID == ???)
+			if (account.ID == authenticatedUser.Session.AccountID)
 			{
 				// this is returned only when you ask about yourself
 				obj.Add("minorVerified", false);
@@ -91,7 +95,7 @@ public class AccountController : JsonAPIController
 			arr.Add(obj);
 		}
 
-		return arr.ToString(Newtonsoft.Json.Formatting.None);
+		return Content(arr.ToString(Newtonsoft.Json.Formatting.None));
 	}
 
 	#endregion
@@ -99,18 +103,18 @@ public class AccountController : JsonAPIController
 	#region UNIMPORTANT API
 
 	[HttpGet("accounts/{id}/metadata")]
-	public ActionResult<string> GetMetadata(string id)
+	public IActionResult GetMetadata(string id)
 	{
 		EpicID eid = EpicID.FromString(id);
 
 		logger.LogInformation($"Get metadata of {eid}");
 
 		// unknown structure, but epic always seems to respond with this
-		return "{}";
+		return Json("{}");
 	}
 
 	[HttpGet("public/account/{id}/externalAuths")]
-	public ActionResult<string> GetExternalAuths(string id)
+	public IActionResult GetExternalAuths(string id)
 	{
 		EpicID eid = EpicID.FromString(id);
 
@@ -124,17 +128,17 @@ public class AccountController : JsonAPIController
 			"dateAdded": "2018-01-17T18:58:39.831Z"
 		}]
 		*/
-		return "[]";
+		return Json("[]");
 	}
 
 	[HttpGet("epicdomains/ssodomains")]
-	public ActionResult<string> GetSSODomains()
+	public IActionResult GetSSODomains()
 	{
 		logger.LogInformation(@"Get SSO domains");
 
 		// epic responds with this: ["unrealengine.com","unrealtournament.com","fortnite.com","epicgames.com"]
 
-		return "[]";
+		return Json("[]");
 	}
 
 	#endregion

@@ -18,9 +18,9 @@ namespace UT4MasterServer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<string> QueryProfile(string id)
+        public ActionResult<IActionResult> QueryProfile(string id)
         {
-            return "{}";
+            return Json("{}");
         }
     }
 }

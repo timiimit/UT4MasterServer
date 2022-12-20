@@ -22,14 +22,14 @@ namespace UT4MasterServer.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult Get(string id)
+        public IActionResult Get(string id)
         {
             return new NoContentResult();
         }
 
         [HttpGet("{id}/user_profile_2")]
         [Produces("application/octet-stream")]
-        public async Task<FileContentResult> QueryProfile(string id)
+        public async Task<IActionResult> QueryProfile(string id)
         {
             // Temp data
             string path = "user_profile_2.local";
@@ -39,7 +39,7 @@ namespace UT4MasterServer.Controllers
 
         [HttpPut("{id}/user_profile_2")]
         [Produces("application/octet-stream")]
-        public ActionResult UpdateProfile(string id)
+        public IActionResult UpdateProfile(string id)
         {
             return new NoContentResult();  
         }
