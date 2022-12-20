@@ -7,7 +7,7 @@ using UT4MasterServer.Services;
 namespace UT4MasterServer.Controllers
 {
     [ApiController]
-    [Route("ut/api/game/v2")]
+    [Route("ut/api")]
     [AuthorizeBearer]
     [Produces("application/json")]
     public class UnrealTournamentController : JsonAPIController
@@ -22,7 +22,7 @@ namespace UT4MasterServer.Controllers
 
 		}
 
-        [HttpPost("profile/{id}/client/QueryProfile")]
+        [HttpPost("game/v2/profile/{id}/client/QueryProfile")]
         public async Task<IActionResult> QueryProfile(string id, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] string body)
         {
             // game sends empty json object as body
@@ -90,7 +90,7 @@ namespace UT4MasterServer.Controllers
 			return Json(obj);
         }
 
-		[HttpGet("profile/{id}/client/SetAvatarAndFlag")]
+		[HttpGet("game/v2/profile/{id}/client/SetAvatarAndFlag")]
 		public IActionResult SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] string body)
 		{
 			/* input: 
@@ -104,24 +104,143 @@ namespace UT4MasterServer.Controllers
 			return Ok();
 		}
 
-		[HttpPost("ratings/account/{id}/mmrbulk")]
-        public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
-        {
-            for (int i = 0; i < ratings.RatingTypes.Count; i++)
-            {
-                ratings.Ratings.Add(1500);
-                ratings.PlayCount.Add(0);
-            }
-			
-			return Json(ratings);
-        }
+		[HttpPost("game/v2/ratings/account/{id}/mmrbulk")]
+		public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
+		{
+			for (int i = 0; i < ratings.RatingTypes.Count; i++)
+			{
+				ratings.Ratings.Add(1500);
+				ratings.PlayCount.Add(0);
+			}
 
-        [HttpGet("ratings/account/{id}/league/{leagueName}")]
+			return Json(ratings);
+		}
+
+		[HttpPost("game/v2/ratings/account/{id}/mmr/{ratingType}")]
+		public IActionResult Mmr(string id, string ratingType, [FromBody] MMRBulk ratings)
+		{
+			// TODO: return only one type of rating
+			for (int i = 0; i < ratings.RatingTypes.Count; i++)
+			{
+				ratings.Ratings.Add(1500);
+				ratings.PlayCount.Add(0);
+			}
+
+			return Json(ratings);
+		}
+		[HttpGet("game/v2/ratings/account/{id}/league/{leagueName}")]
         public IActionResult LeagueRating(string id, string leagueName)
         {
             var league = new League();
             // for now we just send default/empty values
             return Json(league);
-        }
-    }
+		}
+
+		[HttpPost("game/v2/ratings/team/elo/{ratingType}")]
+		public IActionResult JoinQuickplay(string ratingType, [FromBody] string body)
+		{
+			/*
+			INPUT body:
+
+			{
+				"members": [
+					{
+						"accountId": "64bf8c6d81004e88823d577abe157373",
+						"score": 0,
+						"isBot": false
+					}
+				],
+				"socialPartySize": 1
+			}
+
+			*/
+
+			// Response: {"rating":1500}
+
+			return Ok();
+		}
+
+		[HttpPost("game/v2/wait_times/estimate")]
+		public IActionResult QuickplayWaitEstimate()
+		{
+			// Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},{"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
+			return Ok();
+		}
+
+		[HttpGet("stats/accountId/{id}/bulk/window/{category}")]
+		public IActionResult Stats(string id, string leagueName, string category)
+		{
+			switch (category)
+			{
+				case "alltime":
+					break;
+				case "monthly":
+					break;
+				case "weekly":
+					break;
+				case "daily":
+					break;
+				default:
+					throw new Exception("unknown stats category");
+			}
+
+			var league = new League();
+			// for now we just send default/empty values
+			return Json(league);
+		}
+
+		[HttpPost("matchmaking/session/matchMakingRequest")]
+		public IActionResult ListHubs([FromBody] string body)
+		{
+			/*
+			
+			INPUT example 1:
+			{
+				"criteria": [
+					{
+						"type": "NOT_EQUAL",
+						"key": "UT_GAMEINSTANCE_i",
+						"value": 1
+					},
+					{
+						"type": "NOT_EQUAL",
+						"key": "UT_RANKED_i",
+						"value": 1
+					}
+				],
+				"buildUniqueId": "256652735",
+				"maxResults": 10000
+			}
+
+			INPUT example 2:
+			{
+				"criteria": [
+					{
+						"type": "EQUAL",
+						"key": "UT_SERVERVERSION_s",
+						"value": "3525360"
+					},
+					{
+						"type": "EQUAL",
+						"key": "UT_SERVERINSTANCEGUID_s",
+						"value": "022854C6190A1605003202180546F2E7"
+					}
+				],
+				"buildUniqueId": "256652735",
+				"maxResults": 1
+			}
+
+			Response is in <repo_root>/UT4MasterServer/HubListResponse.json
+			Model for response is already there in Hub.cs
+
+			*/
+			return Ok();
+		}
+
+		[HttpPost("matchmaking/session/{hubID}/join")] // value in hubID is a guess
+		public IActionResult JoinHub(string hubID, [FromQuery] string accountID)
+		{
+			return NoContent(); // correct response
+		}
+	}
 }
