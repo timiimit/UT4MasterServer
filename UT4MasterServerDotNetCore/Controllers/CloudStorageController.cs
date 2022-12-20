@@ -89,7 +89,7 @@ namespace UT4MasterServer.Controllers
 		public async Task<IActionResult> UpdateUserfile(string id, string filename)
 		{
 			await cloudstorageService.UpdateFileAsync(EpicID.FromString(id), filename, Request.Body);
-			return new NoContentResult();
+			return Ok();
 		}
 
 		[HttpGet("system")]
