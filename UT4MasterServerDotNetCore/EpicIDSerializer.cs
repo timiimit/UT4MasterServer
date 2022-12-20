@@ -80,7 +80,7 @@ public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationCon
 			case BsonType.ObjectId:
 				if (_representation == BsonType.ObjectId)
 				{
-					return new EpicID(bsonReader.ReadObjectId().ToString());
+					return EpicID.FromString(bsonReader.ReadObjectId().ToString());
 				}
 				else
 				{
@@ -88,10 +88,10 @@ public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationCon
 				}
 
 			case BsonType.String:
-				return new EpicID(bsonReader.ReadString());
+				return EpicID.FromString(bsonReader.ReadString());
 
 			case BsonType.Symbol:
-				return new EpicID(bsonReader.ReadSymbol());
+				return EpicID.FromString(bsonReader.ReadSymbol());
 
 			default:
 				throw CreateCannotDeserializeFromBsonTypeException(bsonType);

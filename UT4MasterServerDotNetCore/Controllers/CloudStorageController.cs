@@ -8,8 +8,8 @@ namespace UT4MasterServer.Controllers
     [Route("ut/api/cloudstorage/user/")]
     [AuthorizeBearer]
     [Produces("application/json")]
-    public class CloudStorageController : ControllerBase
-    {
+    public class CloudStorageController : JsonAPIController
+	{
         private readonly ILogger<SessionController> logger;
         private readonly AccountService accountService;
         private readonly SessionService sessionService;
@@ -21,17 +21,15 @@ namespace UT4MasterServer.Controllers
             this.logger = logger;
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public ActionResult Get(string id)
+        [HttpGet("{id}")]
+        public IActionResult Get(string id)
         {
             return new NoContentResult();
         }
 
-        [HttpGet]
-        [Route("{id}/user_profile_2")]
+        [HttpGet("{id}/user_profile_2")]
         [Produces("application/octet-stream")]
-        public async Task<FileContentResult> QueryProfile(string id)
+        public async Task<IActionResult> QueryProfile(string id)
         {
             // Temp data
             string path = "user_profile_2.local";
@@ -39,10 +37,9 @@ namespace UT4MasterServer.Controllers
             return new FileContentResult(data, "application/octet-stream");
         }
 
-        [HttpPut]
-        [Route("{id}/user_profile_2")]
+        [HttpPut("{id}/user_profile_2")]
         [Produces("application/octet-stream")]
-        public async ActionResult UpdateProfile(string id)
+        public IActionResult UpdateProfile(string id)
         {
             return new NoContentResult();  
         }
