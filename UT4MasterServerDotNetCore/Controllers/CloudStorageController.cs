@@ -8,8 +8,8 @@ namespace UT4MasterServer.Controllers
     [Route("ut/api/cloudstorage/user/")]
     [AuthorizeBearer]
     [Produces("application/json")]
-    public class CloudStorageController : ControllerBase
-    {
+    public class CloudStorageController : JsonAPIController
+	{
         private readonly ILogger<SessionController> logger;
         private readonly AccountService accountService;
         private readonly SessionService sessionService;

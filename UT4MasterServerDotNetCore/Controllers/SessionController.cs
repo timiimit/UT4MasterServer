@@ -10,7 +10,7 @@ namespace UT4MasterServer.Controllers;
 [AuthorizeBearer]
 [Route("account/api/oauth")]
 [Produces("application/json")]
-public class SessionController : ControllerBase
+public class SessionController : JsonAPIController
 {
 	private readonly ILogger<SessionController> logger;
 	private readonly AccountService accountService;

@@ -7,8 +7,8 @@ namespace UT4MasterServer.Controllers
     [Route("ut/api/game/v2")]
     [AuthorizeBearer]
     [Produces("application/json")]
-    public class UnrealTournamentController : ControllerBase
-    {
+    public class UnrealTournamentController : JsonAPIController
+	{
         private readonly ILogger<SessionController> logger;
 
         public UnrealTournamentController(ILogger<SessionController> logger)

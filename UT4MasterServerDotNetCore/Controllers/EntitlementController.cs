@@ -8,8 +8,8 @@ namespace UT4MasterServer.Controllers
     [Route("entitlement/api/account/{id}/entitlements")]
     [AuthorizeBearer]
     [Produces("application/json")]
-    public class EntitlementController : ControllerBase
-    {
+    public class EntitlementController : JsonAPIController
+	{
         private readonly ILogger<SessionController> logger;
 
         public EntitlementController(ILogger<SessionController> logger)
