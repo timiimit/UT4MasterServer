@@ -22,8 +22,7 @@ namespace UT4MasterServer.Controllers
 
 		}
 
-        [HttpPost]
-        [Route("profile/{id}/client/QueryProfile")]
+        [HttpPost("profile/{id}/client/QueryProfile")]
         public async Task<IActionResult> QueryProfile(string id, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] string body)
         {
             // game sends empty json object as body
@@ -91,8 +90,21 @@ namespace UT4MasterServer.Controllers
 			return Json(obj);
         }
 
-        [HttpPost]
-        [Route("ratings/account/{id}/mmrbulk")]
+		[HttpGet("profile/{id}/client/SetAvatarAndFlag")]
+		public IActionResult SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] string body)
+		{
+			/* input: 
+			{
+				"newAvatar": "UT.Avatar.0",
+				"newFlag": "Algeria"
+			}
+
+			*/
+			// response: {"profileRevision":3,"profileId":"profile0","profileChangesBaseRevision":2,"profileChanges":[{"changeType":"statModified","name":"Avatar","value":"UT.Avatar.0"},{"changeType":"statModified","name":"CountryFlag","value":"Algeria"}],"profileCommandRevision":2,"serverTime":"2022-12-20T18:31:46.948Z","responseVersion":1,"command":"SetAvatarAndFlag"}
+			return Ok();
+		}
+
+		[HttpPost("ratings/account/{id}/mmrbulk")]
         public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
         {
             for (int i = 0; i < ratings.RatingTypes.Count; i++)
@@ -104,8 +116,7 @@ namespace UT4MasterServer.Controllers
 			return Json(ratings);
         }
 
-        [HttpGet]
-        [Route("ratings/account/{id}/league/{leagueName}")]
+        [HttpGet("ratings/account/{id}/league/{leagueName}")]
         public IActionResult LeagueRating(string id, string leagueName)
         {
             var league = new League();
