@@ -7,8 +7,9 @@ using UT4MasterServer.Services;
 namespace UT4MasterServer.Controllers;
 
 [ApiController]
-[Route("account/api/oauth")]
 [AuthorizeBearer]
+[Route("account/api/oauth")]
+[Produces("application/json")]
 public class SessionController : ControllerBase
 {
 	private readonly ILogger<SessionController> logger;
@@ -22,8 +23,8 @@ public class SessionController : ControllerBase
 		this.logger = logger;
 	}
 
-	[HttpPost("token")]
 	[AuthorizeBasic]
+	[HttpPost("token")]
 	public async Task<ActionResult<string>> Authenticate(
 		[FromForm(Name = "grant_type")] string grantType,
 		[FromForm(Name = "includePerms")] bool? includePerms,
