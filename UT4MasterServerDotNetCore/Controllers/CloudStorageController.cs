@@ -21,15 +21,13 @@ namespace UT4MasterServer.Controllers
             this.logger = logger;
         }
 
-        [HttpGet]
-        [Route("{id}")]
+        [HttpGet("{id}")]
         public ActionResult Get(string id)
         {
             return new NoContentResult();
         }
 
-        [HttpGet]
-        [Route("{id}/user_profile_2")]
+        [HttpGet("{id}/user_profile_2")]
         [Produces("application/octet-stream")]
         public async Task<FileContentResult> QueryProfile(string id)
         {
@@ -39,10 +37,9 @@ namespace UT4MasterServer.Controllers
             return new FileContentResult(data, "application/octet-stream");
         }
 
-        [HttpPut]
-        [Route("{id}/user_profile_2")]
+        [HttpPut("{id}/user_profile_2")]
         [Produces("application/octet-stream")]
-        public async ActionResult UpdateProfile(string id)
+        public ActionResult UpdateProfile(string id)
         {
             return new NoContentResult();  
         }

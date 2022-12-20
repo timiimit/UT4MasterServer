@@ -23,15 +23,15 @@ public class AccountController : ControllerBase
 
 	#region ACCOUNT LISTING API
 
-		[HttpGet("public/account/{id}")]
-		[AuthorizeBearer]
-		public async Task<ActionResult<string>> GetAccount(string id)
-		{
-			logger.Log(LogLevel.Information, $"Looking for account {id}");
-			var epicID = new EpicID(id);
-			var account = await accountService.GetAccountAsync(epicID);
-			if (account == null)
-				return NotFound();
+	[HttpGet("public/account/{id}")]
+	[AuthorizeBearer]
+	public async Task<ActionResult<string>> GetAccount(string id)
+	{
+		logger.Log(LogLevel.Information, $"Looking for account {id}");
+		var epicID = new EpicID(id);
+		var account = await accountService.GetAccountAsync(epicID);
+		if (account == null)
+			return NotFound();
 
 		var obj = new JObject();
 		obj.Add("id", account.ID.ToString());
