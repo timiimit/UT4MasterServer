@@ -46,7 +46,7 @@ public class AccountController : JsonAPIController
 		obj.Add("name", $"{account.Username}"); // fake a random one
 		obj.Add("email", $"{account.ID}@{Request.Host}"); // fake a random one
 		obj.Add("failedLoginAttempts", 0);
-		obj.Add("lastLogin", account.LastLogin.ToStringISO());
+		obj.Add("lastLogin", account.LastLoginAt.ToStringISO());
 		obj.Add("numberOfDisplayNameChanges", 0);
 		obj.Add("ageGroup", "UNKNOWN");
 		obj.Add("headless", false);
