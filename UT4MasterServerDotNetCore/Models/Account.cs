@@ -80,7 +80,7 @@ public class Account
 	public int XPLastMatch { get; set; } = 0;
 
 	[BsonElement("XPLastMatchAt")]
-	public DateTime XPLastMatchAt { get; set; } = 0;
+	public DateTime XPLastMatchAt { get; set; } = DateTime.MinValue;
 
 
 	[BsonIgnore]

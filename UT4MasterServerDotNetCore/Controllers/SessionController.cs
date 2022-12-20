@@ -211,6 +211,28 @@ public class SessionController : JsonAPIController
 	[Route("verify")]
 	public IActionResult Verify()
 	{
+		// no refresh needed, but we should respond with this:
+		/*
+		
+		{
+			"token": "06577db463064b89af0657b5445b08b7",
+			"session_id": "06577db463064b89af0657b5445b08b7",
+			"token_type": "bearer",
+			"client_id": "1252412dc7704a9690f6ea4611bc81ee",
+			"internal_client": false,
+			"client_service": "ut",
+			"account_id": "64bf8c6d81004e88823d577abe157373",
+			"expires_in": 28799,
+			"expires_at": "2022-12-20T23:26:25.049Z",
+			"auth_method": "exchange_code",
+			"display_name": "norandomemails",
+			"app": "ut",
+			"in_app_id": "64bf8c6d81004e88823d577abe157373",
+			"device_id": "ee64ee5f292b45f089a368cb7e43d82d",
+			"perms": [...]
+		}
+
+		*/
 		return new OkResult();
 	}
   

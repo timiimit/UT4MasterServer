@@ -56,6 +56,7 @@ public static partial class Program
 		builder.Services
 		  .AddSingleton<AccountService>()
 		  .AddSingleton<SessionService>()
+		  .AddSingleton<CloudstorageService>()
 		  .AddSingleton<AccountDataService>();	
 
 		builder.Services

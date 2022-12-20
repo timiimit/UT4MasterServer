@@ -31,20 +31,29 @@ public class AccountService
 
 	public async Task<Account?> GetAccountAsync(EpicID id)
 	{
-		return await accountCollection.Find(account => account.ID == id).FirstOrDefaultAsync();
+		var cursor = await accountCollection.FindAsync(account => account.ID == id);
+		if (!await cursor.AnyAsync())
+			return null;
+		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<Account?> GetAccountAsync(string username)
 	{
-		return await accountCollection.Find(account => account.Username == username).FirstOrDefaultAsync();
+		var cursor = await accountCollection.FindAsync(account => account.Username == username);
+		if (!await cursor.AnyAsync())
+			return null;
+		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<Account?> GetAccountAsync(string username, string password)
 	{
-		return await accountCollection.Find(account =>
+		var cursor = await accountCollection.FindAsync(account =>
 			account.Username == username &&
 			account.Password == GetPasswordHash(password)
-		).FirstOrDefaultAsync();
+		);
+		if (!await cursor.AnyAsync())
+			return null;
+		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<List<Account>> GetAccountsAsync(List<EpicID> ids)
