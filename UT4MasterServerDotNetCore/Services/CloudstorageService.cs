@@ -95,7 +95,7 @@ public class CloudstorageService
 	private static bool IsCommonUserfileFilename(string filename)
 	{
 		// old players might also have "user_profile_1", but it is not used for anything
-		return filename == "user_profile_2" || filename == "user_progression_1";
+		return filename == "user_profile_2" || filename == "user_progression_1" || filename == "stats.json";
 	}
 
 	private static string CalcFileHash(byte[] data)

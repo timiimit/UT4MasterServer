@@ -62,10 +62,10 @@ public class Account
 	/************** Game Specific **************/
 
 	[BsonElement("CountryFlag")]
-	public string CountryFlag { get; set; } = "Slovenia"; // TODO: find default value
+	public string CountryFlag { get; set; } = "Unreal";
 
 	[BsonElement("Avatar")]
-	public string Avatar { get; set; } = "UT.Avatar.1"; // TODO: find default value
+	public string Avatar { get; set; } = "UT.Avatar.0";
 
 	[BsonElement("GoldStars")]
 	public int GoldStars { get; set; } = 0;
