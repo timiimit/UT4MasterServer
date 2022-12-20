@@ -8,5 +8,6 @@ public class UT4EverDatabaseSettings
 	public string AccountCollectionName { get; set; } = string.Empty;
 	public string CodeCollectionName { get; set; } = string.Empty;
 	public string SessionCollectionName { get; set; } = string.Empty;
+	public string CloudstorageCollectionName { get; set; } = string.Empty;
 	public string AccountDataCollectionName { get; set; } = string.Empty;
 }
