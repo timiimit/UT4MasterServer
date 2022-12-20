@@ -204,7 +204,15 @@ public class SessionController : ControllerBase
 
 		return NoContent();
 	}
-
+  
+	// TODO: Make sure this does what it's supposed to. 200 OK should be enough for the client to know the session is still valid.
+	[HttpGet]
+	[Route("verify")]
+	public OkResult Verify()
+	{
+		return new OkResult();
+	}
+  
 	//[HttpPost]
 	//[Route("login/account")]
 	//public async Task<ActionResult> LoginAccount([FromForm] string username, [FromForm] string password)

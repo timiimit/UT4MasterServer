@@ -8,6 +8,6 @@ public class EpicIDSerializationProvider : IBsonSerializationProvider
 	{
 		if (type == typeof(EpicID))
 			return new EpicIDSerializer();
-		throw new ArgumentException("Unexpected type");
+		return null;
 	}
 }

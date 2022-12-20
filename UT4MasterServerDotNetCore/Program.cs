@@ -42,26 +42,28 @@ public static partial class Program
 		// start up asp.net
 		var builder = WebApplication.CreateBuilder(args);
 
-		builder.Services.AddControllers();
-		builder.Services.Configure<UT4EverDatabaseSettings>(
-			builder.Configuration.GetSection("UT4EverDatabase")
-		);
-		//builder.Services.ConfigureSwaggerGen(options =>
-		//{
-		//	options.OperationFilter<SwaggerAuthorizationHeaderOperationFilter>();
-		//});
-		builder.Services
-			.AddSingleton<AccountService>()
-			.AddSingleton<SessionService>();
-		builder.Services
-			.AddAuthentication(/*by default there is no authentication*/)
-			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null)
-			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("bearer", null);
-		builder.Host.ConfigureLogging(logging =>
-		{
-			logging.ClearProviders();
-			logging.AddConsole();
-		});
+    builder.Services.AddControllers();
+    builder.Services.Configure<UT4EverDatabaseSettings>(
+      builder.Configuration.GetSection("UT4EverDatabase")
+    );
+    //builder.Services.ConfigureSwaggerGen(options =>
+    //{
+    //	options.OperationFilter<SwaggerAuthorizationHeaderOperationFilter>();
+    //});
+    builder.Services
+      .AddSingleton<AccountService>()
+      .AddSingleton<SessionService>()
+      .AddSingleton<AccountDataService>();	
+
+    builder.Services
+      .AddAuthentication(/*by default there is no authentication*/)
+      .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null)
+      .AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("bearer", null);
+    builder.Host.ConfigureLogging(logging =>
+    {
+      logging.ClearProviders();
+      logging.AddConsole();
+    });
 
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen();
