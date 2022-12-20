@@ -44,6 +44,9 @@ public class Account
 	[BsonElement("LastLogin")]
 	public DateTime LastLogin { get; set; } = DateTime.UtcNow;
 
+	[BsonElement("Created")]
+	public DateTime Created { get; set; } = DateTime.UtcNow;
+
 	[BsonElement("XP")]
 	public int XP { get; set; } = 0;
 
