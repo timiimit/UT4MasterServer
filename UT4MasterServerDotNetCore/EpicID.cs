@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json.Serialization;
 
 namespace UT4MasterServer;
 
@@ -19,12 +20,17 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 		}
 	}
 
-	public EpicID(string id)
+	private EpicID(string id)
 	{
 		// TODO: verify that id is hex string
 		if (id.Length != 32)
 			throw new ArgumentException("id needs to be 32 hexadecimal characters long");
 		this.ID = id;
+	}
+
+	public static EpicID FromString(string id)
+	{
+		return new EpicID(id);
 	}
 
 	public static EpicID GenerateNew()

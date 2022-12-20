@@ -4,8 +4,8 @@ namespace UT4MasterServer.Authorization;
 
 public class ClientIdentification
 {
-	public static ClientIdentification Launcher = new ClientIdentification(new EpicID("34a02cf8f4414e29b15921876da36f9a"), new EpicID("daafbccc737745039dffe53d94fc76cf"));
-	public static ClientIdentification Game = new ClientIdentification(new EpicID("1252412dc7704a9690f6ea4611bc81ee"), new EpicID("2ca0c925b4674852bff92b26f8322434"));
+	public static ClientIdentification Launcher = new ClientIdentification(EpicID.FromString("34a02cf8f4414e29b15921876da36f9a"), EpicID.FromString("daafbccc737745039dffe53d94fc76cf"));
+	public static ClientIdentification Game = new ClientIdentification(EpicID.FromString("1252412dc7704a9690f6ea4611bc81ee"), EpicID.FromString("2ca0c925b4674852bff92b26f8322434"));
 
 	//public static string GameAuthorization = "MTI1MjQxMmRjNzcwNGE5NjkwZjZlYTQ2MTFiYzgxZWU6MmNhMGM5MjViNDY3NDg1MmJmZjkyYjI2ZjgzMjI0MzQ=";
 
@@ -28,8 +28,8 @@ public class ClientIdentification
 		}
 
 		Authorization = authorization;
-		ID = new EpicID(decoded.Substring(0, colon));
-		Secret = new EpicID(decoded.Substring(colon + 1));
+		ID = EpicID.FromString(decoded.Substring(0, colon));
+		Secret = EpicID.FromString(decoded.Substring(colon + 1));
 	}
 
 	public ClientIdentification(EpicID id, EpicID secret)

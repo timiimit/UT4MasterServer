@@ -8,6 +8,9 @@ public class EpicIDSerializationProvider : IBsonSerializationProvider
 	{
 		if (type == typeof(EpicID))
 			return new EpicIDSerializer();
-		return null;
+
+		// returning null here seems to be fine.
+		// it probably signals to the caller that we don't have serializer for specified type.
+		return null!;
 	}
 }
