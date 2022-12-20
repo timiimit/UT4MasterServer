@@ -29,17 +29,17 @@ public class AccountService
 		await accountCollection.InsertOneAsync(newAccount);
 	}
 
-	public async Task<Account> GetAccountAsync(EpicID id)
+	public async Task<Account?> GetAccountAsync(EpicID id)
 	{
 		return await accountCollection.Find(account => account.ID == id).FirstOrDefaultAsync();
 	}
 
-	public async Task<Account> GetAccountAsync(string username)
+	public async Task<Account?> GetAccountAsync(string username)
 	{
 		return await accountCollection.Find(account => account.Username == username).FirstOrDefaultAsync();
 	}
 
-	public async Task<Account> GetAccountAsync(string username, string password)
+	public async Task<Account?> GetAccountAsync(string username, string password)
 	{
 		return await accountCollection.Find(account =>
 			account.Username == username &&
