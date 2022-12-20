@@ -21,9 +21,24 @@ public class JsonAPIController : ControllerBase
 		return Content(content, mimeJson);
 	}
 
+	public ContentResult Json(string content, int status)
+	{
+		// i cant find a better way than to do this.
+		var r = Content(content, mimeJson);
+		r.StatusCode = status;
+		return r;
+	}
+
 	public ContentResult Json(JToken content)
 	{
 		return Json(content.ToString(Newtonsoft.Json.Formatting.None));
+	}
+
+	public ContentResult Json(JToken content, int status)
+	{
+		var r = Json(content.ToString(Newtonsoft.Json.Formatting.None));
+		r.StatusCode = status;
+		return r;
 	}
 
 	public ContentResult Json(JToken content, bool humanReadable)
@@ -32,8 +47,21 @@ public class JsonAPIController : ControllerBase
 		return Json(content.ToString(formatting));
 	}
 
+	public ContentResult Json(JToken content, int status, bool humanReadable)
+	{
+		var formatting = humanReadable ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+		var r = Json(content.ToString(formatting));
+		r.StatusCode = status;
+		return r;
+	}
+
 	public JsonResult Json(object? content)
 	{
 		return new JsonResult(content);
+	}
+
+	public JsonResult Json(object? content, int status)
+	{
+		return new JsonResult(content) { StatusCode = status };
 	}
 }
