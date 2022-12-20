@@ -28,9 +28,13 @@ public class AccountController : ControllerBase
 	[HttpGet("public/account/{id}")]
 	public async Task<ActionResult<string>> GetAccount(string id)
 	{
-		logger.Log(LogLevel.Information, $"Looking for account {id}");
-		var epicID = new EpicID(id);
-		var account = await accountService.GetAccountAsync(epicID);
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+			return Unauthorized();
+
+		logger.Log(LogLevel.Information, $"{authenticatedUser.Session.AccountID} is looking for account {id}");
+
+		EpicID eid = EpicID.FromString(id);
+		var account = await accountService.GetAccountAsync(eid);
 		if (account == null)
 			return NotFound();
 
@@ -61,13 +65,13 @@ public class AccountController : ControllerBase
 	[HttpGet("public/account")]
 	public async Task<ActionResult<string>> GetAccounts([FromQuery(Name = "accountId")] List<EpicID> accountIDs)
 	{
-		logger.LogInformation($"List accounts: {string.Join(", ", accountIDs)}");
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+			return Unauthorized();
 
 		// TODO: remove duplicates from accountIDs
 		var accounts = await accountService.GetAccountsAsync(accountIDs);
-		if (accounts is null)
-			return NotFound();
 
+		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for {string.Join(", ", accounts.Select(x => x.ID.ToString()))}");
 
 		// create json response
 		JArray arr = new JArray();
@@ -94,24 +98,24 @@ public class AccountController : ControllerBase
 
 	#region UNIMPORTANT API
 
-	[HttpGet("accounts/{idString}/metadata")]
-	public ActionResult<string> GetMetadata(string idString)
+	[HttpGet("accounts/{id}/metadata")]
+	public ActionResult<string> GetMetadata(string id)
 	{
-		EpicID id = new EpicID(idString);
+		EpicID eid = EpicID.FromString(id);
 
-		logger.LogInformation($"Get metadata of {id}");
+		logger.LogInformation($"Get metadata of {eid}");
 
 		// unknown structure, but epic always seems to respond with this
 		return "{}";
 	}
 
-	[HttpGet("public/account/{idString}/externalAuths")]
-	public ActionResult<string> GetExternalAuths(string idString)
+	[HttpGet("public/account/{id}/externalAuths")]
+	public ActionResult<string> GetExternalAuths(string id)
 	{
-		EpicID id = new EpicID(idString);
+		EpicID eid = EpicID.FromString(id);
 
-		logger.LogInformation($"Get external auths of {id}");
-		// we dont really care about these, but structure for github is the following:
+		logger.LogInformation($"Get external auths of {eid}");
+		// we dont really care about these, but structure for my github externalAuth is the following:
 		/*
 		[{
 			"accountId": "0b0f09b400854b9b98932dd9e5abe7c5", "type": "github",
