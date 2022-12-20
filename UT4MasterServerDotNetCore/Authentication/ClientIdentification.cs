@@ -1,13 +1,8 @@
-﻿using System;
-using System.Buffers.Text;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
-namespace UT4MasterServer.Authorization
-{
-    public class ClientIdentification
+namespace UT4MasterServer.Authorization;
+
+public class ClientIdentification
     {
         public static ClientIdentification Launcher = new ClientIdentification(new EpicID("34a02cf8f4414e29b15921876da36f9a"), new EpicID("daafbccc737745039dffe53d94fc76cf"));
         public static ClientIdentification Game = new ClientIdentification(new EpicID("1252412dc7704a9690f6ea4611bc81ee"), new EpicID("2ca0c925b4674852bff92b26f8322434"));
@@ -50,4 +45,3 @@ namespace UT4MasterServer.Authorization
             return $"{ID}:{Secret}";
         }
     }
-}
