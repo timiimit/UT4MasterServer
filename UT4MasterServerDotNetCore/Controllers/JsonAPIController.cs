@@ -21,9 +21,15 @@ public class JsonAPIController : ControllerBase
 		return Content(content, mimeJson);
 	}
 
-	public JsonResult Json(JObject content)
+	public ContentResult Json(JToken content)
 	{
-		return new JsonResult(content.ToString(Newtonsoft.Json.Formatting.None));
+		return Json(content.ToString(Newtonsoft.Json.Formatting.None));
+	}
+
+	public ContentResult Json(JToken content, bool humanReadable)
+	{
+		var formatting = humanReadable ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+		return Json(content.ToString(formatting));
 	}
 
 	public JsonResult Json(object? content)

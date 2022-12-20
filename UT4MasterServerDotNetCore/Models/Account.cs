@@ -41,20 +41,91 @@ public class Account
 	[BsonElement("Password")]
 	public string Password { get; set; } = string.Empty;
 
-	[BsonElement("LastLogin")]
-	public DateTime LastLogin { get; set; } = DateTime.UtcNow;
+	[BsonElement("CreatedAt")]
+	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-	[BsonElement("Created")]
-	public DateTime Created { get; set; } = DateTime.UtcNow;
+	[BsonElement("UpdatedAt")]
+	public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-	[BsonElement("XP")]
-	public int XP { get; set; } = 0;
+	[BsonElement("LastLoginAt")]
+	public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
 
 	[BsonElement("Friends")]
 	public List<EpicID> Friends { get; set; } = new List<EpicID>();
 
 	[BsonElement("BlockedUsers")]
 	public List<EpicID> BlockedUsers { get; set; } = new List<EpicID>();
+
+	//[BsonElement("ProfileChangeCount")]
+	//public int ProfileChangeCount { get; set; } = 0;
+
+	/************** Game Specific **************/
+
+	[BsonElement("CountryFlag")]
+	public string CountryFlag { get; set; } = "Slovenia"; // TODO: find default value
+
+	[BsonElement("Avatar")]
+	public string Avatar { get; set; } = "UT.Avatar.1"; // TODO: find default value
+
+	[BsonElement("GoldStars")]
+	public int GoldStars { get; set; } = 0;
+
+	[BsonElement("BlueStars")]
+	public int BlueStars { get; set; } = 0;
+
+	[BsonElement("XP")]
+	public int XP { get; set; } = 0;
+
+	[BsonElement("XPLastMatch")]
+	public int XPLastMatch { get; set; } = 0;
+
+	[BsonElement("XPLastMatchAt")]
+	public DateTime XPLastMatchAt { get; set; } = 0;
+
+
+	[BsonIgnore]
+	public float Level
+	{
+		get
+		{
+			// calculation for levels over 50 from UT4UU - port from c++ to c# is untested
+			// find required xp per certain level here: https://docs.google.com/spreadsheets/d/1gvoxW2UMk8_O1E1emObkQNy1kzPOQ1Wmu0YvslMAwyE
+
+			ulong xp_in = (ulong)XP;
+			if (xp_in < 50)
+				return 1;
+			if (xp_in < 150)
+				return 2;
+			// note: req to next level, so element 0 is XP required for level 1
+			ulong xp = 0;
+			ulong Increment = 50;
+			ulong Step = 50;
+			xp = Step;
+
+			ulong incrementBoost = 0;
+			ulong incrementBoostLevelsStep = 10;
+			ulong incrementBoostLevelChange = 10;
+
+			ulong level = 3;
+			while (xp <= xp_in)
+			{
+				Increment += incrementBoost;
+				if (level == incrementBoostLevelChange)
+				{
+					incrementBoost += 5;
+					incrementBoostLevelsStep += 10;
+					incrementBoostLevelChange += incrementBoostLevelsStep;
+				}
+				Step += Increment;
+				xp += Step;
+				level++;
+			}
+			return level - 2;
+		}
+	}
+
+	[BsonIgnore]
+	public int LevelStockLimited => Math.Min(50, (int)Level);
 
 
 
