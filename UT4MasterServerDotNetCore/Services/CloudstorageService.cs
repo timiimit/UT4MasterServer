@@ -66,8 +66,6 @@ public class CloudstorageService
 			x => x.AccountID == accountID &&
 			x.Filename == filename
 		);
-		if (!await cursor.AnyAsync())
-			return null;
 		return await cursor.SingleOrDefaultAsync();
 	}
 

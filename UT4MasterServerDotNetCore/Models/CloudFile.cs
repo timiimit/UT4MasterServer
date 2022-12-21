@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace UT4MasterServer.Models;
 
-[BsonNoId]
+[BsonIgnoreExtraElements]
 public class CloudFile
 {
 	// ID = AccountID + Filename = unique key
@@ -29,6 +29,5 @@ public class CloudFile
 	public byte[] RawContent { get; set; } = Array.Empty<byte>();
 
 	[BsonElement("Length")]
-	[BsonRepresentation(MongoDB.Bson.BsonType.Binary)]
 	public int Length { get; set; } = 0;
 }

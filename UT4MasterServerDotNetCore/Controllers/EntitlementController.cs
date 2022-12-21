@@ -18,7 +18,7 @@ namespace UT4MasterServer.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IActionResult> QueryProfile(string id)
+        public IActionResult QueryProfile(string id)
         {
 			// TODO: we should at least return entitlement for those 3 or so community made maps
 			//       that are in the game and need to normally be redeemed in store. it is important
@@ -47,8 +47,31 @@ namespace UT4MasterServer.Controllers
 				"groupEntitlement": false
 			  }]
 
+			[
+				{
+					"id": "47573a6c0df04f81908e652ffcab5f26",
+					"entitlementName": "UnrealTournament",
+					"namespace": "ut",
+					"catalogItemId": "b8538c739273426aa35a98220e258d55",
+					"accountId": "64bf8c6d81004e88823d577abe157373",
+					"identityId": "64bf8c6d81004e88823d577abe157373",
+					"entitlementType": "EXECUTABLE",
+					"grantDate": "2020-06-02T13:21:18.729Z",
+					"consumable": false,
+					"status": "ACTIVE",
+					"active": true,
+					"useCount": 0,
+					"originalUseCount": 0,
+					"platformType": "EPIC",
+					"created": "2020-06-02T13:21:18.732Z",
+					"updated": "2020-06-02T13:21:18.732Z",
+					"groupEntitlement": false,
+					"country": "SI"
+				}
+			]
+
             */
-			return Json("[]");
+			return Json("{}");
         }
     }
 }

@@ -12,7 +12,7 @@ public enum CodeKind
 /// class common for all types of codes. these basically exchange identity of user between applications.
 /// they expire after certain amount of time.
 /// </summary>
-[BsonNoId]
+[BsonIgnoreExtraElements]
 public class Code
 {
 	public EpicID AccountID { get; set; }

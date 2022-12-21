@@ -29,6 +29,7 @@ public class SessionController : JsonAPIController
 		[FromForm(Name = "grant_type")] string grantType,
 		[FromForm(Name = "includePerms")] bool? includePerms,
 		[FromForm(Name = "code")] string? code,
+		[FromForm(Name = "exchange_code")] string? exchangeCode,
 		[FromForm(Name = "refresh_token")] string? refreshToken,
 		[FromForm(Name = "username")] string? username,
 		[FromForm(Name = "password")] string? password)
@@ -42,6 +43,7 @@ public class SessionController : JsonAPIController
 		switch (grantType)
 		{
 			case "authorization_code":
+			{
 				if (code != null)
 				{
 					var codeAuth = await sessionService.TakeCodeAsync(CodeKind.Authorization, code);
@@ -49,20 +51,25 @@ public class SessionController : JsonAPIController
 						session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
 				}
 				break;
+			}
             case "refresh_token":
+			{
 				if (refreshToken != null)
 				{
 					session = await sessionService.RefreshSessionAsync(refreshToken);
 				}
 				break;
+			}
             case "exchange_code":
-				if (code != null)
+			{
+				if (exchangeCode != null)
 				{
-					var codeExchange = await sessionService.TakeCodeAsync(CodeKind.Exchange, code);
+					var codeExchange = await sessionService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
 					if (codeExchange != null)
 						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
 				}
 				break;
+			}
 			case "client_credentials":
 			{
 				// always just userless session, usually used for access to public cloudstorage
@@ -70,6 +77,7 @@ public class SessionController : JsonAPIController
 				break;
 			}
 			case "password":
+			{
 				// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
 				//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
 				//
@@ -84,11 +92,14 @@ public class SessionController : JsonAPIController
 						session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
 				}
 				break;
+			}
 			default:
+			{
 				return BadRequest(new ErrorResponse()
 				{
 					Error = "invalid_grant"
 				});
+			}
 		}
 
 		if (session == null) // only here to prevent null warnings, should never happen
@@ -196,12 +207,28 @@ public class SessionController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return NoContent();
 
-		if (killType == "OTHERS_ACCOUNT_CLIENT_SERVICE")
+		if (killType == "ALL")
 		{
-			await sessionService.RemoveOtherSessionsAsync(user.Session.ClientID, user.Session.ID);
-			logger.LogInformation($"Deleted all sessions in client '{user.Session.ClientID}', except '{user.Session.ID}'");
+			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
 		}
-		// TODO: find other valid strings
+		else if (killType == "OTHERS")
+		{
+			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, user.Session.ID);
+		}
+		else if (killType == "ALL_ACCOUNT_CLIENT")
+		{
+			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
+		}
+		else if (killType == "OTHERS_ACCOUNT_CLIENT")
+		{
+			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+		}
+		else if (killType == "OTHERS_ACCOUNT_CLIENT_SERVICE")
+		{
+			// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
+			// perhaps service as in epic games launcher and/or website?
+			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+		}
 
 		return NoContent();
 	}
@@ -209,8 +236,11 @@ public class SessionController : JsonAPIController
 	// TODO: Make sure this does what it's supposed to. 200 OK should be enough for the client to know the session is still valid.
 	[HttpGet]
 	[Route("verify")]
-	public IActionResult Verify()
+	public async Task<IActionResult> Verify()
 	{
+		if (User.Identity is not EpicUserIdentity user)
+			return NoContent();
+
 		// no refresh needed, but we should respond with this:
 		/*
 		
@@ -233,7 +263,38 @@ public class SessionController : JsonAPIController
 		}
 
 		*/
-		return new OkResult();
+
+		string auth_method = user.Session.CreationMethod switch
+		{
+			SessionCreationMethod.AuthorizationCode => "authorization_code",
+			SessionCreationMethod.ExchangeCode => "exchange_code",
+			SessionCreationMethod.ClientCredentials => "client_credentials",
+			SessionCreationMethod.Password => "password",
+			_ => throw new NotImplementedException(),
+		};
+
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+
+		var obj = new JObject()
+		{
+			{ "token", user.AccessToken },
+			{ "session_id", user.Session.ID.ToString() },
+			{ "token_type", "bearer" },
+			{ "client_id", user.Session.ClientID.ToString() },
+			{ "internal_client", false },
+			{ "client_service", "ut" },
+			{ "account_id", user.Session.AccountID.ToString() },
+			{ "expires_in", user.Session.AccessToken.ExpirationDurationInSeconds },
+			{ "expires_at", user.Session.AccessToken.ExpirationTime.ToStringISO() },
+			{ "auth_method", auth_method },
+			{ "display_name", account?.Username },
+			{ "app", "ut" },
+			{ "in_app_id", user.Session.AccountID.ToString() },
+			{ "device_id", "ee64ee5f292b45f089a368cb7e43d82d" }, // TODO: figure out proper handling of device id
+			{ "perms", new JArray() }, // TODO: none for now
+		};
+
+		return Json(obj);
 	}
   
 	//[HttpPost]

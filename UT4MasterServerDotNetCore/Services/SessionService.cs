@@ -88,9 +88,13 @@ public class SessionService
 		await sessionCollection.DeleteOneAsync(x => x.ID == id);
 	}
 
-	public async Task RemoveOtherSessionsAsync(EpicID clientID, EpicID sessionID)
+	public async Task RemoveSessionsWithFilterAsync(EpicID includeClientID, EpicID includeAccountID, EpicID excludeSessionID)
 	{
-		await sessionCollection.DeleteManyAsync(x => x.ClientID == clientID && x.ID != sessionID);
+		await sessionCollection.DeleteManyAsync(x =>
+			(includeClientID.IsEmpty || x.ClientID == includeClientID) &&
+			(includeAccountID.IsEmpty || x.AccountID == includeAccountID) &&
+			(excludeSessionID.IsEmpty || x.ID != excludeSessionID)
+		);
 	}
 
 	public async Task<Session?> InvalidateExpiredSession(Session? session)
