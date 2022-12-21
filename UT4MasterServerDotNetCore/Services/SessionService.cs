@@ -21,14 +21,15 @@ public class SessionService
 
 	public async Task<Code?> CreateCodeAsync(CodeKind kind, EpicID accountID, EpicID clientID)
 	{
-		var code = new Code(accountID, clientID, Token.Generate(TimeSpan.FromMinutes(5)), kind);
-		await codeCollection.InsertOneAsync(code);
-		return code;
+		var ret = new Code(accountID, clientID, Token.Generate(TimeSpan.FromMinutes(5)), kind);
+		await codeCollection.InsertOneAsync(ret);
+		return ret;
 	}
 
 	public async Task<Code?> TakeCodeAsync(CodeKind kind, string code)
 	{
-		return await codeCollection.FindOneAndDeleteAsync(x => x.Token.Value == code);
+		var ret = await codeCollection.FindOneAndDeleteAsync(x => x.Token.Value == code && x.Kind == kind);
+		return ret;
 	}
 
 	#endregion
@@ -48,20 +49,13 @@ public class SessionService
 			s.AccountID == account &&
 			s.ClientID == client
 		);
-		if (!cursor.Any())
-			return null;
-
-		return await InvalidateExpiredSession(await cursor.SingleAsync());
+		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
 	public async Task<Session?> GetSessionAsync(EpicID id)
 	{
-		var cursor = await sessionCollection.FindAsync(s => 
-			s.ID == id
-		);
-		if (!cursor.Any())
-			return null;
-		return await InvalidateExpiredSession(await cursor.SingleAsync());
+		var cursor = await sessionCollection.FindAsync(s => s.ID == id);
+		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
 	public async Task<Session?> GetSessionAsync(string accessToken)
@@ -69,9 +63,7 @@ public class SessionService
 		var cursor = await sessionCollection.FindAsync(s => 
 			s.AccessToken.Value == accessToken
 		);
-		if (!cursor.Any())
-			return null;
-		return await InvalidateExpiredSession(await cursor.SingleAsync());
+		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
 	public async Task<Session?> RefreshSessionAsync(string refreshToken)
@@ -79,10 +71,7 @@ public class SessionService
 		var cursor = await sessionCollection.FindAsync(s =>
 			s.RefreshToken.Value == refreshToken
 		);
-		if (!cursor.Any())
-			return null;
-
-		var session = await cursor.SingleAsync();
+		var session = await cursor.SingleOrDefaultAsync();
         session.Refresh();
 		await UpdateSessionAsync(session);
         return session;
@@ -99,12 +88,6 @@ public class SessionService
 		await sessionCollection.DeleteOneAsync(x => x.ID == id);
 	}
 
-	/// <summary>
-	/// Removes all sessions on specified client except the one which requested this action
-	/// </summary>
-	/// <param name="clientID">client containing multiple sessions</param>
-	/// <param name="sessionID">session to not remove</param>
-	/// <returns></returns>
 	public async Task RemoveOtherSessionsAsync(EpicID clientID, EpicID sessionID)
 	{
 		await sessionCollection.DeleteManyAsync(x => x.ClientID == clientID && x.ID != sessionID);
