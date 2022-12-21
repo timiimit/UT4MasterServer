@@ -56,6 +56,7 @@ public class AccountController : JsonAPIController
 		obj.Add("canUpdateDisplayName", true);
 		obj.Add("tfaEnabled", true);
 		obj.Add("emailVerified", true);
+		obj.Add("minorVerified", false);
 		obj.Add("minorExpected", false);
 		obj.Add("minorStatus", "UNKNOWN");
 		obj.Add("cabinedMode", false);
@@ -132,6 +133,7 @@ public class AccountController : JsonAPIController
 	}
 
 	[HttpGet("epicdomains/ssodomains")]
+	[AllowAnonymous]
 	public IActionResult GetSSODomains()
 	{
 		logger.LogInformation(@"Get SSO domains");
@@ -149,7 +151,8 @@ public class AccountController : JsonAPIController
 	[AllowAnonymous]
 	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password)
 	{
-		if (await accountService.GetAccountAsync(username) != null)
+		var account = await accountService.GetAccountAsync(username);
+		if (account != null)
 		{
 			logger.LogInformation($"Could not register duplicate account: {username}");
 			// This is a generic HTTP 400. A 409 (Conflict) might be more appropriate?	

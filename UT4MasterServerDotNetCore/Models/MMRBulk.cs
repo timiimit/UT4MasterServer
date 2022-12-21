@@ -14,7 +14,7 @@ public class MMRBulk
 	public List<int> Ratings { get; set; } = new List<int>();
 
 	[JsonProperty("numGamesPlayed")]
-	public List<int> PlayCount { get; set; } = new List<int>();
+	public List<int> NumGamesPlayed { get; set; } = new List<int>();
 }
 
 // MMRBulk in an ugly ut structure. rather use something

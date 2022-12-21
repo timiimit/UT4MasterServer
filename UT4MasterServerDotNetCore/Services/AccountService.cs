@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
+using MongoDB.Driver.Core.Operations;
 
 namespace UT4MasterServer.Services;
 
@@ -32,16 +33,12 @@ public class AccountService
 	public async Task<Account?> GetAccountAsync(EpicID id)
 	{
 		var cursor = await accountCollection.FindAsync(account => account.ID == id);
-		if (!await cursor.AnyAsync())
-			return null;
 		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<Account?> GetAccountAsync(string username)
 	{
 		var cursor = await accountCollection.FindAsync(account => account.Username == username);
-		if (!await cursor.AnyAsync())
-			return null;
 		return await cursor.SingleOrDefaultAsync();
 	}
 
@@ -51,15 +48,12 @@ public class AccountService
 			account.Username == username &&
 			account.Password == GetPasswordHash(password)
 		);
-		if (!await cursor.AnyAsync())
-			return null;
 		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<List<Account>> GetAccountsAsync(List<EpicID> ids)
 	{
-		var filter = Builders<Account>.Filter.In(nameof(Account.ID), ids);
-		var result = await accountCollection.FindAsync(filter);
+		var result = await accountCollection.FindAsync(account => ids.Contains(account.ID));
 		return await result.ToListAsync();
 	}
 

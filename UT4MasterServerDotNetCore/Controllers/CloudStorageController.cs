@@ -45,7 +45,9 @@ namespace UT4MasterServer.Controllers
 			
 			*/
 
-			var files = await cloudstorageService.ListFilesAsync(EpicID.FromString(id));
+			var eid = EpicID.FromString(id);
+
+			var files = await cloudstorageService.ListFilesAsync(eid);
 
 			var arr = new JArray();
 			foreach (var file in files)
@@ -60,6 +62,10 @@ namespace UT4MasterServer.Controllers
 				obj.Add("uploaded", file.UploadedAt.ToStringISO());
 				obj.Add("storageType", "S3");
 				obj.Add("accountId", id);
+				if (eid.IsEmpty)
+				{
+					obj.Add("doNotCache", false);
+				}
 				arr.Add(obj);
 			}
 
@@ -74,7 +80,7 @@ namespace UT4MasterServer.Controllers
 			var file = await cloudstorageService.GetFileAsync(EpicID.FromString(id), filename);
 			if (file == null)
 			{
-				return Json(new ErrorResponse() { ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}" }, 404);
+				return Json(new ErrorResponse() { ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}" }, StatusCodes.Status204NoContent);
 			}
 
 			return new FileContentResult(file.RawContent, "application/octet-stream");

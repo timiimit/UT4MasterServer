@@ -4,8 +4,18 @@ namespace UT4MasterServer.Authorization;
 
 public class ClientIdentification
 {
-	public static ClientIdentification Launcher = new ClientIdentification(EpicID.FromString("34a02cf8f4414e29b15921876da36f9a"), EpicID.FromString("daafbccc737745039dffe53d94fc76cf"));
-	public static ClientIdentification Game = new ClientIdentification(EpicID.FromString("1252412dc7704a9690f6ea4611bc81ee"), EpicID.FromString("2ca0c925b4674852bff92b26f8322434"));
+	public static ClientIdentification Launcher = new ClientIdentification(
+		EpicID.FromString("34a02cf8f4414e29b15921876da36f9a"),
+		EpicID.FromString("daafbccc737745039dffe53d94fc76cf")
+	);
+	public static ClientIdentification Game = new ClientIdentification(
+		EpicID.FromString("1252412dc7704a9690f6ea4611bc81ee"),
+		EpicID.FromString("2ca0c925b4674852bff92b26f8322434")
+	);
+	public static ClientIdentification ServerInstance = new ClientIdentification(
+		EpicID.FromString("6ff43e743edc4d1dbac3594877b4bed9"),
+		EpicID.FromString("54619d6f84d443e195200b54ab649a53")
+	);
 
 	//public static string GameAuthorization = "MTI1MjQxMmRjNzcwNGE5NjkwZjZlYTQ2MTFiYzgxZWU6MmNhMGM5MjViNDY3NDg1MmJmZjkyYjI2ZjgzMjI0MzQ=";
 

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
+using MongoDB.Driver.Linq;
 
 namespace UT4MasterServer.Models;
 
@@ -80,7 +81,7 @@ public class Account
 	public int XPLastMatch { get; set; } = 0;
 
 	[BsonElement("XPLastMatchAt")]
-	public DateTime XPLastMatchAt { get; set; } = DateTime.MinValue;
+	public DateTime XPLastMatchAt { get; set; } = DateTimeExtension.UnixTimestampStartOfTime;
 
 
 	[BsonIgnore]

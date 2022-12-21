@@ -3,34 +3,11 @@ using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization;
 using System.Text.Encodings.Web;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Controllers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer;
-
-public class BasicHandler : AuthenticationHandler<AuthenticationSchemeOptions>
-{
-	public BasicHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
-	{
-	}
-
-	protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-	{
-		throw new NotImplementedException();
-	}
-}
-
-public class BearerHandler : AuthenticationHandler<AuthenticationSchemeOptions>
-{
-	public BearerHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
-	{
-	}
-
-	protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-	{
-		throw new NotImplementedException();
-	}
-}
 
 public static partial class Program
 {
@@ -49,15 +26,13 @@ public static partial class Program
 		builder.Services.Configure<UT4EverDatabaseSettings>(
 		  builder.Configuration.GetSection("UT4EverDatabase")
 		);
-		//builder.Services.ConfigureSwaggerGen(options =>
-		//{
-		//	options.OperationFilter<SwaggerAuthorizationHeaderOperationFilter>();
-		//});
 		builder.Services
 		  .AddSingleton<AccountService>()
 		  .AddSingleton<SessionService>()
 		  .AddSingleton<CloudstorageService>()
-		  .AddSingleton<AccountDataService>();	
+		  .AddSingleton<UnrealTournamentGameController>()
+		  .AddSingleton<UnrealTournamentStatsController>()
+		  .AddSingleton<UnrealTournamentMatchmakingController>();
 
 		builder.Services
 		  .AddAuthentication(/*by default there is no authentication*/)

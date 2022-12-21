@@ -21,14 +21,15 @@ public class SessionService
 
 	public async Task<Code?> CreateCodeAsync(CodeKind kind, EpicID accountID, EpicID clientID)
 	{
-		var code = new Code(accountID, clientID, Token.Generate(TimeSpan.FromMinutes(5)), kind);
-		await codeCollection.InsertOneAsync(code);
-		return code;
+		var ret = new Code(accountID, clientID, Token.Generate(TimeSpan.FromMinutes(5)), kind);
+		await codeCollection.InsertOneAsync(ret);
+		return ret;
 	}
 
 	public async Task<Code?> TakeCodeAsync(CodeKind kind, string code)
 	{
-		return await codeCollection.FindOneAndDeleteAsync(x => x.Token.Value == code);
+		var ret = await codeCollection.FindOneAndDeleteAsync(x => x.Token.Value == code && x.Kind == kind);
+		return ret;
 	}
 
 	#endregion
@@ -44,44 +45,36 @@ public class SessionService
 
 	public async Task<Session?> GetSessionAsync(EpicID account, EpicID client)
 	{
-		var session = await sessionCollection.Find(s =>
+		var cursor = await sessionCollection.FindAsync(s =>
 			s.AccountID == account &&
 			s.ClientID == client
-		).FirstOrDefaultAsync();
-		return await InvalidateExpiredSession(session);
+		);
+		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
 	public async Task<Session?> GetSessionAsync(EpicID id)
 	{
-		var session = await sessionCollection.Find(session => 
-			session.ID == id
-		).FirstOrDefaultAsync();
-
-		return await InvalidateExpiredSession(session);
+		var cursor = await sessionCollection.FindAsync(s => s.ID == id);
+		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
 	public async Task<Session?> GetSessionAsync(string accessToken)
 	{
-		var session = await sessionCollection.Find(session => 
-			session.AccessToken.Value == accessToken
-		).FirstOrDefaultAsync();
-		return await InvalidateExpiredSession(session);
+		var cursor = await sessionCollection.FindAsync(s => 
+			s.AccessToken.Value == accessToken
+		);
+		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
 	public async Task<Session?> RefreshSessionAsync(string refreshToken)
 	{
-		var session = await sessionCollection.Find(session =>
-			session.RefreshToken.Value == refreshToken
-		).FirstOrDefaultAsync();
-
-		if (session != null)
-		{
-            session.Refresh();
-			await UpdateSessionAsync(session);
-            return session;
-        }
-
-		return null;
+		var cursor = await sessionCollection.FindAsync(s =>
+			s.RefreshToken.Value == refreshToken
+		);
+		var session = await cursor.SingleOrDefaultAsync();
+        session.Refresh();
+		await UpdateSessionAsync(session);
+        return session;
 	}
 
 	public async Task UpdateSessionAsync(Session updatedSession)
@@ -95,25 +88,24 @@ public class SessionService
 		await sessionCollection.DeleteOneAsync(x => x.ID == id);
 	}
 
-	/// <summary>
-	/// Removes all sessions on specified client except the one which requested this action
-	/// </summary>
-	/// <param name="clientID">client containing multiple sessions</param>
-	/// <param name="sessionID">session to not remove</param>
-	/// <returns></returns>
-	public async Task RemoveOtherSessionsAsync(EpicID clientID, EpicID sessionID)
+	public async Task RemoveSessionsWithFilterAsync(EpicID includeClientID, EpicID includeAccountID, EpicID excludeSessionID)
 	{
-		await sessionCollection.DeleteManyAsync(x => x.ClientID == clientID && x.ID != sessionID);
+		await sessionCollection.DeleteManyAsync(x =>
+			(includeClientID.IsEmpty || x.ClientID == includeClientID) &&
+			(includeAccountID.IsEmpty || x.AccountID == includeAccountID) &&
+			(excludeSessionID.IsEmpty || x.ID != excludeSessionID)
+		);
 	}
 
-	public async Task<Session?> InvalidateExpiredSession(Session session)
+	public async Task<Session?> InvalidateExpiredSession(Session? session)
 	{
-		if (!session.HasExpired)
-		{
-			return session;
-		}
+		if (session == null)
+			return null;
 
-		await sessionCollection.DeleteOneAsync(_session => _session.AccessToken == session.AccessToken);
+		if (!session.HasExpired)
+			return session;
+
+		await sessionCollection.DeleteOneAsync(s => s.AccessToken == session.AccessToken);
 		return null;
 	}
 
