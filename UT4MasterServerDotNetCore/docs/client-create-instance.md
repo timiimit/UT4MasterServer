@@ -1,4 +1,4 @@
-## Client Joining Hub Flow
+## Client Creating Instance Flow
 
 These are the calls specific to a client creating a hub instance.
 
