@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson.IO;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authorization;
 using UT4MasterServer.Models;
@@ -7,70 +9,69 @@ using UT4MasterServer.Services;
 namespace UT4MasterServer.Controllers
 {
     [ApiController]
-    [Route("ut/api")]
+    [Route("ut/api/matchmaking")]
     [AuthorizeBearer]
     [Produces("application/json")]
     public class UnrealTournamentMatchmakingController : JsonAPIController
 	{
         private readonly ILogger<SessionController> logger;
-		private readonly AccountService accountService;
+		private readonly MatchmakingService matchmakingService;
 
-		public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, AccountService accountService)
+		public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, MatchmakingService matchmakingService)
         {
             this.logger = logger;
-			this.accountService = accountService;
+			this.matchmakingService = matchmakingService;
 
 		}
 
-		[HttpPost("matchmaking/session/matchMakingRequest")]
-		public IActionResult ListHubs([FromBody] string body)
+		[AuthorizeBasic]
+		[HttpPost("session")]
+		public IActionResult StartGameServer()
 		{
-			/*
-			
-			INPUT example 1:
-			{
-				"criteria": [
-					{
-						"type": "NOT_EQUAL",
-						"key": "UT_GAMEINSTANCE_i",
-						"value": 1
-					},
-					{
-						"type": "NOT_EQUAL",
-						"key": "UT_RANKED_i",
-						"value": 1
-					}
-				],
-				"buildUniqueId": "256652735",
-				"maxResults": 10000
-			}
+			if (User.Identity is not EpicUserIdentity client)
+				return Unauthorized();
 
-			INPUT example 2:
-			{
-				"criteria": [
-					{
-						"type": "EQUAL",
-						"key": "UT_SERVERVERSION_s",
-						"value": "3525360"
-					},
-					{
-						"type": "EQUAL",
-						"key": "UT_SERVERINSTANCEGUID_s",
-						"value": "022854C6190A1605003202180546F2E7"
-					}
-				],
-				"buildUniqueId": "256652735",
-				"maxResults": 1
-			}
+			// TODO: parse game server
+			var server = new GameServer("", "", "");
 
-			Response is in <repo_root>/UT4MasterServer/HubListResponse.json
-			Model for response is already there in Hub.cs
+			matchmakingService.Add(client.Session.ID, server);
 
-			*/
 			return Ok();
 		}
 
-		[HttpPost("matchmaking/session/{hubID}/join")] // value in hubID is a guess
+		[HttpPut("session/{id}")]
+		public IActionResult UpdateGameServer(string id)
+		{
+
+			return Ok();
+		}
+
+		[HttpPost("session/matchMakingRequest")]
+		public IActionResult ListGameServers([FromBody] GameServerFilter filter)
+		{
+
+			var list = new GameServer[]
+			{
+				new GameServer("we", "[DS]dallastn-22938", "192.223.24.243"),
+				new GameServer("cracked", "[DS]dallastn-22938", "192.223.24.243"),
+				new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"),
+				new GameServer("code", "[DS]dallastn-22938", "192.223.24.243"),
+				new GameServer("and", "[DS]dallastn-22938", "192.223.24.243"),
+				new GameServer("entered", "[DS]dallastn-22938", "192.223.24.243"),
+				new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"),
+				new GameServer("matrix", "[DS]dallastn-22938", "192.223.24.243"),
+			};
+
+			var arr = new JArray();
+			foreach (var server in list)
+			{
+				arr.Add(server.ToJson(true));
+			}
+
+			return Json(arr);
+		}
+
+		[HttpPost("session/{hubID}/join")] // value in hubID is a guess
 		public IActionResult JoinHub(string hubID, [FromQuery] string accountID)
 		{
 			return NoContent(); // correct response

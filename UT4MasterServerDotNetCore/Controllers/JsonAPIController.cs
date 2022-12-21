@@ -2,7 +2,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace UT4MasterServer.Controllers;
 
@@ -64,12 +66,12 @@ public class JsonAPIController : ControllerBase
 	[NonAction]
 	public JsonResult Json(object? content)
 	{
-		return new JsonResult(content);
+		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } });
 	}
 
 	[NonAction]
 	public JsonResult Json(object? content, int status)
 	{
-		return new JsonResult(content) { StatusCode = status };
+		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
 	}
 }
