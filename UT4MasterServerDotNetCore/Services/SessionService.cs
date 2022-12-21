@@ -44,44 +44,48 @@ public class SessionService
 
 	public async Task<Session?> GetSessionAsync(EpicID account, EpicID client)
 	{
-		var session = await sessionCollection.Find(s =>
+		var cursor = await sessionCollection.FindAsync(s =>
 			s.AccountID == account &&
 			s.ClientID == client
-		).FirstOrDefaultAsync();
-		return await InvalidateExpiredSession(session);
+		);
+		if (!cursor.Any())
+			return null;
+
+		return await InvalidateExpiredSession(await cursor.SingleAsync());
 	}
 
 	public async Task<Session?> GetSessionAsync(EpicID id)
 	{
-		var session = await sessionCollection.Find(session => 
-			session.ID == id
-		).FirstOrDefaultAsync();
-
-		return await InvalidateExpiredSession(session);
+		var cursor = await sessionCollection.FindAsync(s => 
+			s.ID == id
+		);
+		if (!cursor.Any())
+			return null;
+		return await InvalidateExpiredSession(await cursor.SingleAsync());
 	}
 
 	public async Task<Session?> GetSessionAsync(string accessToken)
 	{
-		var session = await sessionCollection.Find(session => 
-			session.AccessToken.Value == accessToken
-		).FirstOrDefaultAsync();
-		return await InvalidateExpiredSession(session);
+		var cursor = await sessionCollection.FindAsync(s => 
+			s.AccessToken.Value == accessToken
+		);
+		if (!cursor.Any())
+			return null;
+		return await InvalidateExpiredSession(await cursor.SingleAsync());
 	}
 
 	public async Task<Session?> RefreshSessionAsync(string refreshToken)
 	{
-		var session = await sessionCollection.Find(session =>
-			session.RefreshToken.Value == refreshToken
-		).FirstOrDefaultAsync();
+		var cursor = await sessionCollection.FindAsync(s =>
+			s.RefreshToken.Value == refreshToken
+		);
+		if (!cursor.Any())
+			return null;
 
-		if (session != null)
-		{
-            session.Refresh();
-			await UpdateSessionAsync(session);
-            return session;
-        }
-
-		return null;
+		var session = await cursor.SingleAsync();
+        session.Refresh();
+		await UpdateSessionAsync(session);
+        return session;
 	}
 
 	public async Task UpdateSessionAsync(Session updatedSession)
@@ -106,14 +110,15 @@ public class SessionService
 		await sessionCollection.DeleteManyAsync(x => x.ClientID == clientID && x.ID != sessionID);
 	}
 
-	public async Task<Session?> InvalidateExpiredSession(Session session)
+	public async Task<Session?> InvalidateExpiredSession(Session? session)
 	{
-		if (!session.HasExpired)
-		{
-			return session;
-		}
+		if (session == null)
+			return null;
 
-		await sessionCollection.DeleteOneAsync(_session => _session.AccessToken == session.AccessToken);
+		if (!session.HasExpired)
+			return session;
+
+		await sessionCollection.DeleteOneAsync(s => s.AccessToken == session.AccessToken);
 		return null;
 	}
 
