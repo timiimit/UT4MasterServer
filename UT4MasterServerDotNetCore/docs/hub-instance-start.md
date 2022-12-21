@@ -1,12 +1,12 @@
-## Hub Instance Creation Flow
+# Hub Instance Creation Flow
 
 These are the calls specific to launching a hub instance.
 
-# Auth
+## Auth
 
 Identical to hub launch auth
 
-# Start Instance Session
+## Start Instance Session
 
 
 ```
@@ -78,7 +78,7 @@ GAMENAME_s: string // "Capture the Flag" aka gametype name
 UT_MATCHELO_i: int // probably min ELO required to join
 ```
 
-## Response
+### Response
 
 ```
 {

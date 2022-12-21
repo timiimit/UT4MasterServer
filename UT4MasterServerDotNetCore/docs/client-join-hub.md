@@ -1,8 +1,8 @@
-## Client Joining Hub Flow
+# Client Joining Hub Flow
 
 These are the calls specific to joining a hub lobby.
 
-# Query Profile
+## Query Profile
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/game/v2/profile/fd83abe496ca401497b5adf4e412bf2c/client/QueryProfile?profileId=profile0&rvn=3911 HTTP/1.1
@@ -23,7 +23,7 @@ Pragma: no-cache
 Similar to login flow `QueryProfile`, but uses `rvn=3911` instead of `-1` and a different response
 comes back.
 
-## Response
+### Response
 
 ```
 {
@@ -38,7 +38,7 @@ comes back.
 }
 ```
 
-# Get Hub Session Data
+## Get Hub Session Data
 
 ```
 GET https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/31a9890865de46b5af8b58105340cdc3 HTTP/1.1
@@ -56,7 +56,7 @@ Pragma: no-cache
 This gets all of the session data for the hub, in the same format as the responses to the PUT and
 POST requests made by the hub.
 
-# Join Hub
+## Join Hub
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/31a9890865de46b5af8b58105340cdc3/join?accountId=fd83abe496ca401497b5adf4e412bf2c HTTP/1.1

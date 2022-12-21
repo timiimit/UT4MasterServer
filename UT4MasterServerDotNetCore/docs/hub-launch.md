@@ -1,10 +1,9 @@
-
-## Hub Startup Flow
+# Hub Startup Flow
 
 These are the calls specific to launching a hub. There are other calls made to the
 cloudstorage endpoints, but they are the same calls made by clients.
 
-# Auth
+## Auth
 
 ```
 POST https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token HTTP/1.1
@@ -23,7 +22,7 @@ All hub and instance auth requests use the same basic auth data, where the usern
 `6ff43e743edc4d1dbac3594877b4bed9` and the password is `54619d6f84d443e195200b54ab649a53`
 
 
-# Start Hub Session
+## Start Hub Session
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session HTTP/1.1
@@ -95,7 +94,7 @@ followed by the system device name (`DESKTOP-IQJVTED`) followed by some numbers.
 ServerInstanceID=516E6C8C4595684421A2A3AB7BA704F6
 ```
 
-## Response
+### Response
 
 ```
 {
@@ -160,7 +159,7 @@ started: false        // whether or not the hub has started
 totalPlayers: 0
 ```
 
-# Update Hub Session
+## Update Hub Session
 
 ```
 PUT https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/4366368a402a4dd1adf3a9fd9fa15a36 HTTP/1.1
@@ -229,7 +228,7 @@ Pragma: no-cache
 Same deal as the initial announce, just with a PUT to update. For some reason sends a 
 strange `serverAddress` field. Response is in the same format as the initial POST.
 
-# Start Hub Session
+## Start Hub Session
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/4366368a402a4dd1adf3a9fd9fa15a36/start HTTP/1.1
@@ -246,7 +245,7 @@ Pragma: no-cache
 
 Sends no data, receives none back. Just a 204 response. Probably indicating that the hub is ready.
 
-# Update Hub Session
+## Update Hub Session
 
 ```
 PUT https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/4366368a402a4dd1adf3a9fd9fa15a36 HTTP/1.1
@@ -315,7 +314,7 @@ Pragma: no-cache
 Same as the initial PUT, but with a new `UT_MATCHSTATE_s`. Also has added spaces to the end of 
 `UT_SERVERNAME_s` and `UT_SERVERMOTD_s`
 
-# Heartbeat
+## Heartbeat
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/4366368a402a4dd1adf3a9fd9fa15a36/heartbeat HTTP/1.1

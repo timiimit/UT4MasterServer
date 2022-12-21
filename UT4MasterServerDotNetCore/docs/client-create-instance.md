@@ -1,8 +1,8 @@
-## Client Creating Instance Flow
+# Client Creating Instance Flow
 
 These are the calls specific to a client creating a hub instance.
 
-# Matchmaking Request
+## Matchmaking Request
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/matchMakingRequest HTTP/1.1
@@ -36,7 +36,7 @@ Pragma: no-cache
 
 The request criteria is static, except for the key for `UT_SERVERINSTANCEGUID_s`.
 
-## Response
+### Response
 
 ```
 [
@@ -100,7 +100,7 @@ This is the same format as is typical for a hub or instance launch. Note that th
 `UT_SERVERINSTANCEGUID_s` is what was sent in the request body. The `id` field is what is
 used for a client to make a request to join an instance.
 
-# Joining a Hub Instance
+## Joining a Hub Instance
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/e67b11a43927473ba1e89ca1e01a7140/join?accountId=fd83abe496ca401497b5adf4e412bf2c HTTP/1.1

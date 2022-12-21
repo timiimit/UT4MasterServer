@@ -1,8 +1,8 @@
-## Player Join Hub Flow
+# Player Join Hub Flow
 
 These are the calls that are made specific to a player joining a hub.
 
-# Join
+## Join
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/game/v2/profile/fd83abe496ca401497b5adf4e412bf2c/dedicated_server/QueryProfile?profileId=profile0&rvn=-1 HTTP/1.1
@@ -22,7 +22,7 @@ Pragma: no-cache
 
 POSTs a request to get the profile of the joined player.
 
-## Server Response
+### Server Response
 
 ```
 {
@@ -219,7 +219,7 @@ POSTs a request to get the profile of the joined player.
 
 Similar data that is returned to the client when it makes a QueryProfile request.
 
-# Update Players
+## Update Players
 
 ```
 POST https://ut-public-service-prod10.ol.epicgames.com/ut/api/matchmaking/session/4366368a402a4dd1adf3a9fd9fa15a36/players HTTP/1.1
@@ -243,6 +243,6 @@ Pragma: no-cache
 
 POSTs the new player list. Response is the usual hub update response format.
 
-# Update Hub Session
+## Update Hub Session
 
 Same as the PUT request and response in the initial hub launch sequence.
