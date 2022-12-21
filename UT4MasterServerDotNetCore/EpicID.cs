@@ -63,7 +63,7 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 		if (obj == null)
 			return false;
 
-		if (obj is not UT4MasterServer.EpicID)
+		if (obj is not EpicID)
 			return false;
 
 		var objUserID = (EpicID)obj;
@@ -78,6 +78,8 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 
 	public override string ToString()
 	{
+		if (ID == null)
+			return Empty.ToString();
 		return ID;
 	}
 

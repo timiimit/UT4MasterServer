@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization;
+using Newtonsoft.Json.Linq;
 using System.Text.Encodings.Web;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Controllers;
@@ -9,7 +11,7 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer;
 
-public static partial class Program
+public static class Program
 {
 	public static void Main(string[] args)
 	{
@@ -30,9 +32,7 @@ public static partial class Program
 		  .AddSingleton<AccountService>()
 		  .AddSingleton<SessionService>()
 		  .AddSingleton<CloudstorageService>()
-		  .AddSingleton<UnrealTournamentGameController>()
-		  .AddSingleton<UnrealTournamentStatsController>()
-		  .AddSingleton<UnrealTournamentMatchmakingController>();
+		  .AddSingleton<MatchmakingService>();
 
 		builder.Services
 		  .AddAuthentication(/*by default there is no authentication*/)
