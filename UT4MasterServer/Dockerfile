@@ -7,10 +7,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["UT4MasterServer.csproj", "."]
-RUN dotnet restore "./UT4MasterServer.csproj"
+COPY ["UT4MasterServer/UT4MasterServer.csproj", "UT4MasterServer/"]
+RUN dotnet restore "UT4MasterServer/UT4MasterServer.csproj"
 COPY . .
-WORKDIR "/src/."
+WORKDIR "/src/UT4MasterServer"
 RUN dotnet build "UT4MasterServer.csproj" -c Release -o /app/build
 
 FROM build AS publish
