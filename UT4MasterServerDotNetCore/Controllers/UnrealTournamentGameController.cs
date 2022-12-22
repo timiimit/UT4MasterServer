@@ -25,11 +25,16 @@ namespace UT4MasterServer.Controllers
 
 		}
 
-        [HttpPost("profile/{id}/client/QueryProfile")]
+        [HttpPost("profile/{id}/{clientKind}/QueryProfile")]
         public async Task<IActionResult> QueryProfile(string id,
+			string clientKind,
 			[FromQuery] string profileId,
 			[FromQuery] string rvn)
         {
+			bool isRequestSentFromClient = clientKind.ToLower() == "client";
+			bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
+
+
 			// i think "rvn" is revision number and it represents index of profile change entry.
 			// negative values probably mean index from back-to-front in array.
 
@@ -37,9 +42,9 @@ namespace UT4MasterServer.Controllers
 			var jsonBody = JObject.Parse(body);
 
 			// game sends empty json object as body
-			if (profileId != "profile0" || rvn != "-1" || jsonBody != JObject.Parse("{}"))
+			if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0" || rvn != "-1" || jsonBody != JObject.Parse("{}"))
 			{
-				logger.LogWarning($"QueryProfile received unexpected data! p:\"{profileId}\" rvn:\"{rvn}\" body:\"{body}\"");
+				logger.LogWarning($"QueryProfile received unexpected data! k:\"{clientKind}\" p:\"{profileId}\" rvn:\"{rvn}\" body:\"{body}\"");
             }
 
 			var account = await accountService.GetAccountAsync(EpicID.FromString(id));

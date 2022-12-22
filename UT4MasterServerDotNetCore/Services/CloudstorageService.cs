@@ -98,7 +98,6 @@ public class CloudstorageService
 
 	private static string CalcFileHash(byte[] data)
 	{
-		// TODO: figure out actual algo used, this one is pure guess
 		var hashedBytes = SHA1.HashData(data);
 		var hash = Convert.ToHexString(hashedBytes).ToLower();
 		return hash;
@@ -106,7 +105,6 @@ public class CloudstorageService
 
 	private static string CalcFileHash256(byte[] data)
 	{
-		// TODO: figure out actual algo used, this one is pure guess
 		var hashedBytes = SHA256.HashData(data);
 		var hash = Convert.ToHexString(hashedBytes).ToLower();
 		return hash;

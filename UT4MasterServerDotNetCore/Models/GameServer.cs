@@ -55,19 +55,35 @@ namespace UT4MasterServer
 			ServerConfigs = new Dictionary<string, object>();
 		}
 
-		public void Add(string key, string value)
+		public void Set(string key, string? value)
 		{
-			ServerConfigs.Add($"{key.ToUpper()}_s", value);
+			SetInternal($"{key.ToUpper()}_s", value);
 		}
 
-		public void Add(string key, int value)
+		public void Set(string key, int? value)
 		{
-			ServerConfigs.Add($"{key.ToUpper()}_i", value);
+			SetInternal($"{key.ToUpper()}_i", value);
 		}
 
-		public void Add(string key, bool value)
+		public void Set(string key, bool? value)
 		{
-			ServerConfigs.Add($"{key.ToUpper()}_b", value);
+			SetInternal($"{key.ToUpper()}_b", value);
+		}
+
+		private void SetInternal(string key, object? value)
+		{
+			if (value != null)
+			{
+				if (ServerConfigs.ContainsKey(key))
+					ServerConfigs[key] = value;
+				else
+					ServerConfigs.Add(key, value);
+			}
+			else
+			{
+				if (ServerConfigs.ContainsKey(key))
+					ServerConfigs.Remove(key);
+			}
 		}
 
 		public JObject ToJObject()
@@ -157,29 +173,29 @@ namespace UT4MasterServer
 			OpenPrivatePlayers = 0;
 			Attributes = new GameServerAttributes();
 
-			Attributes.Add("UT_SERVERNAME", "ServerName");
-			Attributes.Add("UT_REDTEAMSIZE", 0);
-			Attributes.Add("UT_BLUETEAMSIZE", 0);
-			Attributes.Add("UT_NUMMATCHES", 0);
-			Attributes.Add("UT_GAMEINSTANCE", 0); // 0 = hub, 1 = game instance?
-			Attributes.Add("UT_MAXSPECTATORS", 7);
-			Attributes.Add("BEACONPORT", 7787);
-			Attributes.Add("UT_PLAYERONLINE", 0);
-			Attributes.Add("UT_SERVERVERSION", "3525360");
-			Attributes.Add("GAMEMODE", "/Script/UnrealTournament.UTLobbyGameMode");
-			Attributes.Add("UT_HUBGUID", OwnerID.ToString());
-			Attributes.Add("UT_MATCHSTATE", "InProgress");
-			Attributes.Add("UT_SERVERTRUSTLEVEL", 0);
-			Attributes.Add("UT_SERVERINSTANCEGUID", EpicID.GenerateNew().ToString());
-			Attributes.Add("UT_TRAININGGROUND", false);
-			Attributes.Add("UT_MINELO", 0);
-			Attributes.Add("UT_MAXELO", 0);
-			Attributes.Add("UT_SPECTATORSONLINE", 0);
-			Attributes.Add("UT_MAXPLAYERS", 200);
-			Attributes.Add("UT_SERVERMOTD", "");
-			Attributes.Add("MAPNAME", "UT-EntryRank");
-			Attributes.Add("UT_MATCHDURATION", 0);
-			Attributes.Add("UT_SERVERFLAGS", 0);
+			Attributes.Set("UT_SERVERNAME", "ServerName");
+			Attributes.Set("UT_REDTEAMSIZE", 0);
+			Attributes.Set("UT_BLUETEAMSIZE", 0);
+			Attributes.Set("UT_NUMMATCHES", 0);
+			Attributes.Set("UT_GAMEINSTANCE", 0); // 0 = hub, 1 = game instance?
+			Attributes.Set("UT_MAXSPECTATORS", 7);
+			Attributes.Set("BEACONPORT", 7787);
+			Attributes.Set("UT_PLAYERONLINE", 0);
+			Attributes.Set("UT_SERVERVERSION", "3525360");
+			Attributes.Set("GAMEMODE", "/Script/UnrealTournament.UTLobbyGameMode");
+			Attributes.Set("UT_HUBGUID", OwnerID.ToString());
+			Attributes.Set("UT_MATCHSTATE", "InProgress");
+			Attributes.Set("UT_SERVERTRUSTLEVEL", 0);
+			Attributes.Set("UT_SERVERINSTANCEGUID", EpicID.GenerateNew().ToString());
+			Attributes.Set("UT_TRAININGGROUND", false);
+			Attributes.Set("UT_MINELO", 0);
+			Attributes.Set("UT_MAXELO", 0);
+			Attributes.Set("UT_SPECTATORSONLINE", 0);
+			Attributes.Set("UT_MAXPLAYERS", 200);
+			Attributes.Set("UT_SERVERMOTD", "");
+			Attributes.Set("MAPNAME", "UT-EntryRank");
+			Attributes.Set("UT_MATCHDURATION", 0);
+			Attributes.Set("UT_SERVERFLAGS", 0);
 
 			PublicPlayers = new List<EpicID>();
 			PrivatePlayers = new List<EpicID>();
@@ -200,11 +216,9 @@ namespace UT4MasterServer
 		/// <summary>
 		/// Temporary constructor to form fake servers for testing
 		/// </summary>
-		/// <param name=""></param>
 		internal GameServer(string serverName, string domain, string ipAddress) : this()
 		{
-			// it seems that at least ServerAddress is checked before game
-			// lists a hub
+			// it seems that at least ServerAddress is checked before game lists a hub
 			ServerName = OwnerName = domain;
 			ServerAddress = ipAddress;
 			Attributes.ServerConfigs["UT_SERVERNAME_s"] = serverName;
