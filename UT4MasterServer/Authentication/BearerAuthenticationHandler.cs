@@ -26,9 +26,7 @@ public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationS
 		var authorization = new HttpAuthorization(authorizationHeader);
 		if (!authorization.IsBearer)
 		{
-			const string errMessage = $"trying to handle a scheme that is not 'bearer' inside bearer scheme handler";
-			Logger.LogInformation(errMessage);
-			return AuthenticateResult.Fail(errMessage);
+			return AuthenticateResult.Fail("unexpected scheme");
 		}
 
 		var session = await sessionService.GetSessionAsync(authorization.Value);

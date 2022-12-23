@@ -24,9 +24,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 			var authorization = new HttpAuthorization(authorizationHeader);
 			if (!authorization.IsBasic)
 			{
-				const string errMessage = $"trying to handle a scheme that is not 'basic' inside basic scheme handler";
-				Logger.LogInformation(errMessage);
-				return AuthenticateResult.Fail(errMessage);
+				return AuthenticateResult.Fail("unexpected scheme");
 			}
 
 			var client = new ClientIdentification(authorization.Value);
