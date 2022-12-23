@@ -15,9 +15,11 @@ public class SessionController : JsonAPIController
 	private readonly ILogger<SessionController> logger;
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
+	private readonly CodeService codeService;
 
-	public SessionController(SessionService sessionService, AccountService accountService, ILogger<SessionController> logger)
+	public SessionController(SessionService sessionService, CodeService codeService, AccountService accountService, ILogger<SessionController> logger)
 	{
+		this.codeService = codeService;
 		this.sessionService = sessionService;
 		this.accountService = accountService;
 		this.logger = logger;
@@ -46,27 +48,27 @@ public class SessionController : JsonAPIController
 			{
 				if (code != null)
 				{
-					var codeAuth = await sessionService.TakeCodeAsync(CodeKind.Authorization, code);
+					var codeAuth = await codeService.TakeCodeAsync(CodeKind.Authorization, code);
 					if (codeAuth != null)
 						session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
 				}
 				break;
 			}
-            case "refresh_token":
+			case "exchange_code":
+			{
+				if (exchangeCode != null)
+				{
+					var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
+					if (codeExchange != null)
+						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
+				}
+				break;
+			}
+			case "refresh_token":
 			{
 				if (refreshToken != null)
 				{
 					session = await sessionService.RefreshSessionAsync(refreshToken);
-				}
-				break;
-			}
-            case "exchange_code":
-			{
-				if (exchangeCode != null)
-				{
-					var codeExchange = await sessionService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
-					if (codeExchange != null)
-						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
 				}
 				break;
 			}
@@ -148,7 +150,7 @@ public class SessionController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		var code = await sessionService.CreateCodeAsync(CodeKind.Exchange, user.Session.AccountID, user.Session.ClientID);
+		var code = await codeService.CreateCodeAsync(CodeKind.Exchange, user.Session.AccountID, user.Session.ClientID);
 		if (code == null)
 			return BadRequest(new ErrorResponse()
 			{
@@ -168,7 +170,7 @@ public class SessionController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		var authCode = await sessionService.CreateCodeAsync(CodeKind.Authorization, user.Session.AccountID, user.Session.ClientID);
+		var authCode = await codeService.CreateCodeAsync(CodeKind.Authorization, user.Session.AccountID, user.Session.ClientID);
 		if (authCode == null)
 			return BadRequest();
 
