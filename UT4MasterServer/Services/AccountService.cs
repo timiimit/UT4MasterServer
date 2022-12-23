@@ -20,12 +20,10 @@ public class AccountService
 
 	public async Task CreateAccountAsync(string username, string password)
 	{
-		var newAccount = new Account()
-		{
-			ID = EpicID.GenerateNew(),
-			Username = username,
-			Password = GetPasswordHash(password)
-		};
+		var newAccount = new Account();
+		newAccount.ID = EpicID.GenerateNew();
+		newAccount.Username = username;
+		newAccount.Password = GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
 	}
@@ -44,11 +42,16 @@ public class AccountService
 
 	public async Task<Account?> GetAccountAsync(string username, string password)
 	{
-		var cursor = await accountCollection.FindAsync(account =>
-			account.Username == username &&
-			account.Password == GetPasswordHash(password)
-		);
-		return await cursor.SingleOrDefaultAsync();
+		// look for account just with username
+		var account = await GetAccountAsync(username);
+		if (account == null)
+			return null;
+
+		// now verify that password is correct
+		if (password != GetPasswordHash(account.ID, password))
+			return null;
+
+		return account;
 	}
 
 	public async Task<List<Account>> GetAccountsAsync(List<EpicID> ids)
@@ -70,9 +73,14 @@ public class AccountService
 
 
 
-	private static string GetPasswordHash(string password)
+	private static string GetPasswordHash(EpicID accountID, string password)
 	{
-		var bytes = Encoding.UTF8.GetBytes(password);
+		// we combine both accountID and password to create a hash.
+		// this way NO ONE can tell which users have the same password.
+		string combined = accountID + password;
+
+		// hash combined string into a hax string
+		var bytes = Encoding.UTF8.GetBytes(combined);
 		var hashedBytes = SHA512.HashData(bytes);
 		var passwordHash = Convert.ToHexString(hashedBytes).ToLower();
 		return passwordHash;
