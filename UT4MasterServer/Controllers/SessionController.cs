@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authorization;
 using UT4MasterServer.Models;
@@ -16,13 +17,17 @@ public class SessionController : JsonAPIController
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
 	private readonly CodeService codeService;
+	private readonly bool allowPasswordGrant;
 
-	public SessionController(SessionService sessionService, CodeService codeService, AccountService accountService, ILogger<SessionController> logger)
+	public SessionController(
+		SessionService sessionService, CodeService codeService, AccountService accountService,
+		IOptions<DatabaseSettings> settings, ILogger<SessionController> logger)
 	{
 		this.codeService = codeService;
 		this.sessionService = sessionService;
 		this.accountService = accountService;
 		this.logger = logger;
+		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
 	[AuthorizeBasic]
@@ -80,6 +85,9 @@ public class SessionController : JsonAPIController
 			}
 			case "password":
 			{
+				if (!allowPasswordGrant)
+					break;
+
 				// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
 				//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
 				//

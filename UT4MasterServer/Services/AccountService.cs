@@ -3,7 +3,6 @@ using MongoDB.Driver;
 using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
-using MongoDB.Driver.Core.Operations;
 
 namespace UT4MasterServer.Services;
 
@@ -49,7 +48,21 @@ public class AccountService
 
 		// now verify that password is correct
 		if (password != GetPasswordHash(account.ID, password))
-			return null;
+		{
+			if (!allowPasswordGrant)
+				return null;
+
+			// when user uses the website, password is never transmitted to us, only it's hash.
+			// when user logs into the game via the stock in-game login window, password IS transmitted to us.
+			// here we try to handle the latter, the less secure way of password transmission
+
+			// put password into the form as it would be in, if it were transmitted from our website
+			password = GetPasswordHash(password);
+
+			// hash the password with 
+			if (password != GetPasswordHash(account.ID, password))
+				return null;
+		}
 
 		return account;
 	}
@@ -79,8 +92,12 @@ public class AccountService
 		// this way NO ONE can tell which users have the same password.
 		string combined = accountID + password;
 
-		// hash combined string into a hax string
-		var bytes = Encoding.UTF8.GetBytes(combined);
+		return GetPasswordHash(combined);
+	}
+
+	private static string GetPasswordHash(string password)
+	{
+		var bytes = Encoding.UTF8.GetBytes(password);
 		var hashedBytes = SHA512.HashData(bytes);
 		var passwordHash = Convert.ToHexString(hashedBytes).ToLower();
 		return passwordHash;
