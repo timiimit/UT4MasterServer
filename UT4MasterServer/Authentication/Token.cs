@@ -48,7 +48,7 @@ public class Token
 		byte[] bytes = new byte[32];
 		random.NextBytes(bytes);
 
-		var tokenString = Convert.ToHexString(bytes);
+		var tokenString = Convert.ToHexString(bytes).ToLower();
 
 		return new Token(tokenString, expirationTime);
 	}
