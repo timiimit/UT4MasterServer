@@ -8,7 +8,7 @@ public enum FriendStatus
 {
 	Blocked,
 	Pending,
-	Active
+	Accepted
 }
 
 [BsonIgnoreExtraElements]

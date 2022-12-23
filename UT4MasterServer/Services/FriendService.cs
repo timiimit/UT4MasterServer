@@ -17,18 +17,34 @@ public class FriendService
 
 	public async Task<bool> SendFriendRequestAsync(EpicID from, EpicID to)
 	{
-		// TODO: logic in order of operation should be something like this:
-		// - if "from" -> "to" is blocked, unblock
-		// - if "to" -> "from" is pending, just accept it and return
-		// - create "from" -> "to" pending friend request
+		bool friendRequestAccepted = false;
 
+		// check if there is already inbound request
+		var cursor = await friendCollection.FindAsync(x => x.Sender == to && x.Receiver == from && x.Status == FriendStatus.Pending);
+		var friend = await cursor.FirstOrDefaultAsync();
+		if (friend != null && friend.Status == FriendStatus.Pending)
+		{
+			// "to" already sent "from" a friend request, accept it
+			await friendCollection.UpdateOneAsync(
+				x => x.Sender == to && x.Receiver == from,
+				Builders<FriendRequest>.Update.Set(f => f.Status, FriendStatus.Accepted));
+			friendRequestAccepted = true;
+		}
 
-		var friend = new FriendRequest();
-		friend.Sender = from;
-		friend.Receiver = to;
-		friend.Status = FriendStatus.Pending;
+		// remove outgoing block if it exists
+		await friendCollection.DeleteOneAsync(
+			x => x.Sender == from && x.Receiver == to && x.Status == FriendStatus.Blocked);
 
-		await friendCollection.InsertOneAsync(friend);
+		if (!friendRequestAccepted)
+		{
+			// if there was no inbound request initially, create a pending outgoing request
+			friend = new FriendRequest();
+			friend.Sender = from;
+			friend.Receiver = to;
+			friend.Status = FriendStatus.Pending;
+
+			await friendCollection.InsertOneAsync(friend);
+		}
 		return true;
 	}
 
@@ -44,6 +60,13 @@ public class FriendService
 
 	public async Task<bool> BlockAccountAsync(EpicID accountID, EpicID blockedAccount)
 	{
+		// remove any kind of connection
+		await friendCollection.DeleteOneAsync(x =>
+			(x.Sender == accountID && x.Receiver == blockedAccount) ||
+			(x.Sender == blockedAccount && x.Receiver == accountID)
+		);
+
+		// create block request
 		var friend = new FriendRequest();
 		friend.Sender = accountID;
 		friend.Receiver = blockedAccount;

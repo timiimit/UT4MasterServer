@@ -31,6 +31,7 @@ public static class Program
 		// services whose instance is created per-request
 		builder.Services
 		  .AddScoped<DatabaseContext>()
+		  .AddScoped<FriendService>()
 		  .AddScoped<AccountService>()
 		  .AddScoped<SessionService>()
 		  .AddScoped<CloudstorageService>();
