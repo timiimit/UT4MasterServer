@@ -50,6 +50,9 @@ public class SessionService
 			s.RefreshToken.Value == refreshToken
 		);
 		var session = await cursor.SingleOrDefaultAsync();
+		if (session == null)
+			return null;
+
         session.Refresh();
 		await UpdateSessionAsync(session);
         return session;
