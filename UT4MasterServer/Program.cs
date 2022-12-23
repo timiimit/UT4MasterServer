@@ -25,19 +25,25 @@ public static class Program
 		{
 			o.RespectBrowserAcceptHeader = true;
 		});
-		builder.Services.Configure<UT4EverDatabaseSettings>(
+		builder.Services.Configure<DatabaseSettings>(
 		  builder.Configuration.GetSection("UT4EverDatabase")
 		);
+		// services whose instance is created per-request
 		builder.Services
-		  .AddSingleton<AccountService>()
-		  .AddSingleton<SessionService>()
-		  .AddSingleton<CloudstorageService>()
+		  .AddScoped<DatabaseContext>()
+		  .AddScoped<FriendService>()
+		  .AddScoped<AccountService>()
+		  .AddScoped<SessionService>()
+		  .AddScoped<CloudstorageService>();
+		// servicees whose instance is created once and are persistent
+		builder.Services
+		  .AddSingleton<CodeService>()
 		  .AddSingleton<MatchmakingService>();
 
 		builder.Services
 		  .AddAuthentication(/*by default there is no authentication*/)
-		  .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null)
-		  .AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("bearer", null);
+		  .AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("bearer", null)
+		  .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null);
 		builder.Host.ConfigureLogging(logging =>
 		{
 			logging.ClearProviders();

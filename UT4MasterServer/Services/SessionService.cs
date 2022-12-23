@@ -1,40 +1,18 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using System.Reflection.Emit;
 using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Services;
 
 public class SessionService
 {
-	private readonly IMongoCollection<Code> codeCollection;
 	private readonly IMongoCollection<Session> sessionCollection;
 
-	public SessionService(IOptions<UT4EverDatabaseSettings> settings)
+	public SessionService(DatabaseContext dbContext, IOptions<DatabaseSettings> settings)
 	{
-		var mongoClient = new MongoClient(settings.Value.ConnectionString);
-		var mongoDatabase = mongoClient.GetDatabase(settings.Value.DatabaseName);
-		codeCollection = mongoDatabase.GetCollection<Code>(settings.Value.CodeCollectionName);
-		sessionCollection = mongoDatabase.GetCollection<Session>(settings.Value.SessionCollectionName);
+		sessionCollection = dbContext.Database.GetCollection<Session>("sessions");
 	}
-
-	#region Codes
-
-	public async Task<Code?> CreateCodeAsync(CodeKind kind, EpicID accountID, EpicID clientID)
-	{
-		var ret = new Code(accountID, clientID, Token.Generate(TimeSpan.FromMinutes(5)), kind);
-		await codeCollection.InsertOneAsync(ret);
-		return ret;
-	}
-
-	public async Task<Code?> TakeCodeAsync(CodeKind kind, string code)
-	{
-		var ret = await codeCollection.FindOneAndDeleteAsync(x => x.Token.Value == code && x.Kind == kind);
-		return ret;
-	}
-
-	#endregion
-
-	#region Sessions
 
 	public async Task<Session?> CreateSessionAsync(EpicID accountID, EpicID clientID, SessionCreationMethod method)
 	{
@@ -72,6 +50,9 @@ public class SessionService
 			s.RefreshToken.Value == refreshToken
 		);
 		var session = await cursor.SingleOrDefaultAsync();
+		if (session == null)
+			return null;
+
         session.Refresh();
 		await UpdateSessionAsync(session);
         return session;
@@ -108,6 +89,4 @@ public class SessionService
 		await sessionCollection.DeleteOneAsync(s => s.AccessToken == session.AccessToken);
 		return null;
 	}
-
-	#endregion
 }

@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authorization;
 using UT4MasterServer.Services;
 
@@ -12,31 +13,82 @@ namespace UT4MasterServer.Controllers
 	public class FriendsController : JsonAPIController
 	{
 		private readonly ILogger<SessionController> logger;
-		private readonly AccountService accountService;
+		private readonly FriendService friendService;
 
-		public FriendsController(AccountService accountService, ILogger<SessionController> logger)
+		public FriendsController(FriendService friendService, ILogger<SessionController> logger)
 		{
 			this.logger = logger;
-			this.accountService = accountService;
+			this.friendService = friendService;
 		}
 
+		#region friends
+
 		[HttpGet("friends/{id}")]
-		public IActionResult GetFriends(string id, [FromQuery] bool? includePending)
+		public async Task<IActionResult> GetFriends(string id, [FromQuery] bool? includePending)
 		{
 			if (User.Identity is not EpicUserIdentity authenticatedUser)
 				return Unauthorized();
 
 			var eid = EpicID.FromString(id);
 
-			// idk if epic allows anyone to view this, but we wont
 			if (eid != authenticatedUser.Session.AccountID)
 				return Json("[]", StatusCodes.Status401Unauthorized);
 
-			// TODO
-			// [{"accountId":"0b0f09b400854b9b98932dd9e5abe7c5","status":"PENDING",
-			// "direction":"INBOUND","created":"2022-10-16T15:14:32.356Z","favorite":false}]
-			return Json("[]");
+			var friends = await friendService.GetFriendsAsync(eid);
+
+			JArray arr = new JArray();
+			foreach (var friend in friends)
+			{
+				var other = friend.Sender == eid ? friend.Receiver : friend.Sender;
+				var status = friend.Status == Models.FriendStatus.Accepted ? "ACCEPTED" : "PENDING";
+				var direction = friend.Sender == eid ? "OUTBOUND" : "INBOUND";
+
+				JObject obj = new JObject();
+				obj.Add("accountId", other.ToString());
+				obj.Add("status", status);
+				obj.Add("direction", direction);
+				obj.Add("created", DateTime.UtcNow.ToStringISO()); // should we care?
+				obj.Add("favourite", false); // TODO: figure out if it's possible to set to true normally
+				arr.Add(obj);
+			}
+
+			return Json(arr);
 		}
+
+		[HttpPost("friends/{id}/{friendID}")]
+		public async Task<ActionResult> SendFriendRequest(string id, string friendID)
+		{
+			if (User.Identity is not EpicUserIdentity authenticatedUser)
+				return Unauthorized();
+
+			var eid = EpicID.FromString(id);
+
+			if (eid != authenticatedUser.Session.AccountID)
+				return Json("[]", StatusCodes.Status401Unauthorized);
+
+			await friendService.SendFriendRequestAsync(eid, EpicID.FromString(friendID));
+
+			return NoContent();
+		}
+		[HttpDelete("friends/{id}/{friendID}")]
+		public async Task<ActionResult> RemoveFriend(string id, string friendID)
+		{
+			if (User.Identity is not EpicUserIdentity authenticatedUser)
+				return Unauthorized();
+
+			var eid = EpicID.FromString(id);
+
+			if (eid != authenticatedUser.Session.AccountID)
+				return Json("[]", StatusCodes.Status401Unauthorized);
+
+			await friendService.CancelFriendRequestAsync(eid, EpicID.FromString(friendID));
+
+			return NoContent();
+		}
+
+		#endregion
+
+		#region blocklist
 
 		[HttpGet("blocklist/{id}")]
 		public async Task<IActionResult> GetBlockedAccounts(string id)
@@ -46,18 +98,50 @@ namespace UT4MasterServer.Controllers
 
 			var eid = EpicID.FromString(id);
 
-			// idk if epic allows anyone to view this, but we wont
 			if (eid != authenticatedUser.Session.AccountID)
 				return Json("[]", StatusCodes.Status401Unauthorized);
 			
-			var account = await accountService.GetAccountAsync(eid);
-			if (account == null)
-				return Json("[]", StatusCodes.Status500InternalServerError); // this should never happen since session with this account exists, internal error
+			var blockedUsers = await friendService.GetBlockedUsersAsync(eid);
 
-			// TODO: make sure this sends expected json array of strings
-			return Json(account.BlockedUsers);
+			JArray arr = new JArray();
+			foreach (var blockedUser in blockedUsers)
+			{
+				arr.Add(blockedUser.Receiver.ToString());
+			}
+			return Json(arr);
 		}
 
+		[HttpPost("blocklist/{id}/{friendID}")]
+		public async Task<ActionResult> BlockAccount(string id, string friendID)
+		{
+			if (User.Identity is not EpicUserIdentity authenticatedUser)
+				return Unauthorized();
 
+			var eid = EpicID.FromString(id);
+
+			if (eid != authenticatedUser.Session.AccountID)
+				return Json("[]", StatusCodes.Status401Unauthorized);
+
+			await friendService.BlockAccountAsync(eid, EpicID.FromString(friendID));
+
+			return NoContent();
+		}
+		[HttpDelete("blocklist/{id}/{friendID}")]
+		public async Task<ActionResult> UnblockAccount(string id, string friendID)
+		{
+			if (User.Identity is not EpicUserIdentity authenticatedUser)
+				return Unauthorized();
+
+			var eid = EpicID.FromString(id);
+
+			if (eid != authenticatedUser.Session.AccountID)
+				return Json("[]", StatusCodes.Status401Unauthorized);
+
+			await friendService.UnblockAccountAsync(eid, EpicID.FromString(friendID));
+
+			return NoContent();
+		}
+
+		#endregion
 	}
 }

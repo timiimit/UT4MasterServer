@@ -3,29 +3,26 @@ using MongoDB.Driver;
 using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
-using MongoDB.Driver.Core.Operations;
 
 namespace UT4MasterServer.Services;
 
 public class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
+	private readonly bool allowPasswordGrant;
 
-	public AccountService(IOptions<UT4EverDatabaseSettings> settings)
+	public AccountService(DatabaseContext dbContext, IOptions<DatabaseSettings> settings)
 	{
-		var mongoClient = new MongoClient(settings.Value.ConnectionString);
-		var mongoDatabase = mongoClient.GetDatabase(settings.Value.DatabaseName);
-		accountCollection = mongoDatabase.GetCollection<Account>(settings.Value.AccountCollectionName);
+		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
+		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
 	public async Task CreateAccountAsync(string username, string password)
 	{
-		var newAccount = new Account()
-		{
-			ID = EpicID.GenerateNew(),
-			Username = username,
-			Password = GetPasswordHash(password)
-		};
+		var newAccount = new Account();
+		newAccount.ID = EpicID.GenerateNew();
+		newAccount.Username = username;
+		newAccount.Password = GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
 	}
@@ -44,11 +41,30 @@ public class AccountService
 
 	public async Task<Account?> GetAccountAsync(string username, string password)
 	{
-		var cursor = await accountCollection.FindAsync(account =>
-			account.Username == username &&
-			account.Password == GetPasswordHash(password)
-		);
-		return await cursor.SingleOrDefaultAsync();
+		// look for account just with username
+		var account = await GetAccountAsync(username);
+		if (account == null)
+			return null;
+
+		// now verify that password is correct
+		if (account.Password != GetPasswordHash(account.ID, password))
+		{
+			if (!allowPasswordGrant)
+				return null;
+
+			// when user uses the website, password is never transmitted to us, only it's hash.
+			// when user logs into the game via the stock in-game login window, password IS transmitted to us.
+			// here we try to handle the latter, the less secure way of password transmission
+
+			// put password into the form as it would be in, if it were transmitted from our website
+			password = GetPasswordHash(password);
+
+			// hash the password with 
+			if (account.Password != GetPasswordHash(account.ID, password))
+				return null;
+		}
+
+		return account;
 	}
 
 	public async Task<List<Account>> GetAccountsAsync(List<EpicID> ids)
@@ -69,6 +85,15 @@ public class AccountService
 	}
 
 
+
+	private static string GetPasswordHash(EpicID accountID, string password)
+	{
+		// we combine both accountID and password to create a hash.
+		// this way NO ONE can tell which users have the same password.
+		string combined = accountID + password;
+
+		return GetPasswordHash(combined);
+	}
 
 	private static string GetPasswordHash(string password)
 	{

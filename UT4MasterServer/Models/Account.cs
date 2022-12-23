@@ -51,12 +51,6 @@ public class Account
 	[BsonElement("LastLoginAt")]
 	public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
 
-	[BsonElement("Friends")]
-	public List<EpicID> Friends { get; set; } = new List<EpicID>();
-
-	[BsonElement("BlockedUsers")]
-	public List<EpicID> BlockedUsers { get; set; } = new List<EpicID>();
-
 	//[BsonElement("ProfileChangeCount")]
 	//public int ProfileChangeCount { get; set; } = 0;
 
