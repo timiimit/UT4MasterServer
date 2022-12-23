@@ -10,12 +10,12 @@ namespace UT4MasterServer.Services;
 public class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
+	private readonly bool allowPasswordGrant;
 
-	public AccountService(IOptions<UT4EverDatabaseSettings> settings)
+	public AccountService(DatabaseContext dbContext, IOptions<DatabaseSettings> settings)
 	{
-		var mongoClient = new MongoClient(settings.Value.ConnectionString);
-		var mongoDatabase = mongoClient.GetDatabase(settings.Value.DatabaseName);
-		accountCollection = mongoDatabase.GetCollection<Account>(settings.Value.AccountCollectionName);
+		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
+		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
 	public async Task CreateAccountAsync(string username, string password)

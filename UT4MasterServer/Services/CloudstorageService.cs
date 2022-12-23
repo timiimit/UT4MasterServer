@@ -18,11 +18,9 @@ public class CloudstorageService
 
 	private readonly IMongoCollection<CloudFile> cloudstorageCollection;
 
-	public CloudstorageService(IOptions<UT4EverDatabaseSettings> settings)
+	public CloudstorageService(DatabaseContext dbContext, IOptions<DatabaseSettings> settings)
 	{
-		var mongoClient = new MongoClient(settings.Value.ConnectionString);
-		var mongoDatabase = mongoClient.GetDatabase(settings.Value.DatabaseName);
-		cloudstorageCollection = mongoDatabase.GetCollection<CloudFile>(settings.Value.CloudstorageCollectionName);
+		cloudstorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
 	}
 
 	public async Task UpdateFileAsync(EpicID accountID, string filename, Stream dataStream)

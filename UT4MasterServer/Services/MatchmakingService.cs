@@ -8,10 +8,9 @@ namespace UT4MasterServer.Services;
 
 public class MatchmakingService
 {
-	// persistent runtime-only dictionary
 	private Dictionary<EpicID, GameServer> serversBySession;
 
-	public MatchmakingService(IOptions<UT4EverDatabaseSettings> settings)
+	public MatchmakingService()
 	{
 		serversBySession = new Dictionary<EpicID, GameServer>();
 	}
