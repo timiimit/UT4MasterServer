@@ -47,7 +47,7 @@ public class AccountService
 			return null;
 
 		// now verify that password is correct
-		if (password != GetPasswordHash(account.ID, password))
+		if (account.Password != GetPasswordHash(account.ID, password))
 		{
 			if (!allowPasswordGrant)
 				return null;
@@ -60,7 +60,7 @@ public class AccountService
 			password = GetPasswordHash(password);
 
 			// hash the password with 
-			if (password != GetPasswordHash(account.ID, password))
+			if (account.Password != GetPasswordHash(account.ID, password))
 				return null;
 		}
 
