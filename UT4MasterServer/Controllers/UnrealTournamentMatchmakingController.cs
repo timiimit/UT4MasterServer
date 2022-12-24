@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿#define USE_LOCALHOST_TEST
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using MongoDB.Bson.IO;
@@ -22,6 +24,7 @@ namespace UT4MasterServer.Controllers
 	{
         private readonly ILogger<SessionController> logger;
 		private readonly MatchmakingService matchmakingService;
+		private const int MAX_READ_SIZE = 1024 * 4;
 
 		public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, MatchmakingService matchmakingService)
         {
@@ -38,8 +41,9 @@ namespace UT4MasterServer.Controllers
 			if (User.Identity is not EpicUserIdentity user)
 				return Unauthorized();
 
-			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } };
-			var server = JsonSerializer.Deserialize<GameServer>(await ReadBodyAsStringAsync(1024), options);
+			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+			var body = await ReadBodyAsStringAsync(MAX_READ_SIZE);
+			var server = JsonSerializer.Deserialize<GameServer>(body, options);
 			if (server == null)
 				return BadRequest();
 
@@ -56,8 +60,9 @@ namespace UT4MasterServer.Controllers
 			}
 			if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
 			{
-				logger.LogWarning($"GameServer is connecting from ipv6 address ({ipAddress}). This is unknown territory. Make sure everything works as expected!");
-				// let's continue to hope ipv6 works
+				// ipv6 does not seem to work
+				logger.LogWarning($"GameServer is connecting from ipv6 address ({ipAddress})! mapping to ipv4...");
+				ipAddress = ipAddress.MapToIPv4();
 			}
 			server.ServerAddress = ipAddress.ToString();
 			server.Started = false;
@@ -68,7 +73,7 @@ namespace UT4MasterServer.Controllers
 
 			matchmakingService.Add(user.Session.ID, server);
 
-			return Ok();
+			return Json(server.ToJson(false));
 		}
 
 		[HttpPut("session/{id}")]
@@ -77,10 +82,21 @@ namespace UT4MasterServer.Controllers
 			if (User.Identity is not EpicUserIdentity user)
 				return Unauthorized();
 
-			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } };
-			var server = JsonSerializer.Deserialize<GameServer>(await ReadBodyAsStringAsync(1024), options);
+			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+			var body = await ReadBodyAsStringAsync(MAX_READ_SIZE);
+			var update = JsonSerializer.Deserialize<GameServer>(body, options);
+			if (update == null)
+				return BadRequest();
 
-			return Ok();
+			var old = matchmakingService.Get(user.Session.ID, update.ID);
+			if (old == null)
+				return BadRequest();
+
+			old.Update(update);
+
+			matchmakingService.Update(user.Session.ID, old);
+
+			return Json(old.ToJson(false));
 		}
 
 		[HttpPost("session/{id}/start")]
@@ -122,8 +138,8 @@ namespace UT4MasterServer.Controllers
 
 
 
-			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } };
-			var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await ReadBodyAsStringAsync(1024), options);
+			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+			var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await ReadBodyAsStringAsync(MAX_READ_SIZE), options);
 
 			if (serverOnlyWithPlayers == null)
 				return NoContent();
@@ -155,7 +171,7 @@ namespace UT4MasterServer.Controllers
 				// allow any third-party project to easily access hub list without any authentication
 			}
 
-			var list = matchmakingService.List(filter);
+			var servers = matchmakingService.List(filter);
 
 			//var list = new GameServer[]
 			//{
@@ -170,8 +186,12 @@ namespace UT4MasterServer.Controllers
 			//};
 
 			var arr = new JArray();
-			foreach (var server in list)
+			foreach (var server in servers)
 			{
+#if DEBUG && USE_LOCALHOST_TEST
+				server.ServerAddress = "127.0.0.1";
+#endif
+
 				arr.Add(server.ToJson(true));
 			}
 
@@ -183,6 +203,8 @@ namespace UT4MasterServer.Controllers
 		{
 			if (User.Identity is not EpicUserIdentity user)
 				return Unauthorized();
+
+			EpicID eid = EpicID.FromString(id);
 
 			return NoContent(); // correct response
 		}

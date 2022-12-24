@@ -22,13 +22,17 @@
 
 */
 
+using Newtonsoft.Json;
+using System.Text.Json;
+
 namespace UT4MasterServer.Models;
 
 public class GameServerAttributeCriteria
 {
 	public string Type { get; set; } = string.Empty;
 	public string Key { get; set; } = string.Empty;
-	public object? Value { get; set; } = null;
+
+	public JsonElement Value { get; set; } = default;
 }
 
 public class GameServerFilter

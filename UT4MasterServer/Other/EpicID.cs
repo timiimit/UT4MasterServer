@@ -9,6 +9,7 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 {
 	private readonly static Random r = new Random();
 
+	// TODO: make EpicID store 16 raw bytes (or 2x ulong?) for better performance
 	public string ID { get; set; }
 
 	[BsonIgnore]

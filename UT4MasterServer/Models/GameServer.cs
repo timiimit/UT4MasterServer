@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace UT4MasterServer
@@ -16,38 +18,6 @@ namespace UT4MasterServer
 
 	public class GameServerAttributes
 	{
-		//// ordered from highest to lowest importance to end-user
-		//// commented properties seem to be always constant
-
-		//public string ServerName { get; set; }
-		//public string MatchCount { get; set; }
-		//public string MessageOfTheDay { get; set; }
-
-		//public string GameMode { get; set; }
-		//public string MapName { get; set; }
-		//public string MatchState { get; set; }
-		////public int MatchDuration { get; set; }
-
-		//public int PlayerCount { get; set; }
-		//public int MaxPlayers { get; set; }
-		//public int SpectatorCount { get; set; }
-		//public int MaxSpectators { get; set; }
-
-		//public ServerTrust TrustLevel { get; set; }
-		//public int ServerFlags { get; set; } // this seems to be either 0 or 1. i think i saw this in UT source. atm idk what it means
-		//public int MinELO { get; set; }
-		//public int MaxELO { get; set; }
-
-		//public string RedTeamSize { get; set; }
-		//public string BlueTeamSize { get; set; }
-
-		////public string ServerVersion { get; set; }
-		//public EpicID HubGUID { get; set; }
-		//public EpicID InstanceGUID { get; set; }
-		//public int BeaconPort { get; set; }
-		//public int GameInstance { get; set; }
-		////public bool TrainingGrounds { get; set; }
-
 		public Dictionary<string, object> ServerConfigs;
 
 		public GameServerAttributes()
@@ -57,17 +27,17 @@ namespace UT4MasterServer
 
 		public void Set(string key, string? value)
 		{
-			SetInternal($"{key.ToUpper()}_s", value);
+			SetInternal(key, value);
 		}
 
 		public void Set(string key, int? value)
 		{
-			SetInternal($"{key.ToUpper()}_i", value);
+			SetInternal(key, value);
 		}
 
 		public void Set(string key, bool? value)
 		{
-			SetInternal($"{key.ToUpper()}_b", value);
+			SetInternal(key, value);
 		}
 
 		private void SetInternal(string key, object? value)
@@ -90,30 +60,6 @@ namespace UT4MasterServer
 		{
 			var obj = new JObject();
 
-			//obj.Add("UT_SERVERNAME_s", ServerName);
-			//obj.Add("UT_REDTEAMSIZE_i", RedTeamSize);
-			//obj.Add("UT_NUMMATCHES_i", MatchCount);
-			//obj.Add("UT_GAMEINSTANCE_i", GameInstance);
-			//obj.Add("UT_MAXSPECTATORS_i", MaxSpectators);
-			//obj.Add("BEACONPORT_i", BeaconPort);
-			//obj.Add("UT_PLAYERONLINE_i", PlayerCount);
-			//obj.Add("UT_SERVERVERSION_s", "3525360"); // version engraved into game's tombstone
-			//obj.Add("GAMEMODE_s", GameMode);
-			//obj.Add("UT_HUBGUID_s", HubGUID.ToString());
-			//obj.Add("UT_BLUETEAMSIZE_i", BlueTeamSize);
-			//obj.Add("UT_MATCHSTATE_s", MatchState);
-			//obj.Add("UT_SERVERTRUSTLEVEL_i", (int)TrustLevel);
-			//obj.Add("UT_SERVERINSTANCEGUID_s", InstanceGUID.ToString());
-			//obj.Add("UT_TRAININGGROUND_b", false);
-			//obj.Add("UT_MINELO_i", MinELO);
-			//obj.Add("UT_MAXELO_i", MaxELO);
-			//obj.Add("UT_SPECTATORSONLINE_i", SpectatorCount);
-			//obj.Add("UT_MAXPLAYERS_i", MaxPlayers);
-			//obj.Add("UT_SERVERMOTD_s", MessageOfTheDay);
-			//obj.Add("MAPNAME_s", MapName);
-			//obj.Add("UT_MATCHDURATION_i", 0);
-			//obj.Add("UT_SERVERFLAGS_i", ServerFlags);
-
 			foreach (var kvp in ServerConfigs)
 			{
 				if (kvp.Key.EndsWith("_b"))
@@ -130,33 +76,82 @@ namespace UT4MasterServer
 
 	public class GameServer
 	{
-		// commented properties seem to be always constant
-
+		[JsonPropertyName("id")]
 		public EpicID ID { get; set; }
+
+		[JsonPropertyName("ownerId")]
 		public EpicID OwnerID { get; set; }
+
+		[JsonPropertyName("ownerName")]
 		public string OwnerName { get; set; }
+
+		[JsonPropertyName("serverName")]
 		public string ServerName { get; set; }
+
+		[JsonPropertyName("serverAddress")]
 		public string ServerAddress { get; set; }
+
+		[JsonPropertyName("serverPort")]
 		public int ServerPort { get; set; }
+
+		[JsonPropertyName("maxPublicPlayers")]
 		public int MaxPublicPlayers { get; set; }
+
+		[JsonPropertyName("openPublicPlayers")]
 		public int OpenPublicPlayers { get; set; }
+
+		[JsonPropertyName("maxPrivatePlayers")]
 		public int MaxPrivatePlayers { get; set; }
+
+		[JsonPropertyName("openPrivatePlayers")]
 		public int OpenPrivatePlayers { get; set; }
+
+		[JsonPropertyName("attributes")]
 		public GameServerAttributes Attributes { get; set; }
+
+		[JsonPropertyName("publicPlayers")]
 		public List<EpicID> PublicPlayers { get; set; }
+
+		[JsonPropertyName("privatePlayers")]
 		public List<EpicID> PrivatePlayers { get; set; }
+
+		[JsonPropertyName("totalPlayers")]
 		public int TotalPlayers { get; set; }
+
+		[JsonPropertyName("allowJoinInProgress")]
 		public bool AllowJoinInProgress { get; set; }
+
+		[JsonPropertyName("shouldAdvertise")]
 		public bool ShouldAdvertise { get; set; }
+
+		[JsonPropertyName("isDedicated")]
 		public bool IsDedicated { get; set; }
+
+		[JsonPropertyName("usesStats")]
 		public bool UsesStats { get; set; }
+
+		[JsonPropertyName("usesPresence")]
 		public bool UsesPresence { get; set; }
+
+		[JsonPropertyName("allowInvites")]
 		public bool AllowInvites { get; set; }
+
+		[JsonPropertyName("allowJoinViaPresence")]
 		public bool AllowJoinViaPresence { get; set; }
+
+		[JsonPropertyName("allowJoinViaPresenceFriendsOnly")]
 		public bool AllowJoinViaPresenceFriendsOnly { get; set; }
+
+		[JsonPropertyName("buildUniqueId")]
 		public string BuildUniqueID { get; set; }
+
+		[JsonPropertyName("lastUpdated")]
 		public DateTime LastUpdated { get; set; }
+
+		[JsonPropertyName("sortWeight")]
 		public int SortWeight { get; set; }
+
+		[JsonPropertyName("started")]
 		public bool Started { get; set; }
 
 		public GameServer()
@@ -172,31 +167,6 @@ namespace UT4MasterServer
 			MaxPrivatePlayers = 0;
 			OpenPrivatePlayers = 0;
 			Attributes = new GameServerAttributes();
-
-			Attributes.Set("UT_SERVERNAME", "ServerName");
-			Attributes.Set("UT_REDTEAMSIZE", 0);
-			Attributes.Set("UT_BLUETEAMSIZE", 0);
-			Attributes.Set("UT_NUMMATCHES", 0);
-			Attributes.Set("UT_GAMEINSTANCE", 0); // 0 = hub, 1 = game instance?
-			Attributes.Set("UT_MAXSPECTATORS", 7);
-			Attributes.Set("BEACONPORT", 7787);
-			Attributes.Set("UT_PLAYERONLINE", 0);
-			Attributes.Set("UT_SERVERVERSION", "3525360");
-			Attributes.Set("GAMEMODE", "/Script/UnrealTournament.UTLobbyGameMode");
-			Attributes.Set("UT_HUBGUID", OwnerID.ToString());
-			Attributes.Set("UT_MATCHSTATE", "InProgress");
-			Attributes.Set("UT_SERVERTRUSTLEVEL", 0);
-			Attributes.Set("UT_SERVERINSTANCEGUID", EpicID.GenerateNew().ToString());
-			Attributes.Set("UT_TRAININGGROUND", false);
-			Attributes.Set("UT_MINELO", 0);
-			Attributes.Set("UT_MAXELO", 0);
-			Attributes.Set("UT_SPECTATORSONLINE", 0);
-			Attributes.Set("UT_MAXPLAYERS", 200);
-			Attributes.Set("UT_SERVERMOTD", "");
-			Attributes.Set("MAPNAME", "UT-EntryRank");
-			Attributes.Set("UT_MATCHDURATION", 0);
-			Attributes.Set("UT_SERVERFLAGS", 0);
-
 			PublicPlayers = new List<EpicID>();
 			PrivatePlayers = new List<EpicID>();
 			TotalPlayers = 0;
@@ -210,7 +180,7 @@ namespace UT4MasterServer
 			AllowJoinViaPresenceFriendsOnly = false;
 			BuildUniqueID = "256652735";
 			LastUpdated = DateTimeExtension.UnixTimestampStartOfTime;
-			Started = true;
+			Started = false;
 		}
 
 		/// <summary>
@@ -221,7 +191,36 @@ namespace UT4MasterServer
 			// it seems that at least ServerAddress is checked before game lists a hub
 			ServerName = OwnerName = domain;
 			ServerAddress = ipAddress;
-			Attributes.ServerConfigs["UT_SERVERNAME_s"] = serverName;
+			Attributes.Set("UT_SERVERNAME_s", serverName);
+
+			//Attributes.Set("UT_SERVERNAME", "ServerName");
+			Attributes.Set("UT_REDTEAMSIZE_i", 0);
+			Attributes.Set("UT_BLUETEAMSIZE_i", 0);
+			Attributes.Set("UT_NUMMATCHES_i", 0);
+			Attributes.Set("UT_GAMEINSTANCE_i", 0); // 0 = hub, 1 = game instance?
+			Attributes.Set("UT_MAXSPECTATORS_i", 7);
+			Attributes.Set("BEACONPORT_i", 7787);
+			Attributes.Set("UT_PLAYERONLINE_i", 0);
+			Attributes.Set("UT_SERVERVERSION_s", "3525360");
+			Attributes.Set("GAMEMODE_s", "/Script/UnrealTournament.UTLobbyGameMode");
+			Attributes.Set("UT_HUBGUID_s", OwnerID.ToString());
+			Attributes.Set("UT_MATCHSTATE_s", "InProgress");
+			Attributes.Set("UT_SERVERTRUSTLEVEL_i", 0);
+			Attributes.Set("UT_SERVERINSTANCEGUID_s", EpicID.GenerateNew().ToString());
+			Attributes.Set("UT_TRAININGGROUND_b", false);
+			Attributes.Set("UT_MINELO_i", 0);
+			Attributes.Set("UT_MAXELO_i", 0);
+			Attributes.Set("UT_SPECTATORSONLINE_i", 0);
+			Attributes.Set("UT_MAXPLAYERS_i", 200);
+			Attributes.Set("UT_SERVERMOTD_s", "");
+			Attributes.Set("MAPNAME_s", "UT-EntryRank");
+			Attributes.Set("UT_MATCHDURATION_i", 0);
+			Attributes.Set("UT_SERVERFLAGS_i", 0);
+		}
+
+		public void Update(GameServer update)
+		{
+			// TODO: handle updating existing game server data
 		}
 
 

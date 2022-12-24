@@ -8,6 +8,7 @@ namespace UT4MasterServer.Services;
 
 public class MatchmakingService
 {
+	// TODO: store servers in database to avoid problems if master reboots
 	private Dictionary<EpicID, GameServer> serversBySession;
 
 	public MatchmakingService()
@@ -57,11 +58,49 @@ public class MatchmakingService
 
 	public List<GameServer> List(GameServerFilter filter)
 	{
-		// TODO
+		RemoveStale();
 
-		throw new NotImplementedException();
+		var matches = new List<GameServer>();
+		foreach (var server in serversBySession.Values)
+		{
+			if (server.BuildUniqueID != filter.BuildUniqueId)
+				continue;
 
-		return serversBySession.Values.ToList();
+			bool isMatch = true;
+			foreach (var condition in filter.Criteria)
+			{
+				bool isEqual = true;
+
+				if (!server.Attributes.ServerConfigs.ContainsKey(condition.Key))
+				{
+					isEqual = condition.Value.ValueKind == System.Text.Json.JsonValueKind.Null;
+				}
+				else
+				{
+					object obj = server.Attributes.ServerConfigs[condition.Key];
+					isEqual = condition.Value.Equals(obj);
+				}
+
+				bool isConditionMet =
+					(condition.Type == "EQUAL" && isEqual) ||
+					(condition.Type == "NOT_EQUAL" && !isEqual);
+
+				if (!isConditionMet)
+				{
+					isMatch = false;
+					break;
+				}
+			}
+
+			if (isMatch)
+			{
+				matches.Add(server);
+				if (matches.Count >= filter.MaxResults)
+					break;
+			}
+		}
+
+		return matches;
 	}
 
 	public bool Heartbeat(EpicID sessionID, EpicID serverID)
@@ -73,5 +112,20 @@ public class MatchmakingService
 
 		server.Heartbeat(); // TODO: this is a reference and not a copy right?
 		return true;
+	}
+
+	public void RemoveStale()
+	{
+		var staleServerSessions = new List<EpicID>();
+		foreach (var kvp in serversBySession)
+		{
+			if (DateTime.UtcNow > kvp.Value.LastUpdated + TimeSpan.FromMinutes(1))
+				staleServerSessions.Add(kvp.Key);
+		}
+
+		foreach (var staleServerSession in staleServerSessions)
+		{
+			serversBySession.Remove(staleServerSession);
+		}
 	}
 }
