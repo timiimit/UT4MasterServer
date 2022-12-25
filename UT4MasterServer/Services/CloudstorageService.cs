@@ -18,7 +18,7 @@ public class CloudstorageService
 
 	private readonly IMongoCollection<CloudFile> cloudstorageCollection;
 
-	public CloudstorageService(DatabaseContext dbContext, IOptions<DatabaseSettings> settings)
+	public CloudstorageService(DatabaseContext dbContext)
 	{
 		cloudstorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
 	}

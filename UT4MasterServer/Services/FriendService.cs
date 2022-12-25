@@ -10,7 +10,7 @@ public class FriendService
 {
 	private readonly IMongoCollection<FriendRequest> friendCollection;
 
-	public FriendService(DatabaseContext dbContext, IOptions<DatabaseSettings> settings)
+	public FriendService(DatabaseContext dbContext)
 	{
 		friendCollection = dbContext.Database.GetCollection<FriendRequest>("friends");
 	}
