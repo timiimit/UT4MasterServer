@@ -26,7 +26,7 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 		// TODO: verify that id is hex string
 		if (id.Length != 32)
 			throw new ArgumentException("id needs to be 32 hexadecimal characters long");
-		this.ID = id;
+		this.ID = id.ToLower();
 	}
 
 	public static EpicID FromString(string id)
