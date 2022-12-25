@@ -9,7 +9,7 @@ public class SessionService
 {
 	private readonly IMongoCollection<Session> sessionCollection;
 
-	public SessionService(DatabaseContext dbContext, IOptions<DatabaseSettings> settings)
+	public SessionService(DatabaseContext dbContext)
 	{
 		sessionCollection = dbContext.Database.GetCollection<Session>("sessions");
 	}

@@ -47,10 +47,19 @@ public class MatchmakingService
 
 	public GameServer? Get(EpicID sessionID, EpicID serverID)
 	{
-		if (!serversBySession.TryGetValue(sessionID, out var server))
+		var server = Get(sessionID);
+		if (server == null)
 			return null;
 
 		if (server.ID != serverID)
+			return null;
+
+		return server;
+	}
+
+	public GameServer? Get(EpicID sessionID)
+	{
+		if (!serversBySession.TryGetValue(sessionID, out var server))
 			return null;
 
 		return server;
@@ -101,17 +110,6 @@ public class MatchmakingService
 		}
 
 		return matches;
-	}
-
-	public bool Heartbeat(EpicID sessionID, EpicID serverID)
-	{
-		var server = Get(sessionID, serverID);
-
-		if (server == null)
-			return false;
-
-		server.Heartbeat(); // TODO: this is a reference and not a copy right?
-		return true;
 	}
 
 	public void RemoveStale()

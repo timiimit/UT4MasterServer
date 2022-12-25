@@ -66,10 +66,9 @@ namespace UT4MasterServer.Controllers
 			}
 			server.ServerAddress = ipAddress.ToString();
 			server.Started = false;
-			server.TotalPlayers = 0;
 
 			// TODO: figure out trusted keys & determine trust level
-			//server.Attributes.Set("UT_SERVERTRUSTLEVEL", (int)GameServerTrust.Untrusted);
+			server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)GameServerTrust.Untrusted);
 
 			matchmakingService.Add(user.Session.ID, server);
 
@@ -124,8 +123,12 @@ namespace UT4MasterServer.Controllers
 			if (User.Identity is not EpicUserIdentity user)
 				return Unauthorized();
 
-			if (!matchmakingService.Heartbeat(user.Session.ID, EpicID.FromString(id)))
+			var server = matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
+			if (server == null)
 				return BadRequest();
+
+			server.LastUpdated = DateTime.UtcNow;
+			matchmakingService.Update(user.Session.ID, server);
 
 			return NoContent();
 		}
@@ -135,8 +138,6 @@ namespace UT4MasterServer.Controllers
 		{
 			if (User.Identity is not EpicUserIdentity user)
 				return Unauthorized();
-
-
 
 			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
 			var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await ReadBodyAsStringAsync(MAX_READ_SIZE), options);
@@ -156,6 +157,31 @@ namespace UT4MasterServer.Controllers
 			matchmakingService.Update(serverID, old);
 
 			return Json(old.ToJson(false));
+		}
+
+		[HttpDelete("session/{id}/players")]
+		public async Task<IActionResult> RemovePlayer(string id)
+		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
+			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+			var players = JsonSerializer.Deserialize<EpicID[]>(await ReadBodyAsStringAsync(MAX_READ_SIZE), options);
+			if (players == null)
+				return BadRequest();
+
+			var server = matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
+			if (server == null)
+				return BadRequest();
+
+			foreach (var player in players)
+			{
+				server.PublicPlayers.Remove(player);
+				server.PrivatePlayers.Remove(player);
+			}
+
+			// TODO: figure out proper response payload
+			return NoContent();
 		}
 
 		#endregion

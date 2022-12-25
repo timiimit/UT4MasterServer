@@ -38,7 +38,7 @@ public class EpicIDJsonConverter : JsonConverter<EpicID>
 
 	public override EpicID Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
-		if (typeToConvert != typeof(string))
+		if (typeToConvert != typeof(string) && typeToConvert != typeof(EpicID))
 			return EpicID.Empty;
 
 		var str = reader.GetString();

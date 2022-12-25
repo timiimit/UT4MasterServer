@@ -94,7 +94,13 @@ namespace UT4MasterServer.Controllers
 		[HttpPut("user/{id}/{filename}")]
 		public async Task<IActionResult> UpdateUserfile(string id, string filename)
 		{
-			await cloudstorageService.UpdateFileAsync(EpicID.FromString(id), filename, Request.Body);
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
+			if (user.Session.AccountID != EpicID.FromString(id))
+				return Unauthorized(); // users can modify only their own files
+
+			await cloudstorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.Body);
 			return Ok();
 		}
 

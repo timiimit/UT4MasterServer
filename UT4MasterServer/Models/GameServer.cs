@@ -40,7 +40,7 @@ namespace UT4MasterServer
 			SetInternal(key, value);
 		}
 
-		private void SetInternal(string key, object? value)
+		public void SetInternal(string key, object? value)
 		{
 			if (value != null)
 			{
@@ -97,14 +97,14 @@ namespace UT4MasterServer
 		[JsonPropertyName("maxPublicPlayers")]
 		public int MaxPublicPlayers { get; set; }
 
-		[JsonPropertyName("openPublicPlayers")]
-		public int OpenPublicPlayers { get; set; }
+		//[JsonPropertyName("openPublicPlayers")]
+		//public int OpenPublicPlayers { get; set; }
 
 		[JsonPropertyName("maxPrivatePlayers")]
 		public int MaxPrivatePlayers { get; set; }
 
-		[JsonPropertyName("openPrivatePlayers")]
-		public int OpenPrivatePlayers { get; set; }
+		//[JsonPropertyName("openPrivatePlayers")]
+		//public int OpenPrivatePlayers { get; set; }
 
 		[JsonPropertyName("attributes")]
 		public GameServerAttributes Attributes { get; set; }
@@ -115,8 +115,8 @@ namespace UT4MasterServer
 		[JsonPropertyName("privatePlayers")]
 		public List<EpicID> PrivatePlayers { get; set; }
 
-		[JsonPropertyName("totalPlayers")]
-		public int TotalPlayers { get; set; }
+		//[JsonPropertyName("totalPlayers")]
+		//public int TotalPlayers { get; set; }
 
 		[JsonPropertyName("allowJoinInProgress")]
 		public bool AllowJoinInProgress { get; set; }
@@ -163,13 +163,13 @@ namespace UT4MasterServer
 			ServerAddress = "0.0.0.0";
 			ServerPort = 7777;
 			MaxPublicPlayers = 10000;
-			OpenPublicPlayers = 10000;
+			//OpenPublicPlayers = 10000;
 			MaxPrivatePlayers = 0;
-			OpenPrivatePlayers = 0;
+			//OpenPrivatePlayers = 0;
 			Attributes = new GameServerAttributes();
 			PublicPlayers = new List<EpicID>();
 			PrivatePlayers = new List<EpicID>();
-			TotalPlayers = 0;
+			//TotalPlayers = 0;
 			AllowJoinInProgress = true;
 			ShouldAdvertise = true;
 			IsDedicated = true;
@@ -220,39 +220,48 @@ namespace UT4MasterServer
 
 		public void Update(GameServer update)
 		{
-			// TODO: handle updating existing game server data
-		}
+			MaxPublicPlayers = update.MaxPublicPlayers;
+			MaxPrivatePlayers = update.MaxPrivatePlayers;
+			//OpenPublicPlayers = update.OpenPublicPlayers;
+			//OpenPrivatePlayers = update.OpenPrivatePlayers;
+			foreach (var attribute in update.Attributes.ServerConfigs)
+			{
+				if (attribute.Key == "UT_SERVERTRUSTLEVEL_i")
+					continue; // do not allow server to modify this attribute
 
-
-		public void Heartbeat()
-		{
+				Attributes.SetInternal(attribute.Key, attribute.Value);
+			}
+			PublicPlayers = update.PublicPlayers;
+			PrivatePlayers = update.PrivatePlayers;
+			//TotalPlayers = update.TotalPlayers;
+			AllowJoinInProgress = update.AllowJoinInProgress;
+			ShouldAdvertise = update.ShouldAdvertise;
+			IsDedicated = update.IsDedicated;
+			UsesStats = update.UsesStats;
+			UsesPresence = update.UsesPresence;
+			AllowInvites = update.AllowInvites;
+			AllowJoinViaPresence = update.AllowJoinViaPresence;
+			AllowJoinViaPresenceFriendsOnly = update.AllowJoinViaPresenceFriendsOnly;
+			BuildUniqueID = update.BuildUniqueID;
 			LastUpdated = DateTime.UtcNow;
 		}
 
 
 		public JObject ToJson(bool isResponseToClient)
 		{
-			//// these values seem to be constant
-			//int totalPlayers = PublicPlayers.Count + PrivatePlayers.Count;
-
-			//const int maxPublicPlayers = 10000;
-			//int maxOpenPublicPlayers = maxPublicPlayers - totalPlayers;
-			//const int maxPrivatePlayers = 0;
-			//const int maxOpenPrivatePlayers = 0;
-
 			// build json
 			var obj = new JObject();
 
 			obj.Add("id", ID.ToString());
-			obj.Add("ownerId", OwnerID.ToString());
+			obj.Add("ownerId", OwnerID.ToString().ToUpper());
 			obj.Add("ownerName", OwnerName);
 			obj.Add("serverName", ServerName);
 			obj.Add("serverAddress", ServerAddress);
 			obj.Add("serverPort", ServerPort);
 			obj.Add("maxPublicPlayers", MaxPublicPlayers);
-			obj.Add("openPublicPlayers", OpenPublicPlayers);
+			obj.Add("openPublicPlayers", MaxPublicPlayers - PublicPlayers.Count);
 			obj.Add("maxPrivatePlayers", MaxPrivatePlayers);
-			obj.Add("openPrivatePlayers", OpenPrivatePlayers);
+			obj.Add("openPrivatePlayers", MaxPrivatePlayers - PrivatePlayers.Count);
 			obj.Add("attributes", Attributes.ToJObject());
 			JArray arr = new JArray();
 			foreach (var player in PublicPlayers)
@@ -266,7 +275,7 @@ namespace UT4MasterServer
 				arr.Add(player.ToString());
 			}
 			obj.Add("privatePlayers", arr);
-			obj.Add("totalPlayers", TotalPlayers);
+			obj.Add("totalPlayers", PublicPlayers.Count + PrivatePlayers.Count);
 			obj.Add("allowJoinInProgress", AllowJoinInProgress);
 			obj.Add("shouldAdvertise", ShouldAdvertise);
 			obj.Add("isDedicated", IsDedicated);
