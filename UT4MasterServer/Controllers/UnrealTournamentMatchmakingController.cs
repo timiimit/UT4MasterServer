@@ -158,6 +158,31 @@ namespace UT4MasterServer.Controllers
 			return Json(old.ToJson(false));
 		}
 
+		[HttpDelete("session/{id}/players")]
+		public async Task<IActionResult> RemovePlayer(string id)
+		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
+			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+			var players = JsonSerializer.Deserialize<EpicID[]>(await ReadBodyAsStringAsync(MAX_READ_SIZE), options);
+			if (players == null)
+				return BadRequest();
+
+			var server = matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
+			if (server == null)
+				return BadRequest();
+
+			foreach (var player in players)
+			{
+				server.PublicPlayers.Remove(player);
+				server.PrivatePlayers.Remove(player);
+			}
+
+			// TODO: figure out proper response payload
+			return NoContent();
+		}
+
 		#endregion
 
 		#region Endpoints for Clients
