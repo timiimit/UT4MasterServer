@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace UT4MasterServer.Services;
 
@@ -72,6 +73,9 @@ public class MatchmakingService
 		var matches = new List<GameServer>();
 		foreach (var server in serversBySession.Values)
 		{
+			if (!server.Started)
+				continue;
+
 			if (server.BuildUniqueID != filter.BuildUniqueId)
 				continue;
 
@@ -82,12 +86,30 @@ public class MatchmakingService
 
 				if (!server.Attributes.ServerConfigs.ContainsKey(condition.Key))
 				{
-					isEqual = condition.Value.ValueKind == System.Text.Json.JsonValueKind.Null;
+					isEqual = condition.Value.ValueKind == JsonValueKind.Null;
 				}
 				else
 				{
 					object obj = server.Attributes.ServerConfigs[condition.Key];
-					isEqual = condition.Value.Equals(obj);
+					if (obj is string && condition.Value.ValueKind == JsonValueKind.String)
+					{
+						string? val = condition.Value.GetString();
+						isEqual = val == (string)obj;
+					}
+					else if (obj is int && condition.Value.ValueKind == JsonValueKind.Number)
+					{
+						int val = condition.Value.GetInt32();
+						isEqual = val == (int)obj;
+					}
+					else if (obj is bool && (condition.Value.ValueKind == JsonValueKind.True || condition.Value.ValueKind == JsonValueKind.False))
+					{
+						bool val = condition.Value.GetBoolean();
+						isEqual = val == (bool)obj;
+					}
+					else
+					{
+						throw new InvalidOperationException($"obj type={obj.GetType().Name}, json type={condition.Value.ValueKind}");
+					}
 				}
 
 				bool isConditionMet =
