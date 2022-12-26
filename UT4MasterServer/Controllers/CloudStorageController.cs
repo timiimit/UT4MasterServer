@@ -80,7 +80,15 @@ namespace UT4MasterServer.Controllers
 			var file = await cloudstorageService.GetFileAsync(EpicID.FromString(id), filename);
 			if (file == null)
 			{
-				return Json(new ErrorResponse() { ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}" }, StatusCodes.Status204NoContent);
+				return Json(new ErrorResponse()
+				{
+					ErrorCode = "errors.com.epicgames.cloudstorage.file_not_found",
+					ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}",
+					MessageVars = new[] { filename, id },
+					NumericErrorCode = 12007,
+					OriginatingService = "utservice",
+					Intent = "prod10"
+				}, StatusCodes.Status404NotFound);
 			}
 
 			return new FileContentResult(file.RawContent, "application/octet-stream");
