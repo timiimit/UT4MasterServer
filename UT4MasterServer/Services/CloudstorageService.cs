@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
+using System;
 
 namespace UT4MasterServer.Services;
 
@@ -16,46 +17,74 @@ public class CloudstorageService
 	// userfiles: <documents>\UnrealTournament\Saved\Cloud\<accountID>\<filename>
 	// userfiles are only there while game is running and file had to have been needed within the game
 
+
+	private static bool hasStoredSystemfiles = false;
+
 	private readonly IMongoCollection<CloudFile> cloudstorageCollection;
 
 	public CloudstorageService(DatabaseContext dbContext)
 	{
 		cloudstorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
+
+		if (!hasStoredSystemfiles)
+		{
+			var files = Directory.EnumerateFiles("CloudstorageSystemfiles");
+			foreach (var file in files)
+			{
+				var filename = Path.GetFileName(file);
+				if (filename == null)
+					continue;
+
+				using var stream = File.OpenRead(file);
+				UpdateFileAsync(EpicID.Empty, filename, stream).Wait();
+			}
+
+			hasStoredSystemfiles = true;
+		}
 	}
 
 	public async Task UpdateFileAsync(EpicID accountID, string filename, Stream dataStream)
 	{
-		// for now we only care about specific files
-		if (!IsCommonUserfileFilename(filename))
-			return;
+		if (!accountID.IsEmpty)
+		{
+			// for now we only care about specific files
+			if (!IsCommonUserfileFilename(filename))
+				return;
+		}
 
 		byte[] buffer = new byte[1024 * 1024]; // 1MB = our max
-		int bytesRead = await dataStream.ReadAsync(buffer);
-		if (bytesRead < buffer.Length)
+		int bufferFillCount = 0;
+		while (true)
 		{
-			// if there have been fewer bytes read than buffer's length
+			int bytesRead = await dataStream.ReadAsync(buffer.AsMemory(bufferFillCount, buffer.Length - bufferFillCount));
+			if (bytesRead == 0)
+				break;
 
-			// TODO: verify that Array.Resize works as expected and removes excess bytes from array
-			Array.Resize(ref buffer, bytesRead);
-
-			var file = new CloudFile()
-			{
-				AccountID = accountID,
-				Filename = filename,
-				Hash = CalcFileHash(buffer),
-				Hash256 = CalcFileHash256(buffer),
-				UploadedAt = DateTime.UtcNow,
-				RawContent = buffer,
-				Length = buffer.Length
-			};
-
-			// upsert = update or insert if doesn't exist
-			var options = new ReplaceOptions { IsUpsert = true };
-			await cloudstorageCollection.ReplaceOneAsync(
-				x => x.AccountID == accountID &&
-				x.Filename == filename, file, options
-			);
+			bufferFillCount += bytesRead;
 		}
+
+		if (bufferFillCount >= buffer.Length)
+			return; // too much data. we don't want to save it.
+
+		Array.Resize(ref buffer, bufferFillCount);
+
+		var file = new CloudFile()
+		{
+			AccountID = accountID,
+			Filename = filename,
+			Hash = CalcFileHash(buffer),
+			Hash256 = CalcFileHash256(buffer),
+			UploadedAt = DateTime.UtcNow,
+			RawContent = buffer,
+			Length = buffer.Length
+		};
+
+		// upsert = update or insert if doesn't exist
+		var options = new ReplaceOptions { IsUpsert = true };
+		await cloudstorageCollection.ReplaceOneAsync(
+			x => x.AccountID == accountID &&
+			x.Filename == filename, file, options
+		);
 	}
 
 	public async Task<CloudFile?> GetFileAsync(EpicID accountID, string filename)
@@ -69,7 +98,7 @@ public class CloudstorageService
 
 	public async Task<List<CloudFile>> ListFilesAsync(EpicID accountID)
 	{
-		// TODO: make sure that CloudFile.Bytes remains empty after db retrieval
+		// TODO: make sure that CloudFile.RawContent remains empty after db retrieval
 		FindOptions<CloudFile> options = new FindOptions<CloudFile>()
 		{
 			Projection = Builders<CloudFile>.Projection.Exclude(x => x.RawContent)
