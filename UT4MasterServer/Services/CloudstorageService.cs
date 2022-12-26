@@ -16,11 +16,30 @@ public class CloudstorageService
 	// userfiles: <documents>\UnrealTournament\Saved\Cloud\<accountID>\<filename>
 	// userfiles are only there while game is running and file had to have been needed within the game
 
+
+	private static bool hasStoredSystemfiles = false;
+
 	private readonly IMongoCollection<CloudFile> cloudstorageCollection;
 
 	public CloudstorageService(DatabaseContext dbContext)
 	{
 		cloudstorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
+
+		if (!hasStoredSystemfiles)
+		{
+			var files = Directory.EnumerateFiles("CloudstorageSystemfiles");
+			foreach (var file in files)
+			{
+				var filename = Path.GetFileName(file);
+				if (filename == null)
+					continue;
+
+				using var stream = File.OpenRead(file);
+				UpdateFileAsync(EpicID.Empty, filename, stream).Wait();
+			}
+
+			hasStoredSystemfiles = true;
+		}
 	}
 
 	public async Task UpdateFileAsync(EpicID accountID, string filename, Stream dataStream)
