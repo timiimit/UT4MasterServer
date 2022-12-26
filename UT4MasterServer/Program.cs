@@ -28,6 +28,7 @@ public static class Program
 		builder.Services.Configure<DatabaseSettings>(
 		  builder.Configuration.GetSection("UT4EverDatabase")
 		);
+
 		// services whose instance is created per-request
 		builder.Services
 		  .AddScoped<DatabaseContext>()
@@ -35,7 +36,8 @@ public static class Program
 		  .AddScoped<AccountService>()
 		  .AddScoped<SessionService>()
 		  .AddScoped<CloudstorageService>();
-		// servicees whose instance is created once and are persistent
+
+		// services whose instance is created once and are persistent
 		builder.Services
 		  .AddSingleton<CodeService>()
 		  .AddSingleton<MatchmakingService>();
