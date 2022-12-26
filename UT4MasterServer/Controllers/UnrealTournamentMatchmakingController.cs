@@ -180,8 +180,7 @@ namespace UT4MasterServer.Controllers
 				server.PrivatePlayers.Remove(player);
 			}
 
-			// TODO: figure out proper response payload
-			return NoContent();
+			return Json(server.ToJson(false));
 		}
 
 		#endregion
