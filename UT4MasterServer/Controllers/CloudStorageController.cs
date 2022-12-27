@@ -92,11 +92,6 @@ namespace UT4MasterServer.Controllers
 			}
 
 			return new FileContentResult(file.RawContent, "application/octet-stream");
-
-			//// Temp data
-			//string path = "user_profile_2.local";
-			//byte[] data = await System.IO.File.ReadAllBytesAsync(path);
-			//return new FileContentResult(data, "application/octet-stream");
 		}
 
 		[HttpPut("user/{id}/{filename}")]
@@ -108,7 +103,7 @@ namespace UT4MasterServer.Controllers
 			if (user.Session.AccountID != EpicID.FromString(id))
 				return Unauthorized(); // users can modify only their own files
 
-			await cloudstorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.Body);
+			await cloudstorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.BodyReader);
 			return Ok();
 		}
 

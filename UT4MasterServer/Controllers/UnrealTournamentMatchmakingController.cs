@@ -16,19 +16,19 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace UT4MasterServer.Controllers
 {
-    [ApiController]
-    [Route("ut/api/matchmaking")]
-    [AuthorizeBearer]
-    [Produces("application/json")]
-    public class UnrealTournamentMatchmakingController : JsonAPIController
+	[ApiController]
+	[Route("ut/api/matchmaking")]
+	[AuthorizeBearer]
+	[Produces("application/json")]
+	public class UnrealTournamentMatchmakingController : JsonAPIController
 	{
-        private readonly ILogger<SessionController> logger;
+		private readonly ILogger<SessionController> logger;
 		private readonly MatchmakingService matchmakingService;
 		private const int MAX_READ_SIZE = 1024 * 4;
 
 		public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, MatchmakingService matchmakingService)
-        {
-            this.logger = logger;
+		{
+			this.logger = logger;
 			this.matchmakingService = matchmakingService;
 
 		}
@@ -42,7 +42,7 @@ namespace UT4MasterServer.Controllers
 				return Unauthorized();
 
 			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-			var body = await ReadBodyAsStringAsync(MAX_READ_SIZE);
+			var body = await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE);
 			var server = JsonSerializer.Deserialize<GameServer>(body, options);
 			if (server == null)
 				return BadRequest();
@@ -82,7 +82,7 @@ namespace UT4MasterServer.Controllers
 				return Unauthorized();
 
 			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-			var body = await ReadBodyAsStringAsync(MAX_READ_SIZE);
+			var body = await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE);
 			var update = JsonSerializer.Deserialize<GameServer>(body, options);
 			if (update == null)
 				return BadRequest();
@@ -140,7 +140,7 @@ namespace UT4MasterServer.Controllers
 				return Unauthorized();
 
 			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-			var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await ReadBodyAsStringAsync(MAX_READ_SIZE), options);
+			var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
 
 			if (serverOnlyWithPlayers == null)
 				return NoContent();
@@ -166,7 +166,7 @@ namespace UT4MasterServer.Controllers
 				return Unauthorized();
 
 			var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-			var players = JsonSerializer.Deserialize<EpicID[]>(await ReadBodyAsStringAsync(MAX_READ_SIZE), options);
+			var players = JsonSerializer.Deserialize<EpicID[]>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
 			if (players == null)
 				return BadRequest();
 

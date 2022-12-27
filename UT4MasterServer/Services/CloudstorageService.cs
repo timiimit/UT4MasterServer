@@ -4,6 +4,7 @@ using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
 using System;
+using System.IO.Pipelines;
 
 namespace UT4MasterServer.Services;
 
@@ -36,14 +37,15 @@ public class CloudstorageService
 					continue;
 
 				using var stream = File.OpenRead(file);
-				UpdateFileAsync(EpicID.Empty, filename, stream).Wait();
+				var reader = PipeReader.Create(stream);
+				UpdateFileAsync(EpicID.Empty, filename, reader).Wait();
 			}
 
 			hasStoredSystemfiles = true;
 		}
 	}
 
-	public async Task UpdateFileAsync(EpicID accountID, string filename, Stream dataStream)
+	public async Task UpdateFileAsync(EpicID accountID, string filename, PipeReader dataStream)
 	{
 		if (!accountID.IsEmpty)
 		{
@@ -52,21 +54,7 @@ public class CloudstorageService
 				return;
 		}
 
-		byte[] buffer = new byte[1024 * 1024]; // 1MB = our max
-		int bufferFillCount = 0;
-		while (true)
-		{
-			int bytesRead = await dataStream.ReadAsync(buffer.AsMemory(bufferFillCount, buffer.Length - bufferFillCount));
-			if (bytesRead == 0)
-				break;
-
-			bufferFillCount += bytesRead;
-		}
-
-		if (bufferFillCount >= buffer.Length)
-			return; // too much data. we don't want to save it.
-
-		Array.Resize(ref buffer, bufferFillCount);
+		var buffer = await dataStream.ReadAsBytesAsync(1024 * 1024);
 
 		var file = new CloudFile()
 		{
