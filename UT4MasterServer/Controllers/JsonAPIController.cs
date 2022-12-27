@@ -75,27 +75,4 @@ public class JsonAPIController : ControllerBase
 	{
 		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
 	}
-
-
-	[NonAction]
-	public async Task<string> ReadBodyAsStringAsync(int maxLength)
-	{
-		// this method doesn't really belong in this class
-		// but we don't have any other commonly accessible location
-
-		return Encoding.UTF8.GetString(await ReadBodyAsBytesAsync(maxLength));
-	}
-
-	[NonAction]
-	public async Task<byte[]> ReadBodyAsBytesAsync(int maxLength)
-	{
-		// this method doesn't really belong in this class
-		// but we don't have any other commonly accessible location
-
-		byte[] body = new byte[maxLength];
-		var bodyLength = await Request.Body.ReadAsync(body);
-		Array.Resize(ref body, bodyLength);
-
-		return body;
-	}
 }
