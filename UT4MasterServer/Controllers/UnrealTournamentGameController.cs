@@ -9,28 +9,28 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers
 {
-    [ApiController]
-    [Route("ut/api/game/v2")]
-    [AuthorizeBearer]
-    [Produces("application/json")]
-    public class UnrealTournamentGameController : JsonAPIController
+	[ApiController]
+	[Route("ut/api/game/v2")]
+	[AuthorizeBearer]
+	[Produces("application/json")]
+	public class UnrealTournamentGameController : JsonAPIController
 	{
-        private readonly ILogger<SessionController> logger;
+		private readonly ILogger<SessionController> logger;
 		private readonly AccountService accountService;
 
 		public UnrealTournamentGameController(ILogger<SessionController> logger, AccountService accountService)
-        {
-            this.logger = logger;
+		{
+			this.logger = logger;
 			this.accountService = accountService;
 
 		}
 
-        [HttpPost("profile/{id}/{clientKind}/QueryProfile")]
-        public async Task<IActionResult> QueryProfile(string id,
+		[HttpPost("profile/{id}/{clientKind}/QueryProfile")]
+		public async Task<IActionResult> QueryProfile(string id,
 			string clientKind,
 			[FromQuery] string profileId,
 			[FromQuery] string rvn)
-        {
+		{
 			bool isRequestSentFromClient = clientKind.ToLower() == "client";
 			bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
@@ -38,22 +38,22 @@ namespace UT4MasterServer.Controllers
 			// i think "rvn" is revision number and it represents index of profile change entry.
 			// negative values probably mean index from back-to-front in array.
 
-			var body = Encoding.UTF8.GetString((await Request.BodyReader.ReadAsync()).Buffer.ToArray());
+			var body = await Request.BodyReader.ReadAsStringAsync(1024);
 			var jsonBody = JObject.Parse(body);
 
 			// game sends empty json object as body
 			if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0" || rvn != "-1" || jsonBody != JObject.Parse("{}"))
 			{
 				logger.LogWarning($"QueryProfile received unexpected data! k:\"{clientKind}\" p:\"{profileId}\" rvn:\"{rvn}\" body:\"{body}\"");
-            }
+			}
 
 			var account = await accountService.GetAccountAsync(EpicID.FromString(id));
 			if (account == null)
 				return NotFound();
 
-			// actual response example is in <repo_root>/UT4MasterServer/Server.cs line 750
+			// actual response example is in <repo_root>/OldReferenceCode/Server.cs line 750
 
-			int revisionNumber = 7152;
+			int revisionNumber = 3;
 
 			JObject obj = new JObject();
 			obj.Add("profileRevision", revisionNumber);
@@ -109,7 +109,7 @@ namespace UT4MasterServer.Controllers
 			obj.Add("command", "QueryProfile");
 
 			return Json(obj);
-        }
+		}
 
 		[HttpGet("profile/{id}/client/SetAvatarAndFlag")]
 		public IActionResult SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] string body)
@@ -143,6 +143,8 @@ namespace UT4MasterServer.Controllers
 			throw new NotImplementedException();
 
 			// TODO: return only one type of rating
+
+			// proper response: {"rating":1844,"numGamesPlayed":182}
 			for (int i = 0; i < ratings.RatingTypes.Count; i++)
 			{
 				ratings.Ratings.Add(1500);
@@ -152,11 +154,11 @@ namespace UT4MasterServer.Controllers
 			return Json(ratings);
 		}
 		[HttpGet("ratings/account/{id}/league/{leagueName}")]
-        public IActionResult LeagueRating(string id, string leagueName)
-        {
-            var league = new League();
-            // for now we just send default/empty values
-            return Json(league);
+		public IActionResult LeagueRating(string id, string leagueName)
+		{
+			var league = new League();
+			// for now we just send default/empty values
+			return Json(league);
 		}
 
 		[HttpPost("ratings/team/elo/{ratingType}")]
