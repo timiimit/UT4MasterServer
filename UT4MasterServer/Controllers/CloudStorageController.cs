@@ -103,7 +103,7 @@ namespace UT4MasterServer.Controllers
 			if (user.Session.AccountID != EpicID.FromString(id))
 				return Unauthorized(); // users can modify only their own files
 
-			await cloudstorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.Body);
+			await cloudstorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.BodyReader);
 			return Ok();
 		}
 
