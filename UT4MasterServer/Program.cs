@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization;
 using Newtonsoft.Json.Linq;
@@ -67,6 +68,16 @@ public static class Program
 		app.UseAuthorization();
 		app.UseAuthentication();
 		app.MapControllers();
+		app.UseStaticFiles();
+		//app.UseStaticFiles(new StaticFileOptions()
+		//{
+		//	FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "StaticWebFiles")),
+		//	RequestPath = "/",
+		//	OnPrepareResponse = ctx =>
+		//	{
+		//		// operation to do on all static file responses
+		//	}
+		//});
 
 		app.Run();
 	}
