@@ -1,0 +1,27 @@
+<html>
+<head>
+	<script>
+		// TODO: move to separate file
+
+		function CreateAuthorizationCode()
+		{
+			let lbl = document.getElementById("lblAuthorizationCode");
+			fetch(
+		}
+	</script>
+</head>
+<body>
+	<p>Welcome, <span id="lblWelcomeUser" /></p>
+
+	<section>
+		<h4>Authorization Code</h4>
+		<button value="Create" onclick="CreateAuthorizationCode" />
+		<p><span id="lblAuthorizationCode" /></p>
+	</section>
+	<section>
+		<h4>Exchange Code</h4>
+		<button value="Create" onclick="CreateExchangeCode" />
+		<p><span id="lblExchangeCode" /></p>
+	</section>
+</body>
+</html>

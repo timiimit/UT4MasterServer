@@ -1,0 +1,42 @@
+<html>
+<head>
+	<script>
+		async function GetCode()
+		{
+			// TODO: hash password with SHA512 before transmission
+
+			let result = await fetch("/account/api/oauth/token",
+				{
+					method: "POST",
+					body: new FormData(document.getElementById("frmLogin")),
+					headers: { "Authorization": "basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y=" }
+				})
+			if (!result.ok)
+				return;
+
+			let session = await result.json();
+			console.log(session);
+			result = await fetch("/account/api/oauth/auth",
+				{
+					method: "GET",
+					headers: { "Authorization": "bearer " + session["access_token"] }
+				});
+			if (!result.ok)
+				return;
+
+			let respJson = await result.json();
+			document.getElementById("loginCode").textContent = respJson["authorizationCode"];
+
+		}
+	</script>
+</head>
+<body>
+	<form id="frmLogin" method="POST" action="/account/api/oauth/token">
+		Username: <input type="text" name="username" />
+		Password: <input type="password" name="password" />
+		<input type="hidden" name="grant_type" value="password" />
+		<input type="button" value="Log in & Get authorization code" onclick="GetCode()" />
+	</form>
+	<p><span id="loginCode" /></p>
+</body>
+</html>
