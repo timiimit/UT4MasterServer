@@ -1,12 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization;
-using Newtonsoft.Json.Linq;
-using System.Text.Encodings.Web;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Controllers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
