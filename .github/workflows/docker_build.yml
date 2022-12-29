@@ -1,0 +1,17 @@
+name: Build Docker Image
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker Image
+        run: |
+          docker build --pull -t ut4masterserver -f .\UT4MasterServer\Dockerfile .
+          docker image ls
+      - name: Clean Up
+        run: docker image rm ut4masterserver
