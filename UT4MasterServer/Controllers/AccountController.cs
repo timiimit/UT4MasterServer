@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.MSIdentity.Shared;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authorization;
-using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -16,13 +14,11 @@ public class AccountController : JsonAPIController
 {
 	private readonly ILogger<AccountController> logger;
 	private readonly AccountService accountService;
-	private readonly SessionService sessionService;
 
-	public AccountController(AccountService accountService, SessionService sessionService, ILogger<AccountController> logger)
+	public AccountController(AccountService accountService, ILogger<AccountController> logger)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
-		this.sessionService = sessionService;
 	}
 
 	#region ACCOUNT LISTING API
@@ -71,8 +67,7 @@ public class AccountController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
 
-		// TODO: remove duplicates from accountIDs
-		var ids = accountIDs.Select(x => EpicID.FromString(x));
+		var ids = accountIDs.Distinct().Select(x => EpicID.FromString(x));
 		var accounts = await accountService.GetAccountsAsync(ids.ToList());
 
 		var retrievedAccountIDs = accounts.Select(x => x.ID.ToString());
@@ -92,6 +87,7 @@ public class AccountController : JsonAPIController
 				obj.Add("minorStatus", "UNKNOWN");
 				obj.Add("cabinedMode", false);
 			}
+
 			obj.Add("externalAuths", new JObject());
 			arr.Add(obj);
 		}
@@ -155,7 +151,7 @@ public class AccountController : JsonAPIController
 		if (account != null)
 		{
 			logger.LogInformation($"Could not register duplicate account: {username}");
-			// This is a generic HTTP 400. A 409 (Conflict) might be more appropriate?	
+			// This is a generic HTTP 400. A 409 (Conflict) might be more appropriate?
 			// Depends how our create account form is built. It will need to know why
 			// it failed (dupe account, invalid name, bad password, etc)
 			return new BadRequestObjectResult("Username already exists");

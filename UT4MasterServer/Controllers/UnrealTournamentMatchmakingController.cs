@@ -2,12 +2,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using MongoDB.Bson.IO;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Buffers;
-using System.Text;
 using System.Text.Json;
 using UT4MasterServer.Authorization;
 using UT4MasterServer.Models;
@@ -53,8 +48,7 @@ namespace UT4MasterServer.Controllers
 			var ipAddress = HttpContext.Connection.RemoteIpAddress;
 			if (ipAddress == null)
 			{
-				// TODO
-				// wtf!? why can this be null???
+				// TODO: wtf!? why can this be null???
 				logger.LogCritical($"Could not determine ip address of remote GameServer, this issue needs to be resolved!");
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
@@ -111,7 +105,7 @@ namespace UT4MasterServer.Controllers
 				return BadRequest();
 
 			server.Started = true;
-			
+
 			matchmakingService.Update(user.Session.ID, server);
 
 			return NoContent();
