@@ -1,16 +1,39 @@
 <html>
 <head>
+	<title>UT4MasterServer - Login</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 	<script>
-		async function GetCode()
-		{
-			// TODO: hash password with SHA512 before transmission
+		async function GetCode() {
+			// Validate the username and password
+			let username = document.getElementById("username").value;
+			let password = document.getElementById("password").value;
+			let errorMessage = "";
+
+			if (!username) {
+				errorMessage = "Username is required.";
+			} else if (!password || password.length < 6) {
+				errorMessage = "Password must be at least 6 characters long.";
+			}
+
+			if (errorMessage) {
+				document.getElementById("errorMessage").innerHTML = errorMessage;
+				return;
+			}
+
+			// Hash the password with SHA512
+			let hashedPassword = CryptoJS.SHA512(password).toString();
+
+			// Replace the original password with the hashed password in the FormData object
+			let formData = new FormData(document.getElementById("frmLogin"));
+			formData.set("password", hashedPassword);
 
 			let result = await fetch("/account/api/oauth/token",
 				{
 					method: "POST",
-					body: new FormData(document.getElementById("frmLogin")),
+					body: formData,
 					headers: { "Authorization": "basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y=" }
 				})
+
 			if (!result.ok)
 				return;
 
@@ -21,22 +44,23 @@
 					method: "GET",
 					headers: { "Authorization": "bearer " + session["access_token"] }
 				});
+
 			if (!result.ok)
 				return;
 
 			let respJson = await result.json();
 			document.getElementById("loginCode").textContent = respJson["authorizationCode"];
-
 		}
 	</script>
 </head>
 <body>
 	<form id="frmLogin" method="POST" action="/account/api/oauth/token">
-		Username: <input type="text" name="username" />
-		Password: <input type="password" name="password" />
+		Username: <input type="text" name="username" id="username" required />
+		Password: <input type="password" name="password" id="password" required />
 		<input type="hidden" name="grant_type" value="password" />
-		<input type="button" value="Log in & Get authorization code" onclick="GetCode()" />
+		<input type="submit" value="Log in & Get authorization code" onclick="GetCode()" />
 	</form>
 	<p><span id="loginCode" /></p>
+	<div id="errorMessage" style="color: red"></div>
 </body>
 </html>
