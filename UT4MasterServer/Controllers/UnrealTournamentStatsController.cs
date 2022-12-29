@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authorization;
 using UT4MasterServer.Models;
-using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
@@ -11,16 +10,6 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentStatsController : JsonAPIController
 {
-	private readonly ILogger<SessionController> logger;
-	private readonly AccountService accountService;
-
-	public UnrealTournamentStatsController(ILogger<SessionController> logger, AccountService accountService)
-	{
-		this.logger = logger;
-		this.accountService = accountService;
-
-	}
-
 	[HttpGet("stats/accountId/{id}/bulk/window/{category}")]
 	public IActionResult Stats(string id, string leagueName, string category)
 	{

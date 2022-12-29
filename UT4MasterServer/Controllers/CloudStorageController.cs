@@ -12,15 +12,11 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/octet-stream")]
 public class CloudstorageController : JsonAPIController
 {
-	private readonly ILogger<SessionController> logger;
-	private readonly SessionService sessionService;
 	private readonly CloudstorageService cloudstorageService;
 
-	public CloudstorageController(SessionService sessionService, CloudstorageService cloudstorageService, ILogger<SessionController> logger)
+	public CloudstorageController(CloudstorageService cloudstorageService)
 	{
-		this.sessionService = sessionService;
 		this.cloudstorageService = cloudstorageService;
-		this.logger = logger;
 	}
 
 	[HttpGet("user/{id}")]

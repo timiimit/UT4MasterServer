@@ -11,12 +11,10 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class FriendsController : JsonAPIController
 {
-	private readonly ILogger<SessionController> logger;
 	private readonly FriendService friendService;
 
-	public FriendsController(FriendService friendService, ILogger<SessionController> logger)
+	public FriendsController(FriendService friendService)
 	{
-		this.logger = logger;
 		this.friendService = friendService;
 	}
 
