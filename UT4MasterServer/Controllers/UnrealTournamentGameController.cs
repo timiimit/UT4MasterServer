@@ -66,7 +66,7 @@ namespace UT4MasterServer.Controllers
 			JObject profile = new JObject();
 			profile.Add("_id", account.ID.ToString());
 			profile.Add("created", account.CreatedAt.ToStringISO());
-			profile.Add("updated", account.UpdatedAt.ToStringISO());
+			profile.Add("updated", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToStringISO()); // we don't store this info, send an arbitrary one
 			profile.Add("rvn", 7152);
 			profile.Add("wipeNumber", 4);
 			profile.Add("accountId", account.ID.ToString());
@@ -89,7 +89,7 @@ namespace UT4MasterServer.Controllers
 			attributes.Add("inventory_limit_bonus", 0);
 			attributes.Add("daily_purchases", new JObject());
 			attributes.Add("in_app_purchases", new JObject());
-			attributes.Add("LastXPTime", account.XPLastMatchAt.ToUnixTimestamp()); // probably unix timestamp at last received xp
+			attributes.Add("LastXPTime", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToUnixTimestamp()); // we don't store this info, send an arbitrary one
 			attributes.Add("XP", account.XP);
 			attributes.Add("Level", account.LevelStockLimited); // TODO: try values over 50
 			attributes.Add("BlueStars", account.BlueStars);
