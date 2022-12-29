@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Build Docker Image without pull
+        run: docker build -t ut4masterserver -f ./UT4MasterServer/Dockerfile .
       - name: Build Docker Image
-        run: |
-          docker build --pull -t ut4masterserver -f ./UT4MasterServer/Dockerfile .
-          docker image ls
+        run: docker build --pull -t ut4masterserver -f ./UT4MasterServer/Dockerfile .
       - name: Clean Up
         run: docker image rm ut4masterserver
