@@ -112,8 +112,62 @@ namespace UT4MasterServer.Controllers
 		}
 
 		[HttpGet("profile/{id}/client/SetAvatarAndFlag")]
-		public IActionResult SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] string body)
+		public async Task<IActionResult> SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn)
 		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
+			JObject obj = JObject.Parse(await Request.BodyReader.ReadAsStringAsync(1024));
+
+			string? avatar = obj["newAvatar"]?.ToObject<string>();
+			string? flag = obj["newFlag"]?.ToObject<string>();
+
+			int revisionNumber = 3;
+
+			obj = new JObject();
+			obj.Add("profileRevision", revisionNumber);
+			obj.Add("profileId", "profile0");
+			obj.Add("profileChangesBaseRevision", revisionNumber - 1);
+			JArray profileChanges = new JArray();
+
+			if (avatar != null || flag != null)
+			{
+				var acc = await accountService.GetAccountAsync(user.Session.AccountID);
+				if (acc == null)
+					return StatusCode(StatusCodes.Status500InternalServerError); // should never happen
+
+				if (avatar != null)
+				{
+					acc.Avatar = avatar;
+					JObject profileChange = new()
+					{
+						{ "changeType", "statModified" },
+						{ "name", "Avatar" },
+						{ "value", acc.Avatar }
+					};
+					profileChanges.Add(profileChange);
+				}
+
+				if (flag != null)
+				{
+					acc.CountryFlag = flag;
+					JObject profileChange = new()
+		{
+						{ "changeType", "statModified" },
+						{ "name", "CountryFlag" },
+						{ "value", acc.CountryFlag }
+					};
+					profileChanges.Add(profileChange);
+				}
+
+				await accountService.UpdateAccountAsync(acc);
+			}
+
+			obj.Add("profileCommandRevision", revisionNumber - 1);
+			obj.Add("serverTime", DateTime.UtcNow.ToStringISO());
+			obj.Add("responseVersion", 1);
+			obj.Add("command", "SetAvatarAndFlag");
+
 			/* input: 
 			{
 				"newAvatar": "UT.Avatar.0",
@@ -122,7 +176,7 @@ namespace UT4MasterServer.Controllers
 
 			*/
 			// response: {"profileRevision":3,"profileId":"profile0","profileChangesBaseRevision":2,"profileChanges":[{"changeType":"statModified","name":"Avatar","value":"UT.Avatar.0"},{"changeType":"statModified","name":"CountryFlag","value":"Algeria"}],"profileCommandRevision":2,"serverTime":"2022-12-20T18:31:46.948Z","responseVersion":1,"command":"SetAvatarAndFlag"}
-			return Ok();
+			return Json(obj);
 		}
 
 		[HttpPost("ratings/account/{id}/mmrbulk")]
