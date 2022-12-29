@@ -1,13 +1,12 @@
 ﻿using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
-using System.Text.Json.Serialization;
 
 namespace UT4MasterServer;
 
 [Serializable]
 public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IBsonClassMapAttribute
 {
-	private readonly static Random r = new Random();
+	private static readonly Random r = new Random();
 
 	// TODO: make EpicID store 16 raw bytes (or 2x ulong?) for better performance
 	public string ID { get; set; }
@@ -28,11 +27,30 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 
 		ID = id.ToLower();
 
-		foreach (char c in ID)
+		if (!IsHexString(ID))
+		{
+			throw new ArgumentException("id needs to be a hexadecimal string");
+		}
+	}
+
+	public static bool IsHexString(string input)
+	{
+		if (string.IsNullOrWhiteSpace(input))
+		{
+			return false;
+		}
+
+		input = input.ToLower();
+
+		foreach (var c in input)
 		{
 			if (!((c >= 'a' && c <= 'f') || (c >= '0' && c <= '9')))
-				throw new ArgumentException("id contains non hex character");
+			{
+				return false;
+			}
 		}
+
+		return true;
 	}
 
 	public static EpicID FromString(string id)
