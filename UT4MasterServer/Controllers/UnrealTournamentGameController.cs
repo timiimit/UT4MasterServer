@@ -31,6 +31,9 @@ namespace UT4MasterServer.Controllers
 			[FromQuery] string profileId,
 			[FromQuery] string rvn)
 		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
 			bool isRequestSentFromClient = clientKind.ToLower() == "client";
 			bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
@@ -55,32 +58,32 @@ namespace UT4MasterServer.Controllers
 
 			int revisionNumber = 3;
 
-			JObject obj = new JObject();
+			JObject obj = new();
 			obj.Add("profileRevision", revisionNumber);
 			obj.Add("profileId", profileId);
 			obj.Add("profileChangesBaseRevision", revisionNumber);
 			JArray profileChanges = new JArray();
 			// foreach {
-			JObject profileChange = new JObject();
+			JObject profileChange = new();
 			profileChange.Add("changeType", "fullProfileUpdate");
-			JObject profile = new JObject();
+			JObject profile = new();
 			profile.Add("_id", account.ID.ToString());
 			profile.Add("created", account.CreatedAt.ToStringISO());
 			profile.Add("updated", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToStringISO()); // we don't store this info, send an arbitrary one
-			profile.Add("rvn", 7152);
-			profile.Add("wipeNumber", 4);
+			profile.Add("rvn", revisionNumber);
+			profile.Add("wipeNumber", 1);
 			profile.Add("accountId", account.ID.ToString());
 			profile.Add("profileId", profileId);
 			profile.Add("version", "ut_base");
-			JObject items = new JObject();
+			JObject items = new();
 			// TODO !!!
 			profile.Add("items", items);
-			JObject stats = new JObject();
+			JObject stats = new();
 			stats.Add("templateId", "profile_v2");
-			JObject attributes = new JObject();
+			JObject attributes = new();
 			attributes.Add("CountryFlag", account.CountryFlag);
 			attributes.Add("GoldStars", account.GoldStars);
-			JObject login_rewards = new JObject();
+			JObject login_rewards = new();
 			login_rewards.Add("nextClaimTime", null);
 			login_rewards.Add("level", 0);
 			login_rewards.Add("totalDays", 0);
@@ -152,7 +155,7 @@ namespace UT4MasterServer.Controllers
 				{
 					acc.CountryFlag = flag;
 					JObject profileChange = new()
-		{
+					{
 						{ "changeType", "statModified" },
 						{ "name", "CountryFlag" },
 						{ "value", acc.CountryFlag }
@@ -182,6 +185,9 @@ namespace UT4MasterServer.Controllers
 		[HttpPost("ratings/account/{id}/mmrbulk")]
 		public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
 		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
 			for (int i = 0; i < ratings.RatingTypes.Count; i++)
 			{
 				ratings.Ratings.Add(1500);
@@ -194,6 +200,9 @@ namespace UT4MasterServer.Controllers
 		[HttpPost("ratings/account/{id}/mmr/{ratingType}")]
 		public IActionResult Mmr(string id, string ratingType, [FromBody] MMRBulk ratings)
 		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
 			throw new NotImplementedException();
 
 			// TODO: return only one type of rating
@@ -210,6 +219,9 @@ namespace UT4MasterServer.Controllers
 		[HttpGet("ratings/account/{id}/league/{leagueName}")]
 		public IActionResult LeagueRating(string id, string leagueName)
 		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
 			var league = new League();
 			// for now we just send default/empty values
 			return Json(league);
@@ -218,6 +230,9 @@ namespace UT4MasterServer.Controllers
 		[HttpPost("ratings/team/elo/{ratingType}")]
 		public IActionResult JoinQuickplay(string ratingType, [FromBody] string body)
 		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
 			/*
 			INPUT body:
 
@@ -242,13 +257,20 @@ namespace UT4MasterServer.Controllers
 		[HttpPost("wait_times/estimate")]
 		public IActionResult QuickplayWaitEstimate()
 		{
-			// Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},{"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
+			// Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},
+			// {"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
 			return Ok();
 		}
 
 		[HttpPost("wait_times/report/{ratingType}/{unkownNumber}")]
 		public IActionResult QuickplayWaitReport()
 		{
+			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
 			return NoContent();
 		}
 
