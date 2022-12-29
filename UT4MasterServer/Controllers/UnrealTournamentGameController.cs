@@ -114,10 +114,13 @@ namespace UT4MasterServer.Controllers
 			return Json(obj);
 		}
 
-		[HttpGet("profile/{id}/client/SetAvatarAndFlag")]
+		[HttpPost("profile/{id}/client/SetAvatarAndFlag")]
 		public async Task<IActionResult> SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn)
 		{
 			if (User.Identity is not EpicUserIdentity user)
+				return Unauthorized();
+
+			if (user.Session.AccountID != EpicID.FromString(id))
 				return Unauthorized();
 
 			JObject obj = JObject.Parse(await Request.BodyReader.ReadAsStringAsync(1024));
