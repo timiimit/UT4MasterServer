@@ -45,37 +45,54 @@ public class Account
 	[BsonElement("CreatedAt")]
 	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-	[BsonElement("UpdatedAt")]
-	public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
 	[BsonElement("LastLoginAt")]
 	public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
 
-	//[BsonElement("ProfileChangeCount")]
-	//public int ProfileChangeCount { get; set; } = 0;
+	/**** Not required for proper operation ****/
+
+	[BsonIgnoreIfNull]
+	[BsonElement("Email")]
+	public string? Email { get; set; } = null;
+
+	[BsonIgnoreIfDefault]
+	[BsonDefaultValue(new string[0])]
+	[BsonElement("DeviceIDs")]
+	public string[] DeviceIDs { get; set; } = Array.Empty<string>();
 
 	/************** Game Specific **************/
 
+	[BsonIgnoreIfDefault]
+	[BsonDefaultValue("Unreal")]
 	[BsonElement("CountryFlag")]
 	public string CountryFlag { get; set; } = "Unreal";
 
+	[BsonIgnoreIfDefault]
+	[BsonDefaultValue("UT.Avatar.0")]
 	[BsonElement("Avatar")]
 	public string Avatar { get; set; } = "UT.Avatar.0";
 
+	[BsonIgnoreIfDefault]
+	[BsonDefaultValue(0)]
 	[BsonElement("GoldStars")]
 	public int GoldStars { get; set; } = 0;
 
+	[BsonIgnoreIfDefault]
+	[BsonDefaultValue(0)]
 	[BsonElement("BlueStars")]
 	public int BlueStars { get; set; } = 0;
 
+	[BsonIgnoreIfDefault]
+	[BsonDefaultValue(0)]
 	[BsonElement("XP")]
 	public int XP { get; set; } = 0;
 
+	[BsonIgnoreIfDefault]
+	[BsonDefaultValue(0)]
 	[BsonElement("XPLastMatch")]
 	public int XPLastMatch { get; set; } = 0;
 
-	[BsonElement("XPLastMatchAt")]
-	public DateTime XPLastMatchAt { get; set; } = DateTimeExtension.UnixTimestampStartOfTime;
+	//[BsonElement("XPLastMatchAt")]
+	//public DateTime XPLastMatchAt { get; set; } = DateTimeExtension.UnixTimestampStartOfTime;
 
 
 	[BsonIgnore]
