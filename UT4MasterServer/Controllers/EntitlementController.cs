@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authorization;
 
 namespace UT4MasterServer.Controllers;
@@ -10,25 +9,18 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class EntitlementController : JsonAPIController
 {
-    private readonly ILogger<SessionController> logger;
-
-    public EntitlementController(ILogger<SessionController> logger)
-    {
-        this.logger = logger;
-    }
-
-    [HttpGet]
-    public IActionResult QueryProfile(string id)
-    {
+	[HttpGet]
+	public IActionResult QueryProfile(string id)
+	{
 		// TODO: we should at least return entitlement for those 3 or so community made maps
 		//       that are in the game and need to normally be redeemed in store. it is important
 		//       that we find the id's of those items before its too late.
 
 		/*
-            
+
 		Here is one for DM-Unsaved, the only one i own.
 
-        [{
+		[{
 			"id": "87e81495602a42bfb8f11066886f7276",
 			"entitlementName": "Unsaved",
 			"namespace": "ut",
@@ -70,7 +62,7 @@ public class EntitlementController : JsonAPIController
 			}
 		]
 
-        */
+		*/
 		return Json("[]");
-    }
+	}
 }

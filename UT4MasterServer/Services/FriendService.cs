@@ -1,6 +1,3 @@
-
-
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using UT4MasterServer.Models;
 
@@ -52,7 +49,7 @@ public class FriendService
 	{
 		var result = await friendCollection.DeleteOneAsync(x =>
 			((x.Sender == accountID && x.Receiver == acceptsFrom) ||
-			(x.Sender == acceptsFrom && x.Receiver == accountID)) &&
+			 (x.Sender == acceptsFrom && x.Receiver == accountID)) &&
 			x.Status != FriendStatus.Blocked);
 
 		return result.IsAcknowledged; // TODO: is this correct return to confirm whether friend was removed?
