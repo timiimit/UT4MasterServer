@@ -1,3 +1,4 @@
+using MongoDB.Driver;
 using System.Text.Json;
 using UT4MasterServer.Models;
 
@@ -5,46 +6,42 @@ namespace UT4MasterServer.Services;
 
 public class MatchmakingService
 {
-	// TODO: store servers in database to avoid problems if master reboots
-	private Dictionary<EpicID, GameServer> serversBySession;
+	private readonly IMongoCollection<GameServer> serverCollection;
 
-	public MatchmakingService()
+	public MatchmakingService(DatabaseContext dbContext)
 	{
-		serversBySession = new Dictionary<EpicID, GameServer>();
+		serverCollection = dbContext.Database.GetCollection<GameServer>("servers");
 	}
 
-	public bool Add(EpicID sessionID, GameServer server)
+	public async Task<bool> Add(GameServer server)
 	{
-		if (serversBySession.ContainsKey(sessionID))
+		var options = new CountOptions() { Limit = 1 };
+		long count = await serverCollection.CountDocumentsAsync(x => x.SessionID == server.SessionID, options);
+
+		// each session is only allowed a single server
+		if (count > 0)
 			return false;
 
-		serversBySession.Add(sessionID, server);
+		await serverCollection.InsertOneAsync(server);
 		return true;
 	}
 
-	public bool Update(EpicID sessionID, GameServer server)
+	public async Task<bool> Update(GameServer server)
 	{
-		if (!serversBySession.ContainsKey(sessionID))
-			return false;
+		var result = await serverCollection.ReplaceOneAsync(x => x.SessionID == server.SessionID && x.ID == server.ID, server);
 
-		if (serversBySession[sessionID].ID != server.ID)
-			return false;
-
-		return true;
+		return result.IsAcknowledged;
 	}
 
-	public bool Remove(EpicID sessionID, EpicID serverID)
+	public async Task<bool> Remove(EpicID sessionID, EpicID serverID)
 	{
-		if (Get(sessionID, serverID) == null)
-			return false;
-
-		serversBySession.Remove(sessionID);
-		return true;
+		var result = await serverCollection.DeleteOneAsync(x => x.SessionID == sessionID && x.ID == serverID);
+		return result.IsAcknowledged;
 	}
 
-	public GameServer? Get(EpicID sessionID, EpicID serverID)
+	public async Task<GameServer?> Get(EpicID sessionID, EpicID serverID)
 	{
-		var server = Get(sessionID);
+		var server = await Get(sessionID);
 		if (server == null)
 			return null;
 
@@ -54,94 +51,71 @@ public class MatchmakingService
 		return server;
 	}
 
-	public GameServer? Get(EpicID sessionID)
+	public async Task<GameServer?> Get(EpicID sessionID)
 	{
-		if (!serversBySession.TryGetValue(sessionID, out var server))
-			return null;
-
-		return server;
+		var cursor = await serverCollection.FindAsync(x => x.SessionID == sessionID);
+		return await cursor.FirstOrDefaultAsync();
 	}
 
-	public List<GameServer> List(GameServerFilter filter)
+	public async Task<List<GameServer>> List(GameServerFilter inputFilter)
 	{
-		RemoveStale();
+		await RemoveStale();
 
-		var matches = new List<GameServer>();
-		foreach (var server in serversBySession.Values)
+		var filter =
+			Builders<GameServer>.Filter.Eq(x => x.Started, true);
+
+		if (inputFilter.BuildUniqueId != null)
+			filter &= Builders<GameServer>.Filter.Eq(x => x.BuildUniqueID, inputFilter.BuildUniqueId);
+
+		//if (inputFilter.OpenPlayersRequired != null)
+		//	filter &= Builders<GameServer>.Filter.Eq(x => x.MaxPublicPlayers - x.PublicPlayers.Count, inputFilter.OpenPlayersRequired);
+
+		foreach (var condition in inputFilter.Criteria)
 		{
-			if (!server.Started)
-				continue;
+			filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Contains(condition.Key), true);
 
-			if (server.BuildUniqueID != filter.BuildUniqueId)
-				continue;
-
-			bool isMatch = true;
-			foreach (var condition in filter.Criteria)
+			switch (condition.Type)
 			{
-				bool isEqual = true;
-
-				if (!server.Attributes.ServerConfigs.ContainsKey(condition.Key))
-				{
-					isEqual = condition.Value.ValueKind == JsonValueKind.Null;
-				}
-				else
-				{
-					object obj = server.Attributes.ServerConfigs[condition.Key];
-					if (obj is string && condition.Value.ValueKind == JsonValueKind.String)
-					{
-						string? val = condition.Value.GetString();
-						isEqual = val == (string)obj;
-					}
-					else if (obj is int && condition.Value.ValueKind == JsonValueKind.Number)
-					{
-						int val = condition.Value.GetInt32();
-						isEqual = val == (int)obj;
-					}
-					else if (obj is bool && (condition.Value.ValueKind == JsonValueKind.True || condition.Value.ValueKind == JsonValueKind.False))
-					{
-						bool val = condition.Value.GetBoolean();
-						isEqual = val == (bool)obj;
-					}
-					else
-					{
-						throw new InvalidOperationException($"obj type={obj.GetType().Name}, json type={condition.Value.ValueKind}");
-					}
-				}
-
-				bool isConditionMet =
-					(condition.Type == "EQUAL" && isEqual) ||
-					(condition.Type == "NOT_EQUAL" && !isEqual);
-
-				if (!isConditionMet)
-				{
-					isMatch = false;
+				case "EQUAL":
+					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Eq(condition.Key, condition.Value), true);
 					break;
-				}
-			}
-
-			if (isMatch)
-			{
-				matches.Add(server);
-				if (matches.Count >= filter.MaxResults)
+				case "NOT_EQUAL":
+					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Eq(condition.Key, condition.Value), false);
+					break;
+				case "LESS_THAN":
+					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lt(condition.Key, condition.Value), true);
+					break;
+				case "LESS_THAN_OR_EQUAL":
+					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lte(condition.Key, condition.Value), true);
+					break;
+				case "GREATER_THAN":
+					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lte(condition.Key, condition.Value), false);
+					break;
+				case "GREATER_THAN_OR_EQUAL":
+					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lt(condition.Key, condition.Value), false);
 					break;
 			}
 		}
 
-		return matches;
+		var options = new FindOptions<GameServer>()
+		{
+			Limit = inputFilter.MaxResults,
+			AllowPartialResults = true,
+			//MaxAwaitTime = TimeSpan.FromSeconds(0.1)
+		};
+		var cursor = await serverCollection.FindAsync(filter, options);
+		return await cursor.ToListAsync();
 	}
 
-	public void RemoveStale()
+	public async Task<int> RemoveStale()
 	{
-		var staleServerSessions = new List<EpicID>();
-		foreach (var kvp in serversBySession)
+		var now = DateTime.UtcNow; // use the same value for all checks in this call
+		var staleAfter = TimeSpan.FromMinutes(5);
+		var result = await serverCollection.DeleteManyAsync(x => now > x.LastUpdated + staleAfter);
+		if (result.IsAcknowledged)
 		{
-			if (DateTime.UtcNow > kvp.Value.LastUpdated + TimeSpan.FromMinutes(1))
-				staleServerSessions.Add(kvp.Key);
+			return (int)result.DeletedCount;
 		}
-
-		foreach (var staleServerSession in staleServerSessions)
-		{
-			serversBySession.Remove(staleServerSession);
-		}
+		return -1;
 	}
 }
