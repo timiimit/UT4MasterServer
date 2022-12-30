@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace UT4MasterServer;
@@ -13,7 +14,7 @@ public enum GameServerTrust
 
 public class GameServerAttributes
 {
-	public Dictionary<string, object> ServerConfigs;
+	private Dictionary<string, object> ServerConfigs;
 
 	public GameServerAttributes()
 	{
@@ -22,20 +23,20 @@ public class GameServerAttributes
 
 	public void Set(string key, string? value)
 	{
-		SetInternal(key, value);
+		SetDirect(key, value);
 	}
 
 	public void Set(string key, int? value)
 	{
-		SetInternal(key, value);
+		SetDirect(key, value);
 	}
 
 	public void Set(string key, bool? value)
 	{
-		SetInternal(key, value);
+		SetDirect(key, value);
 	}
 
-	public void SetInternal(string key, object? value)
+	internal void SetDirect(string key, object? value)
 	{
 		if (value != null)
 		{
@@ -48,6 +49,22 @@ public class GameServerAttributes
 		{
 			if (ServerConfigs.ContainsKey(key))
 				ServerConfigs.Remove(key);
+		}
+	}
+
+	internal Dictionary<string, object> GetUnderlyingDict()
+	{
+		return ServerConfigs;
+	}
+
+	public void Update(GameServerAttributes other)
+	{
+		foreach (var attribute in other.ServerConfigs)
+		{
+			if (attribute.Key == "UT_SERVERTRUSTLEVEL_i")
+				continue; // do not allow server to modify this attribute
+
+			SetDirect(attribute.Key, attribute.Value);
 		}
 	}
 
@@ -278,13 +295,7 @@ public class GameServer
 		MaxPrivatePlayers = update.MaxPrivatePlayers;
 		//OpenPublicPlayers = update.OpenPublicPlayers;
 		//OpenPrivatePlayers = update.OpenPrivatePlayers;
-		foreach (var attribute in update.Attributes.ServerConfigs)
-		{
-			if (attribute.Key == "UT_SERVERTRUSTLEVEL_i")
-				continue; // do not allow server to modify this attribute
-
-			Attributes.SetInternal(attribute.Key, attribute.Value);
-		}
+		Attributes.Update(update.Attributes);
 		PublicPlayers = update.PublicPlayers;
 		PrivatePlayers = update.PrivatePlayers;
 		//TotalPlayers = update.TotalPlayers;
