@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json.Linq;
 using System.Text.Json.Serialization;
 
 namespace UT4MasterServer;
@@ -70,81 +71,112 @@ public class GameServerAttributes
 
 public class GameServer
 {
+	[BsonId]
 	[JsonPropertyName("id")]
 	public EpicID ID { get; set; }
 
+	[BsonElement("OwnerID")]
 	[JsonPropertyName("ownerId")]
 	public EpicID OwnerID { get; set; }
 
+	[BsonElement("OwnerName")]
 	[JsonPropertyName("ownerName")]
 	public string OwnerName { get; set; }
 
+	[BsonElement("ServerName")]
 	[JsonPropertyName("serverName")]
 	public string ServerName { get; set; }
 
+	[BsonElement("ServerAddress")]
 	[JsonPropertyName("serverAddress")]
 	public string ServerAddress { get; set; }
 
+	[BsonElement("ServerPort")]
 	[JsonPropertyName("serverPort")]
 	public int ServerPort { get; set; }
 
+	[BsonElement("MaxPublicPlayers")]
 	[JsonPropertyName("maxPublicPlayers")]
 	public int MaxPublicPlayers { get; set; }
 
+	//[BsonElement("OpenPublicPlayers")]
 	//[JsonPropertyName("openPublicPlayers")]
 	//public int OpenPublicPlayers { get; set; }
 
+	[BsonElement("MaxPrivatePlayers")]
 	[JsonPropertyName("maxPrivatePlayers")]
 	public int MaxPrivatePlayers { get; set; }
 
+	//[BsonElement("OpenPrivatePlayers")]
 	//[JsonPropertyName("openPrivatePlayers")]
 	//public int OpenPrivatePlayers { get; set; }
 
+	[BsonElement("Attributes")]
 	[JsonPropertyName("attributes")]
 	public GameServerAttributes Attributes { get; set; }
 
+	[BsonElement("PublicPlayers")]
 	[JsonPropertyName("publicPlayers")]
 	public List<EpicID> PublicPlayers { get; set; }
 
+	[BsonElement("PrivatePlayers")]
 	[JsonPropertyName("privatePlayers")]
 	public List<EpicID> PrivatePlayers { get; set; }
 
+	//[BsonElement("TotalPlayers")]
 	//[JsonPropertyName("totalPlayers")]
 	//public int TotalPlayers { get; set; }
 
+	[BsonElement("AllowJoinInProgress")]
 	[JsonPropertyName("allowJoinInProgress")]
 	public bool AllowJoinInProgress { get; set; }
 
+	[BsonElement("ShouldAdvertise")]
 	[JsonPropertyName("shouldAdvertise")]
 	public bool ShouldAdvertise { get; set; }
 
+	[BsonElement("IsDedicated")]
 	[JsonPropertyName("isDedicated")]
 	public bool IsDedicated { get; set; }
 
+	[BsonElement("UsesStats")]
 	[JsonPropertyName("usesStats")]
 	public bool UsesStats { get; set; }
 
+	[BsonElement("UsesPresence")]
 	[JsonPropertyName("usesPresence")]
 	public bool UsesPresence { get; set; }
 
+	[BsonElement("AllowInvites")]
 	[JsonPropertyName("allowInvites")]
 	public bool AllowInvites { get; set; }
 
+	[BsonElement("AllowJoinViaPresence")]
 	[JsonPropertyName("allowJoinViaPresence")]
 	public bool AllowJoinViaPresence { get; set; }
 
+	[BsonElement("AllowJoinViaPresenceFriendsOnly")]
 	[JsonPropertyName("allowJoinViaPresenceFriendsOnly")]
 	public bool AllowJoinViaPresenceFriendsOnly { get; set; }
 
+	[BsonElement("BuildUniqueID")]
 	[JsonPropertyName("buildUniqueId")]
 	public string BuildUniqueID { get; set; }
 
+	[BsonElement("LastUpdated")]
 	[JsonPropertyName("lastUpdated")]
 	public DateTime LastUpdated { get; set; }
 
+	/// <summary>
+	/// not sure what this is used for, perhaps we can remove it
+	/// entirely and just respond with static `"sortWeight": 0`
+	/// when needed
+	/// </summary>
+	[BsonElement("SortWeight")]
 	[JsonPropertyName("sortWeight")]
 	public int SortWeight { get; set; }
 
+	[BsonElement("Started")]
 	[JsonPropertyName("started")]
 	public bool Started { get; set; }
 
