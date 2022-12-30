@@ -1,12 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson.Serialization;
-using Newtonsoft.Json.Linq;
-using System.Text.Encodings.Web;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Controllers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
@@ -27,26 +21,26 @@ public static class Program
 			o.RespectBrowserAcceptHeader = true;
 		});
 		builder.Services.Configure<DatabaseSettings>(
-		  builder.Configuration.GetSection("UT4EverDatabase")
+			builder.Configuration.GetSection("UT4EverDatabase")
 		);
 
 		// services whose instance is created per-request
 		builder.Services
-		  .AddScoped<DatabaseContext>()
-		  .AddScoped<FriendService>()
-		  .AddScoped<AccountService>()
-		  .AddScoped<SessionService>()
-		  .AddScoped<CloudstorageService>();
+			.AddScoped<DatabaseContext>()
+			.AddScoped<FriendService>()
+			.AddScoped<AccountService>()
+			.AddScoped<SessionService>()
+			.AddScoped<CloudstorageService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
-		  .AddSingleton<CodeService>()
-		  .AddSingleton<MatchmakingService>();
+			.AddSingleton<CodeService>()
+			.AddSingleton<MatchmakingService>();
 
 		builder.Services
-		  .AddAuthentication(/*by default there is no authentication*/)
-		  .AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("bearer", null)
-		  .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null);
+			.AddAuthentication(/*by default there is no authentication*/)
+			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("bearer", null)
+			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null);
 		builder.Host.ConfigureLogging(logging =>
 		{
 			logging.ClearProviders();
