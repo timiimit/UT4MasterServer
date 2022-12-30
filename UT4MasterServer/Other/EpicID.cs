@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using UT4MasterServer.Helpers;
 
 namespace UT4MasterServer;
 
@@ -27,30 +28,10 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 
 		ID = id.ToLower();
 
-		if (!IsHexString(ID))
+		if (!ID.IsHexString())
 		{
 			throw new ArgumentException("id needs to be a hexadecimal string");
 		}
-	}
-
-	public static bool IsHexString(string input)
-	{
-		if (string.IsNullOrWhiteSpace(input))
-		{
-			return false;
-		}
-
-		input = input.ToLower();
-
-		foreach (var c in input)
-		{
-			if (!((c >= 'a' && c <= 'f') || (c >= '0' && c <= '9')))
-			{
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	public static EpicID FromString(string id)

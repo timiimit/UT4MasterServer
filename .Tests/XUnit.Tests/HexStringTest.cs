@@ -1,4 +1,4 @@
-using UT4MasterServer;
+using UT4MasterServer.Helpers;
 
 namespace XUnit.Tests;
 
@@ -25,6 +25,6 @@ public class HexStringTest
 	[MemberData(nameof(IsHexStringTestCases))]
 	public void TestIsHexString(string input, bool expected)
 	{
-		Assert.Equal(expected, EpicID.IsHexString(input));
+		Assert.Equal(expected, input.IsHexString());
 	}
 }
