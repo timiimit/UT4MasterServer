@@ -81,6 +81,9 @@ public class GameServerAttributes
 	/// <returns>true if attribute with name <paramref name="key"/> contains value equal to <paramref name="value"/>, false otherwise</returns>
 	public bool Eq(string key, JsonElement value)
 	{
+		if (!Contains(key))
+			return value.ValueKind == JsonValueKind.Null;
+
 		var obj = ServerConfigs[key];
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
@@ -101,6 +104,9 @@ public class GameServerAttributes
 	/// <returns>true if attribute with name <paramref name="key"/> contains value less than <paramref name="value"/>, false otherwise</returns>
 	public bool Lt(string key, JsonElement value)
 	{
+		if (!Contains(key))
+			return false;
+
 		var obj = ServerConfigs[key];
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
@@ -121,6 +127,9 @@ public class GameServerAttributes
 	/// <returns>true if attribute with name <paramref name="key"/> contains value less than or equal to <paramref name="value"/>, false otherwise</returns>
 	public bool Lte(string key, JsonElement value)
 	{
+		if (!Contains(key))
+			return value.ValueKind == JsonValueKind.Null;
+
 		var obj = ServerConfigs[key];
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
