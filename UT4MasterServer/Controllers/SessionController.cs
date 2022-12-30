@@ -57,6 +57,10 @@ public class SessionController : JsonAPIController
 					if (codeAuth != null)
 						session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
 				}
+				else
+				{
+					return ErrorInvalidRequest("code");
+				}
 				break;
 			}
 			case "exchange_code":
@@ -67,6 +71,10 @@ public class SessionController : JsonAPIController
 					if (codeExchange != null)
 						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
 				}
+				else
+				{
+					return ErrorInvalidRequest("exchange_code");
+				}
 				break;
 			}
 			case "refresh_token":
@@ -74,6 +82,10 @@ public class SessionController : JsonAPIController
 				if (refreshToken != null)
 				{
 					session = await sessionService.RefreshSessionAsync(refreshToken);
+				}
+				else
+				{
+					return ErrorInvalidRequest("refresh_token");
 				}
 				break;
 			}
@@ -95,19 +107,33 @@ public class SessionController : JsonAPIController
 				//       really need multi-factor auth. it is after all the way that ut's login screen
 				//       works when you start the game without launcher (and without UT4UU).
 
-				if (username != null && password != null)
+				if (username == null)
 				{
-					account = await accountService.GetAccountAsync(username, password);
-					if (account != null)
-						session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+					return ErrorInvalidRequest("username");
 				}
+
+				if (password == null)
+				{
+					return ErrorInvalidRequest("password");
+				}
+
+				account = await accountService.GetAccountAsync(username, password);
+				if (account != null)
+					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+				// TODO: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
 				break;
 			}
 			default:
 			{
-				return BadRequest(new ErrorResponse()
+				return BadRequest(new ErrorResponse
 				{
-					Error = "invalid_grant"
+					ErrorCode = "errors.com.epicgames.common.oauth.unsupported_grant_type",
+					ErrorMessage = $"Unsupported grant type: {grantType}",
+					NumericErrorCode = 1016,
+					OriginatingService = "com.epicgames.account.public",
+					Intent = "prod",
+					ErrorDescription = $"Unsupported grant type: {grantType}",
+					Error = "unsupported_grant_type",
 				});
 			}
 		}
@@ -123,7 +149,7 @@ public class SessionController : JsonAPIController
 		obj.Add("access_token", session.AccessToken.Value);
 		obj.Add("expires_in", session.AccessToken.ExpirationDurationInSeconds);
 		obj.Add("expires_at", session.AccessToken.ExpirationTime.ToStringISO());
-		obj.Add("token_type", HttpAuthorization.BearerScheme);
+		obj.Add("token_type", HttpAuthorization.BearerScheme.ToLower());
 		if (!session.AccountID.IsEmpty && account != null)
 		{
 			obj.Add("refresh_token", session.RefreshToken.Value);
@@ -157,6 +183,21 @@ public class SessionController : JsonAPIController
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
+
+		/* TODO: Check if user has permission and throw:
+		{
+			"errorCode": "errors.com.epicgames.common.missing_permission",
+			"errorMessage": "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation",
+			"messageVars": [
+
+			"account:oauth:exchangeTokenCode",
+			"CREATE"
+				],
+			"numericErrorCode": 1023,
+			"originatingService": "com.epicgames.account.public",
+			"intent": "prod"
+		}
+		*/
 
 		var code = await codeService.CreateCodeAsync(CodeKind.Exchange, user.Session.AccountID, user.Session.ClientID);
 		if (code == null)
@@ -257,7 +298,7 @@ public class SessionController : JsonAPIController
 		{
 			"token": "06577db463064b89af0657b5445b08b7",
 			"session_id": "06577db463064b89af0657b5445b08b7",
-			"token_type": "Bearer",
+			"token_type": "bearer",
 			"client_id": "1252412dc7704a9690f6ea4611bc81ee",
 			"internal_client": false,
 			"client_service": "ut",
@@ -288,7 +329,7 @@ public class SessionController : JsonAPIController
 		{
 			{ "token", user.AccessToken },
 			{ "session_id", user.Session.ID.ToString() },
-			{ "token_type", HttpAuthorization.BearerScheme },
+			{ "token_type", HttpAuthorization.BearerScheme.ToLower() },
 			{ "client_id", user.Session.ClientID.ToString() },
 			{ "internal_client", false },
 			{ "client_service", "ut" },
@@ -322,4 +363,18 @@ public class SessionController : JsonAPIController
 	//	logger.LogInformation($"Created session {session.ID} for user {username}");
 	//	return NoContent();
 	//}
+
+	private BadRequestObjectResult ErrorInvalidRequest(string requiredInput)
+	{
+		return BadRequest(new ErrorResponse
+		{
+			ErrorCode = "errors.com.epicgames.common.oauth.invalid_request",
+			ErrorMessage = $"{requiredInput} is required.",
+			NumericErrorCode = 1013,
+			OriginatingService = "com.epicgames.account.public",
+			Intent = "prod",
+			ErrorDescription = $"{requiredInput} is required.",
+			Error = "invalid_request",
+		});
+	}
 }

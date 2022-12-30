@@ -8,7 +8,7 @@ public class EpicUserIdentity : ClaimsIdentity
 	public Session Session { get; set; }
 	public string AccessToken { get; set; }
 
-	public EpicUserIdentity(string accessToken, Session session) : base("bearer")
+	public EpicUserIdentity(string accessToken, Session session) : base(HttpAuthorization.BearerScheme)
 	{
 		AccessToken = accessToken;
 		Session = session;
