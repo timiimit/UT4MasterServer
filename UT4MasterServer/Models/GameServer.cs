@@ -71,6 +71,11 @@ public class GameServerAttributes
 
 public class GameServer
 {
+	/// <summary>
+	/// GameServer's Session
+	/// </summary>
+	public EpicID SessionID { get; set; } = EpicID.Empty;
+
 	[BsonId]
 	[JsonPropertyName("id")]
 	public EpicID ID { get; set; } = EpicID.Empty;
