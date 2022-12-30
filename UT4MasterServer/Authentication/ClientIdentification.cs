@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace UT4MasterServer.Authorization;
+namespace UT4MasterServer.Authentication;
 
 public class ClientIdentification
 {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UT4MasterServer.Authorization;
+using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Controllers;

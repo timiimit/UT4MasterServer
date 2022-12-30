@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 
-namespace UT4MasterServer;
+namespace UT4MasterServer.Authentication;
 
 public class Token
 {

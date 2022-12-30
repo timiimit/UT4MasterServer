@@ -1,7 +1,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
-using UT4MasterServer.Authorization;
+using UT4MasterServer.Authentication;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;

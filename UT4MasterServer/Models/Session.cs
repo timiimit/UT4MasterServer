@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using UT4MasterServer.Authentication;
 
 namespace UT4MasterServer.Models;
 

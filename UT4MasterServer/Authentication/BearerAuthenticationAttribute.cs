@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace UT4MasterServer.Authorization;
+namespace UT4MasterServer.Authentication;
 
 public class AuthorizeBearerAttribute : AuthorizeAttribute
 {
 	public AuthorizeBearerAttribute()
 	{
-		AuthenticationSchemes = "bearer";
+		AuthenticationSchemes = HttpAuthorization.BearerScheme;
 	}
 }

@@ -1,12 +1,12 @@
 ﻿using System.Security.Claims;
 
-namespace UT4MasterServer.Authorization;
+namespace UT4MasterServer.Authentication;
 
 public class EpicClientIdentity : ClaimsIdentity
 {
 	public ClientIdentification Client { get; private set; }
 
-	public EpicClientIdentity(ClientIdentification client) : base("basic")
+	public EpicClientIdentity(ClientIdentification client) : base(HttpAuthorization.BasicScheme)
 	{
 		Client = client;
 

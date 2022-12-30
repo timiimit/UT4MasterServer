@@ -1,12 +1,11 @@
-
 using Microsoft.AspNetCore.Authorization;
 
-namespace UT4MasterServer.Authorization;
+namespace UT4MasterServer.Authentication;
 
 public class AuthorizeBasicAttribute : AuthorizeAttribute
 {
 	public AuthorizeBasicAttribute()
 	{
-		AuthenticationSchemes = "basic";
+		AuthenticationSchemes = HttpAuthorization.BasicScheme;
 	}
 }
