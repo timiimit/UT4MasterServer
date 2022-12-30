@@ -73,6 +73,12 @@ public class GameServerAttributes
 		return ServerConfigs.ContainsKey(key);
 	}
 
+	/// <summary>
+	/// Check if stored attribute is equal to <paramref name="value"/>, no matter the type
+	/// </summary>
+	/// <param name="key">attribute key</param>
+	/// <param name="value">attribute comparison value</param>
+	/// <returns>true if attribute with name <paramref name="key"/> contains value equal to <paramref name="value"/>, false otherwise</returns>
 	public bool Eq(string key, JsonElement value)
 	{
 		var obj = ServerConfigs[key];
@@ -87,6 +93,12 @@ public class GameServerAttributes
 		return false;
 	}
 
+	/// <summary>
+	/// Check if stored attribute is less than <paramref name="value"/>, no matter the type
+	/// </summary>
+	/// <param name="key">attribute key</param>
+	/// <param name="value">attribute comparison value</param>
+	/// <returns>true if attribute with name <paramref name="key"/> contains value less than <paramref name="value"/>, false otherwise</returns>
 	public bool Lt(string key, JsonElement value)
 	{
 		var obj = ServerConfigs[key];
@@ -101,6 +113,12 @@ public class GameServerAttributes
 		return false;
 	}
 
+	/// <summary>
+	/// Check if stored attribute is less than or equal to <paramref name="value"/>, no matter the type
+	/// </summary>
+	/// <param name="key">attribute key</param>
+	/// <param name="value">attribute comparison value</param>
+	/// <returns>true if attribute with name <paramref name="key"/> contains value less than or equal to <paramref name="value"/>, false otherwise</returns>
 	public bool Lte(string key, JsonElement value)
 	{
 		var obj = ServerConfigs[key];
