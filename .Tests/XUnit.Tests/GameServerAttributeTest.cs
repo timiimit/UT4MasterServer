@@ -46,7 +46,7 @@ public class GameServerAttributeTest
 		{ "null", false, false, false },
 	};
 
-		[Theory]
+	[Theory]
 	[MemberData(nameof(TestCases))]
 	public void TestAttributesNonNull(object? attrValue, object? compareValue, bool expectedEq, bool expectedLt, bool expectedLte)
 	{
