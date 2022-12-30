@@ -2,6 +2,7 @@ version: "3.7"
 
 services:
   ut4masterserver:
+    container_name: UT4MasterServer
     image: ${DOCKER_REGISTRY-}ut4masterserver
     build:
       context: .
@@ -10,6 +11,7 @@ services:
       - "80:80"
       - "443:443"
   mongo:
+    container_name: mongo
     image: mongo
     environment:
       - MONGO_INITDB_ROOT_USERNAME=devroot
@@ -18,7 +20,9 @@ services:
     ports:
       - "27015:27015"
   mongo-express:
+    container_name: mongo-express
     image: mongo-express
+    restart: always
     environment:
       - ME_CONFIG_MONGODB_SERVER=mongo
       - ME_CONFIG_MONGODB_PORT=27017
