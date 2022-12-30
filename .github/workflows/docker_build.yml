@@ -2,7 +2,19 @@ name: Build Docker Image
 
 on:
   pull_request:
+    paths-ignore:
+      - '*.md'
+      - 'OldReferenceCode/**'
+      - 'XMPP-ejabberd/**'
+      - 'OldReferenceCode/**'
+      - 'Files/Engine.ini'
   push:
+    paths-ignore:
+      - '*.md'
+      - 'OldReferenceCode/**'
+      - 'XMPP-ejabberd/**'
+      - 'OldReferenceCode/**'
+      - 'Files/Engine.ini'
 
 env:
   IMAGE_NAME: ut4masterserver
