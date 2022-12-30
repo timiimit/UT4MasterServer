@@ -23,3 +23,9 @@
 **/values.dev.yaml
 LICENSE
 README.md
+
+# Our rules
+
+**/.github
+OldReferenceCode/**
+Files/Engine.ini

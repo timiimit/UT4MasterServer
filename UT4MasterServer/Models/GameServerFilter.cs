@@ -1,5 +1,3 @@
-
-
 /*
 
 			{
@@ -22,7 +20,6 @@
 
 */
 
-using Newtonsoft.Json;
 using System.Text.Json;
 
 namespace UT4MasterServer.Models;
@@ -37,7 +34,8 @@ public class GameServerAttributeCriteria
 
 public class GameServerFilter
 {
-	public List<GameServerAttributeCriteria> Criteria { get; set; } = new List<GameServerAttributeCriteria>();
-	public string BuildUniqueId { get; set; } = string.Empty;
-	public int MaxResults { get; set; } = 0;
+	public List<GameServerAttributeCriteria> Criteria { get; set; } = new();
+	public string? BuildUniqueId { get; set; } = null;
+	public int? OpenPlayersRequired { get; set; } = null;
+	public int? MaxResults { get; set; } = null;
 }

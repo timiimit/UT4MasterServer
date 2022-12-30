@@ -55,7 +55,7 @@ public class GameServerAttributesJsonConverter : JsonConverter<GameServerAttribu
 	public override void Write(Utf8JsonWriter writer, GameServerAttributes value, JsonSerializerOptions options)
 	{
 		writer.WriteStartObject();
-		foreach (var attrib in value.ServerConfigs)
+		foreach (var attrib in value.GetUnderlyingDict())
 		{
 			writer.WritePropertyName(attrib.Key);
 			if (attrib.Value is string)
