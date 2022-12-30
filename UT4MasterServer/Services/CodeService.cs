@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Services;

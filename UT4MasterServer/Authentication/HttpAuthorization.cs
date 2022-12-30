@@ -1,16 +1,20 @@
 ﻿using System.Net;
 
-namespace UT4MasterServer.Authorization;
+namespace UT4MasterServer.Authentication;
 
 public class HttpAuthorization
 {
 	public string Type { get; set; } = string.Empty;
 	public string Value { get; set; } = string.Empty;
 
-	public bool IsBearer { get => Type == "bearer"; }
-	public bool IsBasic { get => Type == "basic"; }
+	public const string AuthorizationHeader = "Authorization";
+	public const string BearerScheme = "Bearer";
+	public const string BasicScheme = "Basic";
 
-	public HttpAuthorization(HttpListenerRequest request) : this(request.Headers["Authorization"])
+	public bool IsBearer => Type.ToLower() == BearerScheme.ToLower();
+	public bool IsBasic => Type.ToLower() == BasicScheme.ToLower();
+
+	public HttpAuthorization(HttpListenerRequest request) : this(request.Headers[AuthorizationHeader])
 	{
 	}
 

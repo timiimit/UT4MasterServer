@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
-using UT4MasterServer.Authorization;
+using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
@@ -123,7 +123,7 @@ public class SessionController : JsonAPIController
 		obj.Add("access_token", session.AccessToken.Value);
 		obj.Add("expires_in", session.AccessToken.ExpirationDurationInSeconds);
 		obj.Add("expires_at", session.AccessToken.ExpirationTime.ToStringISO());
-		obj.Add("token_type", "bearer");
+		obj.Add("token_type", HttpAuthorization.BearerScheme);
 		if (!session.AccountID.IsEmpty && account != null)
 		{
 			obj.Add("refresh_token", session.RefreshToken.Value);
@@ -194,7 +194,7 @@ public class SessionController : JsonAPIController
 	}
 
 
-	[HttpDelete("sessions/kill/{accessToken}")] // we dont need to use token in url because we have it in 
+	[HttpDelete("sessions/kill/{accessToken}")] // we dont need to use token in url because we have it in
 	public async Task<IActionResult> KillSession(string accessToken)
 	{
 		if (User.Identity is not EpicUserIdentity user)
@@ -242,7 +242,7 @@ public class SessionController : JsonAPIController
 
 		return NoContent();
 	}
-  
+
 	// TODO: Make sure this does what it's supposed to. 200 OK should be enough for the client to know the session is still valid.
 	[HttpGet]
 	[Route("verify")]
@@ -253,11 +253,11 @@ public class SessionController : JsonAPIController
 
 		// no refresh needed, but we should respond with this:
 		/*
-		
+
 		{
 			"token": "06577db463064b89af0657b5445b08b7",
 			"session_id": "06577db463064b89af0657b5445b08b7",
-			"token_type": "bearer",
+			"token_type": "Bearer",
 			"client_id": "1252412dc7704a9690f6ea4611bc81ee",
 			"internal_client": false,
 			"client_service": "ut",
@@ -271,7 +271,6 @@ public class SessionController : JsonAPIController
 			"device_id": "ee64ee5f292b45f089a368cb7e43d82d",
 			"perms": [...]
 		}
-
 		*/
 
 		string auth_method = user.Session.CreationMethod switch
@@ -289,7 +288,7 @@ public class SessionController : JsonAPIController
 		{
 			{ "token", user.AccessToken },
 			{ "session_id", user.Session.ID.ToString() },
-			{ "token_type", "bearer" },
+			{ "token_type", HttpAuthorization.BearerScheme },
 			{ "client_id", user.Session.ClientID.ToString() },
 			{ "internal_client", false },
 			{ "client_service", "ut" },
@@ -306,7 +305,7 @@ public class SessionController : JsonAPIController
 
 		return Json(obj);
 	}
-  
+
 	//[HttpPost]
 	//[Route("login/account")]
 	//public async Task<ActionResult> LoginAccount([FromForm] string username, [FromForm] string password)

@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using UT4MasterServer.Models;
 
-namespace UT4MasterServer.Authorization;
+namespace UT4MasterServer.Authentication;
 
 public class EpicUserIdentity : ClaimsIdentity
 {

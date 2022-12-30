@@ -31,7 +31,7 @@
 				{
 					method: "POST",
 					body: formData,
-					headers: { "Authorization": "basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y=" }
+					headers: { "Authorization": "Basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y=" }
 				})
 
 			if (!result.ok)
@@ -42,7 +42,7 @@
 			result = await fetch("/account/api/oauth/auth",
 				{
 					method: "GET",
-					headers: { "Authorization": "bearer " + session["access_token"] }
+					headers: { "Authorization": "Bearer " + session["access_token"] }
 				});
 
 			if (!result.ok)

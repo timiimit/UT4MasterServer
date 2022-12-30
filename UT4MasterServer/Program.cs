@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
@@ -39,8 +40,8 @@ public static class Program
 
 		builder.Services
 			.AddAuthentication(/*by default there is no authentication*/)
-			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>("bearer", null)
-			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("basic", null);
+			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>(HttpAuthorization.BearerScheme, null)
+			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(HttpAuthorization.BasicScheme, null);
 		builder.Host.ConfigureLogging(logging =>
 		{
 			logging.ClearProviders();
@@ -48,7 +49,32 @@ public static class Program
 		});
 
 		builder.Services.AddEndpointsApiExplorer();
-		builder.Services.AddSwaggerGen();
+		builder.Services.AddSwaggerGen(config =>
+		{
+			config.AddSecurityDefinition(HttpAuthorization.BearerScheme, new OpenApiSecurityScheme
+			{
+				Description = "Copy 'Bearer ' + valid JWT token into field",
+				Type = SecuritySchemeType.ApiKey,
+				In = ParameterLocation.Header,
+				Scheme = HttpAuthorization.BearerScheme,
+				Name = HttpAuthorization.AuthorizationHeader,
+			});
+
+			config.AddSecurityRequirement(new OpenApiSecurityRequirement
+			{
+				{
+					new OpenApiSecurityScheme
+					{
+						Reference = new OpenApiReference
+						{
+							Type = ReferenceType.SecurityScheme,
+							Id = HttpAuthorization.BearerScheme,
+						}
+					},
+					new string[] { }
+				},
+			});
+		});
 
 		var app = builder.Build();
 

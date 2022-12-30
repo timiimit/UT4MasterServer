@@ -1,11 +1,10 @@
 // Copyright (c) Barry Dorrans. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using UT4MasterServer.Authorization;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 
 namespace UT4MasterServer.Authentication;
 
@@ -20,7 +19,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 	{
 		return await Task.Run(() =>
 		{
-			var authorizationHeader = Request.Headers["Authorization"];
+			var authorizationHeader = Request.Headers[HttpAuthorization.AuthorizationHeader];
 			var authorization = new HttpAuthorization(authorizationHeader);
 			if (!authorization.IsBasic)
 			{
@@ -30,7 +29,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 			var client = new ClientIdentification(authorization.Value);
 			if (client.ID.IsEmpty || client.Secret.IsEmpty)
 			{
-				const string errMessage = $"unexpected value in authorization header";
+				const string errMessage = "unexpected value in authorization header";
 				Logger.LogInformation(errMessage);
 				return AuthenticateResult.Fail(errMessage);
 			}

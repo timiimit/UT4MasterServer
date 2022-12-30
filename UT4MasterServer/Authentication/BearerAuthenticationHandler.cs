@@ -1,11 +1,10 @@
 // Copyright (c) Barry Dorrans. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using UT4MasterServer.Authorization;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Authentication;
@@ -22,7 +21,7 @@ public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationS
 
 	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
-		var authorizationHeader = Request.Headers["Authorization"];
+		var authorizationHeader = Request.Headers[HttpAuthorization.AuthorizationHeader];
 		var authorization = new HttpAuthorization(authorizationHeader);
 		if (!authorization.IsBearer)
 		{
@@ -32,7 +31,7 @@ public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationS
 		var session = await sessionService.GetSessionAsync(authorization.Value);
 		if (session == null)
 		{
-			const string errMessage = $"invalid token";
+			const string errMessage = "invalid token";
 			Logger.LogInformation(errMessage);
 			return AuthenticateResult.Fail(errMessage);
 		}
