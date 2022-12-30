@@ -17,216 +17,223 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentMatchmakingController : JsonAPIController
 {
-    private readonly ILogger<SessionController> logger;
-    private readonly MatchmakingService matchmakingService;
-    private const int MAX_READ_SIZE = 1024 * 4;
+	private readonly ILogger<SessionController> logger;
+	private readonly MatchmakingService matchmakingService;
+	private const int MAX_READ_SIZE = 1024 * 4;
 
-    public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, MatchmakingService matchmakingService)
-    {
-        this.logger = logger;
-        this.matchmakingService = matchmakingService;
+	public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, MatchmakingService matchmakingService)
+	{
+		this.logger = logger;
+		this.matchmakingService = matchmakingService;
 
-    }
+	}
 
-    #region Endpoints for Game Servers
+	#region Endpoints for Game Servers
 
-    [HttpPost("session")]
-    public async Task<IActionResult> StartGameServer()
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpPost("session")]
+	public async Task<IActionResult> StartGameServer()
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
 
-        var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-        var body = await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE);
-        var server = JsonSerializer.Deserialize<GameServer>(body, options);
-        if (server == null)
-            return BadRequest();
+		var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+		var body = await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE);
+		var server = JsonSerializer.Deserialize<GameServer>(body, options);
+		if (server == null)
+			return BadRequest();
 
-        server.ID = EpicID.GenerateNew();
-        server.LastUpdated = DateTime.UtcNow;
+		server.SessionID = user.Session.ID;
+		server.ID = EpicID.GenerateNew();
+		server.LastUpdated = DateTime.UtcNow;
 
-        var ipAddress = HttpContext.Connection.RemoteIpAddress;
-        if (ipAddress == null)
-        {
-            // TODO: wtf!? why can this be null???
-            logger.LogCritical($"Could not determine ip address of remote GameServer, this issue needs to be resolved!");
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
-        if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-        {
-            // ipv6 does not seem to work
-            logger.LogWarning($"GameServer is connecting from ipv6 address ({ipAddress})! mapping to ipv4...");
-            ipAddress = ipAddress.MapToIPv4();
-        }
-        server.ServerAddress = ipAddress.ToString();
-        server.Started = false;
+		var ipAddress = HttpContext.Connection.RemoteIpAddress;
+		if (ipAddress == null)
+		{
+			// TODO: wtf!? why can this be null???
+			logger.LogCritical($"Could not determine ip address of remote GameServer, this issue needs to be resolved!");
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+		if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+		{
+			// ipv6 does not seem to work
+			logger.LogWarning($"GameServer is connecting from ipv6 address ({ipAddress})! mapping to ipv4...");
+			ipAddress = ipAddress.MapToIPv4();
+		}
+		server.ServerAddress = ipAddress.ToString();
+		server.Started = false;
 
-        // TODO: figure out trusted keys & determine trust level
-        server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)GameServerTrust.Untrusted);
+		// TODO: figure out trusted keys & determine trust level
+		server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)GameServerTrust.Untrusted);
 
-        matchmakingService.Add(user.Session.ID, server);
+		await matchmakingService.Add(server);
 
-        return Json(server.ToJson(false));
-    }
+		return Json(server.ToJson(false));
+	}
 
-    [HttpPut("session/{id}")]
-    public async Task<IActionResult> UpdateGameServer(string id)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpPut("session/{id}")]
+	public async Task<IActionResult> UpdateGameServer(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
 
-        var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-        var body = await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE);
-        var update = JsonSerializer.Deserialize<GameServer>(body, options);
-        if (update == null)
-            return BadRequest();
+		var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+		var body = await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE);
+		var update = JsonSerializer.Deserialize<GameServer>(body, options);
+		if (update == null)
+			return BadRequest();
 
-        var old = matchmakingService.Get(user.Session.ID, update.ID);
-        if (old == null)
-            return BadRequest();
+		var old = await matchmakingService.Get(user.Session.ID, update.ID);
+		if (old == null)
+			return BadRequest();
 
-        old.Update(update);
+		old.Update(update);
 
-        matchmakingService.Update(user.Session.ID, old);
+		await matchmakingService.Update(old);
 
-        return Json(old.ToJson(false));
-    }
+		return Json(old.ToJson(false));
+	}
 
-    [HttpPost("session/{id}/start")]
-    public IActionResult NotifyGameServerIsReady(string id)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpPost("session/{id}/start")]
+	public async Task<IActionResult> NotifyGameServerIsReady(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
 
-        var serverID = EpicID.FromString(id);
+		var serverID = EpicID.FromString(id);
 
-        var server = matchmakingService.Get(user.Session.ID, serverID);
-        if (server == null)
-            return BadRequest();
+		var server = await matchmakingService.Get(user.Session.ID, serverID);
+		if (server == null)
+			return BadRequest();
 
-        server.Started = true;
+		server.Started = true;
 
-        matchmakingService.Update(user.Session.ID, server);
+		await matchmakingService.Update(server);
 
-        return NoContent();
-    }
+		return NoContent();
+	}
 
-    [HttpPost("session/{id}/heartbeat")]
-    public IActionResult GameServerHeartbeat(string id)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpPost("session/{id}/heartbeat")]
+	public async Task<IActionResult> GameServerHeartbeat(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
 
-        var server = matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
-        if (server == null)
-            return BadRequest();
+		var server = await matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
+		if (server == null)
+			return BadRequest();
 
-        server.LastUpdated = DateTime.UtcNow;
-        matchmakingService.Update(user.Session.ID, server);
+		server.LastUpdated = DateTime.UtcNow;
+		await matchmakingService.Update(server);
 
-        return NoContent();
-    }
+		return NoContent();
+	}
 
-    [HttpPost("session/{id}/players")]
-    public async Task<IActionResult> UpdateGameServerPlayers(string id)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpPost("session/{id}/players")]
+	public async Task<IActionResult> UpdateGameServerPlayers(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
 
-        var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-        var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
+		var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+		var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
 
-        if (serverOnlyWithPlayers == null)
-            return NoContent();
+		if (serverOnlyWithPlayers == null)
+			return NoContent();
 
-        var serverID = EpicID.FromString(id);
+		var serverID = EpicID.FromString(id);
 
-        var old = matchmakingService.Get(user.Session.ID, serverID);
-        if (old == null)
-            return NoContent();
+		var old = await matchmakingService.Get(user.Session.ID, serverID);
+		if (old == null)
+			return NoContent();
 
-        old.PublicPlayers = serverOnlyWithPlayers.PublicPlayers;
-        old.PrivatePlayers = serverOnlyWithPlayers.PrivatePlayers;
+		old.PublicPlayers = serverOnlyWithPlayers.PublicPlayers;
+		old.PrivatePlayers = serverOnlyWithPlayers.PrivatePlayers;
 
-        matchmakingService.Update(serverID, old);
+		await matchmakingService.Update(old);
 
-        return Json(old.ToJson(false));
-    }
+		return Json(old.ToJson(false));
+	}
 
-    [HttpDelete("session/{id}/players")]
-    public async Task<IActionResult> RemovePlayer(string id)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpDelete("session/{id}/players")]
+	public async Task<IActionResult> RemovePlayer(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
 
-        var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-        var players = JsonSerializer.Deserialize<EpicID[]>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
-        if (players == null)
-            return BadRequest();
+		var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
+		var players = JsonSerializer.Deserialize<EpicID[]>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
+		if (players == null)
+			return BadRequest();
 
-        var server = matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
-        if (server == null)
-            return BadRequest();
+		var server = await matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
+		if (server == null)
+			return BadRequest();
 
-        foreach (var player in players)
-        {
-            server.PublicPlayers.Remove(player);
-            server.PrivatePlayers.Remove(player);
-        }
+		foreach (var player in players)
+		{
+			server.PublicPlayers.Remove(player);
+			server.PrivatePlayers.Remove(player);
+		}
 
-        return Json(server.ToJson(false));
-    }
+		return Json(server.ToJson(false));
+	}
 
-    #endregion
+	#endregion
 
-    #region Endpoints for Clients
+	#region Endpoints for Clients
 
-    [AllowAnonymous]
-    [HttpPost("session/matchMakingRequest")]
-    public IActionResult ListGameServers([FromBody] GameServerFilter filter)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-        {
-            // allow any third-party project to easily access hub list without any authentication
-        }
+	[AllowAnonymous]
+	[HttpPost("session/matchMakingRequest")]
+	public async Task<IActionResult> ListGameServers([FromBody] GameServerFilter filter)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			// allow any third-party project to easily access hub list without any authentication
+		}
 
-        var servers = matchmakingService.List(filter);
+		var servers = await matchmakingService.List(filter);
 
-        //var list = new GameServer[]
-        //{
-        //	new GameServer("we", "[DS]dallastn-22938", "192.223.24.243"),
-        //	new GameServer("cracked", "[DS]dallastn-22938", "192.223.24.243"),
-        //	new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"),
-        //	new GameServer("code", "[DS]dallastn-22938", "192.223.24.243"),
-        //	new GameServer("and", "[DS]dallastn-22938", "192.223.24.243"),
-        //	new GameServer("entered", "[DS]dallastn-22938", "192.223.24.243"),
-        //	new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"), // does not show, due to duplicate data
-        //	new GameServer("matrix", "[DS]dallastn-22938", "192.223.24.243"),
-        //};
+		//var list = new GameServer[]
+		//{
+		//	new GameServer("we", "[DS]dallastn-22938", "192.223.24.243"),
+		//	new GameServer("cracked", "[DS]dallastn-22938", "192.223.24.243"),
+		//	new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"),
+		//	new GameServer("code", "[DS]dallastn-22938", "192.223.24.243"),
+		//	new GameServer("and", "[DS]dallastn-22938", "192.223.24.243"),
+		//	new GameServer("entered", "[DS]dallastn-22938", "192.223.24.243"),
+		//	new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"), // does not show, due to duplicate data
+		//	new GameServer("matrix", "[DS]dallastn-22938", "192.223.24.243"),
+		//};
 
-        var arr = new JArray();
-        foreach (var server in servers)
-        {
+		var arr = new JArray();
+		foreach (var server in servers)
+		{
 #if DEBUG && USE_LOCALHOST_TEST
-            server.ServerAddress = "127.0.0.1";
+			server.ServerAddress = "127.0.0.1";
 #endif
 
-            arr.Add(server.ToJson(true));
-        }
+			arr.Add(server.ToJson(true));
+		}
 
-        return Json(arr);
-    }
+		return Json(arr);
+	}
 
-    [HttpPost("session/{id}/join")]
-    public IActionResult PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpPost("session/{id}/join")]
+	public IActionResult PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
 
-        EpicID eid = EpicID.FromString(id);
+		EpicID eid = EpicID.FromString(id);
 
-        return NoContent(); // correct response
-    }
+		// TODO: we should verify that specific user has joined specific GameServer
+		//       instead of just relying on GameServer blindly believing that user
+		//       really is who he says he is.
+		//       Then we can probably deny user's entry to GameServer by not sending data
+		//       in QueryProfile request (just a guess).
 
-    #endregion
+		return NoContent(); // correct response
+	}
+
+	#endregion
 }

@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace UT4MasterServer;
@@ -12,7 +14,7 @@ public enum GameServerTrust
 
 public class GameServerAttributes
 {
-	public Dictionary<string, object> ServerConfigs;
+	private Dictionary<string, object> ServerConfigs;
 
 	public GameServerAttributes()
 	{
@@ -21,20 +23,20 @@ public class GameServerAttributes
 
 	public void Set(string key, string? value)
 	{
-		SetInternal(key, value);
+		SetDirect(key, value);
 	}
 
 	public void Set(string key, int? value)
 	{
-		SetInternal(key, value);
+		SetDirect(key, value);
 	}
 
 	public void Set(string key, bool? value)
 	{
-		SetInternal(key, value);
+		SetDirect(key, value);
 	}
 
-	public void SetInternal(string key, object? value)
+	internal void SetDirect(string key, object? value)
 	{
 		if (value != null)
 		{
@@ -48,6 +50,96 @@ public class GameServerAttributes
 			if (ServerConfigs.ContainsKey(key))
 				ServerConfigs.Remove(key);
 		}
+	}
+
+	internal Dictionary<string, object> GetUnderlyingDict()
+	{
+		return ServerConfigs;
+	}
+
+	public void Update(GameServerAttributes other)
+	{
+		foreach (var attribute in other.ServerConfigs)
+		{
+			if (attribute.Key == "UT_SERVERTRUSTLEVEL_i")
+				continue; // do not allow server to modify this attribute
+
+			SetDirect(attribute.Key, attribute.Value);
+		}
+	}
+
+	public bool Contains(string key)
+	{
+		return ServerConfigs.ContainsKey(key);
+	}
+
+	/// <summary>
+	/// Check if stored attribute is equal to <paramref name="value"/>, no matter the type
+	/// </summary>
+	/// <param name="key">attribute key</param>
+	/// <param name="value">attribute comparison value</param>
+	/// <returns>true if attribute with name <paramref name="key"/> contains value equal to <paramref name="value"/>, false otherwise</returns>
+	public bool Eq(string key, JsonElement value)
+	{
+		if (!Contains(key))
+			return value.ValueKind == JsonValueKind.Null;
+
+		var obj = ServerConfigs[key];
+
+		if (obj is string objString && value.ValueKind == JsonValueKind.String)
+			return objString == value.GetString();
+		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
+			return objInt == value.GetInt32();
+		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
+			return objBool == value.GetBoolean();
+
+		return false;
+	}
+
+	/// <summary>
+	/// Check if stored attribute is less than <paramref name="value"/>, no matter the type
+	/// </summary>
+	/// <param name="key">attribute key</param>
+	/// <param name="value">attribute comparison value</param>
+	/// <returns>true if attribute with name <paramref name="key"/> contains value less than <paramref name="value"/>, false otherwise</returns>
+	public bool Lt(string key, JsonElement value)
+	{
+		if (!Contains(key))
+			return false;
+
+		var obj = ServerConfigs[key];
+
+		if (obj is string objString && value.ValueKind == JsonValueKind.String)
+			return objString.CompareTo(value.GetString()) < 0;
+		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
+			return objInt < value.GetInt32();
+		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
+			return !objBool && value.GetBoolean(); // idk, compare as if its 0 or 1
+
+		return false;
+	}
+
+	/// <summary>
+	/// Check if stored attribute is less than or equal to <paramref name="value"/>, no matter the type
+	/// </summary>
+	/// <param name="key">attribute key</param>
+	/// <param name="value">attribute comparison value</param>
+	/// <returns>true if attribute with name <paramref name="key"/> contains value less than or equal to <paramref name="value"/>, false otherwise</returns>
+	public bool Lte(string key, JsonElement value)
+	{
+		if (!Contains(key))
+			return value.ValueKind == JsonValueKind.Null;
+
+		var obj = ServerConfigs[key];
+
+		if (obj is string objString && value.ValueKind == JsonValueKind.String)
+			return objString.CompareTo(value.GetString()) <= 0;
+		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
+			return objInt <= value.GetInt32();
+		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
+			return !(objBool && !value.GetBoolean()); // idk, compare as if its 0 or 1
+
+		return false;
 	}
 
 	public JObject ToJObject()
@@ -70,111 +162,123 @@ public class GameServerAttributes
 
 public class GameServer
 {
+	/// <summary>
+	/// GameServer's Session
+	/// </summary>
+	public EpicID SessionID { get; set; } = EpicID.Empty;
+
+	[BsonId]
 	[JsonPropertyName("id")]
-	public EpicID ID { get; set; }
+	public EpicID ID { get; set; } = EpicID.Empty;
 
+	[BsonElement("OwnerID")]
 	[JsonPropertyName("ownerId")]
-	public EpicID OwnerID { get; set; }
+	public EpicID OwnerID { get; set; } = EpicID.Empty;
 
+	[BsonElement("OwnerName")]
 	[JsonPropertyName("ownerName")]
-	public string OwnerName { get; set; }
+	public string OwnerName { get; set; } = "[DS]nohost-00000";
 
+	[BsonElement("ServerName")]
 	[JsonPropertyName("serverName")]
-	public string ServerName { get; set; }
+	public string ServerName { get; set; } = "[DS]nohost-00000";
 
+	[BsonElement("ServerAddress")]
 	[JsonPropertyName("serverAddress")]
-	public string ServerAddress { get; set; }
+	public string ServerAddress { get; set; } = "0.0.0.0";
 
+	[BsonElement("ServerPort")]
 	[JsonPropertyName("serverPort")]
-	public int ServerPort { get; set; }
+	public int ServerPort { get; set; } = 7777;
 
+	[BsonElement("MaxPublicPlayers")]
 	[JsonPropertyName("maxPublicPlayers")]
-	public int MaxPublicPlayers { get; set; }
+	public int MaxPublicPlayers { get; set; } = 10000;
 
+	//[BsonElement("OpenPublicPlayers")]
 	//[JsonPropertyName("openPublicPlayers")]
-	//public int OpenPublicPlayers { get; set; }
+	//public int OpenPublicPlayers { get; set; } = 10000
 
+	[BsonElement("MaxPrivatePlayers")]
 	[JsonPropertyName("maxPrivatePlayers")]
-	public int MaxPrivatePlayers { get; set; }
+	public int MaxPrivatePlayers { get; set; } = 0;
 
+	//[BsonElement("OpenPrivatePlayers")]
 	//[JsonPropertyName("openPrivatePlayers")]
-	//public int OpenPrivatePlayers { get; set; }
+	//public int OpenPrivatePlayers { get; set; } = 0;
 
+	[BsonElement("Attributes")]
 	[JsonPropertyName("attributes")]
-	public GameServerAttributes Attributes { get; set; }
+	public GameServerAttributes Attributes { get; set; } = new();
 
+	[BsonElement("PublicPlayers")]
 	[JsonPropertyName("publicPlayers")]
-	public List<EpicID> PublicPlayers { get; set; }
+	public List<EpicID> PublicPlayers { get; set; } = new();
 
+	[BsonElement("PrivatePlayers")]
 	[JsonPropertyName("privatePlayers")]
-	public List<EpicID> PrivatePlayers { get; set; }
+	public List<EpicID> PrivatePlayers { get; set; } = new();
 
+	//[BsonElement("TotalPlayers")]
 	//[JsonPropertyName("totalPlayers")]
 	//public int TotalPlayers { get; set; }
 
+	[BsonElement("AllowJoinInProgress")]
 	[JsonPropertyName("allowJoinInProgress")]
-	public bool AllowJoinInProgress { get; set; }
+	public bool AllowJoinInProgress { get; set; } = true;
 
+	[BsonElement("ShouldAdvertise")]
 	[JsonPropertyName("shouldAdvertise")]
-	public bool ShouldAdvertise { get; set; }
+	public bool ShouldAdvertise { get; set; } = true;
 
+	[BsonElement("IsDedicated")]
 	[JsonPropertyName("isDedicated")]
-	public bool IsDedicated { get; set; }
+	public bool IsDedicated { get; set; } = true;
 
+	[BsonElement("UsesStats")]
 	[JsonPropertyName("usesStats")]
-	public bool UsesStats { get; set; }
+	public bool UsesStats { get; set; } = false;
 
+	[BsonElement("UsesPresence")]
 	[JsonPropertyName("usesPresence")]
-	public bool UsesPresence { get; set; }
+	public bool UsesPresence { get; set; } = false;
 
+	[BsonElement("AllowInvites")]
 	[JsonPropertyName("allowInvites")]
-	public bool AllowInvites { get; set; }
+	public bool AllowInvites { get; set; } = true;
 
+	[BsonElement("AllowJoinViaPresence")]
 	[JsonPropertyName("allowJoinViaPresence")]
-	public bool AllowJoinViaPresence { get; set; }
+	public bool AllowJoinViaPresence { get; set; } = true;
 
+	[BsonElement("AllowJoinViaPresenceFriendsOnly")]
 	[JsonPropertyName("allowJoinViaPresenceFriendsOnly")]
-	public bool AllowJoinViaPresenceFriendsOnly { get; set; }
+	public bool AllowJoinViaPresenceFriendsOnly { get; set; } = false;
 
+	[BsonElement("BuildUniqueID")]
 	[JsonPropertyName("buildUniqueId")]
-	public string BuildUniqueID { get; set; }
+	public string BuildUniqueID { get; set; } = "256652735";
 
+	[BsonElement("LastUpdated")]
 	[JsonPropertyName("lastUpdated")]
-	public DateTime LastUpdated { get; set; }
+	public DateTime LastUpdated { get; set; } = DateTimeExtension.UnixTimestampStartOfTime;
 
+	/// <summary>
+	/// TODO: not sure what this is used for, perhaps we can remove it
+	/// entirely and just respond with static `"sortWeight": 0`
+	/// when needed
+	/// </summary>
+	[BsonElement("SortWeight")]
 	[JsonPropertyName("sortWeight")]
-	public int SortWeight { get; set; }
+	public int SortWeight { get; set; } = 0;
 
+	[BsonElement("Started")]
 	[JsonPropertyName("started")]
-	public bool Started { get; set; }
+	public bool Started { get; set; } = false;
 
 	public GameServer()
 	{
-		ID = EpicID.GenerateNew();
-		OwnerID = EpicID.GenerateNew();
-		OwnerName = "[DS]nohost-00000";
-		ServerName = "[DS]nohost-00000";
-		ServerAddress = "0.0.0.0";
-		ServerPort = 7777;
-		MaxPublicPlayers = 10000;
-		//OpenPublicPlayers = 10000;
-		MaxPrivatePlayers = 0;
-		//OpenPrivatePlayers = 0;
-		Attributes = new GameServerAttributes();
-		PublicPlayers = new List<EpicID>();
-		PrivatePlayers = new List<EpicID>();
-		//TotalPlayers = 0;
-		AllowJoinInProgress = true;
-		ShouldAdvertise = true;
-		IsDedicated = true;
-		UsesStats = false;
-		AllowInvites = true;
-		UsesPresence = false;
-		AllowJoinViaPresence = true;
-		AllowJoinViaPresenceFriendsOnly = false;
-		BuildUniqueID = "256652735";
-		LastUpdated = DateTimeExtension.UnixTimestampStartOfTime;
-		Started = false;
+		// everything is already initialized
 	}
 
 	/// <summary>
@@ -182,7 +286,7 @@ public class GameServer
 	/// </summary>
 	internal GameServer(string serverName, string domain, string ipAddress) : this()
 	{
-		// it seems that at least ServerAddress is checked before game lists a hub
+		// it seems that at least ServerAddress is checked before game actually lists a hub
 		ServerName = OwnerName = domain;
 		ServerAddress = ipAddress;
 		Attributes.Set("UT_SERVERNAME_s", serverName);
@@ -218,13 +322,7 @@ public class GameServer
 		MaxPrivatePlayers = update.MaxPrivatePlayers;
 		//OpenPublicPlayers = update.OpenPublicPlayers;
 		//OpenPrivatePlayers = update.OpenPrivatePlayers;
-		foreach (var attribute in update.Attributes.ServerConfigs)
-		{
-			if (attribute.Key == "UT_SERVERTRUSTLEVEL_i")
-				continue; // do not allow server to modify this attribute
-
-			Attributes.SetInternal(attribute.Key, attribute.Value);
-		}
+		Attributes.Update(update.Attributes);
 		PublicPlayers = update.PublicPlayers;
 		PrivatePlayers = update.PrivatePlayers;
 		//TotalPlayers = update.TotalPlayers;

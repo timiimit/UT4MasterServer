@@ -30,12 +30,12 @@ public static class Program
 			.AddScoped<FriendService>()
 			.AddScoped<AccountService>()
 			.AddScoped<SessionService>()
-			.AddScoped<CloudstorageService>();
+			.AddScoped<CloudstorageService>()
+			.AddScoped<MatchmakingService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
-			.AddSingleton<CodeService>()
-			.AddSingleton<MatchmakingService>();
+			.AddSingleton<CodeService>();
 
 		builder.Services
 			.AddAuthentication(/*by default there is no authentication*/)
