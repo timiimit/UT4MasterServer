@@ -264,7 +264,7 @@ public class GameServer
 	public DateTime LastUpdated { get; set; } = DateTimeExtension.UnixTimestampStartOfTime;
 
 	/// <summary>
-	/// not sure what this is used for, perhaps we can remove it
+	/// TODO: not sure what this is used for, perhaps we can remove it
 	/// entirely and just respond with static `"sortWeight": 0`
 	/// when needed
 	/// </summary>
