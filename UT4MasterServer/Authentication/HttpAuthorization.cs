@@ -7,8 +7,8 @@ public class HttpAuthorization
 	public string Type { get; set; } = string.Empty;
 	public string Value { get; set; } = string.Empty;
 
-	public bool IsBearer { get => Type == "bearer"; }
-	public bool IsBasic { get => Type == "basic"; }
+	public bool IsBearer { get => Type.ToLower() == "bearer"; }
+	public bool IsBasic { get => Type.ToLower() == "basic"; }
 
 	public HttpAuthorization(HttpListenerRequest request) : this(request.Headers["Authorization"])
 	{
