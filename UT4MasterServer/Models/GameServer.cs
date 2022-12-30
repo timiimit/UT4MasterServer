@@ -85,7 +85,7 @@ public class GameServerAttributes
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
 			return objString == value.GetString();
-		if (obj is int objInt && value.ValueKind == JsonValueKind.String)
+		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
 			return objInt == value.GetInt32();
 		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
 			return objBool == value.GetBoolean();
@@ -105,7 +105,7 @@ public class GameServerAttributes
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
 			return objString.CompareTo(value.GetString()) < 0;
-		if (obj is int objInt && value.ValueKind == JsonValueKind.String)
+		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
 			return objInt < value.GetInt32();
 		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
 			return !objBool && value.GetBoolean(); // idk, compare as if its 0 or 1
@@ -125,7 +125,7 @@ public class GameServerAttributes
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
 			return objString.CompareTo(value.GetString()) <= 0;
-		if (obj is int objInt && value.ValueKind == JsonValueKind.String)
+		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
 			return objInt <= value.GetInt32();
 		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
 			return !(objBool && !value.GetBoolean()); // idk, compare as if its 0 or 1
