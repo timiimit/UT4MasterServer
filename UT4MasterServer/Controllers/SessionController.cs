@@ -118,7 +118,7 @@ public class SessionController : JsonAPIController
 					return ErrorInvalidRequest("password");
 				}
 
-				// TODO: Check permission and return Error: // TODO: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
+				// TODO: Check permission and return Error: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
 				account = await accountService.GetAccountAsync(username, password);
 				if (account != null)
 					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
