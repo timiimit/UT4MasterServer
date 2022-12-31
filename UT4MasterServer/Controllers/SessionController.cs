@@ -70,6 +70,7 @@ public class SessionController : JsonAPIController
 					var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
 					if (codeExchange != null)
 						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
+					// TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
 				}
 				else
 				{
@@ -184,7 +185,7 @@ public class SessionController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		/* TODO: Check if user has permission and throw:
+		/* TODO: Check if user has permission and return:
 		{
 			"errorCode": "errors.com.epicgames.common.missing_permission",
 			"errorMessage": "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation",
@@ -234,16 +235,18 @@ public class SessionController : JsonAPIController
 		return Json(obj);
 	}
 
-
-	[HttpDelete("sessions/kill/{accessToken}")] // we dont need to use token in url because we have it in
+	// TODO: EPIC uses accessToken from URL
+	[HttpDelete("sessions/kill/{accessToken}")] // we don't need to use token in url because we have it in
 	public async Task<IActionResult> KillSession(string accessToken)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return NoContent();
 
+		// TODO: Check if session exists and return Error: "Sorry we could not find the auth session 'myAuthSessionFromURL'"
+
 		if (accessToken != user.AccessToken)
 		{
-			logger.LogInformation($"In request to kill session {user.Session.ID}, token in url didnt match the one in header. killing session anyway...");
+			logger.LogInformation($"In request to kill session {user.Session.ID}, token in url didn't match the one in header. Killing session anyway...");
 		}
 
 		await sessionService.RemoveSessionAsync(user.Session.ID);
@@ -258,27 +261,44 @@ public class SessionController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return NoContent();
 
-		if (killType == "ALL")
+		switch (killType.ToUpper())
 		{
-			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
-		}
-		else if (killType == "OTHERS")
-		{
-			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, user.Session.ID);
-		}
-		else if (killType == "ALL_ACCOUNT_CLIENT")
-		{
-			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
-		}
-		else if (killType == "OTHERS_ACCOUNT_CLIENT")
-		{
-			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
-		}
-		else if (killType == "OTHERS_ACCOUNT_CLIENT_SERVICE")
-		{
-			// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
-			// perhaps service as in epic games launcher and/or website?
-			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+			case "ALL":
+			{
+				// TODO: Check permission and return error: "Sorry your login does not posses the permissions 'account:token:allSessionsForClient DELETE' needed to perform the requested operation"
+				await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
+				break;
+			}
+			case "OTHERS":
+			{
+				// TODO: Check permission account:token:otherSessionsForClient DELETE
+				await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, user.Session.ID);
+				break;
+			}
+			case "ALL_ACCOUNT_CLIENT":
+			{
+				// TODO: Check and return error: "Cannot use the killType ALL_ACCOUNT_CLIENT with a client only OauthSession."
+				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
+				break;
+			}
+			case "OTHERS_ACCOUNT_CLIENT":
+			{
+				// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT with a client only OauthSession."
+				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+				break;
+			}
+			case "OTHERS_ACCOUNT_CLIENT_SERVICE":
+			{
+				// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT_SERVICE with a client only OauthSession."
+				// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
+				// perhaps service as in epic games launcher and/or website?
+				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+				break;
+			}
+			default:
+			{
+				return ErrorInvalidRequest("a valid killType");
+			}
 		}
 
 		return NoContent();
