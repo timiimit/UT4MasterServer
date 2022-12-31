@@ -7,6 +7,9 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// account-public-service-prod03.ol.epicgames.com
+/// </summary>
 [ApiController]
 [AuthorizeBearer]
 [Route("account/api/oauth")]

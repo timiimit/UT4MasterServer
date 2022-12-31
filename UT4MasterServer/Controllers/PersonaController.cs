@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
@@ -6,11 +5,13 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// persona-public-service-prod06.ol.epicgames.com
+/// </summary>
 [ApiController]
 [Route("persona/api/public")]
 [AuthorizeBearer]
 [Produces("application/json")]
-// persona-public-service-prod06.ol.epicgames.com
 public class PersonaController : JsonAPIController
 {
 	private readonly AccountService accountService;
