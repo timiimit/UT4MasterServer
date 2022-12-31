@@ -3,6 +3,9 @@ using UT4MasterServer.Authentication;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// entitlement-public-service-prod08.ol.epicgames.com
+/// </summary>
 [ApiController]
 [Route("entitlement/api/account/{id}/entitlements")]
 [AuthorizeBearer]

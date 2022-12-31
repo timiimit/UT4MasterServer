@@ -5,6 +5,9 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// friends-public-service-prod06.ol.epicgames.com
+/// </summary>
 [ApiController]
 [Route("friends/api/public")]
 [AuthorizeBearer]

@@ -7,6 +7,9 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// account-public-service-prod03.ol.epicgames.com
+/// </summary>
 [ApiController]
 [AuthorizeBearer]
 [Route("account/api/oauth")]
@@ -57,15 +60,24 @@ public class SessionController : JsonAPIController
 					if (codeAuth != null)
 						session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
 				}
+				else
+				{
+					return ErrorInvalidRequest("code");
+				}
 				break;
 			}
 			case "exchange_code":
 			{
 				if (exchangeCode != null)
 				{
+					// TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
 					var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
 					if (codeExchange != null)
 						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
+				}
+				else
+				{
+					return ErrorInvalidRequest("exchange_code");
 				}
 				break;
 			}
@@ -74,6 +86,10 @@ public class SessionController : JsonAPIController
 				if (refreshToken != null)
 				{
 					session = await sessionService.RefreshSessionAsync(refreshToken);
+				}
+				else
+				{
+					return ErrorInvalidRequest("refresh_token");
 				}
 				break;
 			}
@@ -95,19 +111,33 @@ public class SessionController : JsonAPIController
 				//       really need multi-factor auth. it is after all the way that ut's login screen
 				//       works when you start the game without launcher (and without UT4UU).
 
-				if (username != null && password != null)
+				if (username == null)
 				{
-					account = await accountService.GetAccountAsync(username, password);
-					if (account != null)
-						session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+					return ErrorInvalidRequest("username");
 				}
+
+				if (password == null)
+				{
+					return ErrorInvalidRequest("password");
+				}
+
+				// TODO: Check permission and return Error: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
+				account = await accountService.GetAccountAsync(username, password);
+				if (account != null)
+					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
 				break;
 			}
 			default:
 			{
-				return BadRequest(new ErrorResponse()
+				return BadRequest(new ErrorResponse
 				{
-					Error = "invalid_grant"
+					ErrorCode = "errors.com.epicgames.common.oauth.unsupported_grant_type",
+					ErrorMessage = $"Unsupported grant type: {grantType}",
+					NumericErrorCode = 1016,
+					OriginatingService = "com.epicgames.account.public",
+					Intent = "prod",
+					ErrorDescription = $"Unsupported grant type: {grantType}",
+					Error = "unsupported_grant_type",
 				});
 			}
 		}
@@ -123,7 +153,7 @@ public class SessionController : JsonAPIController
 		obj.Add("access_token", session.AccessToken.Value);
 		obj.Add("expires_in", session.AccessToken.ExpirationDurationInSeconds);
 		obj.Add("expires_at", session.AccessToken.ExpirationTime.ToStringISO());
-		obj.Add("token_type", HttpAuthorization.BearerScheme);
+		obj.Add("token_type", HttpAuthorization.BearerScheme.ToLower());
 		if (!session.AccountID.IsEmpty && account != null)
 		{
 			obj.Add("refresh_token", session.RefreshToken.Value);
@@ -157,6 +187,21 @@ public class SessionController : JsonAPIController
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
+
+		/* TODO: Check if user has permission and return:
+		{
+			"errorCode": "errors.com.epicgames.common.missing_permission",
+			"errorMessage": "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation",
+			"messageVars": [
+
+			"account:oauth:exchangeTokenCode",
+			"CREATE"
+				],
+			"numericErrorCode": 1023,
+			"originatingService": "com.epicgames.account.public",
+			"intent": "prod"
+		}
+		*/
 
 		var code = await codeService.CreateCodeAsync(CodeKind.Exchange, user.Session.AccountID, user.Session.ClientID);
 		if (code == null)
@@ -193,16 +238,18 @@ public class SessionController : JsonAPIController
 		return Json(obj);
 	}
 
-
-	[HttpDelete("sessions/kill/{accessToken}")] // we dont need to use token in url because we have it in
+	// TODO: EPIC uses accessToken from URL
+	[HttpDelete("sessions/kill/{accessToken}")] // we don't need to use token in url because we have it in
 	public async Task<IActionResult> KillSession(string accessToken)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return NoContent();
 
+		// TODO: Check if session exists and return Error: "Sorry we could not find the auth session 'myAuthSessionFromURL'"
+
 		if (accessToken != user.AccessToken)
 		{
-			logger.LogInformation($"In request to kill session {user.Session.ID}, token in url didnt match the one in header. killing session anyway...");
+			logger.LogInformation($"In request to kill session {user.Session.ID}, token in url didn't match the one in header. Killing session anyway...");
 		}
 
 		await sessionService.RemoveSessionAsync(user.Session.ID);
@@ -217,27 +264,44 @@ public class SessionController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return NoContent();
 
-		if (killType == "ALL")
+		switch (killType.ToUpper())
 		{
-			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
-		}
-		else if (killType == "OTHERS")
-		{
-			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, user.Session.ID);
-		}
-		else if (killType == "ALL_ACCOUNT_CLIENT")
-		{
-			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
-		}
-		else if (killType == "OTHERS_ACCOUNT_CLIENT")
-		{
-			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
-		}
-		else if (killType == "OTHERS_ACCOUNT_CLIENT_SERVICE")
-		{
-			// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
-			// perhaps service as in epic games launcher and/or website?
-			await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+			case "ALL":
+			{
+				// TODO: Check permission and return error: "Sorry your login does not posses the permissions 'account:token:allSessionsForClient DELETE' needed to perform the requested operation"
+				await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
+				break;
+			}
+			case "OTHERS":
+			{
+				// TODO: Check permission account:token:otherSessionsForClient DELETE
+				await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, user.Session.ID);
+				break;
+			}
+			case "ALL_ACCOUNT_CLIENT":
+			{
+				// TODO: Check and return error: "Cannot use the killType ALL_ACCOUNT_CLIENT with a client only OauthSession."
+				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
+				break;
+			}
+			case "OTHERS_ACCOUNT_CLIENT":
+			{
+				// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT with a client only OauthSession."
+				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+				break;
+			}
+			case "OTHERS_ACCOUNT_CLIENT_SERVICE":
+			{
+				// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT_SERVICE with a client only OauthSession."
+				// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
+				// perhaps service as in epic games launcher and/or website?
+				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+				break;
+			}
+			default:
+			{
+				return ErrorInvalidRequest("a valid killType");
+			}
 		}
 
 		return NoContent();
@@ -257,7 +321,7 @@ public class SessionController : JsonAPIController
 		{
 			"token": "06577db463064b89af0657b5445b08b7",
 			"session_id": "06577db463064b89af0657b5445b08b7",
-			"token_type": "Bearer",
+			"token_type": "bearer",
 			"client_id": "1252412dc7704a9690f6ea4611bc81ee",
 			"internal_client": false,
 			"client_service": "ut",
@@ -288,7 +352,7 @@ public class SessionController : JsonAPIController
 		{
 			{ "token", user.AccessToken },
 			{ "session_id", user.Session.ID.ToString() },
-			{ "token_type", HttpAuthorization.BearerScheme },
+			{ "token_type", HttpAuthorization.BearerScheme.ToLower() },
 			{ "client_id", user.Session.ClientID.ToString() },
 			{ "internal_client", false },
 			{ "client_service", "ut" },
@@ -322,4 +386,18 @@ public class SessionController : JsonAPIController
 	//	logger.LogInformation($"Created session {session.ID} for user {username}");
 	//	return NoContent();
 	//}
+
+	private BadRequestObjectResult ErrorInvalidRequest(string requiredInput)
+	{
+		return BadRequest(new ErrorResponse
+		{
+			ErrorCode = "errors.com.epicgames.common.oauth.invalid_request",
+			ErrorMessage = $"{requiredInput} is required.",
+			NumericErrorCode = 1013,
+			OriginatingService = "com.epicgames.account.public",
+			Intent = "prod",
+			ErrorDescription = $"{requiredInput} is required.",
+			Error = "invalid_request",
+		});
+	}
 }

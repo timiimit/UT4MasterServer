@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Models;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// account-public-service-prod03.ol.epicgames.com
+/// </summary>
 [ApiController]
 [Route("account/api")]
 [AuthorizeBearer]
@@ -29,12 +33,21 @@ public class AccountController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
 
-		logger.Log(LogLevel.Information, $"{authenticatedUser.Session.AccountID} is looking for account {id}");
+		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for account {id}");
 
+		// TODO: EPIC doesn't throw here if id is invalid (like 'abc'). Return this same ErrorResponse like for account_not_found
 		EpicID eid = EpicID.FromString(id);
 		var account = await accountService.GetAccountAsync(eid);
 		if (account == null)
-			return NotFound();
+			return NotFound(new ErrorResponse
+			{
+				ErrorCode = "errors.com.epicgames.account.account_not_found",
+				ErrorMessage = $"Sorry, we couldn't find an account for {id}",
+				MessageVars = new [] { id },
+				NumericErrorCode = 18007,
+				OriginatingService = "com.epicgames.account.public",
+				Intent = "prod",
+			});
 
 		var obj = new JObject();
 		obj.Add("id", account.ID.ToString());
@@ -66,6 +79,19 @@ public class AccountController : JsonAPIController
 	{
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
+
+		if (accountIDs.Count == 0 || accountIDs.Count > 100)
+		{
+			return NotFound(new ErrorResponse
+			{
+				ErrorCode = "errors.com.epicgames.account.invalid_account_id_count",
+				ErrorMessage = "Sorry, the number of account id should be at least one and not more than 100.",
+				MessageVars = new[] { "100" },
+				NumericErrorCode = 18066,
+				OriginatingService = "com.epicgames.account.public",
+				Intent = "prod",
+			});
+		}
 
 		var ids = accountIDs.Distinct().Select(x => EpicID.FromString(x));
 		var accounts = await accountService.GetAccountsAsync(ids.ToList());
