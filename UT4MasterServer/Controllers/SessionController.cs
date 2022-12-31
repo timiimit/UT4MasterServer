@@ -67,10 +67,10 @@ public class SessionController : JsonAPIController
 			{
 				if (exchangeCode != null)
 				{
+					// TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
 					var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
 					if (codeExchange != null)
 						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
-					// TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
 				}
 				else
 				{
