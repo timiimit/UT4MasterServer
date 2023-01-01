@@ -36,3 +36,11 @@ services:
       - mongo
     ports:
       - "8888:8081"
+  web:
+    container_name: web
+    image: ${DOCKER_REGISTRY-}web
+    build:
+      context: UT4MasterServer.Web
+      dockerfile: .docker/Dockerfile
+    ports:
+      - "8080:8080"

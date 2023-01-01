@@ -16,8 +16,9 @@ export default defineConfig(({ command, mode }) => {
 
     if (command === 'serve') {
     viteConfig.server = {
-      host: viteEnv.VITE_WEB_URL,
-      port: 80
+        port: 8080,
+        host: true,
+        strictPort: true
     };
   } else {
     viteConfig.base = '/dist/';
