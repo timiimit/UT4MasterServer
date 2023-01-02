@@ -37,7 +37,7 @@ public class SessionService
 
 	public async Task<Session?> GetSessionAsync(string accessToken)
 	{
-		var cursor = await sessionCollection.FindAsync(s => 
+		var cursor = await sessionCollection.FindAsync(s =>
 			s.AccessToken.Value == accessToken
 		);
 		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
@@ -52,9 +52,9 @@ public class SessionService
 		if (session == null)
 			return null;
 
-        session.Refresh();
+		session.Refresh();
 		await UpdateSessionAsync(session);
-        return session;
+		return session;
 	}
 
 	public async Task UpdateSessionAsync(Session updatedSession)
