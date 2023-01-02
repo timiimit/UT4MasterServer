@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
 
@@ -33,7 +34,6 @@ public class Session
 
 	[BsonElement("CreationMethod")]
 	public SessionCreationMethod CreationMethod { get; set; }
-
 
 	public Session(EpicID session, EpicID account, EpicID clientID, SessionCreationMethod creationMethod)
 	{

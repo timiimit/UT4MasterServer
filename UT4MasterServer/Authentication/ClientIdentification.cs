@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Authentication;
 
@@ -18,7 +19,6 @@ public class ClientIdentification
 	);
 
 	//public static string GameAuthorization = "MTI1MjQxMmRjNzcwNGE5NjkwZjZlYTQ2MTFiYzgxZWU6MmNhMGM5MjViNDY3NDg1MmJmZjkyYjI2ZjgzMjI0MzQ=";
-
 
 	public EpicID ID { get; private set; }
 	public EpicID Secret { get; private set; }

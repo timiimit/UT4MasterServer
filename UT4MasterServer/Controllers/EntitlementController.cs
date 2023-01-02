@@ -20,7 +20,6 @@ public class EntitlementController : JsonAPIController
 		//       that we find the id's of those items before its too late.
 
 		/*
-
 		Here is one for DM-Unsaved, the only one i own.
 
 		[{
@@ -64,8 +63,10 @@ public class EntitlementController : JsonAPIController
 				"country": "SI"
 			}
 		]
-
 		*/
+
+		// TODO: Permission: "Sorry your login does not posses the permissions 'entitlement:account:{id_from_param}:entitlements READ' needed to perform the requested operation"
+
 		return Json("[]");
 	}
 }

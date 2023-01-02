@@ -6,11 +6,15 @@ using Newtonsoft.Json.Linq;
 using System.Text.Json;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// ut-public-service-prod10.ol.epicgames.com
+/// </summary>
 [ApiController]
 [Route("ut/api/matchmaking")]
 [AuthorizeBearer]
@@ -103,7 +107,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		var server = await matchmakingService.Get(user.Session.ID, serverID);
 		if (server == null)
-			return BadRequest();
+			return UnknownSessionId(id);
 
 		server.Started = true;
 
@@ -120,7 +124,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		var server = await matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
 		if (server == null)
-			return BadRequest();
+			return UnknownSessionId(id);
 
 		server.LastUpdated = DateTime.UtcNow;
 		await matchmakingService.Update(server);
@@ -226,6 +230,8 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		EpicID eid = EpicID.FromString(id);
 
+		// TODO: Return UnknownSessionId(id);
+
 		// TODO: we should verify that specific user has joined specific GameServer
 		//       instead of just relying on GameServer blindly believing that user
 		//       really is who he says he is.
@@ -236,4 +242,17 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	}
 
 	#endregion
+
+	private NotFoundObjectResult UnknownSessionId(string id)
+	{
+		return NotFound(new ErrorResponse
+		{
+			ErrorCode = "errors.com.epicgames.modules.matchmaking.unknown_session",
+			ErrorMessage = $"unknown session id {id}",
+			MessageVars = new[] { id },
+			NumericErrorCode = 12101,
+			OriginatingService = "utservice",
+			Intent = "prod10",
+		});
+	}
 }

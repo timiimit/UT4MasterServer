@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using UT4MasterServer.Models;
 
-namespace UT4MasterServer;
+namespace UT4MasterServer.Other;
 
 public class GameServerAttributesJsonConverter : JsonConverter<GameServerAttributes>
 {

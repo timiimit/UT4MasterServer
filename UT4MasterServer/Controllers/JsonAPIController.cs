@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Text.Json;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Controllers;
 
@@ -11,20 +12,20 @@ namespace UT4MasterServer.Controllers;
 /// </summary>
 public class JsonAPIController : ControllerBase
 {
-	private static readonly string mimeJson = "application/json";
+	private const string MimeJson = "application/json";
 
 	[NonAction]
 	public ContentResult Json(string content)
 	{
 		// i cant find a better way than to do this.
-		return Content(content, mimeJson);
+		return Content(content, MimeJson);
 	}
 
 	[NonAction]
 	public ContentResult Json(string content, int status)
 	{
 		// i cant find a better way than to do this.
-		var r = Content(content, mimeJson);
+		var r = Content(content, MimeJson);
 		r.StatusCode = status;
 		return r;
 	}

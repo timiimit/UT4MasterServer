@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -142,7 +143,7 @@ public class AccountController : JsonAPIController
 		EpicID eid = EpicID.FromString(id);
 
 		logger.LogInformation($"Get external auths of {eid}");
-		// we dont really care about these, but structure for my github externalAuth is the following:
+		// we don't really care about these, but structure for my github externalAuth is the following:
 		/*
 		[{
 			"accountId": "0b0f09b400854b9b98932dd9e5abe7c5", "type": "github",
