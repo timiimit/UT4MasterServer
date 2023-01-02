@@ -6,6 +6,9 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
+/// <summary>
+/// ut-public-service-prod10.ol.epicgames.com
+/// </summary>
 [ApiController]
 [Route("ut/api/game/v2")]
 [AuthorizeBearer]
@@ -34,8 +37,7 @@ public class UnrealTournamentGameController : JsonAPIController
         bool isRequestSentFromClient = clientKind.ToLower() == "client";
         bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
-
-        // i think "rvn" is revision number and it represents index of profile change entry.
+        // TODO: I think "rvn" is revision number and it represents index of profile change entry.
         // negative values probably mean index from back-to-front in array.
 
         var body = await Request.BodyReader.ReadAsStringAsync(1024);
@@ -120,7 +122,9 @@ public class UnrealTournamentGameController : JsonAPIController
         if (user.Session.AccountID != EpicID.FromString(id))
             return Unauthorized();
 
-        JObject obj = JObject.Parse(await Request.BodyReader.ReadAsStringAsync(1024));
+		// TODO: Permission: "Sorry your login does not posses the permissions 'ut:profile:{id_from_params}:commands ALL' needed to perform the requested operation"
+
+		JObject obj = JObject.Parse(await Request.BodyReader.ReadAsStringAsync(1024));
 
         string? avatar = obj["newAvatar"]?.ToObject<string>();
         string? flag = obj["newFlag"]?.ToObject<string>();
@@ -197,7 +201,7 @@ public class UnrealTournamentGameController : JsonAPIController
         return Json(ratings);
     }
 
-    [HttpPost("ratings/account/{id}/mmr/{ratingType}")]
+    [HttpGet("ratings/account/{id}/mmr/{ratingType}")]
     public IActionResult Mmr(string id, string ratingType, [FromBody] MMRBulk ratings)
     {
         if (User.Identity is not EpicUserIdentity user)
@@ -216,6 +220,7 @@ public class UnrealTournamentGameController : JsonAPIController
 
         return Json(ratings);
     }
+
     [HttpGet("ratings/account/{id}/league/{leagueName}")]
     public IActionResult LeagueRating(string id, string leagueName)
     {
@@ -223,7 +228,7 @@ public class UnrealTournamentGameController : JsonAPIController
             return Unauthorized();
 
         var league = new League();
-        // for now we just send default/empty values
+        // TODO: for now we just send default/empty values
         return Json(league);
     }
 
@@ -260,18 +265,19 @@ public class UnrealTournamentGameController : JsonAPIController
         if (User.Identity is not EpicUserIdentity user)
             return Unauthorized();
 
-        // Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},
-        // {"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
-        return Ok();
+		// TODO: QuickplayWaitEstimate
+
+		// Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},
+		// {"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
+		return Ok();
     }
 
-    [HttpPost("wait_times/report/{ratingType}/{unkownNumber}")]
+    [HttpGet("wait_times/report/{ratingType}/{unkownNumber}")]
     public IActionResult QuickplayWaitReport()
     {
         if (User.Identity is not EpicUserIdentity user)
             return Unauthorized();
 
-        return NoContent();
+        return NotFound(null);
     }
-
 }

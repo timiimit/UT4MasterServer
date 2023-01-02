@@ -34,6 +34,8 @@ public class FriendsController : JsonAPIController
 		if (eid != authenticatedUser.Session.AccountID)
 			return Json("[]", StatusCodes.Status401Unauthorized);
 
+		// TODO: Check permission: "Sorry your login does not posses the permission 'friends:{id_from_parameter} READ' needed to perform the requested operation"
+
 		var friends = await friendService.GetFriendsAsync(eid);
 
 		JArray arr = new JArray();
@@ -70,6 +72,7 @@ public class FriendsController : JsonAPIController
 
 		return NoContent();
 	}
+
 	[HttpDelete("friends/{id}/{friendID}")]
 	public async Task<ActionResult> RemoveFriend(string id, string friendID)
 	{
@@ -101,6 +104,8 @@ public class FriendsController : JsonAPIController
 		if (eid != authenticatedUser.Session.AccountID)
 			return Json("[]", StatusCodes.Status401Unauthorized);
 
+		// TODO: Check permission: "Sorry your login does not posses the permission 'blockList:{id_from_parameter} READ' needed to perform the requested operation"
+
 		var blockedUsers = await friendService.GetBlockedUsersAsync(eid);
 
 		JArray arr = new JArray();
@@ -126,6 +131,7 @@ public class FriendsController : JsonAPIController
 
 		return NoContent();
 	}
+
 	[HttpDelete("blocklist/{id}/{friendID}")]
 	public async Task<ActionResult> UnblockAccount(string id, string friendID)
 	{
