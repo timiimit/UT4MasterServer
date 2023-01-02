@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
@@ -59,7 +60,7 @@ public class AccountService
 			// put password into the form as it would be in, if it were transmitted from our website
 			password = GetPasswordHash(password);
 
-			// hash the password with 
+			// hash the password with
 			if (account.Password != GetPasswordHash(account.ID, password))
 				return null;
 		}
@@ -83,8 +84,6 @@ public class AccountService
 	{
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
-
-
 
 	private static string GetPasswordHash(EpicID accountID, string password)
 	{

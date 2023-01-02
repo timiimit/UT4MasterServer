@@ -2,8 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using UT4MasterServer.Other;
 
-namespace UT4MasterServer;
+namespace UT4MasterServer.Models;
 
 public enum GameServerTrust
 {
@@ -14,11 +15,11 @@ public enum GameServerTrust
 
 public class GameServerAttributes
 {
-	private Dictionary<string, object> ServerConfigs;
+	private readonly Dictionary<string, object> serverConfigs;
 
 	public GameServerAttributes()
 	{
-		ServerConfigs = new Dictionary<string, object>();
+		serverConfigs = new Dictionary<string, object>();
 	}
 
 	public void Set(string key, string? value)
@@ -40,26 +41,26 @@ public class GameServerAttributes
 	{
 		if (value != null)
 		{
-			if (ServerConfigs.ContainsKey(key))
-				ServerConfigs[key] = value;
+			if (serverConfigs.ContainsKey(key))
+				serverConfigs[key] = value;
 			else
-				ServerConfigs.Add(key, value);
+				serverConfigs.Add(key, value);
 		}
 		else
 		{
-			if (ServerConfigs.ContainsKey(key))
-				ServerConfigs.Remove(key);
+			if (serverConfigs.ContainsKey(key))
+				serverConfigs.Remove(key);
 		}
 	}
 
 	internal Dictionary<string, object> GetUnderlyingDict()
 	{
-		return ServerConfigs;
+		return serverConfigs;
 	}
 
 	public void Update(GameServerAttributes other)
 	{
-		foreach (var attribute in other.ServerConfigs)
+		foreach (var attribute in other.serverConfigs)
 		{
 			if (attribute.Key == "UT_SERVERTRUSTLEVEL_i")
 				continue; // do not allow server to modify this attribute
@@ -70,7 +71,7 @@ public class GameServerAttributes
 
 	public bool Contains(string key)
 	{
-		return ServerConfigs.ContainsKey(key);
+		return serverConfigs.ContainsKey(key);
 	}
 
 	/// <summary>
@@ -84,7 +85,7 @@ public class GameServerAttributes
 		if (!Contains(key))
 			return value.ValueKind == JsonValueKind.Null;
 
-		var obj = ServerConfigs[key];
+		var obj = serverConfigs[key];
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
 			return objString == value.GetString();
@@ -107,7 +108,7 @@ public class GameServerAttributes
 		if (!Contains(key))
 			return false;
 
-		var obj = ServerConfigs[key];
+		var obj = serverConfigs[key];
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
 			return objString.CompareTo(value.GetString()) < 0;
@@ -130,7 +131,7 @@ public class GameServerAttributes
 		if (!Contains(key))
 			return value.ValueKind == JsonValueKind.Null;
 
-		var obj = ServerConfigs[key];
+		var obj = serverConfigs[key];
 
 		if (obj is string objString && value.ValueKind == JsonValueKind.String)
 			return objString.CompareTo(value.GetString()) <= 0;
@@ -146,7 +147,7 @@ public class GameServerAttributes
 	{
 		var obj = new JObject();
 
-		foreach (var kvp in ServerConfigs)
+		foreach (var kvp in serverConfigs)
 		{
 			if (kvp.Key.EndsWith("_b"))
 				obj.Add(kvp.Key, (bool)kvp.Value);
@@ -337,7 +338,6 @@ public class GameServer
 		BuildUniqueID = update.BuildUniqueID;
 		LastUpdated = DateTime.UtcNow;
 	}
-
 
 	public JObject ToJson(bool isResponseToClient)
 	{

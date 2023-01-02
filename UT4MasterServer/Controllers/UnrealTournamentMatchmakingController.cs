@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System.Text.Json;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 

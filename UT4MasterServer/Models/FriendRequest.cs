@@ -1,6 +1,5 @@
-
-
 using MongoDB.Bson.Serialization.Attributes;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
 

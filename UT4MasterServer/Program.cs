@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer;
@@ -31,7 +32,7 @@ public static class Program
 			.AddScoped<FriendService>()
 			.AddScoped<AccountService>()
 			.AddScoped<SessionService>()
-			.AddScoped<CloudstorageService>()
+			.AddScoped<CloudStorageService>()
 			.AddScoped<MatchmakingService>();
 
 		// services whose instance is created once and are persistent

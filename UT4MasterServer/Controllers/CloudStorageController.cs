@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -10,22 +11,21 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/cloudstorage")]
 [AuthorizeBearer]
 [Produces("application/octet-stream")]
-public class CloudstorageController : JsonAPIController
+public class CloudStorageController : JsonAPIController
 {
-	private readonly CloudstorageService cloudstorageService;
+	private readonly CloudStorageService cloudStorageService;
 
-	public CloudstorageController(CloudstorageService cloudstorageService)
+	public CloudStorageController(CloudStorageService cloudStorageService)
 	{
-		this.cloudstorageService = cloudstorageService;
+		this.cloudStorageService = cloudStorageService;
 	}
 
 	[HttpGet("user/{id}")]
-	public async Task<IActionResult> ListUserfiles(string id)
+	public async Task<IActionResult> ListUserFiles(string id)
 	{
 		// list all files this user has in storage - any user can see files from another user
 
 		/* [
-
 		{"uniqueFilename":"user_progression_1",
 		"filename":"user_progression_1",
 		"hash":"32a17bdf348e653a5cc7f94c3afb404301502d43",
@@ -37,13 +37,11 @@ public class CloudstorageController : JsonAPIController
 		"accountId":"64bf8c6d81004e88823d577abe157373"
 		},
 		]
-
-
 		*/
 
 		var eid = EpicID.FromString(id);
 
-		var files = await cloudstorageService.ListFilesAsync(eid);
+		var files = await cloudStorageService.ListFilesAsync(eid);
 
 		var arr = new JArray();
 		foreach (var file in files)
@@ -69,11 +67,11 @@ public class CloudstorageController : JsonAPIController
 	}
 
 	[HttpGet("user/{id}/{filename}")]
-	public async Task<IActionResult> GetUserfile(string id, string filename)
+	public async Task<IActionResult> GetUserFile(string id, string filename)
 	{
 		// get the user file from cloudstorage - any user can see files from another user
 
-		var file = await cloudstorageService.GetFileAsync(EpicID.FromString(id), filename);
+		var file = await cloudStorageService.GetFileAsync(EpicID.FromString(id), filename);
 		if (file == null)
 		{
 			return Json(new ErrorResponse()
@@ -91,7 +89,7 @@ public class CloudstorageController : JsonAPIController
 	}
 
 	[HttpPut("user/{id}/{filename}")]
-	public async Task<IActionResult> UpdateUserfile(string id, string filename)
+	public async Task<IActionResult> UpdateUserFile(string id, string filename)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -99,19 +97,19 @@ public class CloudstorageController : JsonAPIController
 		if (user.Session.AccountID != EpicID.FromString(id))
 			return Unauthorized(); // users can modify only their own files
 
-		await cloudstorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.BodyReader);
+		await cloudStorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.BodyReader);
 		return Ok();
 	}
 
 	[HttpGet("system")]
-	public Task<IActionResult> ListSystemfiles()
+	public Task<IActionResult> ListSystemFiles()
 	{
-		return ListUserfiles(EpicID.Empty.ToString());
+		return ListUserFiles(EpicID.Empty.ToString());
 	}
 
 	[HttpGet("system/{filename}")]
-	public async Task<IActionResult> GetSystemfile(string filename)
+	public async Task<IActionResult> GetSystemFile(string filename)
 	{
-		return await GetUserfile(EpicID.Empty.ToString(), filename);
+		return await GetUserFile(EpicID.Empty.ToString(), filename);
 	}
 }
