@@ -142,7 +142,10 @@ public class UnrealTournamentGameController : JsonAPIController
 		{
 			var acc = await accountService.GetAccountAsync(user.Session.AccountID);
 			if (acc == null)
+			{
+				logger.LogError("Account is null");
 				return StatusCode(StatusCodes.Status500InternalServerError); // should never happen
+			}
 
 			if (avatar != null)
 			{
