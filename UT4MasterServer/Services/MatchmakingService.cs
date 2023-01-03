@@ -110,8 +110,12 @@ public class MatchmakingService
 	public async Task<int> RemoveStale()
 	{
 		var now = DateTime.UtcNow; // use the same value for all checks in this call
-		var staleAfter = TimeSpan.FromMinutes(5);
-		var result = await serverCollection.DeleteManyAsync(x => now > x.LastUpdated + staleAfter);
+		var staleAfter = TimeSpan.FromMinutes(1);
+#if !DEBUG
+		staleAfter = TimeSpan.FromMinutes(5);
+#endif
+
+		var result = await serverCollection.DeleteManyAsync(x => x.LastUpdated < now - staleAfter);
 		if (result.IsAcknowledged)
 		{
 			return (int)result.DeletedCount;
