@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using UT4MasterServer.Helpers;
 
 namespace UT4MasterServer.Authentication;
 
@@ -24,6 +25,11 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 			if (!authorization.IsBasic)
 			{
 				return AuthenticateResult.Fail("unexpected scheme");
+			}
+
+			if (!authorization.Value.IsBase64())
+			{
+				return AuthenticateResult.Fail("not Base64");
 			}
 
 			var client = new ClientIdentification(authorization.Value);

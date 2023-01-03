@@ -2,7 +2,7 @@ using UT4MasterServer.Helpers;
 
 namespace XUnit.Tests;
 
-public class HexStringTest
+public class StringHelperTest
 {
 	public static TheoryData<string, bool> IsHexStringTestCases = new()
 	{
@@ -26,5 +26,19 @@ public class HexStringTest
 	public void TestIsHexString(string input, bool expected)
 	{
 		Assert.Equal(expected, input.IsHexString());
+	}
+
+	[Theory]
+	[InlineData("VGhpcyBpcyBhIHZhbGlkIGJhc2U2NCBzdHJpbmc=", true)]
+	[InlineData("This is not a valid base64 string", false)]
+	[InlineData("", false)]
+	[InlineData(null, false)]
+	public void IsBase64_ReturnsExpectedResult(string input, bool expectedResult)
+	{
+		// Act
+		var result = input.IsBase64();
+
+		// Assert
+		Assert.Equal(expectedResult, result);
 	}
 }

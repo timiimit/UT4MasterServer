@@ -19,4 +19,15 @@ public static class StringExtensions
 
 		return true;
 	}
+
+	public static bool IsBase64(this string input)
+	{
+		if (string.IsNullOrWhiteSpace(input))
+		{
+			return false;
+		}
+
+		var buffer = new Span<byte>(new byte[input.Length]);
+		return Convert.TryFromBase64String(input, buffer, out _);
+	}
 }
