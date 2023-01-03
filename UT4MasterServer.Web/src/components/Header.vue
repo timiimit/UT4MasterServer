@@ -75,7 +75,7 @@ const router = useRouter();
 const showProfileDropdown = shallowRef(false);
 
 function logOut() {
-  //TODO: call service to kill session
+  // TODO: call service to kill session
   UserStore.authCode = null;
   router.push('/Login');
 }
