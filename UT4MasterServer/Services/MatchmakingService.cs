@@ -7,6 +7,7 @@ namespace UT4MasterServer.Services;
 public class MatchmakingService
 {
 	private readonly IMongoCollection<GameServer> serverCollection;
+	private TimeSpan StaleAfter = TimeSpan.FromMinutes(1);
 
 	public MatchmakingService(DatabaseContext dbContext)
 	{
@@ -109,13 +110,14 @@ public class MatchmakingService
 
 	public async Task<int> RemoveStale()
 	{
-		var now = DateTime.UtcNow; // use the same value for all checks in this call
-		var staleAfter = TimeSpan.FromMinutes(1);
-#if !DEBUG
-		staleAfter = TimeSpan.FromMinutes(5);
-#endif
+		var now = DateTime.UtcNow; // Use the same value for all checks in this call
 
-		var result = await serverCollection.DeleteManyAsync(x => x.LastUpdated < now - staleAfter);
+		// Start removing stale servers only after some time has passed.
+		// This allows game servers from before reboot to send a heartbeat again and continue operating normally.
+		if (Program.StartupTime < now - StaleAfter * 2)
+			return 0;
+
+		var result = await serverCollection.DeleteManyAsync(x => x.LastUpdated < now - StaleAfter);
 		if (result.IsAcknowledged)
 		{
 			return (int)result.DeletedCount;
