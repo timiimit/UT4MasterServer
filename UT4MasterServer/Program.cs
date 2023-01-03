@@ -12,8 +12,8 @@ public static class Program
 {
 	public static void Main(string[] args)
 	{
-		// register serializer for EpicID type
-		BsonSerializer.RegisterSerializationProvider(new EpicIDSerializationProvider());
+		// register serializers for custom types
+		BsonSerializer.RegisterSerializationProvider(new BsonSerializationProvider());
 
 		// start up asp.net
 		var builder = WebApplication.CreateBuilder(args);
