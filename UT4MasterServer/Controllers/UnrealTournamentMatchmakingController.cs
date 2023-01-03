@@ -116,6 +116,26 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		return NoContent();
 	}
 
+	[HttpPost("session/{id}/stop")]
+	public async Task<IActionResult> NotifyGameServerHasStopped(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		var serverID = EpicID.FromString(id);
+
+		var server = await matchmakingService.Get(user.Session.ID, serverID);
+		if (server == null)
+			return UnknownSessionId(id);
+
+		server.Started = false;
+
+		// Don't immediately remove it, let it become stale.
+		await matchmakingService.Update(server);
+
+		return NoContent();
+	}
+
 	[HttpPost("session/{id}/heartbeat")]
 	public async Task<IActionResult> GameServerHeartbeat(string id)
 	{
