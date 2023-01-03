@@ -91,7 +91,7 @@ public static class Program
 		app.UseAuthentication();
 		app.MapControllers();
 		app.UseStaticFiles();
-		//TODO: restrict origin
+		// TODO: restrict origin
 		app.UseCors(x => x.AllowAnyOrigin()
 				.AllowAnyHeader()
 				.AllowAnyMethod()
