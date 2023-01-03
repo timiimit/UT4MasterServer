@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer;
+﻿namespace UT4MasterServer.Other;
 
 public static class DateTimeExtension
 {

@@ -2,7 +2,7 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 
-namespace UT4MasterServer;
+namespace UT4MasterServer.Other;
 
 public static class PipeReaderExtensions
 {
@@ -41,7 +41,6 @@ public static class PipeReaderExtensions
 		byte[] ret = new byte[fillCount];
 		Array.Copy(rawArray, ret, fillCount);
 		ArrayPool<byte>.Shared.Return(rawArray);
-
 
 		return ret;
 	}

@@ -9,7 +9,7 @@
 		"REWARD_DailyStars"
 	],
 	"Challenges": [
-	
+
 	{
 		"challengeName": "SpookyCTF",
 		"challenge": {
@@ -30,7 +30,7 @@
 			"bDailyChallenge":0
 		}
 	},
-    {
+		{
 		"challengeName": "HalloweenShowdown",
 		"challenge": {
 			"title": "Duel in Chill",
@@ -50,7 +50,7 @@
 			"bDailyChallenge":0
 		}
 	},
-    {
+		{
 		"challengeName": "HalloweenInstagibCTF",
 		"challenge": {
 			"title": "Instagib CTF in Pistola Battleground",
@@ -69,8 +69,8 @@
 			"bExpiredChallenge":1,
 			"bDailyChallenge":0
 		}
-    },
-    {
+		},
+		{
 		"challengeName": "Halloween2v2TDM",
 		"challenge": {
 			"title": "2v2 TDM in ASDF",
@@ -89,7 +89,7 @@
 			"bExpiredChallenge":1,
 			"bDailyChallenge":0
 		}
-    },
+		},
 	{
 		"challengeName": "LGIDeck",
 		"challenge": {

@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Requests;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -116,7 +117,7 @@ public class SessionController : JsonAPIController
 						return ErrorInvalidRequest("password");
 					}
 
-					// TODO: Check permission and return Error: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
+					// TODO: Check permission and return ErrorResponse: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
 					account = await accountService.GetAccountAsync(request.Username, request.Password);
 					if (account != null)
 						session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
@@ -238,9 +239,9 @@ public class SessionController : JsonAPIController
 	public async Task<IActionResult> KillSession(string accessToken)
 	{
 		if (User.Identity is not EpicUserIdentity user)
-			return NoContent();
+			return Unauthorized();
 
-		// TODO: Check if session exists and return Error: "Sorry we could not find the auth session 'myAuthSessionFromURL'"
+		// TODO: Check if session exists and return ErrorResponse: "Sorry we could not find the auth session 'myAuthSessionFromURL'"
 
 		if (accessToken != user.AccessToken)
 		{
@@ -257,13 +258,13 @@ public class SessionController : JsonAPIController
 	public async Task<IActionResult> KillSessions([FromQuery] string killType)
 	{
 		if (User.Identity is not EpicUserIdentity user)
-			return NoContent();
+			return Unauthorized();
 
 		switch (killType.ToUpper())
 		{
 			case "ALL":
 				{
-					// TODO: Check permission and return error: "Sorry your login does not posses the permissions 'account:token:allSessionsForClient DELETE' needed to perform the requested operation"
+					// TODO: Check permission and return ErrorResponse: "Sorry your login does not posses the permissions 'account:token:allSessionsForClient DELETE' needed to perform the requested operation"
 					await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
 					break;
 				}
@@ -275,19 +276,19 @@ public class SessionController : JsonAPIController
 				}
 			case "ALL_ACCOUNT_CLIENT":
 				{
-					// TODO: Check and return error: "Cannot use the killType ALL_ACCOUNT_CLIENT with a client only OauthSession."
+					// TODO: Check and return ErrorResponse: "Cannot use the killType ALL_ACCOUNT_CLIENT with a client only OauthSession."
 					await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
 					break;
 				}
 			case "OTHERS_ACCOUNT_CLIENT":
 				{
-					// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT with a client only OauthSession."
+					// TODO: Check and return ErrorResponse: "Cannot use the killType OTHERS_ACCOUNT_CLIENT with a client only OauthSession."
 					await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
 					break;
 				}
 			case "OTHERS_ACCOUNT_CLIENT_SERVICE":
 				{
-					// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT_SERVICE with a client only OauthSession."
+					// TODO: Check and return ErrorResponse: "Cannot use the killType OTHERS_ACCOUNT_CLIENT_SERVICE with a client only OauthSession."
 					// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
 					// perhaps service as in epic games launcher and/or website?
 					await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
@@ -308,7 +309,7 @@ public class SessionController : JsonAPIController
 	public async Task<IActionResult> Verify()
 	{
 		if (User.Identity is not EpicUserIdentity user)
-			return NoContent();
+			return Unauthorized();
 
 		// no refresh needed, but we should respond with this:
 		/*

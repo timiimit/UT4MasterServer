@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization;
 
-namespace UT4MasterServer;
+namespace UT4MasterServer.Other;
 
 public class EpicIDSerializationProvider : IBsonSerializationProvider
 {

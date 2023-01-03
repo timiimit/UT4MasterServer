@@ -1,23 +1,20 @@
 /*
-
+	{
+		"criteria": [
 			{
-				"criteria": [
-					{
-						"type": "NOT_EQUAL",
-						"key": "UT_GAMEINSTANCE_i",
-						"value": 1
-					},
-					{
-						"type": "NOT_EQUAL",
-						"key": "UT_RANKED_i",
-						"value": 1
-					}
-				],
-				"buildUniqueId": "256652735",
-				"maxResults": 10000
+				"type": "NOT_EQUAL",
+				"key": "UT_GAMEINSTANCE_i",
+				"value": 1
+			},
+			{
+				"type": "NOT_EQUAL",
+				"key": "UT_RANKED_i",
+				"value": 1
 			}
-
-
+		],
+		"buildUniqueId": "256652735",
+		"maxResults": 10000
+	}
 */
 
 using System.Text.Json;

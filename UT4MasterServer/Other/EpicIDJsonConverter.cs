@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace UT4MasterServer;
+namespace UT4MasterServer.Other;
 
 public class EpicIDJsonConverter : JsonConverter<EpicID>
 {
@@ -34,7 +34,6 @@ public class EpicIDJsonConverter : JsonConverter<EpicID>
 
 	//	return null!;
 	//}
-
 
 	public override EpicID Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{

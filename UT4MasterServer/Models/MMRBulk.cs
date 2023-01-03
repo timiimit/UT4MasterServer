@@ -1,9 +1,6 @@
-
-
 using Newtonsoft.Json;
 
 namespace UT4MasterServer.Models;
-
 
 public class MMRBulk
 {

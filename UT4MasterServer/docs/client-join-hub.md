@@ -27,14 +27,14 @@ comes back.
 
 ```
 {
-    "profileRevision": 3911,
-    "profileId": "profile0",
-    "profileChangesBaseRevision": 3911,
-    "profileChanges": [],
-    "profileCommandRevision": 3910,
-    "serverTime": "2022-12-21T04:39:41.662Z",
-    "responseVersion": 1,
-    "command": "QueryProfile"
+	"profileRevision": 3911,
+	"profileId": "profile0",
+	"profileChangesBaseRevision": 3911,
+	"profileChanges": [],
+	"profileCommandRevision": 3910,
+	"serverTime": "2022-12-21T04:39:41.662Z",
+	"responseVersion": 1,
+	"command": "QueryProfile"
 }
 ```
 

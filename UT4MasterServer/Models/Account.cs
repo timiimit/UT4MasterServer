@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
 
@@ -92,7 +93,6 @@ public class Account
 	//[BsonElement("XPLastMatchAt")]
 	//public DateTime XPLastMatchAt { get; set; } = DateTimeExtension.UnixTimestampStartOfTime;
 
-
 	[BsonIgnore]
 	public float Level
 	{
@@ -137,12 +137,9 @@ public class Account
 	[BsonIgnore]
 	public int LevelStockLimited => Math.Min(50, (int)Level);
 
-
-
 	public override string ToString()
 	{
 		// just some way of representing account as a string
 		return $"[{ID}] {Username}";
 	}
-
 }

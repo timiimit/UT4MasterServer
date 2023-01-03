@@ -2,7 +2,7 @@
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 
-namespace UT4MasterServer;
+namespace UT4MasterServer.Other;
 
 /// <summary>
 /// Represents a serializer for Strings.
@@ -82,10 +82,8 @@ public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationCon
 				{
 					return EpicID.FromString(bsonReader.ReadObjectId().ToString());
 				}
-				else
-				{
-					goto default;
-				}
+
+				goto default;
 
 			case BsonType.String:
 				return EpicID.FromString(bsonReader.ReadString());
