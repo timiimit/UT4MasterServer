@@ -144,11 +144,15 @@ public class SessionController : JsonAPIController
 		}
 
 		if (session == null) // only here to prevent null warnings, should never happen
-			return BadRequest();
+		{
+			var message = $"Empty session. grant_type: {grantType}";
+			logger.LogError(message);
+			return BadRequest(message);
+		}
 
 		if (account == null)
 			account = await accountService.GetAccountAsync(session.AccountID);
-		logger.LogInformation($"User {account} was authorized via {grantType}");
+		logger.LogInformation($"User '{account?.ToString() ?? EpicID.Empty.ToString()}' was authorized via {grantType}");
 
 		JObject obj = new JObject();
 		obj.Add("access_token", session.AccessToken.Value);

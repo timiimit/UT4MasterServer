@@ -17,7 +17,7 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 	{
 		get
 		{
-			return ID == Empty.ID;
+			return string.IsNullOrWhiteSpace(ID) || ID == Empty.ID;
 		}
 	}
 
