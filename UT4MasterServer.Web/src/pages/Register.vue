@@ -52,6 +52,8 @@ import { AsyncStatus } from '../types/async-status';
 import { computed, shallowRef } from 'vue';
 import AuthenticationService from '../services/authentication.service';
 import { validateEmail } from '../utils/validation';
+import CryptoJS from 'crypto-js';
+import { useRouter } from 'vue-router';
 
 const username = shallowRef('');
 const password = shallowRef('');
@@ -68,12 +70,12 @@ async function register() {
     const formData = {
       email: email.value,
       username: username.value,
-      //TODO: sha512?
-      password: password.value
+      password: CryptoJS.SHA512(password.value).toString(),
     };
-    console.debug('register', formData);
+    console.debug('Register', formData);
     await authenticationService.register(formData);
     status.value = AsyncStatus.OK;
+    useRouter().push('/Login');
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     console.error(err);

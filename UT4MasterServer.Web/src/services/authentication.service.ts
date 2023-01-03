@@ -1,4 +1,5 @@
-import { IRegisterRequest } from 'src/types/register-request';
+import { UserStore } from '../stores/user-store';
+import { IRegisterRequest } from '../types/register-request';
 import { ILoginRequest } from '../types/login-request';
 import HttpService from './http.service';
 
@@ -8,6 +9,8 @@ interface ILoginResponse {
 
 interface IAuthResponse {
     authorizationCode: string;
+    redirectUrl: string;
+    sid: string | null;
 }
 
 export default class AuthenticationService extends HttpService {
@@ -23,17 +26,21 @@ export default class AuthenticationService extends HttpService {
             }
         });
         console.debug('Token response JSON: ', session);
+
         const token = session.access_token;
-
-        const authResponse = await this.get<IAuthResponse>(this.authUrl, { headers: { 'Authorization': `bearer ${token}` } });
-
+        UserStore.authToken = token;
+        
+        const authResponse = await this.get<IAuthResponse>(this.authUrl);
         console.debug('Auth response JSON: ', authResponse);
-        localStorage.setItem('ut4uu_authorizationCode', authResponse.authorizationCode);
+        UserStore.authCode = authResponse.authorizationCode;
+        UserStore.username = request.username;
 
-        return authResponse.authorizationCode;
+        return authResponse;
     }
 
     async register(request: IRegisterRequest) {
+        UserStore.saveUsername = true;
+        UserStore.username = request.username;
         return await this.post<unknown, IRegisterRequest>(this.registerUrl, { body: request });
     }
 }

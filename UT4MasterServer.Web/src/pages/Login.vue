@@ -11,6 +11,14 @@
                 placeholder="Username" autocomplete="username" />
               <div class="invalid-feedback">Username is required</div>
             </div>
+            <div class="col-sm-6 flex-v-center">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="saveUsername" v-model="saveUsername">
+                <label class="form-check-label" for="saveUsername">
+                  Save Username
+                </label>
+              </div>
+            </div>
           </div>
           <div class="form-group row">
             <label for="password" class="col-sm-12 col-form-label">Password</label>
@@ -52,14 +60,18 @@ import { AsyncStatus } from '../types/async-status';
 import { computed, ref, shallowRef } from 'vue';
 import CryptoJS from 'crypto-js';
 import AuthenticationService from '../services/authentication.service';
+import { UserStore } from '../stores/user-store';
+import { useRouter } from 'vue-router';
 
-const username = shallowRef(localStorage.getItem('ut4uu_username') ?? '');
+const username = shallowRef(UserStore.username ?? '');
 const password = shallowRef('');
-const saveUsername = shallowRef(!!localStorage.getItem('ut4uu_username'));
+const saveUsername = shallowRef(UserStore.saveUsername);
 const status = ref(AsyncStatus.OK);
 const formValid = computed(() => username.value && password.value.length > 7);
 
 const authenticationService = new AuthenticationService();
+
+const router = useRouter();
 
 async function logIn() {
   try {
@@ -69,14 +81,11 @@ async function logIn() {
       password: CryptoJS.SHA512(password.value).toString(),
       grant_type: 'password'
     };
-    if (saveUsername.value) {
-      localStorage.setItem('ut4uu_username', username.value!);
-    } else {
-      localStorage.removeItem('ut4uu_username');
-    }
-    console.debug('log in', formData);
+    UserStore.saveUsername = saveUsername.value;
+    console.debug('Log in request', formData);
     await authenticationService.logIn(formData);
     status.value = AsyncStatus.OK;
+    router.push('/Profile/Stats');
   }
   catch (err: unknown) {
     status.value = AsyncStatus.ERROR;

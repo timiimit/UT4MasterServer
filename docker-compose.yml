@@ -36,9 +36,9 @@ services:
       - mongo
     ports:
       - "8888:8081"
-  web:
-    container_name: web
-    image: ${DOCKER_REGISTRY-}web
+  ut4masterserver-web:
+    container_name: ut4masterserver-web
+    image: ${DOCKER_REGISTRY-}ut4masterserver-web
     build:
       context: UT4MasterServer.Web
       dockerfile: .docker/Dockerfile

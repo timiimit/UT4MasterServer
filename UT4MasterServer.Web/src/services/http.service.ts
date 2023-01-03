@@ -1,3 +1,4 @@
+import { UserStore } from "../stores/user-store";
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -12,9 +13,15 @@ export default class HttpService {
         if (options?.body) {
             fetchOptions.body = JSON.stringify(options.body);
         }
-        
-        fetchOptions.headers = { 'Content-Type': 'application/json', ...options?.headers };
-        
+
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+
+        if (UserStore.authToken) {
+            headers.Authorization = `bearer ${UserStore.authToken}`;
+        }
+
+        fetchOptions.headers = { ...headers, ...options?.headers };
+
         const response = await fetch(url, fetchOptions);
 
         if (!response.ok) {
