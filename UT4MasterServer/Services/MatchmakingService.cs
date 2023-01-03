@@ -1,4 +1,6 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Text.Json;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 
@@ -6,11 +8,13 @@ namespace UT4MasterServer.Services;
 
 public class MatchmakingService
 {
+	private readonly ILogger<MatchmakingService> logger;
 	private readonly IMongoCollection<GameServer> serverCollection;
 	private TimeSpan StaleAfter = TimeSpan.FromMinutes(1);
 
-	public MatchmakingService(DatabaseContext dbContext)
+	public MatchmakingService(DatabaseContext dbContext, ILogger<MatchmakingService> logger)
 	{
+		this.logger = logger;
 		serverCollection = dbContext.Database.GetCollection<GameServer>("servers");
 	}
 
@@ -60,41 +64,63 @@ public class MatchmakingService
 
 	public async Task<List<GameServer>> List(GameServerFilter inputFilter)
 	{
-		await RemoveStale();
+		// Begin removing stale GameServers
+		var taskStaleRemoval = RemoveStale();
 
-		var filter =
-			Builders<GameServer>.Filter.Eq(x => x.Started, true);
+		// Build BsonDocument representing Find filter
+		var doc = new BsonDocument();
 
+		// include GameServers that have started
+		doc.Add(new BsonElement(nameof(GameServer.Started), true));
+
+		// exclude stale GameServers that haven't been removed from db yet
+		doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument { { "$gt", DateTime.UtcNow - StaleAfter } }));
+
+		// include GameServers whose BuildUniqueId matches criteria
 		if (inputFilter.BuildUniqueId != null)
-			filter &= Builders<GameServer>.Filter.Eq(x => x.BuildUniqueID, inputFilter.BuildUniqueId);
+			doc.Add(new BsonElement(nameof(GameServer.BuildUniqueID), inputFilter.BuildUniqueId));
 
+		// TODO: Figure out how such a filter can be created
 		//if (inputFilter.OpenPlayersRequired != null)
-		//	filter &= Builders<GameServer>.Filter.Eq(x => x.MaxPublicPlayers - x.PublicPlayers.Count, inputFilter.OpenPlayersRequired);
+		//	filter &= f.Eq(x => x.MaxPublicPlayers - x.PublicPlayers.Count, inputFilter.OpenPlayersRequired);
 
 		foreach (var condition in inputFilter.Criteria)
 		{
-			filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Contains(condition.Key), true);
-
+			//filter &= Builders<GameServer>.Filter.Exists();
+			string? comparisonKeyword = null;
 			switch (condition.Type)
 			{
-				case "EQUAL":
-					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Eq(condition.Key, condition.Value), true);
+				case "EQUAL": comparisonKeyword = "$eq"; break;
+				case "NOT_EQUAL": comparisonKeyword = "$ne"; break;
+				case "LESS_THAN": comparisonKeyword = "$lt"; break;
+				case "LESS_THAN_OR_EQUAL": comparisonKeyword = "$lte"; break;
+				case "GREATER_THAN": comparisonKeyword = "$gt"; break;
+				case "GREATER_THAN_OR_EQUAL": comparisonKeyword = "$gte"; break;
+				case "DISTANCE":
+					// TODO: Figure out what this should do. the only known occurance:
+					//       { "type": "DISTANCE", "key": "NEEDSSORT_i", "value": -2147483648 },
+
 					break;
-				case "NOT_EQUAL":
-					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Eq(condition.Key, condition.Value), false);
-					break;
-				case "LESS_THAN":
-					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lt(condition.Key, condition.Value), true);
-					break;
-				case "LESS_THAN_OR_EQUAL":
-					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lte(condition.Key, condition.Value), true);
-					break;
-				case "GREATER_THAN":
-					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lte(condition.Key, condition.Value), false);
-					break;
-				case "GREATER_THAN_OR_EQUAL":
-					filter &= Builders<GameServer>.Filter.Eq(x => x.Attributes.Lt(condition.Key, condition.Value), false);
-					break;
+			}
+
+			if (comparisonKeyword == null)
+			{
+				logger.LogWarning($"Matchmaking search criteria contains unknown condition type '{condition.Type}' with key '{condition.Key}' and value '{condition.Value}'");
+				continue;
+			}
+
+			BsonElement? compElem = null;
+			if (condition.Value.ValueKind == JsonValueKind.String)
+				compElem = new BsonElement(comparisonKeyword, condition.Value.GetString());
+			else if (condition.Value.ValueKind == JsonValueKind.Number)
+				compElem = new BsonElement(comparisonKeyword, condition.Value.GetInt32());
+			else if (condition.Value.ValueKind == JsonValueKind.True || condition.Value.ValueKind == JsonValueKind.False)
+				compElem = new BsonElement(comparisonKeyword, condition.Value.GetBoolean());
+
+			if (compElem != null)
+			{
+				var attrCheck = new BsonElement($"{nameof(GameServer.Attributes)}.{condition.Key}", new BsonDocument(compElem.Value));
+				doc.Add(attrCheck);
 			}
 		}
 
@@ -102,8 +128,14 @@ public class MatchmakingService
 		{
 			Limit = inputFilter.MaxResults,
 			AllowPartialResults = true,
-			//MaxAwaitTime = TimeSpan.FromSeconds(0.1)
+			MaxAwaitTime = TimeSpan.FromSeconds(1.0) // if this takes longer, server is toast
 		};
+
+		var filter = new BsonDocumentFilterDefinition<GameServer>(doc);
+
+		// Wait for stale GameServer removal to finish
+		await taskStaleRemoval;
+
 		var cursor = await serverCollection.FindAsync(filter, options);
 		return await cursor.ToListAsync();
 	}
