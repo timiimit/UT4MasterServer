@@ -48,7 +48,7 @@ There is no documentation yet, but you should use `docker-compose` command. Feel
       "D:\Epic Games\UnrealTournament\Engine\Binaries\Win64\UE4-Win64-Shipping.exe" UnrealTournament -AUTH_LOGIN=unused -AUTH_PASSWORD=your_password_code -AUTH_TYPE=exchangecode
       ```
 
-      NOTE: You need to repeat point 2 and 3 if you want to login again.
+      NOTE: You need to repeat point *b* and *c* if you want to login again.
 
 ## How to track statistics on new master server?
 
