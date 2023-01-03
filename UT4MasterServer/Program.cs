@@ -10,6 +10,9 @@ namespace UT4MasterServer;
 
 public static class Program
 {
+	private static DateTime startupTime = DateTime.Now;
+	public static DateTime StartupTime => startupTime;
+
 	public static void Main(string[] args)
 	{
 		// register serializers for custom types
