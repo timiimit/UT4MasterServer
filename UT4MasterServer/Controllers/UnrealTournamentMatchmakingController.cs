@@ -222,6 +222,26 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		return Json(arr);
 	}
 
+
+	/// <summary>
+	/// This action is for convenience of users to be able to easily retrieve a list of hubs and/or servers.
+	/// </summary>
+	/// <param name="showHubs">whether to return hubs</param>
+	/// <param name="showServers">whether to return servers</param>
+	/// <returns></returns>
+	[AllowAnonymous]
+	[HttpGet("session/matchMakingRequest")]
+	public async Task<IActionResult> ListGameServers([FromQuery] bool? showHubs, [FromQuery] bool? showServers)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			// allow any third-party project to easily access hub list without any authentication
+		}
+
+		// TODO: implement query filters
+		return await ListGameServers(new GameServerFilter());
+	}
+
 	[HttpPost("session/{id}/join")]
 	public IActionResult PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
 	{
