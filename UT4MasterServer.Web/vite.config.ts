@@ -14,7 +14,6 @@ export default defineConfig(({ command, mode }) => {
     ]
   } as UserConfig;
 
-  console.debug(viteEnv);
     if (command === 'serve') {
     viteConfig.server = {
         port: 8080
