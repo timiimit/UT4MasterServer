@@ -1,3 +1,4 @@
+using System.Text;
 using UT4MasterServer.Helpers;
 
 namespace XUnit.Tests;
@@ -36,9 +37,18 @@ public class StringHelperTest
 	public void IsBase64_ReturnsExpectedResult(string input, bool expectedResult)
 	{
 		// Act
-		var result = input.IsBase64();
+		var result = input.IsBase64(out var parsedBytes);
 
 		// Assert
 		Assert.Equal(expectedResult, result);
+		if (expectedResult)
+		{
+			Assert.NotNull(parsedBytes);
+			Assert.Equal(Encoding.UTF8.GetString(Convert.FromBase64String(input)), Encoding.UTF8.GetString(parsedBytes));
+		}
+		else
+		{
+			Assert.Null(parsedBytes);
+		}
 	}
 }
