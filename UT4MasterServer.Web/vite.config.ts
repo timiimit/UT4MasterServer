@@ -14,11 +14,10 @@ export default defineConfig(({ command, mode }) => {
     ]
   } as UserConfig;
 
+  console.debug(viteEnv);
     if (command === 'serve') {
     viteConfig.server = {
-        port: 8080,
-        host: true,
-        strictPort: true
+        port: 8080
     };
   } else {
     viteConfig.base = '/dist/';

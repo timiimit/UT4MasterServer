@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -171,12 +172,12 @@ public class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password)
+	public async Task<IActionResult> RegisterAccount([FromBody] RegisterRequest request)
 	{
-		var account = await accountService.GetAccountAsync(username);
+		var account = await accountService.GetAccountAsync(request.Username);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate account: {username}");
+			logger.LogInformation($"Could not register duplicate account: {request.Username}");
 			// This is a generic HTTP 400. A 409 (Conflict) might be more appropriate?
 			// Depends how our create account form is built. It will need to know why
 			// it failed (dupe account, invalid name, bad password, etc)
@@ -184,9 +185,9 @@ public class AccountController : JsonAPIController
 		}
 
 		// TODO: should we also get user's email?
-		await accountService.CreateAccountAsync(username, password); // TODO: this cannot fail?
+		await accountService.CreateAccountAsync(request.Username, request.Password); // TODO: this cannot fail?
 
-		logger.LogInformation($"Registered new user: {username}");
+		logger.LogInformation($"Registered new user: {request.Username}");
 
 		return NoContent();
 	}

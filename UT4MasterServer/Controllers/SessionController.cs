@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -36,13 +37,7 @@ public class SessionController : JsonAPIController
 	[AuthorizeBasic]
 	[HttpPost("token")]
 	public async Task<IActionResult> Authenticate(
-		[FromForm(Name = "grant_type")] string grantType,
-		[FromForm(Name = "includePerms")] bool? includePerms,
-		[FromForm(Name = "code")] string? code,
-		[FromForm(Name = "exchange_code")] string? exchangeCode,
-		[FromForm(Name = "refresh_token")] string? refreshToken,
-		[FromForm(Name = "username")] string? username,
-		[FromForm(Name = "password")] string? password)
+		[FromBody] AuthenticateRequest request)
 	{
 		if (User.Identity is not EpicClientIdentity user)
 			return Unauthorized();
@@ -50,96 +45,96 @@ public class SessionController : JsonAPIController
 		EpicID clientID = user.Client.ID;
 		Session? session = null;
 		Account? account = null;
-		switch (grantType)
+		switch (request.GrantType)
 		{
 			case "authorization_code":
-			{
-				if (code != null)
 				{
-					var codeAuth = await codeService.TakeCodeAsync(CodeKind.Authorization, code);
-					if (codeAuth != null)
-						session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
-				}
-				else
-				{
-					return ErrorInvalidRequest("code");
-				}
-				break;
-			}
-			case "exchange_code":
-			{
-				if (exchangeCode != null)
-				{
-					// TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
-					var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
-					if (codeExchange != null)
-						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
-				}
-				else
-				{
-					return ErrorInvalidRequest("exchange_code");
-				}
-				break;
-			}
-			case "refresh_token":
-			{
-				if (refreshToken != null)
-				{
-					session = await sessionService.RefreshSessionAsync(refreshToken);
-				}
-				else
-				{
-					return ErrorInvalidRequest("refresh_token");
-				}
-				break;
-			}
-			case "client_credentials":
-			{
-				// always just userless session, usually used for access to public cloudstorage
-				session = await sessionService.CreateSessionAsync(EpicID.Empty, clientID, SessionCreationMethod.ClientCredentials);
-				break;
-			}
-			case "password":
-			{
-				if (!allowPasswordGrant)
+					if (request.Code != null)
+					{
+						var codeAuth = await codeService.TakeCodeAsync(CodeKind.Authorization, request.Code);
+						if (codeAuth != null)
+							session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
+					}
+					else
+					{
+						return ErrorInvalidRequest("code");
+					}
 					break;
-
-				// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
-				//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
-				//
-				//       we could still support it, since ut understands it cuz its old and we don't
-				//       really need multi-factor auth. it is after all the way that ut's login screen
-				//       works when you start the game without launcher (and without UT4UU).
-
-				if (username == null)
-				{
-					return ErrorInvalidRequest("username");
 				}
-
-				if (password == null)
+			case "exchange_code":
 				{
-					return ErrorInvalidRequest("password");
+					if (request.ExchangeCode != null)
+					{
+						// TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
+						var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, request.ExchangeCode);
+						if (codeExchange != null)
+							session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
+					}
+					else
+					{
+						return ErrorInvalidRequest("exchange_code");
+					}
+					break;
 				}
+			case "refresh_token":
+				{
+					if (request.RefreshToken != null)
+					{
+						session = await sessionService.RefreshSessionAsync(request.RefreshToken);
+					}
+					else
+					{
+						return ErrorInvalidRequest("refresh_token");
+					}
+					break;
+				}
+			case "client_credentials":
+				{
+					// always just userless session, usually used for access to public cloudstorage
+					session = await sessionService.CreateSessionAsync(EpicID.Empty, clientID, SessionCreationMethod.ClientCredentials);
+					break;
+				}
+			case "password":
+				{
+					if (!allowPasswordGrant)
+						break;
 
-				// TODO: Check permission and return Error: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
-				account = await accountService.GetAccountAsync(username, password);
-				if (account != null)
-					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
-				break;
-			}
+					// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
+					//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
+					//
+					//       we could still support it, since ut understands it cuz its old and we don't
+					//       really need multi-factor auth. it is after all the way that ut's login screen
+					//       works when you start the game without launcher (and without UT4UU).
+
+					if (request.Username == null)
+					{
+						return ErrorInvalidRequest("username");
+					}
+
+					if (request.Password == null)
+					{
+						return ErrorInvalidRequest("password");
+					}
+
+					// TODO: Check permission and return Error: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
+					account = await accountService.GetAccountAsync(request.Username, request.Password);
+					if (account != null)
+						session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+					break;
+				}
 			default:
-			{
-				return BadRequest(new ErrorResponse
 				{
-					ErrorCode = "errors.com.epicgames.common.oauth.unsupported_grant_type",
-					ErrorMessage = $"Unsupported grant type: {grantType}",
-					NumericErrorCode = 1016,
-					OriginatingService = "com.epicgames.account.public",
-					Intent = "prod",
-					ErrorDescription = $"Unsupported grant type: {grantType}",
-					Error = "unsupported_grant_type",
-				});
-			}
+					return BadRequest(new ErrorResponse
+					{
+						ErrorCode = "errors.com.epicgames.common.oauth.unsupported_grant_type",
+						ErrorMessage = $"Unsupported grant type: {request.GrantType}",
+						NumericErrorCode = 1016,
+						OriginatingService = "com.epicgames.account.public",
+						Intent = "prod",
+						ErrorDescription = $"Unsupported grant type: {request.GrantType}",
+						Error = "unsupported_grant_type",
+					});
+				}
 		}
 
 		if (session == null) // only here to prevent null warnings, should never happen
@@ -147,7 +142,7 @@ public class SessionController : JsonAPIController
 
 		if (account == null)
 			account = await accountService.GetAccountAsync(session.AccountID);
-		logger.LogInformation($"User {account} was authorized via {grantType}");
+		logger.LogInformation($"User {account} was authorized via {request.GrantType}");
 
 		JObject obj = new JObject();
 		obj.Add("access_token", session.AccessToken.Value);
@@ -168,7 +163,7 @@ public class SessionController : JsonAPIController
 		{
 			obj.Add("displayName", account.Username);
 
-			if (includePerms == true)
+			if (request.IncludePerms == true)
 			{
 				// should probably be okay to send empty array
 				obj.Add("perms", new JArray());
@@ -267,41 +262,41 @@ public class SessionController : JsonAPIController
 		switch (killType.ToUpper())
 		{
 			case "ALL":
-			{
-				// TODO: Check permission and return error: "Sorry your login does not posses the permissions 'account:token:allSessionsForClient DELETE' needed to perform the requested operation"
-				await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
-				break;
-			}
+				{
+					// TODO: Check permission and return error: "Sorry your login does not posses the permissions 'account:token:allSessionsForClient DELETE' needed to perform the requested operation"
+					await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
+					break;
+				}
 			case "OTHERS":
-			{
-				// TODO: Check permission account:token:otherSessionsForClient DELETE
-				await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, user.Session.ID);
-				break;
-			}
+				{
+					// TODO: Check permission account:token:otherSessionsForClient DELETE
+					await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, user.Session.ID);
+					break;
+				}
 			case "ALL_ACCOUNT_CLIENT":
-			{
-				// TODO: Check and return error: "Cannot use the killType ALL_ACCOUNT_CLIENT with a client only OauthSession."
-				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
-				break;
-			}
+				{
+					// TODO: Check and return error: "Cannot use the killType ALL_ACCOUNT_CLIENT with a client only OauthSession."
+					await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, EpicID.Empty);
+					break;
+				}
 			case "OTHERS_ACCOUNT_CLIENT":
-			{
-				// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT with a client only OauthSession."
-				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
-				break;
-			}
+				{
+					// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT with a client only OauthSession."
+					await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+					break;
+				}
 			case "OTHERS_ACCOUNT_CLIENT_SERVICE":
-			{
-				// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT_SERVICE with a client only OauthSession."
-				// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
-				// perhaps service as in epic games launcher and/or website?
-				await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
-				break;
-			}
+				{
+					// TODO: Check and return error: "Cannot use the killType OTHERS_ACCOUNT_CLIENT_SERVICE with a client only OauthSession."
+					// i am not sure how this is supposed to differ from OTHERS_ACCOUNT_CLIENT
+					// perhaps service as in epic games launcher and/or website?
+					await sessionService.RemoveSessionsWithFilterAsync(user.Session.ClientID, user.Session.AccountID, user.Session.ID);
+					break;
+				}
 			default:
-			{
-				return ErrorInvalidRequest("a valid killType");
-			}
+				{
+					return ErrorInvalidRequest("a valid killType");
+				}
 		}
 
 		return NoContent();
