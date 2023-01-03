@@ -102,9 +102,6 @@ public class SessionController : JsonAPIController
 			}
 			case "password":
 			{
-				if (!allowPasswordGrant)
-					break;
-
 				// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
 				//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
 				//
@@ -122,10 +119,34 @@ public class SessionController : JsonAPIController
 					return ErrorInvalidRequest("password");
 				}
 
-				// TODO: Check permission and return ErrorResponse: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
+				// Yeah, EPIC is returning this ErrorResponse after checking username and password...
+				if (!allowPasswordGrant)
+				{
+					return BadRequest(new ErrorResponse
+					{
+						ErrorCode = "errors.com.epicgames.common.oauth.unauthorized_client",
+						ErrorMessage = $"Sorry your client is not allowed to use the grant type {grantType}. Please download and use UT4UU",
+						NumericErrorCode = 1015,
+						OriginatingService = "com.epicgames.account.public",
+						Intent = "prod",
+						ErrorDescription = $"Sorry your client is not allowed to use the grant type {grantType}. Please download and use UT4UU",
+						Error = "unauthorized_client",
+					});
+				}
+
 				account = await accountService.GetAccountAsync(username, password);
 				if (account != null)
+				{
 					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+				}
+				else
+				{
+					return BadRequest(new ErrorResponse
+					{
+						ErrorMessage = "Invalid credentials. Check your username and password and try again",
+					});
+				}
+
 				break;
 			}
 			default:
