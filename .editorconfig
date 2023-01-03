@@ -3,8 +3,15 @@
 # top-most EditorConfig file
 root = true
 
+[*]
+insert_final_newline = true
+trim_trailing_whitespace = true
+
 [*.{cs,vb}]
 tab_width = 4
 indent_size = 4
 indent_style = tab
-insert_final_newline = true
+
+[*.{md,yml}]
+indent_style = space
+indent_size = 2
