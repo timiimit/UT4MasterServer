@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using UT4MasterServer.Helpers;
 using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Authentication;
@@ -26,7 +27,12 @@ public class ClientIdentification
 
 	public ClientIdentification(string authorization)
 	{
-		string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(authorization));
+		if (!authorization.IsBase64(out var parsedBytes))
+		{
+			return;
+		}
+
+		string decoded = Encoding.UTF8.GetString(parsedBytes);
 		var colon = decoded.IndexOf(':');
 		if (colon < 0)
 		{

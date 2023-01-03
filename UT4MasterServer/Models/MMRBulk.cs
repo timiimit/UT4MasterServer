@@ -14,8 +14,7 @@ public class MMRBulk
 	public List<int> NumGamesPlayed { get; set; } = new List<int>();
 }
 
-// MMRBulk in an ugly ut structure. rather use something
-// like an array of class below for storage:
+// TODO: MMRBulk in an ugly ut structure. Rather use something like an array of class below for storage:
 
 public class ModeRating
 {

@@ -14,9 +14,9 @@ export default defineConfig(({ command, mode }) => {
     ]
   } as UserConfig;
 
-    if (command === 'serve') {
+  if (command === 'serve') {
     viteConfig.server = {
-        port: 8080
+      port: 8080
     };
   } else {
     viteConfig.base = '/dist/';
