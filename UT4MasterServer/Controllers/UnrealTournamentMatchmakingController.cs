@@ -210,7 +210,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	[HttpPost("session/matchMakingRequest")]
 	public async Task<IActionResult> ListGameServers([FromBody] GameServerFilter filter)
 	{
-		if (User.Identity is not EpicUserIdentity user)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
@@ -253,7 +253,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	[HttpGet("session/matchMakingRequest")]
 	public async Task<IActionResult> ListGameServers([FromQuery] bool? showHubs, [FromQuery] bool? showServers)
 	{
-		if (User.Identity is not EpicUserIdentity user)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
