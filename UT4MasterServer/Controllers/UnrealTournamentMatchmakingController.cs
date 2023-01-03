@@ -212,7 +212,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
-			// allow any third-party project to easily access hub list without any authentication
+			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
 
 		var servers = await matchmakingService.List(filter);
@@ -255,7 +255,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
-			// allow any third-party project to easily access hub list without any authentication
+			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
 
 		// TODO: implement query filters
