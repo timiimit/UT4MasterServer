@@ -148,7 +148,10 @@ public class SessionController : JsonAPIController
 
 		if (account == null)
 			account = await accountService.GetAccountAsync(session.AccountID);
-		logger.LogInformation($"User {account} was authorized via {grantType}");
+		/* TODO: Account still can be null if session.AccountID is empty GUID, for example, if we are using access_token from client_credentials grant type.
+		 * What to do here?
+		 */
+		logger.LogInformation($"User '{account}' was authorized via {grantType}");
 
 		JObject obj = new JObject();
 		obj.Add("access_token", session.AccessToken.Value);

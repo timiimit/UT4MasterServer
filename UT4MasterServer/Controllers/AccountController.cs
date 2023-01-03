@@ -174,14 +174,13 @@ public class AccountController : JsonAPIController
 	[AllowAnonymous]
 	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password)
 	{
+		// TODO: Add validation
+
 		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
 			logger.LogInformation($"Could not register duplicate account: {username}");
-			// This is a generic HTTP 400. A 409 (Conflict) might be more appropriate?
-			// Depends how our create account form is built. It will need to know why
-			// it failed (dupe account, invalid name, bad password, etc)
-			return new BadRequestObjectResult("Username already exists");
+			return Conflict("Username already exists");
 		}
 
 		// TODO: should we also get user's email?
@@ -189,7 +188,7 @@ public class AccountController : JsonAPIController
 
 		logger.LogInformation($"Registered new user: {username}");
 
-		return NoContent();
+		return Ok("Account created successfully");
 	}
 
 	#endregion
