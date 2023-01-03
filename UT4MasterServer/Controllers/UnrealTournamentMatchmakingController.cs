@@ -242,7 +242,6 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		return Json(arr);
 	}
 
-
 	/// <summary>
 	/// This action is for convenience of users to be able to easily retrieve a list of hubs and/or servers.
 	/// </summary>
