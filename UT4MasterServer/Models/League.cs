@@ -3,12 +3,17 @@ using System.Text.Json.Serialization;
 
 namespace UT4MasterServer.Models;
 
+/// <summary>
+/// Names taken from <see href="https://github.com/EpicGames/UnrealTournament/blob/clean-master/UnrealTournament/Source/UnrealTournament/Private/UTPlayerState.cpp#L2219">LeagueTierToText</see>
+/// </summary>
 public enum LeagueTier
 {
-	None = 0, // idk how this is named, its when you don't have colored badge on stock scoreboard
-	Bronze = 1,
-	Silver = 2,
-	Gold = 3
+	BronzeLeague = 0,
+	SilverLeague = 1,
+	GoldLeague = 2,
+	PlatinumLeague = 3,
+	MasterLeague = 4,
+	GrandMasterLeague = 5,
 }
 
 public class League
@@ -18,7 +23,7 @@ public class League
 	// TODO: Use one JSON DLL in solution. See https://github.com/timiimit/UT4MasterServer/issues/33
 	[JsonPropertyName("tier")] // Fix for API response
 	[JsonProperty("tier")]
-	public LeagueTier Tier { get; set; } = LeagueTier.None;
+	public LeagueTier Tier { get; set; } = LeagueTier.BronzeLeague;
 
 	[JsonPropertyName("division")]
 	[JsonProperty("division")]
