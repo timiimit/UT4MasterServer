@@ -400,7 +400,7 @@ FodyWeavers.xsd
 ### Our rules
 
 # ignore all certificate files
-/**/*.cer
-/**/*.pvk
-/**/*.pfx
-/**/*.pem
+**/*.cer
+**/*.pvk
+**/*.pfx
+**/*.pem
