@@ -27,7 +27,7 @@ public class ClientIdentification
 
 	public ClientIdentification(string authorization)
 	{
-		if (authorization.IsBase64(out var parsedBytes))
+		if (authorization.TryDecodeBase64(out var parsedBytes))
 		{
 			string decoded = Encoding.UTF8.GetString(parsedBytes);
 			var colon = decoded.IndexOf(':');

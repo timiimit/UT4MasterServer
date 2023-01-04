@@ -20,7 +20,7 @@ public static class StringExtensions
 		return true;
 	}
 
-	public static bool IsBase64(this string input, out byte[] parsedBytes)
+	public static bool TryDecodeBase64(this string input, out byte[] parsedBytes)
 	{
 		parsedBytes = null;
 		if (string.IsNullOrWhiteSpace(input))
