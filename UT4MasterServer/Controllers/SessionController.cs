@@ -109,17 +109,7 @@ public class SessionController : JsonAPIController
 				//       really need multi-factor auth. it is after all the way that ut's login screen
 				//       works when you start the game without launcher (and without UT4UU).
 
-				if (username == null)
-				{
-					return ErrorInvalidRequest("username");
-				}
-
-				if (password == null)
-				{
-					return ErrorInvalidRequest("password");
-				}
-
-				// Yeah, EPIC is returning this ErrorResponse after checking username and password...
+				// EPIC is returning this ErrorResponse after checking username and password... This is better place IMO
 				if (!allowPasswordGrant)
 				{
 					return BadRequest(new ErrorResponse
@@ -132,6 +122,16 @@ public class SessionController : JsonAPIController
 						ErrorDescription = $"Sorry your client is not allowed to use the grant type {grantType}. Please download and use UT4UU",
 						Error = "unauthorized_client",
 					});
+				}
+
+				if (username == null)
+				{
+					return ErrorInvalidRequest("username");
+				}
+
+				if (password == null)
+				{
+					return ErrorInvalidRequest("password");
 				}
 
 				account = await accountService.GetAccountAsync(username, password);
