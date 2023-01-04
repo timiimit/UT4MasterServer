@@ -7,8 +7,8 @@ services:
     build:
       context: .
       dockerfile: UT4MasterServer/Dockerfile
+    hostname: api.ut4uu.com
     ports:
-      - "80:80"
       - "443:443"
   mongo:
     container_name: mongo
@@ -36,3 +36,12 @@ services:
       - mongo
     ports:
       - "8888:8081"
+  ut4masterserver-web:
+    container_name: ut4masterserver-web
+    image: ${DOCKER_REGISTRY-}ut4masterserver-web
+    build:
+      context: UT4MasterServer.Web
+      dockerfile: .docker/Dockerfile
+    hostname: ut4uu.com
+    ports:
+      - "80:8080"
