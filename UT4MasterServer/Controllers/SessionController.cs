@@ -392,6 +392,7 @@ public class SessionController : JsonAPIController
 	//	return NoContent();
 	//}
 
+	[NonAction]
 	private BadRequestObjectResult ErrorInvalidRequest(string requiredInput)
 	{
 		return BadRequest(new ErrorResponse
