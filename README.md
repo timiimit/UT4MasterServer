@@ -16,8 +16,8 @@ There is not much documentation on how to get started. I will create issues that
 1. Install Docker
 2. Install Visual Studio 2022
 3. Open `UT4MasterServer.sln` with Visual Studio 2022
-3. Set `docker-compose` as the Startup Project
-4. Start Debugging
+4. Set `docker-compose` as the Startup Project
+5. Start Debugging
 
 ### Running without Visual Studio 2022
 
