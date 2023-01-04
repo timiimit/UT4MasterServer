@@ -13,14 +13,16 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
 	{
 		context.Writer.WriteStartDocument();
 
-		foreach (var kvp in value.GetUnderlyingDict())
+		foreach (var key in value.GetKeys())
 		{
-			if (kvp.Value is string valString)
-				context.Writer.WriteString(kvp.Key, valString);
-			else if (kvp.Value is int valInt)
-				context.Writer.WriteInt32(kvp.Key, valInt);
-			else if (kvp.Value is bool valBool)
-				context.Writer.WriteBoolean(kvp.Key, valBool);
+			var val = value.Get(key);
+
+			if (val is string valString)
+				context.Writer.WriteString(key, valString);
+			else if (val is int valInt)
+				context.Writer.WriteInt32(key, valInt);
+			else if (val is bool valBool)
+				context.Writer.WriteBoolean(key, valBool);
 			else
 			{
 				// Other kv-pairs are ignored because they are invalid
