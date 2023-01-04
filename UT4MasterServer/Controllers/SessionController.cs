@@ -143,11 +143,24 @@ public class SessionController : JsonAPIController
 			}
 		}
 
-		if (session == null) // only here to prevent null warnings, should never happen
+		if (session == null)
 		{
+			// User was unable to log in
+
 			var message = $"Empty session. grant_type: {grantType}";
 			logger.LogError(message);
-			return BadRequest(message);
+
+			// TODO: Find proper response
+			return BadRequest(new ErrorResponse
+			{
+				ErrorCode = "errors.com.epicgames.common.oauth.invalid_credentials",
+				ErrorMessage = message,
+				NumericErrorCode = 0,
+				OriginatingService = "com.epicgames.account.public",
+				Intent = "prod",
+				ErrorDescription = message,
+				Error = "invalid_credentials",
+			});
 		}
 
 		if (account == null)
