@@ -100,40 +100,13 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	[HttpPost("session/{id}/start")]
 	public async Task<IActionResult> NotifyGameServerIsReady(string id)
 	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		var serverID = EpicID.FromString(id);
-
-		var server = await matchmakingService.Get(user.Session.ID, serverID);
-		if (server == null)
-			return UnknownSessionId(id);
-
-		server.Started = true;
-
-		await matchmakingService.Update(server);
-
-		return NoContent();
+		return await ChangeGameServerStarted(id, true);
 	}
 
 	[HttpPost("session/{id}/stop")]
 	public async Task<IActionResult> NotifyGameServerHasStopped(string id)
 	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		var serverID = EpicID.FromString(id);
-
-		var server = await matchmakingService.Get(user.Session.ID, serverID);
-		if (server == null)
-			return UnknownSessionId(id);
-
-		server.Started = false;
-
-		// Don't immediately remove it, let it become stale.
-		await matchmakingService.Update(server);
-
-		return NoContent();
+		return await ChangeGameServerStarted(id, false);
 	}
 
 	[HttpPost("session/{id}/heartbeat")]
@@ -282,6 +255,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 	#endregion
 
+	[NonAction]
 	private NotFoundObjectResult UnknownSessionId(string id)
 	{
 		return NotFound(new ErrorResponse
@@ -293,5 +267,25 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 			OriginatingService = "utservice",
 			Intent = "prod10",
 		});
+	}
+
+	[NonAction]
+	private async Task<IActionResult> ChangeGameServerStarted(string id, bool started)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		var serverID = EpicID.FromString(id);
+
+		var server = await matchmakingService.Get(user.Session.ID, serverID);
+		if (server == null)
+			return UnknownSessionId(id);
+
+		server.Started = started;
+
+		// Don't immediately remove it, let it become stale.
+		await matchmakingService.Update(server);
+
+		return NoContent();
 	}
 }
