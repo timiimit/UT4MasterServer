@@ -11,22 +11,22 @@ namespace UT4MasterServer.Controllers;
 /// ut-public-service-prod10.ol.epicgames.com
 /// </summary>
 [ApiController]
-[Route("ut/api/game/v2")]
+[Route("ut/api/game/v2/profile")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentGameController : JsonAPIController
+public class UnrealTournamentProfileController : JsonAPIController
 {
 	private readonly ILogger<SessionController> logger;
 	private readonly AccountService accountService;
 
-	public UnrealTournamentGameController(ILogger<SessionController> logger, AccountService accountService)
+	public UnrealTournamentProfileController(ILogger<SessionController> logger, AccountService accountService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
 
 	}
 
-	[HttpPost("profile/{id}/{clientKind}/QueryProfile")]
+	[HttpPost("{id}/{clientKind}/QueryProfile")]
 	public async Task<IActionResult> QueryProfile(string id,
 		string clientKind,
 		[FromQuery] string profileId,
@@ -114,7 +114,7 @@ public class UnrealTournamentGameController : JsonAPIController
 		return Json(obj);
 	}
 
-	[HttpPost("profile/{id}/client/SetAvatarAndFlag")]
+	[HttpPost("{id}/client/SetAvatarAndFlag")]
 	public async Task<IActionResult> SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn)
 	{
 		if (User.Identity is not EpicUserIdentity user)
@@ -187,100 +187,5 @@ public class UnrealTournamentGameController : JsonAPIController
 		*/
 		// response: {"profileRevision":3,"profileId":"profile0","profileChangesBaseRevision":2,"profileChanges":[{"changeType":"statModified","name":"Avatar","value":"UT.Avatar.0"},{"changeType":"statModified","name":"CountryFlag","value":"Algeria"}],"profileCommandRevision":2,"serverTime":"2022-12-20T18:31:46.948Z","responseVersion":1,"command":"SetAvatarAndFlag"}
 		return Json(obj);
-	}
-
-	[HttpPost("ratings/account/{id}/mmrbulk")]
-	public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		for (int i = 0; i < ratings.RatingTypes.Count; i++)
-		{
-			ratings.Ratings.Add(1500);
-			ratings.NumGamesPlayed.Add(0);
-		}
-
-		return Json(ratings);
-	}
-
-	[HttpGet("ratings/account/{id}/mmr/{ratingType}")]
-	public IActionResult Mmr(string id, string ratingType, [FromBody] MMRBulk ratings)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		throw new NotImplementedException();
-
-		// TODO: return only one type of rating
-
-		// proper response: {"rating":1844,"numGamesPlayed":182}
-		for (int i = 0; i < ratings.RatingTypes.Count; i++)
-		{
-			ratings.Ratings.Add(1500);
-			ratings.NumGamesPlayed.Add(0);
-		}
-
-		return Json(ratings);
-	}
-
-	[HttpGet("ratings/account/{id}/league/{leagueName}")]
-	public IActionResult LeagueRating(string id, string leagueName)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		var league = new League();
-		// TODO: for now we just send default/empty values
-		return Json(league);
-	}
-
-	[HttpPost("ratings/team/elo/{ratingType}")]
-	public IActionResult JoinQuickplay(string ratingType, [FromBody] string body)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		/*
-		INPUT body:
-
-		{
-			"members": [
-				{
-					"accountId": "64bf8c6d81004e88823d577abe157373",
-					"score": 0,
-					"isBot": false
-				}
-			],
-			"socialPartySize": 1
-		}
-
-		*/
-
-		// Response: {"rating":1500}
-
-		return Ok();
-	}
-
-	[HttpPost("wait_times/estimate")]
-	public IActionResult QuickplayWaitEstimate()
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		// TODO: QuickplayWaitEstimate
-
-		// Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},
-		// {"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
-		return Ok();
-	}
-
-	[HttpGet("wait_times/report/{ratingType}/{unkownNumber}")]
-	public IActionResult QuickplayWaitReport()
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		return NotFound(null);
 	}
 }
