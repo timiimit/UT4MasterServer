@@ -37,8 +37,7 @@ public class SessionController : JsonAPIController
 
 	[AuthorizeBasic]
 	[HttpPost("token")]
-	public async Task<IActionResult> Authenticate(
-		[FromBody] AuthenticateRequest request)
+	public async Task<IActionResult> Authenticate([FromBody] AuthenticateRequest request)
 	{
 		if (User.Identity is not EpicClientIdentity user)
 			return Unauthorized();
