@@ -53,6 +53,7 @@ public class GameServerAttributes
 		}
 	}
 
+	// TODO: I don't like that this method exists. Dictionary should be purely private.
 	internal Dictionary<string, object> GetUnderlyingDict()
 	{
 		return serverConfigs;
@@ -72,6 +73,13 @@ public class GameServerAttributes
 	public bool Contains(string key)
 	{
 		return serverConfigs.ContainsKey(key);
+	}
+
+	public object? Get(string key)
+	{
+		if (!Contains(key))
+			return null;
+		return serverConfigs[key];
 	}
 
 	/// <summary>
