@@ -100,20 +100,13 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	[HttpPost("session/{id}/start")]
 	public async Task<IActionResult> NotifyGameServerIsReady(string id)
 	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
+		return await ChangeGameServerStarted(id, true);
+	}
 
-		var serverID = EpicID.FromString(id);
-
-		var server = await matchmakingService.Get(user.Session.ID, serverID);
-		if (server == null)
-			return UnknownSessionId(id);
-
-		server.Started = true;
-
-		await matchmakingService.Update(server);
-
-		return NoContent();
+	[HttpPost("session/{id}/stop")]
+	public async Task<IActionResult> NotifyGameServerHasStopped(string id)
+	{
+		return await ChangeGameServerStarted(id, false);
 	}
 
 	[HttpPost("session/{id}/heartbeat")]
@@ -190,9 +183,9 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	[HttpPost("session/matchMakingRequest")]
 	public async Task<IActionResult> ListGameServers([FromBody] GameServerFilter filter)
 	{
-		if (User.Identity is not EpicUserIdentity user)
+		if (User.Identity is not EpicUserIdentity)
 		{
-			// allow any third-party project to easily access hub list without any authentication
+			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
 
 		var servers = await matchmakingService.List(filter);
@@ -222,6 +215,25 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		return Json(arr);
 	}
 
+	/// <summary>
+	/// This action is for convenience of users to be able to easily retrieve a list of hubs and/or servers.
+	/// </summary>
+	/// <param name="showHubs">whether to return hubs</param>
+	/// <param name="showServers">whether to return servers</param>
+	/// <returns></returns>
+	[AllowAnonymous]
+	[HttpGet("session/matchMakingRequest")]
+	public async Task<IActionResult> ListGameServers([FromQuery] bool? showHubs, [FromQuery] bool? showServers)
+	{
+		if (User.Identity is not EpicUserIdentity)
+		{
+			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
+		}
+
+		// TODO: implement query filters
+		return await ListGameServers(new GameServerFilter());
+	}
+
 	[HttpPost("session/{id}/join")]
 	public IActionResult PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
 	{
@@ -243,6 +255,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 	#endregion
 
+	[NonAction]
 	private NotFoundObjectResult UnknownSessionId(string id)
 	{
 		return NotFound(new ErrorResponse
@@ -254,5 +267,25 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 			OriginatingService = "utservice",
 			Intent = "prod10",
 		});
+	}
+
+	[NonAction]
+	private async Task<IActionResult> ChangeGameServerStarted(string id, bool started)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		var serverID = EpicID.FromString(id);
+
+		var server = await matchmakingService.Get(user.Session.ID, serverID);
+		if (server == null)
+			return UnknownSessionId(id);
+
+		server.Started = started;
+
+		// Don't immediately remove it, let it become stale.
+		await matchmakingService.Update(server);
+
+		return NoContent();
 	}
 }
