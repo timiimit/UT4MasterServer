@@ -137,7 +137,6 @@ public class UnrealTournamentGameController : JsonAPIController
 		obj.Add("profileId", "profile0");
 		obj.Add("profileChangesBaseRevision", revisionNumber - 1);
 		JArray profileChanges = new JArray();
-
 		if (avatar != null || flag != null)
 		{
 			var acc = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -173,7 +172,7 @@ public class UnrealTournamentGameController : JsonAPIController
 
 			await accountService.UpdateAccountAsync(acc);
 		}
-
+		obj.Add("profileChanges", profileChanges);
 		obj.Add("profileCommandRevision", revisionNumber - 1);
 		obj.Add("serverTime", DateTime.UtcNow.ToStringISO());
 		obj.Add("responseVersion", 1);
