@@ -74,19 +74,37 @@ public class MatchmakingService
 		doc.Add(new BsonElement(nameof(GameServer.Started), true));
 
 		// exclude stale GameServers that haven't been removed from db yet
-		doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument { { "$gt", DateTime.UtcNow - StaleAfter } }));
+		doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument("$gt", DateTime.UtcNow - StaleAfter)));
 
 		// include GameServers whose BuildUniqueId matches criteria
 		if (inputFilter.BuildUniqueId != null)
 			doc.Add(new BsonElement(nameof(GameServer.BuildUniqueID), inputFilter.BuildUniqueId));
 
-		// TODO: Figure out how such a filter can be created
-		//if (inputFilter.OpenPlayersRequired != null)
-		//	filter &= f.Eq(x => x.MaxPublicPlayers - x.PublicPlayers.Count, inputFilter.OpenPlayersRequired);
+		if (inputFilter.OpenPlayersRequired != null)
+		{
+			// TODO: The following expression was not tested
+
+			// PublicPlayers.Count
+			var publicPlayerCount = new BsonDocument("$count", "$PublicPlayers");
+
+			// [ MaxPublicPlayers, PublicPlayers.Count ]
+			var subtractedValues = new BsonArray(new BsonValue[] { "$MaxPublicPlayers", publicPlayerCount });
+
+			// MaxPublicPlayers - PublicPlayers.Count
+			var subtraction = new BsonDocument("$subtract", subtractedValues);
+
+			// [ MaxPublicPlayers - PublicPlayers.Count, OpenPlayersRequired ]
+			var comparedValues = new BsonArray(new BsonValue[] { subtraction, inputFilter.OpenPlayersRequired });
+
+			// (MaxPublicPlayers - PublicPlayers.Count) >= OpenPlayersRequired
+			var comparison = new BsonDocument("$gte", comparedValues);
+
+			// create final expression
+			doc.Add(new BsonElement("$expr", comparison));
+		}
 
 		foreach (var condition in inputFilter.Criteria)
 		{
-			//filter &= Builders<GameServer>.Filter.Exists();
 			string? comparisonKeyword = null;
 			switch (condition.Type)
 			{

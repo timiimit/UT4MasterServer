@@ -11,22 +11,22 @@ namespace UT4MasterServer.Controllers;
 /// ut-public-service-prod10.ol.epicgames.com
 /// </summary>
 [ApiController]
-[Route("ut/api/game/v2")]
+[Route("ut/api/game/v2/profile")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentGameController : JsonAPIController
+public class UnrealTournamentProfileController : JsonAPIController
 {
 	private readonly ILogger<SessionController> logger;
 	private readonly AccountService accountService;
 
-	public UnrealTournamentGameController(ILogger<SessionController> logger, AccountService accountService)
+	public UnrealTournamentProfileController(ILogger<SessionController> logger, AccountService accountService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
 
 	}
 
-	[HttpPost("profile/{id}/{clientKind}/QueryProfile")]
+	[HttpPost("{id}/{clientKind}/QueryProfile")]
 	public async Task<IActionResult> QueryProfile(string id,
 		string clientKind,
 		[FromQuery] string profileId,
@@ -114,8 +114,8 @@ public class UnrealTournamentGameController : JsonAPIController
 		return Json(obj);
 	}
 
-	[HttpPost("profile/{id}/client/SetAvatarAndFlag")]
-	public async Task<IActionResult> SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn)
+	[HttpPost("{id}/{clientKind}/SetAvatarAndFlag")]
+	public async Task<IActionResult> SetAvatarAndFlag(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -137,7 +137,6 @@ public class UnrealTournamentGameController : JsonAPIController
 		obj.Add("profileId", "profile0");
 		obj.Add("profileChangesBaseRevision", revisionNumber - 1);
 		JArray profileChanges = new JArray();
-
 		if (avatar != null || flag != null)
 		{
 			var acc = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -173,7 +172,7 @@ public class UnrealTournamentGameController : JsonAPIController
 
 			await accountService.UpdateAccountAsync(acc);
 		}
-
+		obj.Add("profileChanges", profileChanges);
 		obj.Add("profileCommandRevision", revisionNumber - 1);
 		obj.Add("serverTime", DateTime.UtcNow.ToStringISO());
 		obj.Add("responseVersion", 1);
@@ -190,98 +189,23 @@ public class UnrealTournamentGameController : JsonAPIController
 		return Json(obj);
 	}
 
-	[HttpPost("ratings/account/{id}/mmrbulk")]
-	public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
+	[HttpPost("{id}/{clientKind}/GrantXP")]
+	public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
 	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
+		// only known to be sent by dedicated_server so far
+		bool isRequestSentFromClient = clientKind.ToLower() == "client";
+		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
-		for (int i = 0; i < ratings.RatingTypes.Count; i++)
-		{
-			ratings.Ratings.Add(1500);
-			ratings.NumGamesPlayed.Add(0);
-		}
-
-		return Json(ratings);
+		return NotFound(); // TODO: unknown response
 	}
 
-	[HttpGet("ratings/account/{id}/mmr/{ratingType}")]
-	public IActionResult Mmr(string id, string ratingType, [FromBody] MMRBulk ratings)
+	[HttpPost("{id}/{clientKind}/SetStars")]
+	public async Task<IActionResult> SetStars(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
 	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
+		// only known to be sent by client so far
+		bool isRequestSentFromClient = clientKind.ToLower() == "client";
+		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
-		throw new NotImplementedException();
-
-		// TODO: return only one type of rating
-
-		// proper response: {"rating":1844,"numGamesPlayed":182}
-		for (int i = 0; i < ratings.RatingTypes.Count; i++)
-		{
-			ratings.Ratings.Add(1500);
-			ratings.NumGamesPlayed.Add(0);
-		}
-
-		return Json(ratings);
-	}
-
-	[HttpGet("ratings/account/{id}/league/{leagueName}")]
-	public IActionResult LeagueRating(string id, string leagueName)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		var league = new League();
-		// TODO: for now we just send default/empty values
-		return Json(league);
-	}
-
-	[HttpPost("ratings/team/elo/{ratingType}")]
-	public IActionResult JoinQuickplay(string ratingType, [FromBody] string body)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		/*
-		INPUT body:
-
-		{
-			"members": [
-				{
-					"accountId": "64bf8c6d81004e88823d577abe157373",
-					"score": 0,
-					"isBot": false
-				}
-			],
-			"socialPartySize": 1
-		}
-
-		*/
-
-		// Response: {"rating":1500}
-
-		return Ok();
-	}
-
-	[HttpPost("wait_times/estimate")]
-	public IActionResult QuickplayWaitEstimate()
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		// TODO: QuickplayWaitEstimate
-
-		// Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},
-		// {"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
-		return Ok();
-	}
-
-	[HttpGet("wait_times/report/{ratingType}/{unkownNumber}")]
-	public IActionResult QuickplayWaitReport()
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		return NotFound(null);
+		return NotFound(); // TODO: unknown response
 	}
 }

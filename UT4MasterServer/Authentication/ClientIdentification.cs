@@ -27,25 +27,23 @@ public class ClientIdentification
 
 	public ClientIdentification(string authorization)
 	{
-		if (!authorization.IsBase64(out var parsedBytes))
+		if (authorization.TryDecodeBase64(out var parsedBytes))
 		{
-			return;
+			string decoded = Encoding.UTF8.GetString(parsedBytes);
+			var colon = decoded.IndexOf(':');
+			if (colon >= 0)
+			{
+				Authorization = authorization;
+				ID = EpicID.FromString(decoded.Substring(0, colon));
+				Secret = EpicID.FromString(decoded.Substring(colon + 1));
+				return;
+			}
 		}
 
-		string decoded = Encoding.UTF8.GetString(parsedBytes);
-		var colon = decoded.IndexOf(':');
-		if (colon < 0)
-		{
-			// unknown format
-			Authorization = authorization;
-			ID = EpicID.Empty;
-			Secret = EpicID.Empty;
-			return;
-		}
-
+		// unknown format
 		Authorization = authorization;
-		ID = EpicID.FromString(decoded.Substring(0, colon));
-		Secret = EpicID.FromString(decoded.Substring(colon + 1));
+		ID = EpicID.Empty;
+		Secret = EpicID.Empty;
 	}
 
 	public ClientIdentification(EpicID id, EpicID secret)

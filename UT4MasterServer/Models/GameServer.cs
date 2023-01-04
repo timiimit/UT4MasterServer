@@ -37,28 +37,6 @@ public class GameServerAttributes
 		SetDirect(key, value);
 	}
 
-	internal void SetDirect(string key, object? value)
-	{
-		if (value != null)
-		{
-			if (serverConfigs.ContainsKey(key))
-				serverConfigs[key] = value;
-			else
-				serverConfigs.Add(key, value);
-		}
-		else
-		{
-			if (serverConfigs.ContainsKey(key))
-				serverConfigs.Remove(key);
-		}
-	}
-
-	// TODO: I don't like that this method exists. Dictionary should be purely private.
-	internal Dictionary<string, object> GetUnderlyingDict()
-	{
-		return serverConfigs;
-	}
-
 	public void Update(GameServerAttributes other)
 	{
 		foreach (var attribute in other.serverConfigs)
@@ -82,73 +60,9 @@ public class GameServerAttributes
 		return serverConfigs[key];
 	}
 
-	/// <summary>
-	/// Check if stored attribute is equal to <paramref name="value"/>, no matter the type
-	/// </summary>
-	/// <param name="key">attribute key</param>
-	/// <param name="value">attribute comparison value</param>
-	/// <returns>true if attribute with name <paramref name="key"/> contains value equal to <paramref name="value"/>, false otherwise</returns>
-	public bool Eq(string key, JsonElement value)
+	public string[] GetKeys()
 	{
-		if (!Contains(key))
-			return value.ValueKind == JsonValueKind.Null;
-
-		var obj = serverConfigs[key];
-
-		if (obj is string objString && value.ValueKind == JsonValueKind.String)
-			return objString == value.GetString();
-		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
-			return objInt == value.GetInt32();
-		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
-			return objBool == value.GetBoolean();
-
-		return false;
-	}
-
-	/// <summary>
-	/// Check if stored attribute is less than <paramref name="value"/>, no matter the type
-	/// </summary>
-	/// <param name="key">attribute key</param>
-	/// <param name="value">attribute comparison value</param>
-	/// <returns>true if attribute with name <paramref name="key"/> contains value less than <paramref name="value"/>, false otherwise</returns>
-	public bool Lt(string key, JsonElement value)
-	{
-		if (!Contains(key))
-			return false;
-
-		var obj = serverConfigs[key];
-
-		if (obj is string objString && value.ValueKind == JsonValueKind.String)
-			return objString.CompareTo(value.GetString()) < 0;
-		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
-			return objInt < value.GetInt32();
-		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
-			return !objBool && value.GetBoolean(); // idk, compare as if its 0 or 1
-
-		return false;
-	}
-
-	/// <summary>
-	/// Check if stored attribute is less than or equal to <paramref name="value"/>, no matter the type
-	/// </summary>
-	/// <param name="key">attribute key</param>
-	/// <param name="value">attribute comparison value</param>
-	/// <returns>true if attribute with name <paramref name="key"/> contains value less than or equal to <paramref name="value"/>, false otherwise</returns>
-	public bool Lte(string key, JsonElement value)
-	{
-		if (!Contains(key))
-			return value.ValueKind == JsonValueKind.Null;
-
-		var obj = serverConfigs[key];
-
-		if (obj is string objString && value.ValueKind == JsonValueKind.String)
-			return objString.CompareTo(value.GetString()) <= 0;
-		if (obj is int objInt && value.ValueKind == JsonValueKind.Number)
-			return objInt <= value.GetInt32();
-		if (obj is bool objBool && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False))
-			return !(objBool && !value.GetBoolean()); // idk, compare as if its 0 or 1
-
-		return false;
+		return serverConfigs.Keys.ToArray();
 	}
 
 	public JObject ToJObject()
@@ -166,6 +80,22 @@ public class GameServerAttributes
 		}
 
 		return obj;
+	}
+
+	private void SetDirect(string key, object? value)
+	{
+		if (value != null)
+		{
+			if (serverConfigs.ContainsKey(key))
+				serverConfigs[key] = value;
+			else
+				serverConfigs.Add(key, value);
+		}
+		else
+		{
+			if (serverConfigs.ContainsKey(key))
+				serverConfigs.Remove(key);
+		}
 	}
 }
 

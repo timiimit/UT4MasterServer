@@ -20,9 +20,15 @@ public static class StringExtensions
 		return true;
 	}
 
-	public static bool IsBase64(this string input, out byte[] parsedBytes)
+	/// <summary>
+	/// Tries to decode Base64 string into bytes.
+	/// </summary>
+	/// <param name="input">Base64 string</param>
+	/// <param name="parsedBytes">Decoded bytes (is null when method returns false)</param>
+	/// <returns>Whether method managed to decode base64 string</returns>
+	public static bool TryDecodeBase64(this string input, out byte[] parsedBytes)
 	{
-		parsedBytes = null;
+		parsedBytes = null!;
 		if (string.IsNullOrWhiteSpace(input))
 		{
 			return false;

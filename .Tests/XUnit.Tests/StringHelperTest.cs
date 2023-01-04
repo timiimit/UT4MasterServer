@@ -34,10 +34,10 @@ public class StringHelperTest
 	[InlineData("This is not a valid base64 string", false)]
 	[InlineData("", false)]
 	[InlineData(null, false)]
-	public void IsBase64_ReturnsExpectedResult(string input, bool expectedResult)
+	public void TryDecodeBase64_ReturnsExpectedResult(string input, bool expectedResult)
 	{
 		// Act
-		var result = input.IsBase64(out var parsedBytes);
+		var result = input.TryDecodeBase64(out var parsedBytes);
 
 		// Assert
 		Assert.Equal(expectedResult, result);

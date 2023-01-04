@@ -36,10 +36,12 @@ public class FriendService
 		if (!friendRequestAccepted)
 		{
 			// if there was no inbound request initially, create a pending outgoing request
-			friend = new FriendRequest();
-			friend.Sender = from;
-			friend.Receiver = to;
-			friend.Status = FriendStatus.Pending;
+			friend = new FriendRequest
+			{
+				Sender = from,
+				Receiver = to,
+				Status = FriendStatus.Pending
+			};
 
 			await friendCollection.InsertOneAsync(friend);
 		}
@@ -65,10 +67,12 @@ public class FriendService
 		);
 
 		// create block request
-		var friend = new FriendRequest();
-		friend.Sender = accountID;
-		friend.Receiver = blockedAccount;
-		friend.Status = FriendStatus.Blocked;
+		var friend = new FriendRequest
+		{
+			Sender = accountID,
+			Receiver = blockedAccount,
+			Status = FriendStatus.Blocked
+		};
 
 		await friendCollection.InsertOneAsync(friend);
 		return true;
