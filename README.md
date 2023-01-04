@@ -36,6 +36,7 @@ To run in development mode use `docker-compose -f docker-compose.yml -f docker-c
 ### How to make UT4 hubs and servers connect to new master server?
 
 Follow steps 1 through 3 from section `How to make UT4 connect to new master server?` but instead append to `Engine.ini` located in server's directory.
+
 - Windows Server Path: `<install_location>\UnrealTournament\Saved\Config\WindowsServer`
 - Linux Server Path: `<install_location>/UnrealTournament/Saved/Config/LinuxServer`
 
