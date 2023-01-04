@@ -49,24 +49,24 @@ Use `POST account/api/create/account` endpoint with body parameters `username=<u
 You have 2 options. There is an easy way which is less secure and harder way which is more secure.
 
 1. Easy way **(generally recommended)**
-	1. Add `UnrealTournament` parameter to your UT4 shortcut:
-	Example:
+    1. Add `UnrealTournament` parameter to your UT4 shortcut:
+    Example:
 
-	```text
-	"D:\Epic Games\UnrealTournament\Engine\Binaries\Win64\UE4-Win64-Shipping.exe" UnrealTournament
-	```
+    ```text
+    "D:\Epic Games\UnrealTournament\Engine\Binaries\Win64\UE4-Win64-Shipping.exe" UnrealTournament
+    ```
 
-	2. After starting game, you should see login window. Enter your credentials and you should be able to play.
+    2. After starting game, you should see login window. Enter your credentials and you should be able to play.
 2. Hard way
-	1. Get `access_token` from `POST account/api/oauth/token` with `grant_type: password`
-	2. `GET account/api/oauth/exchange` with Bearer authorization (`access_token` from `POST account/api/oauth/token`)
-	3. Add parameters to your UT4 shortcut and replace `your_password_code` with `code` from `GET account/api/oauth/exchange`:
+    1. Get `access_token` from `POST account/api/oauth/token` with `grant_type: password`
+    2. `GET account/api/oauth/exchange` with Bearer authorization (`access_token` from `POST account/api/oauth/token`)
+    3. Add parameters to your UT4 shortcut and replace `your_password_code` with `code` from `GET account/api/oauth/exchange`:
 
-	```text
-	"D:\Epic Games\UnrealTournament\Engine\Binaries\Win64\UE4-Win64-Shipping.exe" UnrealTournament -AUTH_LOGIN=unused -AUTH_PASSWORD=your_password_code -AUTH_TYPE=exchangecode
-	```
+    ```text
+    "D:\Epic Games\UnrealTournament\Engine\Binaries\Win64\UE4-Win64-Shipping.exe" UnrealTournament -AUTH_LOGIN=unused -AUTH_PASSWORD=your_password_code -AUTH_TYPE=exchangecode
+    ```
 
-	NOTE: You need to repeat point *b* and *c* if you want to login again.
+    NOTE: You need to repeat point *b* and *c* if you want to login again.
 
 ### How to track statistics on new master server?
 
