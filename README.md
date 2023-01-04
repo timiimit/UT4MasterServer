@@ -45,7 +45,9 @@ Follow steps 1 through 3 from section `How to make UT4 connect to new master ser
 Use `POST account/api/create/account` endpoint with body parameters `username=<username>&password=<password>`.
 
 ### How to log in to your account inside the game?
+
 You have 2 options. There is an easy way which is less secure and harder way which is more secure.
+
 1. Easy way **(generally recommended)**
 	1. Add `UnrealTournament` parameter to your UT4 shortcut:
 	Example:
