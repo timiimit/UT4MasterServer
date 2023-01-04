@@ -37,28 +37,6 @@ public class GameServerAttributes
 		SetDirect(key, value);
 	}
 
-	internal void SetDirect(string key, object? value)
-	{
-		if (value != null)
-		{
-			if (serverConfigs.ContainsKey(key))
-				serverConfigs[key] = value;
-			else
-				serverConfigs.Add(key, value);
-		}
-		else
-		{
-			if (serverConfigs.ContainsKey(key))
-				serverConfigs.Remove(key);
-		}
-	}
-
-	// TODO: I don't like that this method exists. Dictionary should be purely private.
-	internal Dictionary<string, object> GetUnderlyingDict()
-	{
-		return serverConfigs;
-	}
-
 	public void Update(GameServerAttributes other)
 	{
 		foreach (var attribute in other.serverConfigs)
@@ -82,6 +60,11 @@ public class GameServerAttributes
 		return serverConfigs[key];
 	}
 
+	public string[] GetKeys()
+	{
+		return serverConfigs.Keys.ToArray();
+	}
+
 	public JObject ToJObject()
 	{
 		var obj = new JObject();
@@ -97,6 +80,22 @@ public class GameServerAttributes
 		}
 
 		return obj;
+	}
+
+	private void SetDirect(string key, object? value)
+	{
+		if (value != null)
+		{
+			if (serverConfigs.ContainsKey(key))
+				serverConfigs[key] = value;
+			else
+				serverConfigs.Add(key, value);
+		}
+		else
+		{
+			if (serverConfigs.ContainsKey(key))
+				serverConfigs.Remove(key);
+		}
 	}
 }
 
