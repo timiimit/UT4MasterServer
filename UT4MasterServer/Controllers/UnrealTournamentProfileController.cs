@@ -114,8 +114,8 @@ public class UnrealTournamentProfileController : JsonAPIController
 		return Json(obj);
 	}
 
-	[HttpPost("{id}/client/SetAvatarAndFlag")]
-	public async Task<IActionResult> SetAvatarAndFlag(string id, [FromQuery] string profileId, [FromQuery] string rvn)
+	[HttpPost("{id}/{clientKind}/SetAvatarAndFlag")]
+	public async Task<IActionResult> SetAvatarAndFlag(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -187,5 +187,25 @@ public class UnrealTournamentProfileController : JsonAPIController
 		*/
 		// response: {"profileRevision":3,"profileId":"profile0","profileChangesBaseRevision":2,"profileChanges":[{"changeType":"statModified","name":"Avatar","value":"UT.Avatar.0"},{"changeType":"statModified","name":"CountryFlag","value":"Algeria"}],"profileCommandRevision":2,"serverTime":"2022-12-20T18:31:46.948Z","responseVersion":1,"command":"SetAvatarAndFlag"}
 		return Json(obj);
+	}
+
+	[HttpPost("{id}/{clientKind}/GrantXP")]
+	public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
+	{
+		// only known to be sent by dedicated_server so far
+		bool isRequestSentFromClient = clientKind.ToLower() == "client";
+		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
+
+		return NotFound(); // TODO: unknown response
+	}
+
+	[HttpPost("{id}/{clientKind}/SetStars")]
+	public async Task<IActionResult> SetStars(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
+	{
+		// only known to be sent by client so far
+		bool isRequestSentFromClient = clientKind.ToLower() == "client";
+		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
+
+		return NotFound(); // TODO: unknown response
 	}
 }
