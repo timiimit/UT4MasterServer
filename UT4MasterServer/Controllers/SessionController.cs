@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
@@ -37,13 +38,7 @@ public class SessionController : JsonAPIController
 	[AuthorizeBasic]
 	[HttpPost("token")]
 	public async Task<IActionResult> Authenticate(
-		[FromForm(Name = "grant_type")] string grantType,
-		[FromForm(Name = "includePerms")] bool? includePerms,
-		[FromForm(Name = "code")] string? code,
-		[FromForm(Name = "exchange_code")] string? exchangeCode,
-		[FromForm(Name = "refresh_token")] string? refreshToken,
-		[FromForm(Name = "username")] string? username,
-		[FromForm(Name = "password")] string? password)
+		[FromBody] AuthenticateRequest request)
 	{
 		if (User.Identity is not EpicClientIdentity user)
 			return Unauthorized();
@@ -51,13 +46,13 @@ public class SessionController : JsonAPIController
 		EpicID clientID = user.Client.ID;
 		Session? session = null;
 		Account? account = null;
-		switch (grantType)
+		switch (request.GrantType)
 		{
 			case "authorization_code":
 			{
-				if (code != null)
+				if (request.Code != null)
 				{
-					var codeAuth = await codeService.TakeCodeAsync(CodeKind.Authorization, code);
+					var codeAuth = await codeService.TakeCodeAsync(CodeKind.Authorization, request.Code);
 					if (codeAuth != null)
 						session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
 				}
@@ -69,10 +64,10 @@ public class SessionController : JsonAPIController
 			}
 			case "exchange_code":
 			{
-				if (exchangeCode != null)
+				if (request.ExchangeCode != null)
 				{
 					// TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
-					var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
+					var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, request.ExchangeCode);
 					if (codeExchange != null)
 						session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
 				}
@@ -84,9 +79,9 @@ public class SessionController : JsonAPIController
 			}
 			case "refresh_token":
 			{
-				if (refreshToken != null)
+				if (request.RefreshToken != null)
 				{
-					session = await sessionService.RefreshSessionAsync(refreshToken);
+					session = await sessionService.RefreshSessionAsync(request.RefreshToken);
 				}
 				else
 				{
@@ -102,9 +97,6 @@ public class SessionController : JsonAPIController
 			}
 			case "password":
 			{
-				if (!allowPasswordGrant)
-					break;
-
 				// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
 				//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
 				//
@@ -112,20 +104,35 @@ public class SessionController : JsonAPIController
 				//       really need multi-factor auth. it is after all the way that ut's login screen
 				//       works when you start the game without launcher (and without UT4UU).
 
-				if (username == null)
+				// EPIC is returning this ErrorResponse after checking username and password... This is better place IMO
+				if (!allowPasswordGrant)
+				{
+					return BadRequest(new ErrorResponse
+					{
+						ErrorCode = "errors.com.epicgames.common.oauth.unauthorized_client",
+						ErrorMessage = $"Sorry your client is not allowed to use the grant type {request.GrantType}. Please download and use UT4UU",
+						NumericErrorCode = 1015,
+						OriginatingService = "com.epicgames.account.public",
+						Intent = "prod",
+						ErrorDescription = $"Sorry your client is not allowed to use the grant type {request.GrantType}. Please download and use UT4UU",
+						Error = "unauthorized_client",
+					});
+				}
+
+				if (request.Username == null)
 				{
 					return ErrorInvalidRequest("username");
 				}
 
-				if (password == null)
+				if (request.Password == null)
 				{
 					return ErrorInvalidRequest("password");
 				}
 
-				// TODO: Check permission and return ErrorResponse: Sorry your client is not allowed to use the grant type password. errorCode: errors.com.epicgames.common.oauth.unauthorized_client
-				account = await accountService.GetAccountAsync(username, password);
+				account = await accountService.GetAccountAsync(request.Username, request.Password);
 				if (account != null)
 					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+
 				break;
 			}
 			default:
@@ -133,11 +140,11 @@ public class SessionController : JsonAPIController
 				return BadRequest(new ErrorResponse
 				{
 					ErrorCode = "errors.com.epicgames.common.oauth.unsupported_grant_type",
-					ErrorMessage = $"Unsupported grant type: {grantType}",
+					ErrorMessage = $"Unsupported grant type: {request.GrantType}",
 					NumericErrorCode = 1016,
 					OriginatingService = "com.epicgames.account.public",
 					Intent = "prod",
-					ErrorDescription = $"Unsupported grant type: {grantType}",
+					ErrorDescription = $"Unsupported grant type: {request.GrantType}",
 					Error = "unsupported_grant_type",
 				});
 			}
@@ -145,9 +152,7 @@ public class SessionController : JsonAPIController
 
 		if (session == null)
 		{
-			// User was unable to log in
-
-			var message = $"Empty session. grant_type: {grantType}";
+			var message = $"Invalid credentials";
 			logger.LogError(message);
 
 			// TODO: Find proper response
@@ -165,7 +170,7 @@ public class SessionController : JsonAPIController
 
 		if (account == null)
 			account = await accountService.GetAccountAsync(session.AccountID);
-		logger.LogInformation($"User '{account?.ToString() ?? EpicID.Empty.ToString()}' was authorized via {grantType}");
+		logger.LogInformation($"User '{account?.ToString() ?? EpicID.Empty.ToString()}' was authorized via {request.GrantType}");
 
 		JObject obj = new JObject();
 		obj.Add("access_token", session.AccessToken.Value);
@@ -186,7 +191,7 @@ public class SessionController : JsonAPIController
 		{
 			obj.Add("displayName", account.Username);
 
-			if (includePerms == true)
+			if (request.IncludePerms == true)
 			{
 				// should probably be okay to send empty array
 				obj.Add("perms", new JArray());

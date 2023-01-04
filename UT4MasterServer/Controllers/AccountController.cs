@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
@@ -44,7 +45,7 @@ public class AccountController : JsonAPIController
 			{
 				ErrorCode = "errors.com.epicgames.account.account_not_found",
 				ErrorMessage = $"Sorry, we couldn't find an account for {id}",
-				MessageVars = new [] { id },
+				MessageVars = new[] { id },
 				NumericErrorCode = 18007,
 				OriginatingService = "com.epicgames.account.public",
 				Intent = "prod",
@@ -172,21 +173,20 @@ public class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password)
+	public async Task<IActionResult> RegisterAccount([FromBody] RegisterRequest request)
 	{
 		// TODO: Add validation
-
-		var account = await accountService.GetAccountAsync(username);
+		var account = await accountService.GetAccountAsync(request.Username);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate account: {username}");
+			logger.LogInformation($"Could not register duplicate account: {request.Username}");
 			return Conflict("Username already exists");
 		}
 
 		// TODO: should we also get user's email?
-		await accountService.CreateAccountAsync(username, password); // TODO: this cannot fail?
+		await accountService.CreateAccountAsync(request.Username, request.Password); // TODO: this cannot fail?
 
-		logger.LogInformation($"Registered new user: {username}");
+		logger.LogInformation($"Registered new user: {request.Username}");
 
 		return Ok("Account created successfully");
 	}

@@ -45,6 +45,7 @@ public static class Program
 			.AddAuthentication(/*by default there is no authentication*/)
 			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>(HttpAuthorization.BearerScheme, null)
 			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(HttpAuthorization.BasicScheme, null);
+
 		builder.Host.ConfigureLogging(logging =>
 		{
 			logging.ClearProviders();
@@ -92,6 +93,11 @@ public static class Program
 		app.UseAuthentication();
 		app.MapControllers();
 		app.UseStaticFiles();
+		// TODO: restrict origin
+		app.UseCors(x => x.AllowAnyOrigin()
+				.AllowAnyHeader()
+				.AllowAnyMethod()
+			);
 		//app.UseStaticFiles(new StaticFileOptions()
 		//{
 		//	FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "StaticWebFiles")),
