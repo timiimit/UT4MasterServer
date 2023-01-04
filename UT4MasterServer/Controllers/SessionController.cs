@@ -96,28 +96,28 @@ public class SessionController : JsonAPIController
 					break;
 				}
 			case "password":
-			{
-				// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
-				//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
-				//
-				//       we could still support it, since ut understands it cuz its old and we don't
-				//       really need multi-factor auth. it is after all the way that ut's login screen
-				//       works when you start the game without launcher (and without UT4UU).
-
-				// EPIC is returning this ErrorResponse after checking username and password... This is better place IMO
-				if (!allowPasswordGrant)
 				{
-					return BadRequest(new ErrorResponse
+					// NOTE: this grant_type is not recommended anymore: https://oauth.net/2/grant-types/password/
+					//       also this: https://stackoverflow.com/questions/62395052/oauth-password-grant-replacement
+					//
+					//       we could still support it, since ut understands it cuz its old and we don't
+					//       really need multi-factor auth. it is after all the way that ut's login screen
+					//       works when you start the game without launcher (and without UT4UU).
+
+					// EPIC is returning this ErrorResponse after checking username and password... This is better place IMO
+					if (!allowPasswordGrant)
 					{
-						ErrorCode = "errors.com.epicgames.common.oauth.unauthorized_client",
-						ErrorMessage = $"Sorry your client is not allowed to use the grant type {grantType}. Please download and use UT4UU",
-						NumericErrorCode = 1015,
-						OriginatingService = "com.epicgames.account.public",
-						Intent = "prod",
-						ErrorDescription = $"Sorry your client is not allowed to use the grant type {grantType}. Please download and use UT4UU",
-						Error = "unauthorized_client",
-					});
-				}
+						return BadRequest(new ErrorResponse
+						{
+							ErrorCode = "errors.com.epicgames.common.oauth.unauthorized_client",
+							ErrorMessage = $"Sorry your client is not allowed to use the grant type {request.GrantType}. Please download and use UT4UU",
+							NumericErrorCode = 1015,
+							OriginatingService = "com.epicgames.account.public",
+							Intent = "prod",
+							ErrorDescription = $"Sorry your client is not allowed to use the grant type {request.GrantType}. Please download and use UT4UU",
+							Error = "unauthorized_client",
+						});
+					}
 
 					if (request.Username == null)
 					{
@@ -129,21 +129,21 @@ public class SessionController : JsonAPIController
 						return ErrorInvalidRequest("password");
 					}
 
-				account = await accountService.GetAccountAsync(username, password);
-				if (account != null)
-				{
-					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
-				}
-				else
-				{
-					return BadRequest(new ErrorResponse
+					account = await accountService.GetAccountAsync(request.Username, request.Password);
+					if (account != null)
 					{
-						ErrorMessage = "Invalid credentials. Check your username and password and try again",
-					});
-				}
+						session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+					}
+					else
+					{
+						return Unauthorized(new ErrorResponse
+						{
+							ErrorMessage = "Invalid credentials. Check your username and password and try again",
+						});
+					}
 
-				break;
-			}
+					break;
+				}
 			default:
 				{
 					return BadRequest(new ErrorResponse

@@ -45,7 +45,7 @@ public class AccountController : JsonAPIController
 			{
 				ErrorCode = "errors.com.epicgames.account.account_not_found",
 				ErrorMessage = $"Sorry, we couldn't find an account for {id}",
-				MessageVars = new [] { id },
+				MessageVars = new[] { id },
 				NumericErrorCode = 18007,
 				OriginatingService = "com.epicgames.account.public",
 				Intent = "prod",
