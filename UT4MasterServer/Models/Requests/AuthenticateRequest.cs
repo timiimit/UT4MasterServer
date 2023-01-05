@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Text.Json.Serialization;
-using System.Xml.Linq;
 
 namespace UT4MasterServer.Models.Requests
 {
