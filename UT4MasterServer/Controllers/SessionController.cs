@@ -37,7 +37,7 @@ public class SessionController : JsonAPIController
 
 	[AuthorizeBasic]
 	[HttpPost("token")]
-	public async Task<IActionResult> Authenticate([FromBody] AuthenticateRequest request)
+	public async Task<IActionResult> Authenticate([FromForm] AuthenticateRequest request)
 	{
 		if (User.Identity is not EpicClientIdentity user)
 			return Unauthorized();
@@ -106,7 +106,7 @@ public class SessionController : JsonAPIController
 				// EPIC is returning this ErrorResponse after checking username and password... This is better place IMO
 				if (!allowPasswordGrant)
 				{
-					return BadRequest(new ErrorResponse
+					return Unauthorized(new ErrorResponse
 					{
 						ErrorCode = "errors.com.epicgames.common.oauth.unauthorized_client",
 						ErrorMessage = $"Sorry your client is not allowed to use the grant type {request.GrantType}. Please download and use UT4UU",
@@ -155,7 +155,7 @@ public class SessionController : JsonAPIController
 			logger.LogError(message);
 
 			// TODO: Find proper response
-			return BadRequest(new ErrorResponse
+			return Unauthorized(new ErrorResponse
 			{
 				ErrorCode = "errors.com.epicgames.common.oauth.invalid_credentials",
 				ErrorMessage = message,
