@@ -1,22 +1,22 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace UT4MasterServer.Models.Requests
 {
 	public class AuthenticateRequest
 	{
-		[JsonPropertyName("grant_type")]
+		[FromForm(Name = "grant_type")]
 		public string? GrantType { get; set; }
-		[JsonPropertyName("includePerms")]
+		[FromForm(Name = "includePerms")]
 		public bool? IncludePerms { get; set; }
-		[JsonPropertyName("code")]
+		[FromForm(Name = "code")]
 		public string? Code { get; set; }
-		[JsonPropertyName("exchangeCode")]
+		[FromForm(Name = "exchange_code")]
 		public string? ExchangeCode { get; set; }
-		[JsonPropertyName("refreshToken")]
+		[FromForm(Name = "refresh_token")]
 		public string? RefreshToken { get; set; }
-		[JsonPropertyName("username")]
+		[FromForm(Name = "username")]
 		public string? Username { get; set; }
-		[JsonPropertyName("password")]
+		[FromForm(Name = "password")]
 		public string? Password { get; set; }
 	}
 }
