@@ -7,9 +7,16 @@ services:
     build:
       context: .
       dockerfile: UT4MasterServer/Dockerfile
-    hostname: api.ut4uu.com
     ports:
-      - "443:443"
+      - "5000:80"
+  ut4masterserver-web:
+    container_name: ut4masterserver-web
+    image: ${DOCKER_REGISTRY-}ut4masterserver-web
+    build:
+      context: UT4MasterServer.Web
+      dockerfile: .docker/Dockerfile
+    ports:
+      - "5001:8080"
   mongo:
     container_name: mongo
     image: mongo
@@ -19,6 +26,8 @@ services:
       - MONGO_INITDB_DATABASE=project
     ports:
       - "27015:27015"
+    volumes:
+      - ./db:/data/db
   mongo-express:
     container_name: mongo-express
     image: mongo-express
@@ -36,12 +45,3 @@ services:
       - mongo
     ports:
       - "8888:8081"
-  ut4masterserver-web:
-    container_name: ut4masterserver-web
-    image: ${DOCKER_REGISTRY-}ut4masterserver-web
-    build:
-      context: UT4MasterServer.Web
-      dockerfile: .docker/Dockerfile
-    hostname: ut4uu.com
-    ports:
-      - "80:8080"
