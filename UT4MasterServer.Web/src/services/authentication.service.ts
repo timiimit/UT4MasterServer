@@ -22,7 +22,7 @@ export default class AuthenticationService extends HttpService {
         const session = await this.postForm<ILoginResponse, ILoginRequest>(this.tokenUrl, {
             body: request,
             headers: {
-                'Authorization': 'basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y='
+                'Authorization': `${__WEB_BASIC_AUTH}`
             }
         });
         console.debug('Token response JSON: ', session);
