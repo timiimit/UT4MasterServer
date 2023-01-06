@@ -2,6 +2,8 @@ version: "3.7"
 
 services:
   ut4masterserver:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
     container_name: UT4MasterServer
     image: ${DOCKER_REGISTRY-}ut4masterserver
     build:
