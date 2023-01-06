@@ -8,13 +8,13 @@ export interface HttpRequestOptions<T = unknown> {
 }
 
 export default class HttpService {
-    async send<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, method: HttpMethod = 'GET'): Promise<K> {
+    async send<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, method: HttpMethod = 'GET', form = false): Promise<K> {
         const fetchOptions: RequestInit = { method };
         if (options?.body) {
-            fetchOptions.body = JSON.stringify(options.body);
+            fetchOptions.body = form ? this.formEncode(options.body) : JSON.stringify(options.body);;
         }
 
-        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        const headers: HeadersInit = { 'Content-Type': form ? 'application/x-www-form-urlencoded' : 'application/json' };
 
         if (UserStore.authToken) {
             headers.Authorization = `bearer ${UserStore.authToken}`;
@@ -51,5 +51,18 @@ export default class HttpService {
 
     async delete<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>) {
         return this.send<K, T>(url, options, 'DELETE');
+    }
+
+    private formEncode(request: object) {
+        const form = new URLSearchParams();
+        for (const [key, value] of Object.entries(request)) {
+            form.append(key, value);
+        }
+
+        return form;
+    }
+
+    async postForm<K = unknown, T = object>(url: string, options?: HttpRequestOptions<T>) {
+        return this.send<K, T>(url, options, 'POST', true);
     }
 }
