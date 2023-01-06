@@ -19,7 +19,7 @@ export default class AuthenticationService extends HttpService {
     private registerUrl = `${__UT4UU_API_URL}/account/api/create/account`;
 
     async logIn(request: ILoginRequest) {
-        const session = await this.post<ILoginResponse, ILoginRequest>(this.tokenUrl, {
+        const session = await this.postForm<ILoginResponse, ILoginRequest>(this.tokenUrl, {
             body: request,
             headers: {
                 'Authorization': 'basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y='
