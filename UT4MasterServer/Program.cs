@@ -94,10 +94,12 @@ public static class Program
 		app.MapControllers();
 		app.UseStaticFiles();
 		// TODO: restrict origin
-		app.UseCors(x => x.AllowAnyOrigin()
+		app.UseCors(x =>
+		{
+			x.AllowAnyOrigin()
 				.AllowAnyHeader()
-				.AllowAnyMethod()
-			);
+				.AllowAnyMethod();
+		});
 		//app.UseStaticFiles(new StaticFileOptions()
 		//{
 		//	FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "StaticWebFiles")),
