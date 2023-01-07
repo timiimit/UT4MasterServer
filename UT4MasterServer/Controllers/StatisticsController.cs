@@ -25,7 +25,7 @@ public sealed class StatisticsController : JsonAPIController
 	[HttpGet("accountId/{accountId}/bulk/window/daily")]
 	public async Task<IActionResult> GetDailyAccountStatistics(string accountId)
 	{
-		var result = await statisticsService.GetDailyAccountStatistics(accountId);
+		var result = await statisticsService.GetAggregateAccountStatistics(accountId, StatisticWindow.Daily);
 		return Ok(result);
 	}
 

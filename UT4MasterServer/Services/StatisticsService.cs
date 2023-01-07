@@ -24,48 +24,15 @@ public sealed class StatisticsService
 		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
-	public async Task<List<StatisticDto>> GetDailyAccountStatistics(string accountId)
-	{
-		logger.LogInformation("Calculating daily statistics for account: {AccountId}.", accountId);
-
-		var dateFrom = DateTime.UtcNow.Date;
-		var dateTo = DateTime.UtcNow.Date.AddDays(1);
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountId, accountId) &
-					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
-					 Builders<Statistic>.Filter.Gte(f => f.CreatedAt, dateFrom) &
-					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateTo);
-
-		var statistics = await statisticsCollection
-			.Aggregate()
-			.Match(filter)
-			.Group(k => k.Type,
-				   g => new { Type = g.Key, Value = g.Sum(s => s.Value) })
-			.ToListAsync();
-
-		var result = new List<StatisticDto>();
-
-		foreach (var type in Enum.GetValues<StatisticType>())
-		{
-			if (type == StatisticType.Unknown) continue;
-
-			var existingStatistic = statistics.FirstOrDefault(f => f.Type == type);
-			result.Add(new StatisticDto()
-			{
-				Name = type.ToString(),
-				Value = GetValueForStatisticType(type, existingStatistic?.Value ?? 0),
-				Window = "daily",
-				OwnerType = OwnerType.Default
-			});
-		}
-
-		return result;
-	}
-
 	public async Task<List<StatisticDto>> GetAggregateAccountStatistics(string accountId, StatisticWindow statisticWindow)
 	{
 		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountId}.", statisticWindow.ToString().ToLower(), accountId);
 
-		var dateFrom = DateTime.UtcNow.AddDays(-(int)statisticWindow).Date;
+		var dateFrom = DateTime.UtcNow.Date;
+		if (statisticWindow != StatisticWindow.Daily)
+		{
+			dateFrom = DateTime.UtcNow.AddDays(-(int)statisticWindow).Date;
+		}
 		var dateTo = DateTime.UtcNow.AddDays(1).Date;
 		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountId, accountId) &
 					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
