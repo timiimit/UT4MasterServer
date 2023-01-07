@@ -50,7 +50,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		server.ID = EpicID.GenerateNew();
 		server.LastUpdated = DateTime.UtcNow;
 
-		var ipAddress = HttpContext.Connection.RemoteIpAddress;
+		server.ServerAddress = GetClientIPString();
 		if (ipAddress == null)
 		{
 			// TODO: wtf!? why can this be null???
