@@ -11,6 +11,7 @@ services:
       dockerfile: UT4MasterServer/Dockerfile
     ports:
       - "5000:80"
+    network_mode: "host"
   ut4masterserver-web:
     container_name: ut4masterserver-web
     image: ${DOCKER_REGISTRY-}ut4masterserver-web
