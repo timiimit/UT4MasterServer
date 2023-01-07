@@ -11,7 +11,8 @@ public class ApplicationSettings
 	public bool AllowPasswordGrantType { get; set; } = false;
 
 	/// <summary>
-	/// File containing an IP addresses (one per line) trusted to be a proxy server.
+	/// File containing a list of trusted proxy servers (one per line).
+	/// This file is loaded only once when program starts and it add values to <see cref="ProxyServers"/>.
 	/// </summary>
 	public string ProxyServersFile { get; set; } = string.Empty;
 
@@ -19,5 +20,10 @@ public class ApplicationSettings
 	/// Header that proxy server is expected to use to forward information about the original client IP address.
 	/// </summary>
 	public string ProxyClientIPHeader { get; set; } = string.Empty;
+
+	/// <summary>
+	/// IP addresses of trusted proxy servers.
+	/// </summary>
+	public List<string> ProxyServers { get; set; } = new List<string>();
 
 }
