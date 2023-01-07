@@ -1,4 +1,4 @@
-﻿#define USE_LOCALHOST_TEST
+﻿//#define USE_LOCALHOST_TEST
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
