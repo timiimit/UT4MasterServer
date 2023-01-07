@@ -84,40 +84,7 @@ public class JsonAPIController : ControllerBase
 	[NonAction]
 	protected string GetClientIPString()
 	{
-		string? tmp = null;
-
-		// try to locate any known proxy related headers
-
-		// standard cloudflare header
-		tmp = HttpContext.Request.Headers["CF-Client-IP"]
-				.GroupBy(s => s)
-				.OrderByDescending(x => x.Count())
-				.Select(x => x.Key)
-				.FirstOrDefault();
-
-		if (tmp != null)
-			return tmp;
-
-		// normal http header
-		tmp = HttpContext.Request.Headers["X-Forwarded-For"]
-				.FirstOrDefault();
-
-		if (tmp != null)
-			return tmp;
-
-		// enterprise cloudflare header
-		tmp = HttpContext.Request.Headers["True-Client-IP"]
-				.GroupBy(s => s)
-				.OrderByDescending(x => x.Count())
-				.Select(x => x.Key)
-				.FirstOrDefault();
-
-		if (tmp != null)
-			return tmp;
-
-
-		// when connection is not proxied, we have no choice
-		// but to take the actual IP address of remote
+		// we have no choice but to take the actual IP address of remote
 
 		var ipAddress = HttpContext.Connection.RemoteIpAddress;
 		if (ipAddress == null)
