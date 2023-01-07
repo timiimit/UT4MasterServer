@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization;
+using System.Net;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
@@ -24,9 +25,26 @@ public static class Program
 		{
 			o.RespectBrowserAcceptHeader = true;
 		});
+
 		builder.Services.Configure<ApplicationSettings>(
 			builder.Configuration.GetSection("ApplicationSettings")
 		);
+		builder.Services.Configure<ApplicationSettings>(x =>
+		{
+			// handle proxy list loading
+			if (string.IsNullOrWhiteSpace(x.ProxyServersFile))
+				return;
+
+			var proxies = File.ReadAllLines(x.ProxyServersFile);
+			foreach (var proxy in proxies)
+			{
+				if (!IPAddress.TryParse(proxy, out var ip))
+					continue;
+
+				x.ProxyServers.Add(ip.ToString());
+			}
+		});
+
 
 		// services whose instance is created per-request
 		builder.Services
@@ -93,6 +111,7 @@ public static class Program
 		app.UseAuthentication();
 		app.MapControllers();
 		app.UseStaticFiles();
+
 		// TODO: restrict origin
 		app.UseCors(x =>
 		{
@@ -100,15 +119,6 @@ public static class Program
 				.AllowAnyHeader()
 				.AllowAnyMethod();
 		});
-		//app.UseStaticFiles(new StaticFileOptions()
-		//{
-		//	FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "StaticWebFiles")),
-		//	RequestPath = "/",
-		//	OnPrepareResponse = ctx =>
-		//	{
-		//		// operation to do on all static file responses
-		//	}
-		//});
 
 		app.Run();
 	}
