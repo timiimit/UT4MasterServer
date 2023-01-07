@@ -54,7 +54,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		server.ID = EpicID.GenerateNew();
 		server.LastUpdated = DateTime.UtcNow;
 
-		var ipClient = GetClientIP();
+		var ipClient = GetClientIP(configuration);
 		if (ipClient == null)
 		{
 			logger.LogError("Could not determine IP Address of remote machine.");
@@ -290,35 +290,5 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		await matchmakingService.Update(server);
 
 		return NoContent();
-	}
-
-	[NonAction]
-	protected IPAddress? GetClientIP()
-	{
-		var ipAddress = HttpContext.Connection.RemoteIpAddress;
-		if (ipAddress == null)
-			return null;
-
-		if (string.IsNullOrWhiteSpace(configuration.Value.ProxyClientIPHeader))
-			return ipAddress;
-
-		// try locating IPAddress via proxy server's HTTP header
-		foreach (var proxy in configuration.Value.ProxyServers)
-		{
-			if (!IPAddress.TryParse(proxy, out _))
-				continue;
-
-			var headers = HttpContext.Request.Headers[configuration.Value.ProxyClientIPHeader];
-			if (headers.Count > 0)
-			{
-				if (IPAddress.TryParse(headers[0], out var ipClient))
-					return ipClient;
-			}
-
-			// TODO: try handle X-Forwarded-For header
-		}
-
-		// no headers found, return remote ip
-		return ipAddress;
 	}
 }

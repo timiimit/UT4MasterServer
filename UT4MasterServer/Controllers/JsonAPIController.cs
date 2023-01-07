@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Text.Json;
+using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Controllers;
@@ -77,5 +79,38 @@ public class JsonAPIController : ControllerBase
 	public JsonResult Json(object? content, int status)
 	{
 		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
+	}
+
+	[NonAction]
+	protected IPAddress? GetClientIP(IOptions<ApplicationSettings>? proxyInfo)
+	{
+		var ipAddress = HttpContext.Connection.RemoteIpAddress;
+		if (ipAddress == null)
+			return null;
+
+		if (proxyInfo == null)
+			return ipAddress;
+
+		if (string.IsNullOrWhiteSpace(proxyInfo.Value.ProxyClientIPHeader))
+			return ipAddress;
+
+		// try locating IPAddress via proxy server's HTTP header
+		foreach (var proxy in proxyInfo.Value.ProxyServers)
+		{
+			if (!IPAddress.TryParse(proxy, out _))
+				continue;
+
+			var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
+			if (headers.Count > 0)
+			{
+				if (IPAddress.TryParse(headers[0], out var ipClient))
+					return ipClient;
+			}
+
+			// TODO: try handle X-Forwarded-For header
+		}
+
+		// no headers found, return remote ip
+		return ipAddress;
 	}
 }
