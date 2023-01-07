@@ -35,13 +35,20 @@ public static class Program
 			if (string.IsNullOrWhiteSpace(x.ProxyServersFile))
 				return;
 
-			var proxies = File.ReadAllLines(x.ProxyServersFile);
-			foreach (var proxy in proxies)
+			try
 			{
-				if (!IPAddress.TryParse(proxy, out var ip))
-					continue;
+				var proxies = File.ReadAllLines(x.ProxyServersFile);
+				foreach (var proxy in proxies)
+				{
+					if (!IPAddress.TryParse(proxy, out var ip))
+						continue;
 
-				x.ProxyServers.Add(ip.ToString());
+					x.ProxyServers.Add(ip.ToString());
+				}
+			}
+			catch
+			{
+				// we ignore the fact that proxy list file was not found
 			}
 		});
 
