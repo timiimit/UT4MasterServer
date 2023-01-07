@@ -81,6 +81,9 @@ public class JsonAPIController : ControllerBase
 		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
 	}
 
+
+	private const string HTTP_Header_XForwardedFor = "X-Forwarded-For";
+
 	[NonAction]
 	protected IPAddress? GetClientIP(IOptions<ApplicationSettings>? proxyInfo)
 	{
@@ -97,17 +100,36 @@ public class JsonAPIController : ControllerBase
 		// try locating IPAddress via proxy server's HTTP header
 		foreach (var proxy in proxyInfo.Value.ProxyServers)
 		{
-			if (!IPAddress.TryParse(proxy, out _))
+			if (!IPAddress.TryParse(proxy, out var ipProxy))
 				continue;
 
-			var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
-			if (headers.Count > 0)
+			if (!ipProxy.Equals(ipAddress))
+				continue;
+
+			if (proxyInfo.Value.ProxyClientIPHeader != HTTP_Header_XForwardedFor)
 			{
-				if (IPAddress.TryParse(headers[0], out var ipClient))
-					return ipClient;
+				var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
+				if (headers.Count > 0)
+				{
+					if (IPAddress.TryParse(headers[0], out var ipClient))
+						return ipClient;
+				}
 			}
 
-			// TODO: try handle X-Forwarded-For header
+			// additionally, try handle X-Forwarded-For header, because that's a standard header
+			{
+				var headers = HttpContext.Request.Headers[HTTP_Header_XForwardedFor];
+				foreach (var headerInstance in headers)
+				{
+					string[] parts = headerInstance.Split(',');
+					foreach (var part in parts)
+					{
+						// we return at first valid ip address
+						if (IPAddress.TryParse(part, out var ipClient))
+							return ipClient;
+					}
+				}
+			}
 		}
 
 		// no headers found, return remote ip
