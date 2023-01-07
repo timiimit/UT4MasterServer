@@ -35,7 +35,8 @@ public static class Program
 			.AddScoped<AccountService>()
 			.AddScoped<SessionService>()
 			.AddScoped<CloudStorageService>()
-			.AddScoped<MatchmakingService>();
+			.AddScoped<MatchmakingService>()
+			.AddScoped<StatisticsService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
