@@ -24,8 +24,8 @@ public static class Program
 		{
 			o.RespectBrowserAcceptHeader = true;
 		});
-		builder.Services.Configure<DatabaseSettings>(
-			builder.Configuration.GetSection("UT4EverDatabase")
+		builder.Services.Configure<ApplicationSettings>(
+			builder.Configuration.GetSection("ApplicationSettings")
 		);
 
 		// services whose instance is created per-request

@@ -16,7 +16,7 @@ public class CodeService
 	/// </summary>
 	private readonly List<Code> codes;
 
-	public CodeService(IOptions<DatabaseSettings> settings)
+	public CodeService(IOptions<ApplicationSettings> settings)
 	{
 		codes = new List<Code>();
 	}

@@ -25,7 +25,7 @@ public class SessionController : JsonAPIController
 
 	public SessionController(
 		SessionService sessionService, CodeService codeService, AccountService accountService,
-		IOptions<DatabaseSettings> settings, ILogger<SessionController> logger) : base(logger)
+		IOptions<ApplicationSettings> settings, ILogger<SessionController> logger) : base(logger)
 	{
 		this.codeService = codeService;
 		this.sessionService = sessionService;
