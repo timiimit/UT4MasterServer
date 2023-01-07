@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Text.Json;
 using UT4MasterServer.Other;
@@ -12,7 +13,13 @@ namespace UT4MasterServer.Controllers;
 /// </summary>
 public class JsonAPIController : ControllerBase
 {
+	protected readonly ILogger<JsonAPIController> logger;
 	private const string MimeJson = "application/json";
+
+	public JsonAPIController(ILogger<JsonAPIController> logger)
+	{
+		this.logger = logger;
+	}
 
 	[NonAction]
 	public ContentResult Json(string content)

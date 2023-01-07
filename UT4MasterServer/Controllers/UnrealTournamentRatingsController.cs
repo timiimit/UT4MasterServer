@@ -16,14 +16,11 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentRatingController : JsonAPIController
 {
-	private readonly ILogger<SessionController> logger;
 	private readonly AccountService accountService;
 
-	public UnrealTournamentRatingController(ILogger<SessionController> logger, AccountService accountService)
+	public UnrealTournamentRatingController(ILogger<SessionController> logger, AccountService accountService) : base(logger)
 	{
-		this.logger = logger;
 		this.accountService = accountService;
-
 	}
 
 	[HttpPost("account/{id}/mmrbulk")]

@@ -14,11 +14,8 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentStatsController : JsonAPIController
 {
-	private readonly ILogger<UnrealTournamentStatsController> logger;
-
-	public UnrealTournamentStatsController(ILogger<UnrealTournamentStatsController> logger)
+	public UnrealTournamentStatsController(ILogger<UnrealTournamentStatsController> logger) : base(logger)
 	{
-		this.logger = logger;
 	}
 
 	[HttpGet("accountId/{id}/bulk/window/{category}")]

@@ -21,15 +21,12 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentMatchmakingController : JsonAPIController
 {
-	private readonly ILogger<SessionController> logger;
 	private readonly MatchmakingService matchmakingService;
 	private const int MAX_READ_SIZE = 1024 * 4;
 
-	public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, MatchmakingService matchmakingService)
+	public UnrealTournamentMatchmakingController(ILogger<UnrealTournamentMatchmakingController> logger, MatchmakingService matchmakingService) : base(logger)
 	{
-		this.logger = logger;
 		this.matchmakingService = matchmakingService;
-
 	}
 
 	#region Endpoints for Game Servers
@@ -51,19 +48,6 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		server.LastUpdated = DateTime.UtcNow;
 
 		server.ServerAddress = GetClientIPString();
-		if (ipAddress == null)
-		{
-			// TODO: wtf!? why can this be null???
-			logger.LogCritical($"Could not determine ip address of remote GameServer, this issue needs to be resolved!");
-			return StatusCode(StatusCodes.Status500InternalServerError);
-		}
-		if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-		{
-			// ipv6 does not seem to work
-			logger.LogWarning($"GameServer is connecting from ipv6 address ({ipAddress})! mapping to ipv4...");
-			ipAddress = ipAddress.MapToIPv4();
-		}
-		server.ServerAddress = ipAddress.ToString();
 		server.Started = false;
 
 		// TODO: figure out trusted keys & determine trust level

@@ -12,6 +12,11 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class EntitlementController : JsonAPIController
 {
+	public EntitlementController(ILogger<EntitlementController> logger) : base(logger)
+	{
+
+	}
+
 	[HttpGet]
 	public IActionResult QueryProfile(string id)
 	{

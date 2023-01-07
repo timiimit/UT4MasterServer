@@ -18,7 +18,6 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class SessionController : JsonAPIController
 {
-	private readonly ILogger<SessionController> logger;
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
 	private readonly CodeService codeService;
@@ -26,12 +25,11 @@ public class SessionController : JsonAPIController
 
 	public SessionController(
 		SessionService sessionService, CodeService codeService, AccountService accountService,
-		IOptions<DatabaseSettings> settings, ILogger<SessionController> logger)
+		IOptions<DatabaseSettings> settings, ILogger<SessionController> logger) : base(logger)
 	{
 		this.codeService = codeService;
 		this.sessionService = sessionService;
 		this.accountService = accountService;
-		this.logger = logger;
 		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 

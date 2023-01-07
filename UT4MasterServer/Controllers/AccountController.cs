@@ -18,12 +18,10 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class AccountController : JsonAPIController
 {
-	private readonly ILogger<AccountController> logger;
 	private readonly AccountService accountService;
 
-	public AccountController(AccountService accountService, ILogger<AccountController> logger)
+	public AccountController(ILogger<AccountController> logger, AccountService accountService) : base(logger)
 	{
-		this.logger = logger;
 		this.accountService = accountService;
 	}
 

@@ -15,7 +15,7 @@ public class CloudStorageController : JsonAPIController
 {
 	private readonly CloudStorageService cloudStorageService;
 
-	public CloudStorageController(CloudStorageService cloudStorageService)
+	public CloudStorageController(ILogger<CloudStorageController> logger, CloudStorageService cloudStorageService) : base(logger)
 	{
 		this.cloudStorageService = cloudStorageService;
 	}
