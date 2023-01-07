@@ -78,28 +78,4 @@ public class JsonAPIController : ControllerBase
 	{
 		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
 	}
-
-
-
-	[NonAction]
-	protected string GetClientIPString()
-	{
-		// we have no choice but to take the actual IP address of remote
-
-		var ipAddress = HttpContext.Connection.RemoteIpAddress;
-		if (ipAddress == null)
-		{
-			// for some reason we were unable to determine remote IP...
-			logger.LogError($"Could not determine ip address of remote GameServer, this issue needs to be resolved!");
-			return string.Empty;
-		}
-
-		if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-		{
-			// ipv6 does not seem to work
-			logger.LogWarning($"GameServer is connecting from ipv6 address ({ipAddress})! mapping to ipv4...");
-			ipAddress = ipAddress.MapToIPv4();
-		}
-		return ipAddress.ToString();
-	}
 }

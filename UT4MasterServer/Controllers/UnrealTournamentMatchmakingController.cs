@@ -2,7 +2,9 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Text.Json;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
@@ -22,10 +24,15 @@ namespace UT4MasterServer.Controllers;
 public class UnrealTournamentMatchmakingController : JsonAPIController
 {
 	private readonly MatchmakingService matchmakingService;
+	private readonly IOptions<ApplicationSettings> configuration;
 	private const int MAX_READ_SIZE = 1024 * 4;
 
-	public UnrealTournamentMatchmakingController(ILogger<UnrealTournamentMatchmakingController> logger, MatchmakingService matchmakingService) : base(logger)
+	public UnrealTournamentMatchmakingController(
+		ILogger<UnrealTournamentMatchmakingController> logger,
+		IOptions<ApplicationSettings> configuration,
+		MatchmakingService matchmakingService) : base(logger)
 	{
+		this.configuration = configuration;
 		this.matchmakingService = matchmakingService;
 	}
 
@@ -47,7 +54,19 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		server.ID = EpicID.GenerateNew();
 		server.LastUpdated = DateTime.UtcNow;
 
-		server.ServerAddress = GetClientIPString();
+		var ipClient = GetClientIP();
+		if (ipClient == null)
+		{
+			logger.LogError("Could not determine IP Address of remote machine.");
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+		if (ipClient.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+		{
+			logger.LogWarning("Client is using IPv6. GameServer might not be accessible by others.");
+			//return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		server.ServerAddress = ipClient.ToString();
 		server.Started = false;
 
 		// TODO: figure out trusted keys & determine trust level
@@ -271,5 +290,35 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		await matchmakingService.Update(server);
 
 		return NoContent();
+	}
+
+	[NonAction]
+	protected IPAddress? GetClientIP()
+	{
+		var ipAddress = HttpContext.Connection.RemoteIpAddress;
+		if (ipAddress == null)
+			return null;
+
+		if (string.IsNullOrWhiteSpace(configuration.Value.ProxyClientIPHeader))
+			return ipAddress;
+
+		// try locating IPAddress via proxy server's HTTP header
+		foreach (var proxy in configuration.Value.ProxyServers)
+		{
+			if (!IPAddress.TryParse(proxy, out _))
+				continue;
+
+			var headers = HttpContext.Request.Headers[configuration.Value.ProxyClientIPHeader];
+			if (headers.Count > 0)
+			{
+				if (IPAddress.TryParse(headers[0], out var ipClient))
+					return ipClient;
+			}
+
+			// TODO: try handle X-Forwarded-For header
+		}
+
+		// no headers found, return remote ip
+		return ipAddress;
 	}
 }
