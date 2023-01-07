@@ -36,7 +36,7 @@ public class CustomAPIController : JsonAPIController
 		sb.AppendLine("Query URL Parameters:");
 		foreach (var parameter in HttpContext.Request.Query)
 		{
-			sb.AppendLine($"{parameter.Key}=");
+			sb.AppendLine($"{parameter.Key}={parameter.Value}");
 		}
 
 		sb.AppendLine();
