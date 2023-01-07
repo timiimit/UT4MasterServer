@@ -21,20 +21,11 @@ cd /app
 
 # install required packages
 sudo yum update -y
-sudo yum -y git docker httpd mod_ssl
+sudo yum install -y git docker httpd mod_ssl
 
-# make docker daemon start at boot and start it now
-sudo systemctl enable docker && sudo systemctl restart docker
-
-# now go to /etc/httpd/conf/httpd.conf and locate "Listen 80"
-# right after it add the following:
-# <VirtualHost *:80>
-# 	DocumentRoot "/var/www/html"
-# 	ServerName "<PUT_BASE_DOMAIN_NAME_HERE>"
-# </VirtualHost>
-
-# make sure httpd (apache) daemon starts at boot
-sudo systemctl enable httpd & sudo systemctl restart httpd
+# download and install docker-compose manually from releases on their github
+# link: https://github.com/docker/compose/releases
+# this guide will assume you placed the installed binary in /usr/local/bin/docker-compose
 
 # enable packages which are needed to install certbot
 sudo wget -r --no-parent -A 'epel-release-*.rpm' https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/
@@ -46,7 +37,35 @@ sudo rm -rf dl.fedoraproject.org/
 sudo amazon-linux-extras install epel -y
 sudo yum install -y certbot python2-certbot-apache
 
+# now create ut4masterserver.conf in /etc/httpd/conf.d/ and put in the following:
+# <VirtualHost *:80>
+# 	DocumentRoot "/var/www/html"
+# 	ServerName "<PUT_WEBSITE_DOMAIN_NAME_HERE>"
+#	ProxyPreserveHost On
+#	ProxyPass / http://127.0.0.1:5001/
+#	ProxyPassReverse / http://127.0.0.1:5001/
+# </VirtualHost>
+# <VirtualHost *:80>
+# 	ServerName "<PUT_API_DOMAIN_NAME_HERE>"
+#	ProxyPreserveHost On
+#	ProxyPass / http://127.0.0.1:5000/
+#	ProxyPassReverse / http://127.0.0.1:5000/
+# </VirtualHost>
+
+# make sure httpd (apache) daemon is running at all times
+sudo systemctl enable httpd & sudo systemctl restart httpd
+
+# install 2 ssl certificates. one for WEBSITE domain and one for API domain.
+# run certbot and follow it's instructions, then make sure it installed the obtained certificates.
+sudo certbot
+
 # get source code of master server (use your own fork if you have a custom version)
 git clone https://github.com/timiimit/UT4MasterServer
 
-cd UT4MasterServer
+# make sure docker daemon is running at all times
+sudo systemctl enable docker && sudo systemctl restart docker
+
+# start all containers required to run the master server
+sudo /usr/local/bin/docker-compose -f UT4MasterServer/docker-compose.yml up -d
+
+# make sure to take care of /app/db as that directory contains the database
