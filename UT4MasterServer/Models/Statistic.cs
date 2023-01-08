@@ -18,6 +18,7 @@ public sealed class Statistic
 	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 	[BsonElement("modifiedAt")]
+	[BsonIgnoreIfNull]
 	public DateTime? ModifiedAt { get; set; }
 
 	[BsonElement("type")]
