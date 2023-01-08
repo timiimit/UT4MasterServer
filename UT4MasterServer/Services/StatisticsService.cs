@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using System.Threading;
 using UT4MasterServer.DTOs;
 using UT4MasterServer.Enums;
 using UT4MasterServer.Models;
@@ -18,6 +19,16 @@ public sealed class StatisticsService
 	{
 		this.logger = logger;
 		statisticsCollection = dbContext.Database.GetCollection<Statistic>("statistics");
+	}
+
+	public async Task CreateIndexes()
+	{
+		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
+			{
+				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
+				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt))
+			};
+		await statisticsCollection.Indexes.CreateManyAsync(statisticsIndexes);
 	}
 
 	public async Task<List<StatisticDTO>> GetAggregateAccountStatistics(EpicID accountID, StatisticWindow statisticWindow)
