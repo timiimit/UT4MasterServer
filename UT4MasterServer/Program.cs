@@ -47,11 +47,16 @@ public static class Program
 			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>(HttpAuthorization.BearerScheme, null)
 			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(HttpAuthorization.BasicScheme, null);
 
-		builder.Host.ConfigureLogging(logging =>
-		{
-			logging.ClearProviders();
-			logging.AddConsole();
-		});
+		builder.Host
+			.ConfigureLogging(logging =>
+			{
+				logging.ClearProviders();
+				logging.AddConsole();
+			})
+			.ConfigureServices(services =>
+			{
+				services.AddHostedService<ApplicationStartupService>();
+			});
 
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(config =>
