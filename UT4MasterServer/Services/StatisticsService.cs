@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using UT4MasterServer.DTOs;
 using UT4MasterServer.Enums;
@@ -12,16 +11,13 @@ public sealed class StatisticsService
 {
 	private readonly ILogger<StatisticsService> logger;
 	private readonly IMongoCollection<Statistic> statisticsCollection;
-	private readonly bool allowPasswordGrant;
 
 	public StatisticsService(
 		ILogger<StatisticsService> logger,
-		DatabaseContext dbContext,
-		IOptions<DatabaseSettings> settings)
+		DatabaseContext dbContext)
 	{
 		this.logger = logger;
 		statisticsCollection = dbContext.Database.GetCollection<Statistic>("statistics");
-		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
 	public async Task<List<StatisticDto>> GetAggregateAccountStatistics(EpicID accountId, StatisticWindow statisticWindow)
