@@ -7,27 +7,26 @@ namespace UT4MasterServer.Services
 	public class ApplicationStartupService : IHostedService
 	{
 		private readonly ILogger<ApplicationStartupService> logger;
-		private readonly MongoClient client;
-		public IMongoDatabase Database { get; private set; }
+		private readonly StatisticsService statisticsService;
+		private readonly CloudStorageService cloudStorageService;
 
-		public ApplicationStartupService(ILogger<ApplicationStartupService> logger, IOptions<ApplicationSettings> settings)
+		public ApplicationStartupService(
+			ILogger<ApplicationStartupService> logger, ILogger<StatisticsService> statsLogger,
+			IOptions<ApplicationSettings> settings)
 		{
 			this.logger = logger;
-			client = new MongoClient(settings.Value.DatabaseConnectionString);
-			Database = client.GetDatabase(settings.Value.DatabaseName);
+			var db = new DatabaseContext(settings);
+			statisticsService = new StatisticsService(statsLogger, db);
+			cloudStorageService = new CloudStorageService(db);
 		}
 
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Configuring MongoDB indexes.");
+			await statisticsService.CreateIndexes();
 
-			var statisticsCollection = Database.GetCollection<Statistic>("statistics");
-			var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
-			{
-				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
-				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt))
-			};
-			await statisticsCollection.Indexes.CreateManyAsync(statisticsIndexes, cancellationToken);
+			logger.LogInformation("Configuring CloudStorage.");
+			await cloudStorageService.UpdateSystemfiles();
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
