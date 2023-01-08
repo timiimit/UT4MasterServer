@@ -121,7 +121,7 @@ public sealed class StatisticBulkDTO
 	public int? RocketKills { get; set; }
 	public int? RocketDeaths { get; set; }
 	public int? RocketShots { get; set; }
-	public int? RocketHits { get; set; }
+	public float? RocketHits { get; set; }
 	//RocketAccuracy - Calculated
 
 	// Weapon Stats - Sniper
