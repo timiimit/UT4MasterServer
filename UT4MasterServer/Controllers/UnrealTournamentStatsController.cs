@@ -74,6 +74,13 @@ public class UnrealTournamentStatsController : JsonAPIController
 		[FromBody] StatisticBulkDto statisticBulkDto)
 	{
 		var accountId = EpicID.FromString(id);
+
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		if (user.Session.AccountID != accountId)
+			return Unauthorized(); // Users can post their own stats only
+
 		await statisticsService.CreateAccountStatistics(accountId, ownerType, statisticBulkDto);
 		return Ok();
 	}
