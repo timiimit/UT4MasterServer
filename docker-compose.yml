@@ -11,6 +11,8 @@ services:
       dockerfile: UT4MasterServer/Dockerfile
     ports:
       - "5000:80"
+    networks:
+      - net
   ut4masterserver-web:
     container_name: UT4MasterServer-Web
     image: ${DOCKER_REGISTRY-}ut4masterserver-web
@@ -19,6 +21,8 @@ services:
       dockerfile: .docker/Dockerfile
     ports:
       - "5001:8080"
+    networks:
+      - net
   mongo:
     container_name: mongo
     image: mongo
@@ -30,6 +34,8 @@ services:
       - "27015:27015"
     volumes:
       - ./db:/data/db
+    networks:
+      - net
   mongo-express:
     container_name: mongo-express
     image: mongo-express
@@ -47,3 +53,14 @@ services:
       - mongo
     ports:
       - "8888:8081"
+    networks:
+      - net
+networks:
+  net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+    external: false
+    
