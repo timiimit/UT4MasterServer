@@ -12,7 +12,7 @@ services:
     ports:
       - "5000:80"
   ut4masterserver-web:
-    container_name: ut4masterserver-web
+    container_name: UT4MasterServer-Web
     image: ${DOCKER_REGISTRY-}ut4masterserver-web
     build:
       context: UT4MasterServer.Web
