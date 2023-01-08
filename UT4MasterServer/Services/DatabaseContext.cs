@@ -17,7 +17,7 @@ public class DatabaseContext
 		var statisticsCollection = Database.GetCollection<Statistic>("statistics");
 		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
 		{
-			new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountId)),
+			new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
 			new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt))
 		};
 		statisticsCollection.Indexes.CreateMany(statisticsIndexes);

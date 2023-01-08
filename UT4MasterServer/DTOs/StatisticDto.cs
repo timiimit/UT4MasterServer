@@ -2,7 +2,7 @@
 
 namespace UT4MasterServer.DTOs;
 
-public sealed class StatisticDto
+public sealed class StatisticDTO
 {
 	public string Name { get; set; } = string.Empty;
 	public int Value { get; set; }

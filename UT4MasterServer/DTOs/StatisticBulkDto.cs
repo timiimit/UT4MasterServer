@@ -1,6 +1,6 @@
 ﻿namespace UT4MasterServer.DTOs;
 
-public sealed class StatisticBulkDto
+public sealed class StatisticBulkDTO
 {
 	// Quick Look
 	public int? SkillRating { get; set; }

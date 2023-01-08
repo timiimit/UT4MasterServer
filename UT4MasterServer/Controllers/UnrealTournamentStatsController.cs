@@ -79,7 +79,7 @@ public class UnrealTournamentStatsController : JsonAPIController
 	public async Task<IActionResult> CreateAccountStatistics(
 		string id,
 		[FromQuery] OwnerType ownerType,
-		[FromBody] StatisticBulkDto statisticBulkDto)
+		[FromBody] StatisticBulkDTO statisticBulkDTO)
 	{
 		// TODO: Check id and return ErrorResponse if invalid: "Could not convert fakeAccountId to a UUID because it was not in a valid format: Invalid UUID string: fakeAccountId" (errors.com.epicgames.modules.stats.invalid_account_id)
 
@@ -91,7 +91,7 @@ public class UnrealTournamentStatsController : JsonAPIController
 		if (user.Session.AccountID != accountId)
 			return Unauthorized(); // Users can post their own stats only
 
-		await statisticsService.CreateAccountStatistics(accountId, ownerType, statisticBulkDto);
+		await statisticsService.CreateAccountStatistics(accountId, ownerType, statisticBulkDTO);
 		return Ok();
 	}
 }

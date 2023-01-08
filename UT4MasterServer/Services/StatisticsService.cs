@@ -20,9 +20,9 @@ public sealed class StatisticsService
 		statisticsCollection = dbContext.Database.GetCollection<Statistic>("statistics");
 	}
 
-	public async Task<List<StatisticDto>> GetAggregateAccountStatistics(EpicID accountId, StatisticWindow statisticWindow)
+	public async Task<List<StatisticDTO>> GetAggregateAccountStatistics(EpicID accountID, StatisticWindow statisticWindow)
 	{
-		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountId}.", statisticWindow.ToString().ToLower(), accountId);
+		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountId}.", statisticWindow.ToString().ToLower(), accountID);
 
 		var dateFrom = DateTime.UtcNow.Date;
 		if (statisticWindow != StatisticWindow.Daily)
@@ -30,7 +30,7 @@ public sealed class StatisticsService
 			dateFrom = DateTime.UtcNow.AddDays(-(int)statisticWindow).Date;
 		}
 		var dateTo = DateTime.UtcNow.AddDays(1).Date;
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountId, accountId) &
+		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
 					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
 					 Builders<Statistic>.Filter.Gte(f => f.CreatedAt, dateFrom) &
 					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateTo);
@@ -42,14 +42,14 @@ public sealed class StatisticsService
 				   g => new { Type = g.Key, Value = g.Sum(s => s.Value) })
 			.ToListAsync();
 
-		var result = new List<StatisticDto>();
+		var result = new List<StatisticDTO>();
 
 		foreach (var type in Enum.GetValues<StatisticType>())
 		{
 			if (type == StatisticType.Unknown) continue;
 
 			var existingStatistic = statistics.FirstOrDefault(f => f.Type == type);
-			result.Add(new StatisticDto()
+			result.Add(new StatisticDTO()
 			{
 				Name = type.ToString(),
 				Value = GetValueForStatisticType(type, existingStatistic?.Value ?? 0),
@@ -61,23 +61,23 @@ public sealed class StatisticsService
 		return result;
 	}
 
-	public async Task<List<StatisticDto>> GetAllTimeAccountStatistics(EpicID accountId)
+	public async Task<List<StatisticDTO>> GetAllTimeAccountStatistics(EpicID accountID)
 	{
-		logger.LogInformation("Calculating all-time statistics for account: {AccountId}.", accountId);
+		logger.LogInformation("Calculating all-time statistics for account: {AccountId}.", accountID);
 
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountId, accountId) &
+		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
 					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime);
 
 		var statistics = await statisticsCollection.Find(filter).ToListAsync();
 
-		var result = new List<StatisticDto>();
+		var result = new List<StatisticDTO>();
 
 		foreach (var type in Enum.GetValues<StatisticType>())
 		{
 			if (type == StatisticType.Unknown) continue;
 
 			var existingStatistic = statistics.FirstOrDefault(f => f.Type == type);
-			result.Add(new StatisticDto()
+			result.Add(new StatisticDTO()
 			{
 				Name = type.ToString(),
 				Value = GetValueForStatisticType(type, existingStatistic?.Value ?? 0),
@@ -89,254 +89,254 @@ public sealed class StatisticsService
 		return result;
 	}
 
-	public async Task CreateAccountStatistics(EpicID accountId, OwnerType ownerType, StatisticBulkDto statisticBulkDto)
+	public async Task CreateAccountStatistics(EpicID accountID, OwnerType ownerType, StatisticBulkDTO statisticBulkDTO)
 	{
-		logger.LogInformation("Creating statistics for account: {AccountId}.", accountId);
+		logger.LogInformation("Creating statistics for account: {AccountId}.", accountID);
 
-		var newStatistics = GenerateStatistics(accountId, ownerType, statisticBulkDto);
+		var newStatistics = GenerateStatistics(accountID, ownerType, statisticBulkDTO);
 
 		await statisticsCollection.InsertManyAsync(newStatistics);
-		await UpdateAllTimeAccountStatistics(accountId, newStatistics);
+		await UpdateAllTimeAccountStatistics(accountID, newStatistics);
 	}
 
 	#region Private methods
 
-	private static List<Statistic> GenerateStatistics(EpicID epicAccountId, OwnerType ownerType, StatisticBulkDto statisticBulkDto)
+	private static List<Statistic> GenerateStatistics(EpicID accountID, OwnerType ownerType, StatisticBulkDTO statisticBulkDTO)
 	{
 		var currentDateTime = DateTime.UtcNow;
 		var newStatistics = new List<Statistic>();
 
 		#region Quick Look
 
-		if (statisticBulkDto.SkillRating.HasValue)
+		if (statisticBulkDTO.SkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SkillRating,
-				Value = statisticBulkDto.SkillRating.Value,
+				Value = statisticBulkDTO.SkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.TDMSkillRating.HasValue)
+		if (statisticBulkDTO.TDMSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.TDMSkillRating,
-				Value = statisticBulkDto.TDMSkillRating.Value,
+				Value = statisticBulkDTO.TDMSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.CTFSkillRating.HasValue)
+		if (statisticBulkDTO.CTFSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.CTFSkillRating,
-				Value = statisticBulkDto.CTFSkillRating.Value,
+				Value = statisticBulkDTO.CTFSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.DMSkillRating.HasValue)
+		if (statisticBulkDTO.DMSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.DMSkillRating,
-				Value = statisticBulkDto.DMSkillRating.Value,
+				Value = statisticBulkDTO.DMSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShowdownSkillRating.HasValue)
+		if (statisticBulkDTO.ShowdownSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShowdownSkillRating,
-				Value = statisticBulkDto.ShowdownSkillRating.Value,
+				Value = statisticBulkDTO.ShowdownSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagRunSkillRating.HasValue)
+		if (statisticBulkDTO.FlagRunSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagRunSkillRating,
-				Value = statisticBulkDto.FlagRunSkillRating.Value,
+				Value = statisticBulkDTO.FlagRunSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RankedDuelSkillRating.HasValue)
+		if (statisticBulkDTO.RankedDuelSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RankedDuelSkillRating,
-				Value = statisticBulkDto.RankedDuelSkillRating.Value,
+				Value = statisticBulkDTO.RankedDuelSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RankedCTFSkillRating.HasValue)
+		if (statisticBulkDTO.RankedCTFSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RankedCTFSkillRating,
-				Value = statisticBulkDto.RankedCTFSkillRating.Value,
+				Value = statisticBulkDTO.RankedCTFSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RankedShowdownSkillRating.HasValue)
+		if (statisticBulkDTO.RankedShowdownSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RankedShowdownSkillRating,
-				Value = statisticBulkDto.RankedShowdownSkillRating.Value,
+				Value = statisticBulkDTO.RankedShowdownSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RankedFlagRunSkillRating.HasValue)
+		if (statisticBulkDTO.RankedFlagRunSkillRating.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RankedFlagRunSkillRating,
-				Value = statisticBulkDto.RankedFlagRunSkillRating.Value,
+				Value = statisticBulkDTO.RankedFlagRunSkillRating.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MatchesPlayed.HasValue)
+		if (statisticBulkDTO.MatchesPlayed.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MatchesPlayed,
-				Value = statisticBulkDto.MatchesPlayed.Value,
+				Value = statisticBulkDTO.MatchesPlayed.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MatchesQuit.HasValue)
+		if (statisticBulkDTO.MatchesQuit.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MatchesQuit,
-				Value = statisticBulkDto.MatchesQuit.Value,
+				Value = statisticBulkDTO.MatchesQuit.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.TimePlayed.HasValue)
+		if (statisticBulkDTO.TimePlayed.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.TimePlayed,
-				Value = statisticBulkDto.TimePlayed.Value,
+				Value = statisticBulkDTO.TimePlayed.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.Wins.HasValue)
+		if (statisticBulkDTO.Wins.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.Wins,
-				Value = statisticBulkDto.Wins.Value,
+				Value = statisticBulkDTO.Wins.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.Losses.HasValue)
+		if (statisticBulkDTO.Losses.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.Losses,
-				Value = statisticBulkDto.Losses.Value,
+				Value = statisticBulkDTO.Losses.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.Kills.HasValue)
+		if (statisticBulkDTO.Kills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.Kills,
-				Value = statisticBulkDto.Kills.Value,
+				Value = statisticBulkDTO.Kills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.Deaths.HasValue)
+		if (statisticBulkDTO.Deaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.Deaths,
-				Value = statisticBulkDto.Deaths.Value,
+				Value = statisticBulkDTO.Deaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.Suicides.HasValue)
+		if (statisticBulkDTO.Suicides.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.Suicides,
-				Value = statisticBulkDto.Suicides.Value,
+				Value = statisticBulkDTO.Suicides.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
@@ -346,183 +346,183 @@ public sealed class StatisticsService
 
 		#region Kill Achievements
 
-		if (statisticBulkDto.MultiKillLevel0.HasValue)
+		if (statisticBulkDTO.MultiKillLevel0.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MultiKillLevel0,
-				Value = statisticBulkDto.MultiKillLevel0.Value,
+				Value = statisticBulkDTO.MultiKillLevel0.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MultiKillLevel1.HasValue)
+		if (statisticBulkDTO.MultiKillLevel1.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MultiKillLevel1,
-				Value = statisticBulkDto.MultiKillLevel1.Value,
+				Value = statisticBulkDTO.MultiKillLevel1.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MultiKillLevel2.HasValue)
+		if (statisticBulkDTO.MultiKillLevel2.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MultiKillLevel2,
-				Value = statisticBulkDto.MultiKillLevel2.Value,
+				Value = statisticBulkDTO.MultiKillLevel2.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MultiKillLevel3.HasValue)
+		if (statisticBulkDTO.MultiKillLevel3.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MultiKillLevel3,
-				Value = statisticBulkDto.MultiKillLevel3.Value,
+				Value = statisticBulkDTO.MultiKillLevel3.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SpreeKillLevel0.HasValue)
+		if (statisticBulkDTO.SpreeKillLevel0.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SpreeKillLevel0,
-				Value = statisticBulkDto.SpreeKillLevel0.Value,
+				Value = statisticBulkDTO.SpreeKillLevel0.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SpreeKillLevel1.HasValue)
+		if (statisticBulkDTO.SpreeKillLevel1.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SpreeKillLevel1,
-				Value = statisticBulkDto.SpreeKillLevel1.Value,
+				Value = statisticBulkDTO.SpreeKillLevel1.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SpreeKillLevel2.HasValue)
+		if (statisticBulkDTO.SpreeKillLevel2.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SpreeKillLevel2,
-				Value = statisticBulkDto.SpreeKillLevel2.Value,
+				Value = statisticBulkDTO.SpreeKillLevel2.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SpreeKillLevel3.HasValue)
+		if (statisticBulkDTO.SpreeKillLevel3.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SpreeKillLevel3,
-				Value = statisticBulkDto.SpreeKillLevel3.Value,
+				Value = statisticBulkDTO.SpreeKillLevel3.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SpreeKillLevel4.HasValue)
+		if (statisticBulkDTO.SpreeKillLevel4.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SpreeKillLevel4,
-				Value = statisticBulkDto.SpreeKillLevel4.Value,
+				Value = statisticBulkDTO.SpreeKillLevel4.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BestShockCombo.HasValue)
+		if (statisticBulkDTO.BestShockCombo.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BestShockCombo,
-				Value = statisticBulkDto.BestShockCombo.Value,
+				Value = statisticBulkDTO.BestShockCombo.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.AmazingCombos.HasValue)
+		if (statisticBulkDTO.AmazingCombos.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.AmazingCombos,
-				Value = statisticBulkDto.AmazingCombos.Value,
+				Value = statisticBulkDTO.AmazingCombos.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.AirRox.HasValue)
+		if (statisticBulkDTO.AirRox.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.AirRox,
-				Value = statisticBulkDto.AirRox.Value,
+				Value = statisticBulkDTO.AirRox.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlakShreds.HasValue)
+		if (statisticBulkDTO.FlakShreds.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlakShreds,
-				Value = statisticBulkDto.FlakShreds.Value,
+				Value = statisticBulkDTO.FlakShreds.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.AirSnot.HasValue)
+		if (statisticBulkDTO.AirSnot.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.AirSnot,
-				Value = statisticBulkDto.AirSnot.Value,
+				Value = statisticBulkDTO.AirSnot.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
@@ -532,157 +532,157 @@ public sealed class StatisticsService
 
 		#region Power Up Achievements
 
-		if (statisticBulkDto.UDamageTime.HasValue)
+		if (statisticBulkDTO.UDamageTime.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.UDamageTime,
-				Value = statisticBulkDto.UDamageTime.Value,
+				Value = statisticBulkDTO.UDamageTime.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BerserkTime.HasValue)
+		if (statisticBulkDTO.BerserkTime.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BerserkTime,
-				Value = statisticBulkDto.BerserkTime.Value,
+				Value = statisticBulkDTO.BerserkTime.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.InvisibilityTime.HasValue)
+		if (statisticBulkDTO.InvisibilityTime.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.InvisibilityTime,
-				Value = statisticBulkDto.InvisibilityTime.Value,
+				Value = statisticBulkDTO.InvisibilityTime.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.UDamageCount.HasValue)
+		if (statisticBulkDTO.UDamageCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.UDamageCount,
-				Value = statisticBulkDto.UDamageCount.Value,
+				Value = statisticBulkDTO.UDamageCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BerserkCount.HasValue)
+		if (statisticBulkDTO.BerserkCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BerserkCount,
-				Value = statisticBulkDto.BerserkCount.Value,
+				Value = statisticBulkDTO.BerserkCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.InvisibilityCount.HasValue)
+		if (statisticBulkDTO.InvisibilityCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.InvisibilityCount,
-				Value = statisticBulkDto.InvisibilityCount.Value,
+				Value = statisticBulkDTO.InvisibilityCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BootJumps.HasValue)
+		if (statisticBulkDTO.BootJumps.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BootJumps,
-				Value = statisticBulkDto.BootJumps.Value,
+				Value = statisticBulkDTO.BootJumps.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShieldBeltCount.HasValue)
+		if (statisticBulkDTO.ShieldBeltCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShieldBeltCount,
-				Value = statisticBulkDto.ShieldBeltCount.Value,
+				Value = statisticBulkDTO.ShieldBeltCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ArmorVestCount.HasValue)
+		if (statisticBulkDTO.ArmorVestCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ArmorVestCount,
-				Value = statisticBulkDto.ArmorVestCount.Value,
+				Value = statisticBulkDTO.ArmorVestCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ArmorPadsCount.HasValue)
+		if (statisticBulkDTO.ArmorPadsCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ArmorPadsCount,
-				Value = statisticBulkDto.ArmorPadsCount.Value,
+				Value = statisticBulkDTO.ArmorPadsCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.HelmetCount.HasValue)
+		if (statisticBulkDTO.HelmetCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.HelmetCount,
-				Value = statisticBulkDto.HelmetCount.Value,
+				Value = statisticBulkDTO.HelmetCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.KegCount.HasValue)
+		if (statisticBulkDTO.KegCount.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.KegCount,
-				Value = statisticBulkDto.KegCount.Value,
+				Value = statisticBulkDTO.KegCount.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
@@ -692,859 +692,859 @@ public sealed class StatisticsService
 
 		#region Weapon Stats
 
-		if (statisticBulkDto.ImpactHammerKills.HasValue)
+		if (statisticBulkDTO.ImpactHammerKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ImpactHammerKills,
-				Value = statisticBulkDto.ImpactHammerKills.Value,
+				Value = statisticBulkDTO.ImpactHammerKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ImpactHammerDeaths.HasValue)
+		if (statisticBulkDTO.ImpactHammerDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ImpactHammerDeaths,
-				Value = statisticBulkDto.ImpactHammerDeaths.Value,
+				Value = statisticBulkDTO.ImpactHammerDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.EnforcerKills.HasValue)
+		if (statisticBulkDTO.EnforcerKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.EnforcerKills,
-				Value = statisticBulkDto.EnforcerKills.Value,
+				Value = statisticBulkDTO.EnforcerKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.EnforcerDeaths.HasValue)
+		if (statisticBulkDTO.EnforcerDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.EnforcerDeaths,
-				Value = statisticBulkDto.EnforcerDeaths.Value,
+				Value = statisticBulkDTO.EnforcerDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.EnforcerShots.HasValue)
+		if (statisticBulkDTO.EnforcerShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.EnforcerShots,
-				Value = statisticBulkDto.EnforcerShots.Value,
+				Value = statisticBulkDTO.EnforcerShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.EnforcerHits.HasValue)
+		if (statisticBulkDTO.EnforcerHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.EnforcerHits,
-				Value = statisticBulkDto.EnforcerHits.Value,
+				Value = statisticBulkDTO.EnforcerHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioRifleKills.HasValue)
+		if (statisticBulkDTO.BioRifleKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioRifleKills,
-				Value = statisticBulkDto.BioRifleKills.Value,
+				Value = statisticBulkDTO.BioRifleKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioRifleDeaths.HasValue)
+		if (statisticBulkDTO.BioRifleDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioRifleDeaths,
-				Value = statisticBulkDto.BioRifleDeaths.Value,
+				Value = statisticBulkDTO.BioRifleDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioRifleShots.HasValue)
+		if (statisticBulkDTO.BioRifleShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioRifleShots,
-				Value = statisticBulkDto.BioRifleShots.Value,
+				Value = statisticBulkDTO.BioRifleShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioRifleHits.HasValue)
+		if (statisticBulkDTO.BioRifleHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioRifleHits,
-				Value = statisticBulkDto.BioRifleHits.Value,
+				Value = statisticBulkDTO.BioRifleHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioLauncherKills.HasValue)
+		if (statisticBulkDTO.BioLauncherKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioLauncherKills,
-				Value = statisticBulkDto.BioLauncherKills.Value,
+				Value = statisticBulkDTO.BioLauncherKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioLauncherDeaths.HasValue)
+		if (statisticBulkDTO.BioLauncherDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioLauncherDeaths,
-				Value = statisticBulkDto.BioLauncherDeaths.Value,
+				Value = statisticBulkDTO.BioLauncherDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioLauncherShots.HasValue)
+		if (statisticBulkDTO.BioLauncherShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioLauncherShots,
-				Value = statisticBulkDto.BioLauncherShots.Value,
+				Value = statisticBulkDTO.BioLauncherShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.BioLauncherHits.HasValue)
+		if (statisticBulkDTO.BioLauncherHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.BioLauncherHits,
-				Value = statisticBulkDto.BioLauncherHits.Value,
+				Value = statisticBulkDTO.BioLauncherHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockBeamKills.HasValue)
+		if (statisticBulkDTO.ShockBeamKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockBeamKills,
-				Value = statisticBulkDto.ShockBeamKills.Value,
+				Value = statisticBulkDTO.ShockBeamKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockBeamDeaths.HasValue)
+		if (statisticBulkDTO.ShockBeamDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockBeamDeaths,
-				Value = statisticBulkDto.ShockBeamDeaths.Value,
+				Value = statisticBulkDTO.ShockBeamDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockCoreKills.HasValue)
+		if (statisticBulkDTO.ShockCoreKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockCoreKills,
-				Value = statisticBulkDto.ShockCoreKills.Value,
+				Value = statisticBulkDTO.ShockCoreKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockCoreDeaths.HasValue)
+		if (statisticBulkDTO.ShockCoreDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockCoreDeaths,
-				Value = statisticBulkDto.ShockCoreDeaths.Value,
+				Value = statisticBulkDTO.ShockCoreDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockComboKills.HasValue)
+		if (statisticBulkDTO.ShockComboKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockComboKills,
-				Value = statisticBulkDto.ShockComboKills.Value,
+				Value = statisticBulkDTO.ShockComboKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockComboDeaths.HasValue)
+		if (statisticBulkDTO.ShockComboDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockComboDeaths,
-				Value = statisticBulkDto.ShockComboDeaths.Value,
+				Value = statisticBulkDTO.ShockComboDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockRifleShots.HasValue)
+		if (statisticBulkDTO.ShockRifleShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockRifleShots,
-				Value = statisticBulkDto.ShockRifleShots.Value,
+				Value = statisticBulkDTO.ShockRifleShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ShockRifleHits.HasValue)
+		if (statisticBulkDTO.ShockRifleHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ShockRifleHits,
-				Value = statisticBulkDto.ShockRifleHits.Value,
+				Value = statisticBulkDTO.ShockRifleHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LinkKills.HasValue)
+		if (statisticBulkDTO.LinkKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LinkKills,
-				Value = statisticBulkDto.LinkKills.Value,
+				Value = statisticBulkDTO.LinkKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LinkDeaths.HasValue)
+		if (statisticBulkDTO.LinkDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LinkDeaths,
-				Value = statisticBulkDto.LinkDeaths.Value,
+				Value = statisticBulkDTO.LinkDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LinkBeamKills.HasValue)
+		if (statisticBulkDTO.LinkBeamKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LinkBeamKills,
-				Value = statisticBulkDto.LinkBeamKills.Value,
+				Value = statisticBulkDTO.LinkBeamKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LinkBeamDeaths.HasValue)
+		if (statisticBulkDTO.LinkBeamDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LinkBeamDeaths,
-				Value = statisticBulkDto.LinkBeamDeaths.Value,
+				Value = statisticBulkDTO.LinkBeamDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LinkShots.HasValue)
+		if (statisticBulkDTO.LinkShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LinkShots,
-				Value = statisticBulkDto.LinkShots.Value,
+				Value = statisticBulkDTO.LinkShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LinkHits.HasValue)
+		if (statisticBulkDTO.LinkHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LinkHits,
-				Value = statisticBulkDto.LinkHits.Value,
+				Value = statisticBulkDTO.LinkHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MinigunKills.HasValue)
+		if (statisticBulkDTO.MinigunKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MinigunKills,
-				Value = statisticBulkDto.MinigunKills.Value,
+				Value = statisticBulkDTO.MinigunKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MinigunDeaths.HasValue)
+		if (statisticBulkDTO.MinigunDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MinigunDeaths,
-				Value = statisticBulkDto.MinigunDeaths.Value,
+				Value = statisticBulkDTO.MinigunDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MinigunShardKills.HasValue)
+		if (statisticBulkDTO.MinigunShardKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MinigunShardKills,
-				Value = statisticBulkDto.MinigunShardKills.Value,
+				Value = statisticBulkDTO.MinigunShardKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MinigunShardDeaths.HasValue)
+		if (statisticBulkDTO.MinigunShardDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MinigunShardDeaths,
-				Value = statisticBulkDto.MinigunShardDeaths.Value,
+				Value = statisticBulkDTO.MinigunShardDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MinigunShots.HasValue)
+		if (statisticBulkDTO.MinigunShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MinigunShots,
-				Value = statisticBulkDto.MinigunShots.Value,
+				Value = statisticBulkDTO.MinigunShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.MinigunHits.HasValue)
+		if (statisticBulkDTO.MinigunHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.MinigunHits,
-				Value = statisticBulkDto.MinigunHits.Value,
+				Value = statisticBulkDTO.MinigunHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlakShardKills.HasValue)
+		if (statisticBulkDTO.FlakShardKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlakShardKills,
-				Value = statisticBulkDto.FlakShardKills.Value,
+				Value = statisticBulkDTO.FlakShardKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlakShardDeaths.HasValue)
+		if (statisticBulkDTO.FlakShardDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlakShardDeaths,
-				Value = statisticBulkDto.FlakShardDeaths.Value,
+				Value = statisticBulkDTO.FlakShardDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlakShellKills.HasValue)
+		if (statisticBulkDTO.FlakShellKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlakShellKills,
-				Value = statisticBulkDto.FlakShellKills.Value,
+				Value = statisticBulkDTO.FlakShellKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlakShellDeaths.HasValue)
+		if (statisticBulkDTO.FlakShellDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlakShellDeaths,
-				Value = statisticBulkDto.FlakShellDeaths.Value,
+				Value = statisticBulkDTO.FlakShellDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlakShots.HasValue)
+		if (statisticBulkDTO.FlakShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlakShots,
-				Value = statisticBulkDto.FlakShots.Value,
+				Value = statisticBulkDTO.FlakShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlakHits.HasValue)
+		if (statisticBulkDTO.FlakHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlakHits,
-				Value = statisticBulkDto.FlakHits.Value,
+				Value = statisticBulkDTO.FlakHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RocketKills.HasValue)
+		if (statisticBulkDTO.RocketKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RocketKills,
-				Value = statisticBulkDto.RocketKills.Value,
+				Value = statisticBulkDTO.RocketKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RocketDeaths.HasValue)
+		if (statisticBulkDTO.RocketDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RocketDeaths,
-				Value = statisticBulkDto.RocketDeaths.Value,
+				Value = statisticBulkDTO.RocketDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RocketShots.HasValue)
+		if (statisticBulkDTO.RocketShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RocketShots,
-				Value = statisticBulkDto.RocketShots.Value,
+				Value = statisticBulkDTO.RocketShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RocketHits.HasValue)
+		if (statisticBulkDTO.RocketHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RocketHits,
-				Value = statisticBulkDto.RocketHits.Value,
+				Value = statisticBulkDTO.RocketHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SniperKills.HasValue)
+		if (statisticBulkDTO.SniperKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SniperKills,
-				Value = statisticBulkDto.SniperKills.Value,
+				Value = statisticBulkDTO.SniperKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SniperDeaths.HasValue)
+		if (statisticBulkDTO.SniperDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SniperDeaths,
-				Value = statisticBulkDto.SniperDeaths.Value,
+				Value = statisticBulkDTO.SniperDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SniperHeadshotKills.HasValue)
+		if (statisticBulkDTO.SniperHeadshotKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SniperHeadshotKills,
-				Value = statisticBulkDto.SniperHeadshotKills.Value,
+				Value = statisticBulkDTO.SniperHeadshotKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SniperHeadshotDeaths.HasValue)
+		if (statisticBulkDTO.SniperHeadshotDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SniperHeadshotDeaths,
-				Value = statisticBulkDto.SniperHeadshotDeaths.Value,
+				Value = statisticBulkDTO.SniperHeadshotDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SniperShots.HasValue)
+		if (statisticBulkDTO.SniperShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SniperShots,
-				Value = statisticBulkDto.SniperShots.Value,
+				Value = statisticBulkDTO.SniperShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SniperHits.HasValue)
+		if (statisticBulkDTO.SniperHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SniperHits,
-				Value = statisticBulkDto.SniperHits.Value,
+				Value = statisticBulkDTO.SniperHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LightningRiflePrimaryKills.HasValue)
+		if (statisticBulkDTO.LightningRiflePrimaryKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LightningRiflePrimaryKills,
-				Value = statisticBulkDto.LightningRiflePrimaryKills.Value,
+				Value = statisticBulkDTO.LightningRiflePrimaryKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LightningRiflePrimaryDeaths.HasValue)
+		if (statisticBulkDTO.LightningRiflePrimaryDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LightningRiflePrimaryDeaths,
-				Value = statisticBulkDto.LightningRiflePrimaryDeaths.Value,
+				Value = statisticBulkDTO.LightningRiflePrimaryDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LightningRifleSecondaryKills.HasValue)
+		if (statisticBulkDTO.LightningRifleSecondaryKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LightningRifleSecondaryKills,
-				Value = statisticBulkDto.LightningRifleSecondaryKills.Value,
+				Value = statisticBulkDTO.LightningRifleSecondaryKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LightningRifleSecondaryDeaths.HasValue)
+		if (statisticBulkDTO.LightningRifleSecondaryDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LightningRifleSecondaryDeaths,
-				Value = statisticBulkDto.LightningRifleSecondaryDeaths.Value,
+				Value = statisticBulkDTO.LightningRifleSecondaryDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LightningRifleShots.HasValue)
+		if (statisticBulkDTO.LightningRifleShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LightningRifleShots,
-				Value = statisticBulkDto.LightningRifleShots.Value,
+				Value = statisticBulkDTO.LightningRifleShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.LightningRifleHits.HasValue)
+		if (statisticBulkDTO.LightningRifleHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.LightningRifleHits,
-				Value = statisticBulkDto.LightningRifleHits.Value,
+				Value = statisticBulkDTO.LightningRifleHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RedeemerKills.HasValue)
+		if (statisticBulkDTO.RedeemerKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RedeemerKills,
-				Value = statisticBulkDto.RedeemerKills.Value,
+				Value = statisticBulkDTO.RedeemerKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RedeemerDeaths.HasValue)
+		if (statisticBulkDTO.RedeemerDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RedeemerDeaths,
-				Value = statisticBulkDto.RedeemerDeaths.Value,
+				Value = statisticBulkDTO.RedeemerDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RedeemerShots.HasValue)
+		if (statisticBulkDTO.RedeemerShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RedeemerShots,
-				Value = statisticBulkDto.RedeemerShots.Value,
+				Value = statisticBulkDTO.RedeemerShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RedeemerHits.HasValue)
+		if (statisticBulkDTO.RedeemerHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RedeemerHits,
-				Value = statisticBulkDto.RedeemerHits.Value,
+				Value = statisticBulkDTO.RedeemerHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.InstagibKills.HasValue)
+		if (statisticBulkDTO.InstagibKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.InstagibKills,
-				Value = statisticBulkDto.InstagibKills.Value,
+				Value = statisticBulkDTO.InstagibKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.InstagibDeaths.HasValue)
+		if (statisticBulkDTO.InstagibDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.InstagibDeaths,
-				Value = statisticBulkDto.InstagibDeaths.Value,
+				Value = statisticBulkDTO.InstagibDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.InstagibShots.HasValue)
+		if (statisticBulkDTO.InstagibShots.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.InstagibShots,
-				Value = statisticBulkDto.InstagibShots.Value,
+				Value = statisticBulkDTO.InstagibShots.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.InstagibHits.HasValue)
+		if (statisticBulkDTO.InstagibHits.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.InstagibHits,
-				Value = statisticBulkDto.InstagibHits.Value,
+				Value = statisticBulkDTO.InstagibHits.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.TelefragKills.HasValue)
+		if (statisticBulkDTO.TelefragKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.TelefragKills,
-				Value = statisticBulkDto.TelefragKills.Value,
+				Value = statisticBulkDTO.TelefragKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.TelefragDeaths.HasValue)
+		if (statisticBulkDTO.TelefragDeaths.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.TelefragDeaths,
-				Value = statisticBulkDto.TelefragDeaths.Value,
+				Value = statisticBulkDTO.TelefragDeaths.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
@@ -1554,196 +1554,196 @@ public sealed class StatisticsService
 
 		#region Miscellaneous - Movement
 
-		if (statisticBulkDto.RunDist.HasValue)
+		if (statisticBulkDTO.RunDist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RunDist,
-				Value = statisticBulkDto.RunDist.Value,
+				Value = statisticBulkDTO.RunDist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SprintDist.HasValue)
+		if (statisticBulkDTO.SprintDist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SprintDist,
-				Value = statisticBulkDto.SprintDist.Value,
+				Value = statisticBulkDTO.SprintDist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.InAirDist.HasValue)
+		if (statisticBulkDTO.InAirDist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.InAirDist,
-				Value = statisticBulkDto.InAirDist.Value,
+				Value = statisticBulkDTO.InAirDist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SwimDist.HasValue)
+		if (statisticBulkDTO.SwimDist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SwimDist,
-				Value = statisticBulkDto.SwimDist.Value,
+				Value = statisticBulkDTO.SwimDist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.TranslocDist.HasValue)
+		if (statisticBulkDTO.TranslocDist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.TranslocDist,
-				Value = statisticBulkDto.TranslocDist.Value,
+				Value = statisticBulkDTO.TranslocDist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumDodges.HasValue)
+		if (statisticBulkDTO.NumDodges.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumDodges,
-				Value = statisticBulkDto.NumDodges.Value,
+				Value = statisticBulkDTO.NumDodges.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumWallDodges.HasValue)
+		if (statisticBulkDTO.NumWallDodges.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumWallDodges,
-				Value = statisticBulkDto.NumWallDodges.Value,
+				Value = statisticBulkDTO.NumWallDodges.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumJumps.HasValue)
+		if (statisticBulkDTO.NumJumps.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumJumps,
-				Value = statisticBulkDto.NumJumps.Value,
+				Value = statisticBulkDTO.NumJumps.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumLiftJumps.HasValue)
+		if (statisticBulkDTO.NumLiftJumps.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumLiftJumps,
-				Value = statisticBulkDto.NumLiftJumps.Value,
+				Value = statisticBulkDTO.NumLiftJumps.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumFloorSlides.HasValue)
+		if (statisticBulkDTO.NumFloorSlides.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumFloorSlides,
-				Value = statisticBulkDto.NumFloorSlides.Value,
+				Value = statisticBulkDTO.NumFloorSlides.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumWallRuns.HasValue)
+		if (statisticBulkDTO.NumWallRuns.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumWallRuns,
-				Value = statisticBulkDto.NumWallRuns.Value,
+				Value = statisticBulkDTO.NumWallRuns.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumImpactJumps.HasValue)
+		if (statisticBulkDTO.NumImpactJumps.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumImpactJumps,
-				Value = statisticBulkDto.NumImpactJumps.Value,
+				Value = statisticBulkDTO.NumImpactJumps.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.NumRocketJumps.HasValue)
+		if (statisticBulkDTO.NumRocketJumps.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.NumRocketJumps,
-				Value = statisticBulkDto.NumRocketJumps.Value,
+				Value = statisticBulkDTO.NumRocketJumps.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SlideDist.HasValue)
+		if (statisticBulkDTO.SlideDist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SlideDist,
-				Value = statisticBulkDto.SlideDist.Value,
+				Value = statisticBulkDTO.SlideDist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.WallRunDist.HasValue)
+		if (statisticBulkDTO.WallRunDist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.WallRunDist,
-				Value = statisticBulkDto.WallRunDist.Value,
+				Value = statisticBulkDTO.WallRunDist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
@@ -1753,339 +1753,339 @@ public sealed class StatisticsService
 
 		#region Miscellaneous - Capture the Flag
 
-		if (statisticBulkDto.FlagCaptures.HasValue)
+		if (statisticBulkDTO.FlagCaptures.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagCaptures,
-				Value = statisticBulkDto.FlagCaptures.Value,
+				Value = statisticBulkDTO.FlagCaptures.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagReturns.HasValue)
+		if (statisticBulkDTO.FlagReturns.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagReturns,
-				Value = statisticBulkDto.FlagReturns.Value,
+				Value = statisticBulkDTO.FlagReturns.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagAssists.HasValue)
+		if (statisticBulkDTO.FlagAssists.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagAssists,
-				Value = statisticBulkDto.FlagAssists.Value,
+				Value = statisticBulkDTO.FlagAssists.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagHeldDeny.HasValue)
+		if (statisticBulkDTO.FlagHeldDeny.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagHeldDeny,
-				Value = statisticBulkDto.FlagHeldDeny.Value,
+				Value = statisticBulkDTO.FlagHeldDeny.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagHeldDenyTime.HasValue)
+		if (statisticBulkDTO.FlagHeldDenyTime.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagHeldDenyTime,
-				Value = statisticBulkDto.FlagHeldDenyTime.Value,
+				Value = statisticBulkDTO.FlagHeldDenyTime.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagHeldTime.HasValue)
+		if (statisticBulkDTO.FlagHeldTime.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagHeldTime,
-				Value = statisticBulkDto.FlagHeldTime.Value,
+				Value = statisticBulkDTO.FlagHeldTime.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagReturnPoints.HasValue)
+		if (statisticBulkDTO.FlagReturnPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagReturnPoints,
-				Value = statisticBulkDto.FlagReturnPoints.Value,
+				Value = statisticBulkDTO.FlagReturnPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.CarryAssist.HasValue)
+		if (statisticBulkDTO.CarryAssist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.CarryAssist,
-				Value = statisticBulkDto.CarryAssist.Value,
+				Value = statisticBulkDTO.CarryAssist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.CarryAssistPoints.HasValue)
+		if (statisticBulkDTO.CarryAssistPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.CarryAssistPoints,
-				Value = statisticBulkDto.CarryAssistPoints.Value,
+				Value = statisticBulkDTO.CarryAssistPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagCapPoints.HasValue)
+		if (statisticBulkDTO.FlagCapPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagCapPoints,
-				Value = statisticBulkDto.FlagCapPoints.Value,
+				Value = statisticBulkDTO.FlagCapPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.DefendAssist.HasValue)
+		if (statisticBulkDTO.DefendAssist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.DefendAssist,
-				Value = statisticBulkDto.DefendAssist.Value,
+				Value = statisticBulkDTO.DefendAssist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.DefendAssistPoints.HasValue)
+		if (statisticBulkDTO.DefendAssistPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.DefendAssistPoints,
-				Value = statisticBulkDto.DefendAssistPoints.Value,
+				Value = statisticBulkDTO.DefendAssistPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ReturnAssist.HasValue)
+		if (statisticBulkDTO.ReturnAssist.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ReturnAssist,
-				Value = statisticBulkDto.ReturnAssist.Value,
+				Value = statisticBulkDTO.ReturnAssist.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.ReturnAssistPoints.HasValue)
+		if (statisticBulkDTO.ReturnAssistPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.ReturnAssistPoints,
-				Value = statisticBulkDto.ReturnAssistPoints.Value,
+				Value = statisticBulkDTO.ReturnAssistPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.TeamCapPoints.HasValue)
+		if (statisticBulkDTO.TeamCapPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.TeamCapPoints,
-				Value = statisticBulkDto.TeamCapPoints.Value,
+				Value = statisticBulkDTO.TeamCapPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.EnemyFCDamage.HasValue)
+		if (statisticBulkDTO.EnemyFCDamage.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.EnemyFCDamage,
-				Value = statisticBulkDto.EnemyFCDamage.Value,
+				Value = statisticBulkDTO.EnemyFCDamage.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FCKills.HasValue)
+		if (statisticBulkDTO.FCKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FCKills,
-				Value = statisticBulkDto.FCKills.Value,
+				Value = statisticBulkDTO.FCKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FCKillPoints.HasValue)
+		if (statisticBulkDTO.FCKillPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FCKillPoints,
-				Value = statisticBulkDto.FCKillPoints.Value,
+				Value = statisticBulkDTO.FCKillPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagSupportKills.HasValue)
+		if (statisticBulkDTO.FlagSupportKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagSupportKills,
-				Value = statisticBulkDto.FlagSupportKills.Value,
+				Value = statisticBulkDTO.FlagSupportKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagSupportKillPoints.HasValue)
+		if (statisticBulkDTO.FlagSupportKillPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagSupportKillPoints,
-				Value = statisticBulkDto.FlagSupportKillPoints.Value,
+				Value = statisticBulkDTO.FlagSupportKillPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.RegularKillPoints.HasValue)
+		if (statisticBulkDTO.RegularKillPoints.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.RegularKillPoints,
-				Value = statisticBulkDto.RegularKillPoints.Value,
+				Value = statisticBulkDTO.RegularKillPoints.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.FlagGrabs.HasValue)
+		if (statisticBulkDTO.FlagGrabs.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.FlagGrabs,
-				Value = statisticBulkDto.FlagGrabs.Value,
+				Value = statisticBulkDTO.FlagGrabs.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.AttackerScore.HasValue)
+		if (statisticBulkDTO.AttackerScore.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.AttackerScore,
-				Value = statisticBulkDto.AttackerScore.Value,
+				Value = statisticBulkDTO.AttackerScore.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.DefenderScore.HasValue)
+		if (statisticBulkDTO.DefenderScore.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.DefenderScore,
-				Value = statisticBulkDto.DefenderScore.Value,
+				Value = statisticBulkDTO.DefenderScore.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.SupporterScore.HasValue)
+		if (statisticBulkDTO.SupporterScore.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.SupporterScore,
-				Value = statisticBulkDto.SupporterScore.Value,
+				Value = statisticBulkDTO.SupporterScore.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
 		}
 
-		if (statisticBulkDto.TeamKills.HasValue)
+		if (statisticBulkDTO.TeamKills.HasValue)
 		{
 			newStatistics.Add(new Statistic()
 			{
 				CreatedAt = currentDateTime,
-				AccountId = epicAccountId,
+				AccountID = accountID,
 				Type = StatisticType.TeamKills,
-				Value = statisticBulkDto.TeamKills.Value,
+				Value = statisticBulkDTO.TeamKills.Value,
 				Window = StatisticWindow.Daily,
 				OwnerType = ownerType
 			});
@@ -2096,11 +2096,11 @@ public sealed class StatisticsService
 		return newStatistics;
 	}
 
-	private async Task UpdateAllTimeAccountStatistics(EpicID accountId, List<Statistic> newStatistics)
+	private async Task UpdateAllTimeAccountStatistics(EpicID accountID, List<Statistic> newStatistics)
 	{
-		logger.LogInformation("Updating all-time statistics for account: {AccountId}.", accountId);
+		logger.LogInformation("Updating all-time statistics for account: {AccountId}.", accountID);
 
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountId, accountId) &
+		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
 					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime) &
 					 Builders<Statistic>.Filter.In(f => f.Type, newStatistics.Select(s => s.Type).ToList());
 
@@ -2111,7 +2111,7 @@ public sealed class StatisticsService
 			if (existingStatistics.FirstOrDefault(f => f.Type == newStatistic.Type) is { } existingStatistic)
 			{
 				await statisticsCollection.UpdateOneAsync(
-					f => f.Id == existingStatistic.Id,
+					f => f.ID == existingStatistic.ID,
 					Builders<Statistic>.Update.Inc(i => i.Value, newStatistic.Value)
 											  .Set(s => s.ModifiedAt, DateTime.UtcNow));
 			}
@@ -2119,7 +2119,7 @@ public sealed class StatisticsService
 			{
 				await statisticsCollection.InsertOneAsync(new Statistic()
 				{
-					AccountId = accountId,
+					AccountID = accountID,
 					CreatedAt = DateTime.UtcNow,
 					Type = newStatistic.Type,
 					Value = newStatistic.Value,

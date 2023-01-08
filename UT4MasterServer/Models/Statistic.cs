@@ -9,10 +9,10 @@ public sealed class Statistic
 {
 	[BsonId]
 	[BsonElement("_id"), BsonRepresentation(BsonType.ObjectId)]
-	public string Id { get; set; } = default!;
+	public string ID { get; set; } = default!;
 
 	[BsonElement("accountId")]
-	public EpicID AccountId { get; set; } = default!;
+	public EpicID AccountID { get; set; } = default!;
 
 	[BsonElement("createdAt")]
 	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
