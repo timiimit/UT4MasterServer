@@ -1,8 +1,10 @@
-﻿#define USE_LOCALHOST_TEST
+﻿//#define USE_LOCALHOST_TEST
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Text.Json;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
@@ -21,15 +23,17 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentMatchmakingController : JsonAPIController
 {
-	private readonly ILogger<SessionController> logger;
 	private readonly MatchmakingService matchmakingService;
+	private readonly IOptions<ApplicationSettings> configuration;
 	private const int MAX_READ_SIZE = 1024 * 4;
 
-	public UnrealTournamentMatchmakingController(ILogger<SessionController> logger, MatchmakingService matchmakingService)
+	public UnrealTournamentMatchmakingController(
+		ILogger<UnrealTournamentMatchmakingController> logger,
+		IOptions<ApplicationSettings> configuration,
+		MatchmakingService matchmakingService) : base(logger)
 	{
-		this.logger = logger;
+		this.configuration = configuration;
 		this.matchmakingService = matchmakingService;
-
 	}
 
 	#region Endpoints for Game Servers
@@ -50,20 +54,19 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		server.ID = EpicID.GenerateNew();
 		server.LastUpdated = DateTime.UtcNow;
 
-		var ipAddress = HttpContext.Connection.RemoteIpAddress;
-		if (ipAddress == null)
+		var ipClient = GetClientIP(configuration);
+		if (ipClient == null)
 		{
-			// TODO: wtf!? why can this be null???
-			logger.LogCritical($"Could not determine ip address of remote GameServer, this issue needs to be resolved!");
+			logger.LogError("Could not determine IP Address of remote machine.");
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
-		if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+		if (ipClient.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
 		{
-			// ipv6 does not seem to work
-			logger.LogWarning($"GameServer is connecting from ipv6 address ({ipAddress})! mapping to ipv4...");
-			ipAddress = ipAddress.MapToIPv4();
+			logger.LogWarning("Client is using IPv6. GameServer might not be accessible by others.");
+			//return StatusCode(StatusCodes.Status500InternalServerError);
 		}
-		server.ServerAddress = ipAddress.ToString();
+
+		server.ServerAddress = ipClient.ToString();
 		server.Started = false;
 
 		// TODO: figure out trusted keys & determine trust level

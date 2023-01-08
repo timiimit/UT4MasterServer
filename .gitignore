@@ -404,3 +404,6 @@ FodyWeavers.xsd
 **/*.pvk
 **/*.pfx
 **/*.pem
+
+# ignore all database files
+db/

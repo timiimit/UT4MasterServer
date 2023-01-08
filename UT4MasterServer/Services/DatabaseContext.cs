@@ -9,9 +9,9 @@ public class DatabaseContext
 	private readonly MongoClient client;
 	public IMongoDatabase Database { get; private set; }
 
-	public DatabaseContext(IOptions<DatabaseSettings> settings)
+	public DatabaseContext(IOptions<ApplicationSettings> settings)
 	{
-		client = new MongoClient(settings.Value.ConnectionString);
+		client = new MongoClient(settings.Value.DatabaseConnectionString);
 		Database = client.GetDatabase(settings.Value.DatabaseName);
 	}
 }

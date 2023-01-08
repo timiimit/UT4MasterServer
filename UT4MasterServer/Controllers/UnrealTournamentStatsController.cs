@@ -16,12 +16,10 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentStatsController : JsonAPIController
 {
-	private readonly ILogger<UnrealTournamentStatsController> logger;
 	private readonly StatisticsService statisticsService;
 
-	public UnrealTournamentStatsController(ILogger<UnrealTournamentStatsController> logger, StatisticsService statisticsService)
+	public UnrealTournamentStatsController(ILogger<UnrealTournamentStatsController> logger, StatisticsService statisticsService) : base(logger)
 	{
-		this.logger = logger;
 		this.statisticsService = statisticsService;
 	}
 

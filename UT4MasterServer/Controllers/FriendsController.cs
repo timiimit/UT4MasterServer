@@ -17,7 +17,7 @@ public class FriendsController : JsonAPIController
 {
 	private readonly FriendService friendService;
 
-	public FriendsController(FriendService friendService)
+	public FriendsController(ILogger<FriendsController> logger, FriendService friendService) : base(logger)
 	{
 		this.friendService = friendService;
 	}

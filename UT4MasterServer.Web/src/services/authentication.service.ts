@@ -14,15 +14,15 @@ interface IAuthResponse {
 }
 
 export default class AuthenticationService extends HttpService {
-    private tokenUrl = `${__UT4UU_API_URL}/account/api/oauth/token`;
-    private authUrl = `${__UT4UU_API_URL}/account/api/oauth/auth`;
-    private registerUrl = `${__UT4UU_API_URL}/account/api/create/account`;
+    private tokenUrl = `${__BACKEND_URL}/account/api/oauth/token`;
+    private authUrl = `${__BACKEND_URL}/account/api/oauth/auth`;
+    private registerUrl = `${__BACKEND_URL}/account/api/create/account`;
 
     async logIn(request: ILoginRequest) {
         const session = await this.postForm<ILoginResponse, ILoginRequest>(this.tokenUrl, {
             body: request,
             headers: {
-                'Authorization': 'basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y='
+                'Authorization': `${__WEB_BASIC_AUTH}`
             }
         });
         console.debug('Token response JSON: ', session);

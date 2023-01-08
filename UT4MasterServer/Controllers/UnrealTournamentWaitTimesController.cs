@@ -17,6 +17,11 @@ namespace UT4MasterServer.Controllers;
 public class UnrealTournamentWaitTimesController : JsonAPIController
 {
 
+	public UnrealTournamentWaitTimesController(ILogger<UnrealTournamentWaitTimesController> logger) : base(logger)
+	{
+
+	}
+
 	[HttpPost("estimate")]
 	public IActionResult QuickplayWaitEstimate()
 	{

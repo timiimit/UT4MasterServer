@@ -16,7 +16,7 @@ public class PersonaController : JsonAPIController
 {
 	private readonly AccountService accountService;
 
-	public PersonaController(AccountService accountService)
+	public PersonaController(ILogger<PersonaController> logger, AccountService accountService) : base(logger)
 	{
 		this.accountService = accountService;
 	}

@@ -10,10 +10,10 @@ namespace UT4MasterServer.Services
 		private readonly MongoClient client;
 		public IMongoDatabase Database { get; private set; }
 
-		public ApplicationStartupService(ILogger<ApplicationStartupService> logger, IOptions<DatabaseSettings> settings)
+		public ApplicationStartupService(ILogger<ApplicationStartupService> logger, IOptions<ApplicationSettings> settings)
 		{
 			this.logger = logger;
-			client = new MongoClient(settings.Value.ConnectionString);
+			client = new MongoClient(settings.Value.DatabaseConnectionString);
 			Database = client.GetDatabase(settings.Value.DatabaseName);
 		}
 

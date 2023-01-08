@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Text.Json;
+using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Controllers;
@@ -12,7 +15,13 @@ namespace UT4MasterServer.Controllers;
 /// </summary>
 public class JsonAPIController : ControllerBase
 {
+	protected readonly ILogger<JsonAPIController> logger;
 	private const string MimeJson = "application/json";
+
+	public JsonAPIController(ILogger<JsonAPIController> logger)
+	{
+		this.logger = logger;
+	}
 
 	[NonAction]
 	public ContentResult Json(string content)
@@ -70,5 +79,66 @@ public class JsonAPIController : ControllerBase
 	public JsonResult Json(object? content, int status)
 	{
 		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
+	}
+
+	[NonAction]
+	protected IPAddress? GetClientIP(IOptions<ApplicationSettings>? proxyInfo)
+	{
+		var ipAddress = HttpContext.Connection.RemoteIpAddress;
+		if (ipAddress == null)
+			return null;
+
+		// if we have no proxy info, we can only trust the actual ip
+		if (proxyInfo == null)
+			return ipAddress;
+
+		// if we don't know the header that proxy is supposed to use,
+		// we can only trust the actual ip
+		if (string.IsNullOrWhiteSpace(proxyInfo.Value.ProxyClientIPHeader))
+			return ipAddress;
+
+		// get all instances of specified header
+		var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
+
+		// info on how to generally handle X-Forwarded-For:
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+
+		// look through each instance of the header bottom-to-top
+		for (int hi = headers.Count - 1; hi >= 0; hi--)
+		{
+			string[] headerParts = headers[hi].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+			// look through each part of header from right-to-left
+			for (int i = headerParts.Length - 1; i >= 0; i--)
+			{
+				// determine whether we trust last sender
+				if (ipAddress != null &&
+					IsTrustedMachine(proxyInfo, ipAddress) &&
+					IPAddress.TryParse(headerParts[i], out ipAddress))
+				{
+					continue;
+				}
+
+				// exist straight out of all loops
+				hi = 0;
+				break;
+			}
+		}
+
+		// return last ip to be trusted as origin of request
+		return ipAddress;
+	}
+
+	private bool IsTrustedMachine(IOptions<ApplicationSettings> proxyInfo, IPAddress ip)
+	{
+		foreach (var trustedProxyString in proxyInfo.Value.ProxyServers)
+		{
+			if (!IPAddress.TryParse(trustedProxyString, out var trustedProxy))
+				continue;
+
+			if (trustedProxy.Equals(ip))
+				return true;
+		}
+		return false;
 	}
 }
