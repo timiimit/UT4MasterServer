@@ -82,7 +82,7 @@ public static class Program
 			{
 				logging.ClearProviders();
 				logging.AddConsole();
-			})
+			});
 
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(config =>
