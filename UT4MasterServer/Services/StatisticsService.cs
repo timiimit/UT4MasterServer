@@ -96,7 +96,6 @@ public sealed class StatisticsService
 		var newStatistics = GenerateStatistics(accountId, ownerType, statisticBulkDto);
 
 		await statisticsCollection.InsertManyAsync(newStatistics);
-
 		await UpdateAllTimeAccountStatistics(accountId, newStatistics);
 	}
 
