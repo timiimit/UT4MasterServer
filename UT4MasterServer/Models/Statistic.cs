@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Enums;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
 
@@ -11,7 +12,7 @@ public sealed class Statistic
 	public string Id { get; set; } = default!;
 
 	[BsonElement("accountId")]
-	public string AccountId { get; set; } = string.Empty;
+	public EpicID AccountId { get; set; } = default!;
 
 	[BsonElement("createdAt")]
 	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

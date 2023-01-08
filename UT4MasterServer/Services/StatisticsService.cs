@@ -24,7 +24,7 @@ public sealed class StatisticsService
 		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
-	public async Task<List<StatisticDto>> GetAggregateAccountStatistics(string accountId, StatisticWindow statisticWindow)
+	public async Task<List<StatisticDto>> GetAggregateAccountStatistics(EpicID accountId, StatisticWindow statisticWindow)
 	{
 		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountId}.", statisticWindow.ToString().ToLower(), accountId);
 
@@ -65,7 +65,7 @@ public sealed class StatisticsService
 		return result;
 	}
 
-	public async Task<List<StatisticDto>> GetAllTimeAccountStatistics(string accountId)
+	public async Task<List<StatisticDto>> GetAllTimeAccountStatistics(EpicID accountId)
 	{
 		logger.LogInformation("Calculating all-time statistics for account: {AccountId}.", accountId);
 
@@ -93,22 +93,20 @@ public sealed class StatisticsService
 		return result;
 	}
 
-	public async Task CreateAccountStatistics(string accountId, OwnerType ownerType, StatisticBulkDto statisticBulkDto)
+	public async Task CreateAccountStatistics(EpicID accountId, OwnerType ownerType, StatisticBulkDto statisticBulkDto)
 	{
 		logger.LogInformation("Creating statistics for account: {AccountId}.", accountId);
 
-		var epicAccountId = EpicID.FromString(accountId).ToString();
-
-		var newStatistics = GenerateStatistics(epicAccountId, ownerType, statisticBulkDto);
+		var newStatistics = GenerateStatistics(accountId, ownerType, statisticBulkDto);
 
 		await statisticsCollection.InsertManyAsync(newStatistics);
 
-		await UpdateAllTimeAccountStatistics(epicAccountId.ToString(), newStatistics);
+		await UpdateAllTimeAccountStatistics(accountId, newStatistics);
 	}
 
 	#region Private methods
 
-	private static List<Statistic> GenerateStatistics(string epicAccountId, OwnerType ownerType, StatisticBulkDto statisticBulkDto)
+	private static List<Statistic> GenerateStatistics(EpicID epicAccountId, OwnerType ownerType, StatisticBulkDto statisticBulkDto)
 	{
 		var currentDateTime = DateTime.UtcNow;
 		var newStatistics = new List<Statistic>();
@@ -2103,7 +2101,7 @@ public sealed class StatisticsService
 		return newStatistics;
 	}
 
-	private async Task UpdateAllTimeAccountStatistics(string accountId, List<Statistic> newStatistics)
+	private async Task UpdateAllTimeAccountStatistics(EpicID accountId, List<Statistic> newStatistics)
 	{
 		logger.LogInformation("Updating all-time statistics for account: {AccountId}.", accountId);
 
