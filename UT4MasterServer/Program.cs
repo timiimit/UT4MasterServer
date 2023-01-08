@@ -62,7 +62,8 @@ public static class Program
 			.AddScoped<AccountService>()
 			.AddScoped<SessionService>()
 			.AddScoped<CloudStorageService>()
-			.AddScoped<MatchmakingService>();
+			.AddScoped<MatchmakingService>()
+			.AddScoped<StatisticsService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
@@ -73,11 +74,16 @@ public static class Program
 			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>(HttpAuthorization.BearerScheme, null)
 			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(HttpAuthorization.BasicScheme, null);
 
-		builder.Host.ConfigureLogging(logging =>
-		{
-			logging.ClearProviders();
-			logging.AddConsole();
-		});
+		builder.Host
+			.ConfigureLogging(logging =>
+			{
+				logging.ClearProviders();
+				logging.AddConsole();
+			})
+			.ConfigureServices(services =>
+			{
+				services.AddHostedService<ApplicationStartupService>();
+			});
 
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(config =>

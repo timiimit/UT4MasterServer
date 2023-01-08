@@ -1,7 +1,9 @@
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Models;
+using UT4MasterServer.DTOs;
+using UT4MasterServer.Enums;
+using UT4MasterServer.Other;
+using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
@@ -14,66 +16,80 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentStatsController : JsonAPIController
 {
-	public UnrealTournamentStatsController(ILogger<UnrealTournamentStatsController> logger) : base(logger)
+	private readonly StatisticsService statisticsService;
+
+	public UnrealTournamentStatsController(ILogger<UnrealTournamentStatsController> logger, StatisticsService statisticsService) : base(logger)
 	{
+		this.statisticsService = statisticsService;
 	}
 
-	[HttpGet("accountId/{id}/bulk/window/{category}")]
-	public IActionResult Stats(string id, string leagueName, string category)
+	// Examples:
+	// /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/daily
+	[HttpGet("accountId/{id}/bulk/window/daily")]
+	public async Task<IActionResult> GetDailyAccountStatistics(string id)
 	{
 		// TODO: Check id and return ErrorResponse if invalid: "Could not convert fakeAccountId to a UUID because it was not in a valid format: Invalid UUID string: fakeAccountId" (errors.com.epicgames.modules.stats.invalid_account_id)
 
-		// TODO: return Stats
-
-		/*
-		 * EPIC example response for 'weekly' (first 2 objects):
-		 *
-		    {
-		        "name": "RocketHits",
-		        "value": 15725,
-		        "window": "weekly",
-		        "ownerType": 1
-		    },
-		    {
-		        "name": "ShockRifleShots",
-		        "value": 40,
-		        "window": "weekly",
-		        "ownerType": 1
-		    },
-		 */
-
-		switch (category.ToLower())
-		{
-			case "alltime":
-				break;
-			case "monthly":
-				break;
-			case "weekly":
-				break;
-			case "daily":
-				break;
-			default:
-				return NotFound(null);
-		}
-
-		var league = new League();
-		// for now we just send default/empty values
-		return Json(league);
+		var accountId = EpicID.FromString(id);
+		var result = await statisticsService.GetAggregateAccountStatistics(accountId, StatisticWindow.Daily);
+		return Ok(result);
 	}
 
-	[HttpPost("accountId/{id}/bulk")]
-	public IActionResult Stats(string id, [FromQuery(Name = "ownerType")] int? ownerType)
+	// Examples:
+	// /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/weekly
+	[HttpGet("accountId/{id}/bulk/window/weekly")]
+	public async Task<IActionResult> GetWeeklyAccountStatistics(string id)
 	{
-		// TODO: Missing implementation, this endpoint uploads stats
+		// TODO: Check id and return ErrorResponse if invalid: "Could not convert fakeAccountId to a UUID because it was not in a valid format: Invalid UUID string: fakeAccountId" (errors.com.epicgames.modules.stats.invalid_account_id)
 
-		// Request body after completing singleplayer challenge: {"MatchesPlayed":1,"TimePlayed":480,"Wins":1,"Kills":14,"Deaths":6,"SpreeKillLevel0":1,"ShockBeamKills":1,"ShockComboKills":7,"LinkBeamKills":1,"FlakShardKills":1,"FlakShellKills":2,"RocketKills":2,"EnforcerDeaths":1,"ShockBeamDeaths":1,"FlakShardDeaths":1,"SniperDeaths":2,"SniperHeadshotDeaths":1,"ShockRifleShots":117,"LinkShots":66,"MinigunShots":24,"FlakShots":30,"RocketShots":19,"SniperShots":10,"ShockRifleHits":4950.75439453125,"LinkHits":1032.14306640625,"MinigunHits":1000,"FlakHits":513.07794189453125,"RocketHits":177.00001525878906,"SniperHits":300,"ShieldBeltCount":2,"ArmorVestCount":8,"ArmorPadsCount":5,"HelmetCount":3,"BestShockCombo":7.2227811813354492,"RunDist":235007.859375,"InAirDist":243375.703125,"NumDodges":159,"NumWallDodges":35,"NumJumps":10,"NumLiftJumps":4,"NumFloorSlides":1,"NumWallRuns":13,"SlideDist":426.73013305664063,"WallRunDist":5063.228515625}
+		var accountId = EpicID.FromString(id);
+		var result = await statisticsService.GetAggregateAccountStatistics(accountId, StatisticWindow.Weekly);
+		return Ok(result);
+	}
 
-		if (ownerType != 1)
-		{
-			logger.LogWarning($"Unexpected ownerType at '{Request.GetDisplayUrl()}'");
-		}
+	// Examples:
+	// /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/monthly
+	[HttpGet("accountId/{id}/bulk/window/monthly")]
+	public async Task<IActionResult> GetMonthlyAccountStatistics(string id)
+	{
+		// TODO: Check id and return ErrorResponse if invalid: "Could not convert fakeAccountId to a UUID because it was not in a valid format: Invalid UUID string: fakeAccountId" (errors.com.epicgames.modules.stats.invalid_account_id)
 
+		var accountId = EpicID.FromString(id);
+		var result = await statisticsService.GetAggregateAccountStatistics(accountId, StatisticWindow.Monthly);
+		return Ok(result);
+	}
 
-		return NoContent();
+	// Examples:
+	// /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/alltime
+	[HttpGet("accountId/{id}/bulk/window/alltime")]
+	public async Task<IActionResult> GetAllTimeAccountStatistics(string id)
+	{
+		// TODO: Check id and return ErrorResponse if invalid: "Could not convert fakeAccountId to a UUID because it was not in a valid format: Invalid UUID string: fakeAccountId" (errors.com.epicgames.modules.stats.invalid_account_id)
+
+		var accountId = EpicID.FromString(id);
+		var result = await statisticsService.GetAllTimeAccountStatistics(accountId);
+		return Ok(result);
+	}
+
+	// Example:
+	// /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk?ownertype=1
+	[HttpPost("accountId/{id}/bulk")]
+	public async Task<IActionResult> CreateAccountStatistics(
+		string id,
+		[FromQuery] OwnerType ownerType,
+		[FromBody] StatisticBulkDTO statisticBulkDTO)
+	{
+		// TODO: Check id and return ErrorResponse if invalid: "Could not convert fakeAccountId to a UUID because it was not in a valid format: Invalid UUID string: fakeAccountId" (errors.com.epicgames.modules.stats.invalid_account_id)
+
+		var accountId = EpicID.FromString(id);
+
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		if (user.Session.AccountID != accountId)
+			return Unauthorized(); // Users can post their own stats only
+
+		await statisticsService.CreateAccountStatistics(accountId, ownerType, statisticBulkDTO);
+		return Ok();
 	}
 }
