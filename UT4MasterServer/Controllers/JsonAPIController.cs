@@ -81,9 +81,6 @@ public class JsonAPIController : ControllerBase
 		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
 	}
 
-
-	private const string HTTP_Header_XForwardedFor = "X-Forwarded-For";
-
 	[NonAction]
 	protected IPAddress? GetClientIP(IOptions<ApplicationSettings>? proxyInfo)
 	{
@@ -115,15 +112,16 @@ public class JsonAPIController : ControllerBase
 			for (int i = headerParts.Length - 1; i >= 0; i--)
 			{
 				// determine whether we trust last sender
-				if (!IsTrustedMachine(proxyInfo, ipAddress))
-					break;
-
-				// if we do trust it, we can start verifying next machine
-				if (!IPAddress.TryParse(headerParts[i], out var iPAddress))
+				if (ipAddress != null &&
+					IsTrustedMachine(proxyInfo, ipAddress) &&
+					IPAddress.TryParse(headerParts[i], out ipAddress))
 				{
-					// if IP cannot be parsed, then proxy is malfunctioning and there's nothing we can do
-					break;
+					continue;
 				}
+
+				// exist straight out of all loops
+				hi = 0;
+				break;
 			}
 		}
 
