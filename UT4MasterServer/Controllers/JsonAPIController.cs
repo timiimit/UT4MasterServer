@@ -91,48 +91,53 @@ public class JsonAPIController : ControllerBase
 		if (ipAddress == null)
 			return null;
 
+		// if we have no proxy info, we can only trust the actual ip
 		if (proxyInfo == null)
 			return ipAddress;
 
+		// if we don't know the header that proxy is supposed to use,
+		// we can only trust the actual ip
 		if (string.IsNullOrWhiteSpace(proxyInfo.Value.ProxyClientIPHeader))
 			return ipAddress;
 
-		// try locating IPAddress via proxy server's HTTP header
-		foreach (var proxy in proxyInfo.Value.ProxyServers)
+		// get all instances of specified header
+		var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
+		if (headers.Count != 1)
 		{
-			if (!IPAddress.TryParse(proxy, out var ipProxy))
-				continue;
+			// TODO: unsure how this should be handled
+			return ipAddress;
+		}
+		string[] headerParts = headers[0].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-			if (!ipProxy.Equals(ipAddress))
-				continue;
+		// look through each part of header from right-to-left
+		for (int i = headerParts.Length - 1; i >= 0; i--)
+		{
+			// determine whether we trust last sender
+			if (!IsTrustedMachine(proxyInfo, ipAddress))
+				break;
 
-			if (proxyInfo.Value.ProxyClientIPHeader != HTTP_Header_XForwardedFor)
+			// if we do trust it, we can start verifying next machine
+			if (!IPAddress.TryParse(headerParts[i], out var iPAddress))
 			{
-				var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
-				if (headers.Count > 0)
-				{
-					if (IPAddress.TryParse(headers[0], out var ipClient))
-						return ipClient;
-				}
-			}
-
-			// additionally, try handle X-Forwarded-For header, because that's a standard header
-			{
-				var headers = HttpContext.Request.Headers[HTTP_Header_XForwardedFor];
-				foreach (var headerInstance in headers)
-				{
-					string[] parts = headerInstance.Split(',');
-					foreach (var part in parts)
-					{
-						// we return at first valid ip address
-						if (IPAddress.TryParse(part, out var ipClient))
-							return ipClient;
-					}
-				}
+				// if IP cannot be parsed, then proxy is malfunctioning and there's nothing we can do
+				break;
 			}
 		}
 
-		// no headers found, return remote ip
+		// return last ip to be trusted as origin of request
 		return ipAddress;
+	}
+
+	private bool IsTrustedMachine(IOptions<ApplicationSettings> proxyInfo, IPAddress ip)
+	{
+		foreach (var trustedProxyString in proxyInfo.Value.ProxyServers)
+		{
+			if (!IPAddress.TryParse(trustedProxyString, out var trustedProxy))
+				continue;
+
+			if (trustedProxy.Equals(ip))
+				return true;
+		}
+		return false;
 	}
 }
