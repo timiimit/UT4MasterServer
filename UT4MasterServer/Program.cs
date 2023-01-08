@@ -15,8 +15,6 @@ public static class Program
 
 	public static void Main(string[] args)
 	{
-		Console.WriteLine(Environment.CurrentDirectory);
-
 		// register serializers for custom types
 		BsonSerializer.RegisterSerializationProvider(new BsonSerializationProvider());
 
