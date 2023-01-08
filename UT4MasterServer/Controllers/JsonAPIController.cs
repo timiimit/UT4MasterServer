@@ -102,25 +102,28 @@ public class JsonAPIController : ControllerBase
 
 		// get all instances of specified header
 		var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
-		if (headers.Count != 1)
-		{
-			// TODO: unsure how this should be handled
-			return ipAddress;
-		}
-		string[] headerParts = headers[0].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-		// look through each part of header from right-to-left
-		for (int i = headerParts.Length - 1; i >= 0; i--)
-		{
-			// determine whether we trust last sender
-			if (!IsTrustedMachine(proxyInfo, ipAddress))
-				break;
+		// info on how to generally handle X-Forwarded-For:
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
 
-			// if we do trust it, we can start verifying next machine
-			if (!IPAddress.TryParse(headerParts[i], out var iPAddress))
+		// look through each instance of the header bottom-to-top
+		for (int hi = headers.Count - 1; hi >= 0; hi--)
+		{
+			string[] headerParts = headers[hi].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+			// look through each part of header from right-to-left
+			for (int i = headerParts.Length - 1; i >= 0; i--)
 			{
-				// if IP cannot be parsed, then proxy is malfunctioning and there's nothing we can do
-				break;
+				// determine whether we trust last sender
+				if (!IsTrustedMachine(proxyInfo, ipAddress))
+					break;
+
+				// if we do trust it, we can start verifying next machine
+				if (!IPAddress.TryParse(headerParts[i], out var iPAddress))
+				{
+					// if IP cannot be parsed, then proxy is malfunctioning and there's nothing we can do
+					break;
+				}
 			}
 		}
 
