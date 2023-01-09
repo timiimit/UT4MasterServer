@@ -182,7 +182,7 @@ public class AccountController : JsonAPIController
 		}
 
 		// TODO: should we also get user's email?
-		await accountService.CreateAccountAsync(request.Username, request.Password); // TODO: this cannot fail?
+		await accountService.CreateAccountAsync(request.Username, request.Email, request.Password); // TODO: this cannot fail?
 
 		logger.LogInformation($"Registered new user: {request.Username}");
 
