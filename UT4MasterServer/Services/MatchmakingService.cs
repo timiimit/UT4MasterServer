@@ -167,7 +167,10 @@ public class MatchmakingService
 		if (Program.StartupTime < now - StaleAfter * 2)
 			return 0;
 
-		var result = await serverCollection.DeleteManyAsync(x => x.LastUpdated < now - StaleAfter);
+		var result = await serverCollection.DeleteManyAsync(
+			Builders<GameServer>.Filter.Lt(x => x.LastUpdated, now - StaleAfter)
+		);
+
 		if (result.IsAcknowledged)
 		{
 			return (int)result.DeletedCount;
