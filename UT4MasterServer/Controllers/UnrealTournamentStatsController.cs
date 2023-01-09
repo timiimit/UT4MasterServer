@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.DTOs;
 using UT4MasterServer.Enums;
+using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
