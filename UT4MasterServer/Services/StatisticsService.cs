@@ -230,14 +230,13 @@ public sealed class StatisticsService
 
 	public async Task CreateAccountStatistics(EpicID accountID, OwnerType ownerType, StatisticBase statisticBase)
 	{
-		logger.LogInformation("Creating statistics for account: {AccountID}.", accountID);
+		logger.LogInformation("Creating statistics for account: {AccountID}. {OwnerType}.", accountID, ownerType);
 
 		var newStatistic = new Statistic(statisticBase)
 		{
 			AccountID = accountID,
 			CreatedAt = DateTime.UtcNow,
 			Window = StatisticWindow.Daily,
-			OwnerType = ownerType,
 		};
 
 		await statisticsCollection.InsertOneAsync(newStatistic);

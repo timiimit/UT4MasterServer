@@ -24,7 +24,4 @@ public sealed class Statistic : StatisticBase
 
 	[BsonElement("window")]
 	public StatisticWindow Window { get; set; } = StatisticWindow.Daily;
-
-	[BsonElement("ownerType")]
-	public OwnerType OwnerType { get; set; } = OwnerType.Default;
 }
