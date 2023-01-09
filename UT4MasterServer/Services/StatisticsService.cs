@@ -228,9 +228,9 @@ public sealed class StatisticsService
 		return result;
 	}
 
-	public async Task CreateAccountStatistics(EpicID accountID, OwnerType ownerType, StatisticBase statisticBase)
+	public async Task CreateAccountStatistics(EpicID accountID, OwnerType _, StatisticBase statisticBase)
 	{
-		logger.LogInformation("Creating statistics for account: {AccountID}. {OwnerType}.", accountID, ownerType);
+		logger.LogInformation("Creating statistics for account: {AccountID}.", accountID);
 
 		var newStatistic = new Statistic(statisticBase)
 		{
