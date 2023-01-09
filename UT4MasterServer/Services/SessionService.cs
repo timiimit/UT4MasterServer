@@ -77,7 +77,17 @@ public class SessionService
 		);
 	}
 
-	public async Task<Session?> InvalidateExpiredSession(Session? session)
+	public async Task<int> RemoveAllExpiredSessionsAsync()
+	{
+		var result = await sessionCollection.DeleteManyAsync(Builders<Session>.Filter.Lt(x => x.RefreshToken.ExpirationTime, DateTime.UtcNow));
+		if (result.IsAcknowledged)
+			return (int)result.DeletedCount;
+		return -1;
+	}
+
+
+
+	private async Task<Session?> InvalidateExpiredSession(Session? session)
 	{
 		if (session == null)
 			return null;

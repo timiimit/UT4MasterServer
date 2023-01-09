@@ -67,6 +67,11 @@ public static class Program
 		builder.Services
 			.AddSingleton<CodeService>();
 
+		// hosted services
+		builder.Services
+			.AddHostedService<ApplicationStartupService>()
+			.AddHostedService<ApplicationBackgroundCleanupService>();
+
 		builder.Services
 			.AddAuthentication(/*by default there is no authentication*/)
 			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>(HttpAuthorization.BearerScheme, null)
@@ -77,10 +82,6 @@ public static class Program
 			{
 				logging.ClearProviders();
 				logging.AddConsole();
-			})
-			.ConfigureServices(services =>
-			{
-				services.AddHostedService<ApplicationStartupService>();
 			});
 
 		builder.Services.AddEndpointsApiExplorer();
