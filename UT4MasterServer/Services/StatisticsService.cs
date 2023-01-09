@@ -31,7 +31,7 @@ public sealed class StatisticsService
 		await statisticsCollection.Indexes.CreateManyAsync(statisticsIndexes);
 	}
 
-	public async Task<List<StatisticDTO>> GetAggregateAccountStatistics(EpicID accountID, StatisticWindow statisticWindow)
+	public async Task<List<StatisticDTO>> GetAggregateAccountStatisticsAsync(EpicID accountID, StatisticWindow statisticWindow)
 	{
 		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountID}.", statisticWindow.ToString().ToLower(), accountID);
 
@@ -209,7 +209,7 @@ public sealed class StatisticsService
 		return MapStatisticBaseToStatisticDTO(statisticsGrouped, statisticWindow);
 	}
 
-	public async Task<List<StatisticDTO>> GetAllTimeAccountStatistics(EpicID accountID)
+	public async Task<List<StatisticDTO>> GetAllTimeAccountStatisticsAsync(EpicID accountID)
 	{
 		logger.LogInformation("Calculating all-time statistics for account: {AccountID}.", accountID);
 
@@ -228,7 +228,7 @@ public sealed class StatisticsService
 		return result;
 	}
 
-	public async Task CreateAccountStatistics(EpicID accountID, OwnerType _, StatisticBase statisticBase)
+	public async Task CreateAccountStatisticsAsync(EpicID accountID, OwnerType _, StatisticBase statisticBase)
 	{
 		logger.LogInformation("Creating statistics for account: {AccountID}.", accountID);
 
@@ -240,7 +240,7 @@ public sealed class StatisticsService
 		};
 
 		await statisticsCollection.InsertOneAsync(newStatistic);
-		await UpdateAllTimeAccountStatistics(newStatistic);
+		await UpdateAllTimeAccountStatisticsAsync(newStatistic);
 	}
 
 	#region Private methods
@@ -250,7 +250,7 @@ public sealed class StatisticsService
 	/// </summary>
 	/// <param name="newStatistic"></param>
 	/// <returns></returns>
-	private async Task UpdateAllTimeAccountStatistics(Statistic newStatistic)
+	private async Task UpdateAllTimeAccountStatisticsAsync(Statistic newStatistic)
 	{
 		logger.LogInformation("Updating all-time statistics for account: {AccountID}.", newStatistic.AccountID);
 
@@ -485,5 +485,6 @@ public sealed class StatisticsService
 
 		return merged;
 	}
+
 	#endregion
 }
