@@ -18,6 +18,12 @@ public static class Program
 		// register serializers for custom types
 		BsonSerializer.RegisterSerializationProvider(new BsonSerializationProvider());
 
+		BsonClassMap.RegisterClassMap<Account>(x =>
+		{
+			x.AutoMap();
+			x.MapMember(x => x.LastMatchAt).SetDefaultValue(DateTime.UnixEpoch);
+		});
+
 		// start up asp.net
 		var builder = WebApplication.CreateBuilder(args);
 

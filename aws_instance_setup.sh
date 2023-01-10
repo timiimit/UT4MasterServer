@@ -23,18 +23,20 @@ cd /app
 sudo yum update -y
 sudo yum install -y git docker httpd mod_ssl
 
-# download and install docker-compose manually from releases on their github
-# link: https://github.com/docker/compose/releases
-# this guide will assume you placed the installed binary in /usr/local/bin/docker-compose
+# download and install docker-compose manually from their github
+sudo curl -SL https://github.com/docker/compose/releases/download/v2.15.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+sudo chown +x /usr/local/bin/docker-compose
 
-# enable packages which are needed to install certbot
-sudo wget -r --no-parent -A 'epel-release-*.rpm' https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/
-sudo rpm -Uvh dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-*.rpm
-sudo yum-config-manager --enable epel*
-sudo rm -rf dl.fedoraproject.org/
+# make docker-compose command available
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+# make sure docker daemon is running at all times
+sudo systemctl enable docker && sudo systemctl restart docker
+
+# install epel repository which contains certbot
+sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 # install certbot
-sudo amazon-linux-extras install epel -y
 sudo yum install -y certbot python2-certbot-apache
 
 # now create ut4masterserver.conf in /etc/httpd/conf.d/ and put in the following:
@@ -61,9 +63,6 @@ sudo certbot
 
 # get source code of master server (use your own fork if you have a custom version)
 git clone https://github.com/timiimit/UT4MasterServer
-
-# make sure docker daemon is running at all times
-sudo systemctl enable docker && sudo systemctl restart docker
 
 # start all containers required to run the master server
 sudo /usr/local/bin/docker-compose -f UT4MasterServer/docker-compose.yml up -d

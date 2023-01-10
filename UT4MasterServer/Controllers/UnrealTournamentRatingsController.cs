@@ -39,23 +39,21 @@ public class UnrealTournamentRatingController : JsonAPIController
 	}
 
 	[HttpGet("account/{id}/mmr/{ratingType}")]
-	public IActionResult Mmr(string id, string ratingType, [FromBody] MMRBulk ratings)
+	public IActionResult Mmr(string id, string ratingType)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		throw new NotImplementedException();
-
 		// TODO: return only one type of rating
 
 		// proper response: {"rating":1844,"numGamesPlayed":182}
-		for (int i = 0; i < ratings.RatingTypes.Count; i++)
+		JObject obj = new JObject()
 		{
-			ratings.Ratings.Add(1500);
-			ratings.NumGamesPlayed.Add(0);
-		}
+			{ "rating", 1500 },
+			{ "numGamesPlayed", 0 }
+		};
 
-		return Json(ratings);
+		return Json(obj);
 	}
 
 	[HttpGet("account/{id}/league/{leagueName}")]
@@ -75,6 +73,8 @@ public class UnrealTournamentRatingController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
+
+		// TODO: handle request
 		/*
 		INPUT body:
 
@@ -94,5 +94,92 @@ public class UnrealTournamentRatingController : JsonAPIController
 		// Response: {"rating":1500}
 
 		return Ok();
+	}
+
+	[HttpPost("team/match_result")]
+	public IActionResult MatchResult()
+	{
+
+		// TODO: handle request
+		// INPUT:
+		/*
+
+		{
+	"ratingType": "FlagRunSkillRating",
+	"matchInfo":
+	{
+		"sessionId": "8f06d9db71ca4dee8fc0663cbc953b02",
+		"redScore": 1,
+		"matchLengthSeconds": 526
+	},
+	"redTeam":
+	{
+		"members": [
+			{
+				"accountId": "Acolyte",
+				"score": 0,
+				"isBot": true
+			},
+			{
+				"accountId": "Judas",
+				"score": 0,
+				"isBot": true
+			},
+			{
+				"accountId": "0b0f09b400854b9b98932dd9e5abe7c5",
+				"score": 0,
+				"isBot": false
+			},
+			{
+				"accountId": "Thannis",
+				"score": 0,
+				"isBot": true
+			},
+			{
+				"accountId": "Skirge",
+				"score": 0,
+				"isBot": true
+			}
+		],
+		"socialPartySize": 1
+	},
+	"blueTeam":
+	{
+		"members": [
+			{
+				"accountId": "Trollface",
+				"score": 0,
+				"isBot": true
+			},
+			{
+				"accountId": "Leeb",
+				"score": 0,
+				"isBot": true
+			},
+			{
+				"accountId": "Gaargod",
+				"score": 0,
+				"isBot": true
+			},
+			{
+				"accountId": "Kragoth",
+				"score": 0,
+				"isBot": true
+			},
+			{
+				"accountId": "Garog",
+				"score": 0,
+				"isBot": true
+			}
+		],
+		"socialPartySize": 1
+	}
+}
+
+		*/
+
+
+
+		return NoContent(); // Response: correct response
 	}
 }
