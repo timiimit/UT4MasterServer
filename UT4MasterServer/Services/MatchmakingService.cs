@@ -49,12 +49,19 @@ public class MatchmakingService
 
 	public async Task<GameServer?> GetAsync(EpicID sessionID, EpicID serverID)
 	{
-		var server = await GetBySessionAsync(sessionID);
+		var server = await GetByIDAsync(serverID);
 		if (server == null)
 			return null;
 
-		if (server.ID != serverID)
-			return null;
+		// TODO: there needs to be verification for session...
+		//       however, EPIC isn't making this easy.
+		//       VERIFY THAT YOUR CODE WORKS BEFORE MAKING A PR!!!
+		//
+		// for now, we just allow any server to get info about any
+		// server without explicit knowledge of any secret
+
+		//if (server.SessionID != sessionID)
+		//	return null;
 
 		return server;
 	}
@@ -185,13 +192,22 @@ public class MatchmakingService
 		{
 			Limit = 1
 		};
-		var result = await serverCollection.CountDocumentsAsync(filterSession & filterPlayers, options);
+
+		// TODO: this should check if player accountID is in GameServer with specified sessionID
+
+		var result = await serverCollection.CountDocumentsAsync(filterSession /*& filterPlayers*/, options);
 		return result > 0;
 	}
 
 	private async Task<GameServer?> GetBySessionAsync(EpicID sessionID)
 	{
 		var cursor = await serverCollection.FindAsync(x => x.SessionID == sessionID);
+		return await cursor.FirstOrDefaultAsync();
+	}
+
+	private async Task<GameServer?> GetByIDAsync(EpicID id)
+	{
+		var cursor = await serverCollection.FindAsync(x => x.ID == id);
 		return await cursor.FirstOrDefaultAsync();
 	}
 }
