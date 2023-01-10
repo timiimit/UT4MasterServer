@@ -175,6 +175,8 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 			server.PrivatePlayers.Remove(player);
 		}
 
+		await matchmakingService.UpdateAsync(server);
+
 		return Json(server.ToJson(false));
 	}
 
