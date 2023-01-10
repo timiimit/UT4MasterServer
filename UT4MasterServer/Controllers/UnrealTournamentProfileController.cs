@@ -46,7 +46,7 @@ public class UnrealTournamentProfileController : JsonAPIController
 			rvn = 1;
 
 		// game sends empty json object as body
-		if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0"|| jsonBody != JObject.Parse("{}"))
+		if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0" || jsonBody != JObject.Parse("{}"))
 		{
 			logger.LogWarning($"QueryProfile received unexpected data! k:\"{clientKind}\" p:\"{profileId}\" rvn:\"{rvn}\" body:\"{body}\"");
 		}
@@ -91,11 +91,11 @@ public class UnrealTournamentProfileController : JsonAPIController
 			JObject attributes = new();
 			attributes.Add("CountryFlag", account.CountryFlag);
 			attributes.Add("GoldStars", account.GoldStars);
-			JObject login_rewards = new();
-			login_rewards.Add("nextClaimTime", null);
-			login_rewards.Add("level", 0);
-			login_rewards.Add("totalDays", 0);
-			attributes.Add("login_rewards", login_rewards);
+			JObject loginRewards = new();
+			loginRewards.Add("nextClaimTime", null);
+			loginRewards.Add("level", 0);
+			loginRewards.Add("totalDays", 0);
+			attributes.Add("login_rewards", loginRewards);
 			attributes.Add("Avatar", account.Avatar);
 			attributes.Add("inventory_limit_bonus", 0);
 			attributes.Add("daily_purchases", new JObject());
