@@ -28,7 +28,7 @@ public class UnrealTournamentProfileController : JsonAPIController
 	public async Task<IActionResult> QueryProfile(string id,
 		string clientKind,
 		[FromQuery] string profileId,
-		[FromQuery] string rvn)
+		[FromQuery] int rvn)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -42,8 +42,11 @@ public class UnrealTournamentProfileController : JsonAPIController
 		var body = await Request.BodyReader.ReadAsStringAsync(1024);
 		var jsonBody = JObject.Parse(body);
 
+		if (rvn == -1)
+			rvn = 1;
+
 		// game sends empty json object as body
-		if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0" || rvn != "-1" || jsonBody != JObject.Parse("{}"))
+		if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0"|| jsonBody != JObject.Parse("{}"))
 		{
 			logger.LogWarning($"QueryProfile received unexpected data! k:\"{clientKind}\" p:\"{profileId}\" rvn:\"{rvn}\" body:\"{body}\"");
 		}
@@ -54,7 +57,8 @@ public class UnrealTournamentProfileController : JsonAPIController
 
 		// actual response example is in <repo_root>/OldReferenceCode/Server.cs line 750
 
-		int revisionNumber = 3;
+		int revisionNumber = rvn + 1;
+		int commandRevision = rvn - 1;
 
 		JObject obj = new();
 		obj.Add("profileRevision", revisionNumber);
@@ -65,18 +69,24 @@ public class UnrealTournamentProfileController : JsonAPIController
 		JObject profileChange = new();
 		profileChange.Add("changeType", "fullProfileUpdate");
 		JObject profile = new();
+		{
 		profile.Add("_id", account.ID.ToString());
 		profile.Add("created", account.CreatedAt.ToStringISO());
 		profile.Add("updated", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToStringISO()); // we don't store this info, send an arbitrary one
 		profile.Add("rvn", revisionNumber);
-		profile.Add("wipeNumber", 1);
+			profile.Add("wipeNumber", 0);
 		profile.Add("accountId", account.ID.ToString());
+			profile.Add("commandRevision", commandRevision);
 		profile.Add("profileId", profileId);
 		profile.Add("version", "ut_base");
+		}
 		JObject items = new();
+		{
 		// TODO !!!
+		}
 		profile.Add("items", items);
 		JObject stats = new();
+		{
 		stats.Add("templateId", "profile_v2");
 		JObject attributes = new();
 		attributes.Add("CountryFlag", account.CountryFlag);
@@ -98,13 +108,13 @@ public class UnrealTournamentProfileController : JsonAPIController
 		attributes.Add("boosts", new JArray());
 		attributes.Add("new_items", new JObject());
 		stats.Add("attributes", attributes);
+		}
 		profile.Add("stats", stats);
 		profileChange.Add("profile", profile);
-		profileChange.Add("commandRevision", revisionNumber + 1);
 		// }
 		profileChanges.Add(profileChange);
 		obj.Add("profileChanges", profileChanges);
-		obj.Add("profileCommandRevision", revisionNumber + 1);
+		obj.Add("profileCommandRevision", commandRevision);
 		obj.Add("serverTime", DateTime.UtcNow.ToStringISO());
 		obj.Add("responseVersion", 1);
 		obj.Add("command", "QueryProfile");
