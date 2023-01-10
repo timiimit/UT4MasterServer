@@ -1,10 +1,9 @@
-﻿//#define USE_LOCALHOST_TEST
+﻿#define USE_LOCALHOST_TEST
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
-using System.Net;
 using System.Text.Json;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
@@ -100,6 +99,21 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		await matchmakingService.UpdateAsync(old);
 
 		return Json(old.ToJson(false));
+	}
+
+	[HttpGet("session/{id}")]
+	public async Task<IActionResult> GetGameServer(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		// TODO: allow anyone to do this request
+
+		var server = await matchmakingService.GetAsync(user.Session.ID, EpicID.FromString(id));
+		if (server == null)
+			return UnknownSessionId(id);
+
+		return Json(server.ToJson(false));
 	}
 
 	[HttpDelete("session/{id}")]
