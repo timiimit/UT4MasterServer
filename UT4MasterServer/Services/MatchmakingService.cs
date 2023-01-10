@@ -49,7 +49,7 @@ public class MatchmakingService
 
 	public async Task<GameServer?> GetAsync(EpicID sessionID, EpicID serverID)
 	{
-		var server = await GetAsync(sessionID);
+		var server = await GetBySessionAsync(sessionID);
 		if (server == null)
 			return null;
 
@@ -175,8 +175,21 @@ public class MatchmakingService
 		return -1;
 	}
 
+	public async Task<bool> DoesSessionOwnGameServerWithPlayer(EpicID sessionID, EpicID accountID)
+	{
+		var filterSession = Builders<GameServer>.Filter.Eq(x => x.SessionID, sessionID);
+		var filterPlayers =
+			Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID) |
+			Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
+		var options = new CountOptions()
+		{
+			Limit = 1
+		};
+		var result = await serverCollection.CountDocumentsAsync(filterSession & filterPlayers, options);
+		return result > 0;
+	}
 
-	private async Task<GameServer?> GetAsync(EpicID sessionID)
+	private async Task<GameServer?> GetBySessionAsync(EpicID sessionID)
 	{
 		var cursor = await serverCollection.FindAsync(x => x.SessionID == sessionID);
 		return await cursor.FirstOrDefaultAsync();
