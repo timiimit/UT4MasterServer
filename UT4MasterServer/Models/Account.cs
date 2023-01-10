@@ -60,38 +60,33 @@ public class Account
 
 	/************** Game Specific **************/
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue("Unreal")]
+	[BsonDefaultValue("Unreal"), BsonIgnoreIfDefault]
 	[BsonElement("CountryFlag")]
 	public string CountryFlag { get; set; } = "Unreal";
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue("UT.Avatar.0")]
+	[BsonDefaultValue("UT.Avatar.0"), BsonIgnoreIfDefault]
 	[BsonElement("Avatar")]
 	public string Avatar { get; set; } = "UT.Avatar.0";
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue(0)]
+	[BsonDefaultValue(0), BsonIgnoreIfDefault]
 	[BsonElement("GoldStars")]
 	public int GoldStars { get; set; } = 0;
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue(0)]
+	[BsonDefaultValue(0), BsonIgnoreIfDefault]
 	[BsonElement("BlueStars")]
 	public int BlueStars { get; set; } = 0;
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue(0)]
+	[BsonDefaultValue(0), BsonIgnoreIfDefault]
 	[BsonElement("XP")]
 	public int XP { get; set; } = 0;
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue(0)]
+	[BsonDefaultValue(0), BsonIgnoreIfDefault]
 	[BsonElement("XPLastMatch")]
 	public int XPLastMatch { get; set; } = 0;
 
-	//[BsonElement("XPLastMatchAt")]
-	//public DateTime XPLastMatchAt { get; set; } = DateTimeExtension.UnixTimestampStartOfTime;
+	[BsonIgnoreIfDefault] // default value is set in Program.cs
+	[BsonElement("XPLastMatchAt")]
+	public DateTime XPLastMatchAt { get; set; } = DateTime.UnixEpoch;
 
 	[BsonIgnore]
 	public float Level
