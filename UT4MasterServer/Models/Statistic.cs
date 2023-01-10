@@ -5,10 +5,12 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
 
-public sealed class Statistic
+public sealed class Statistic : StatisticBase
 {
-	[BsonId]
-	[BsonElement("_id"), BsonRepresentation(BsonType.ObjectId)]
+	public Statistic() { }
+	public Statistic(StatisticBase statisticBase) : base(statisticBase) { }
+
+	[BsonId, BsonIgnoreIfDefault, BsonElement("_id"), BsonRepresentation(BsonType.ObjectId)]
 	public string ID { get; set; } = default!;
 
 	[BsonElement("accountId")]
@@ -17,19 +19,9 @@ public sealed class Statistic
 	[BsonElement("createdAt")]
 	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-	[BsonElement("modifiedAt")]
-	[BsonIgnoreIfNull]
+	[BsonElement("modifiedAt"), BsonIgnoreIfNull]
 	public DateTime? ModifiedAt { get; set; }
-
-	[BsonElement("type")]
-	public StatisticType Type { get; set; } = StatisticType.Unknown;
-
-	[BsonElement("value")]
-	public float Value { get; set; } = 0;
 
 	[BsonElement("window")]
 	public StatisticWindow Window { get; set; } = StatisticWindow.Daily;
-
-	[BsonElement("ownerType")]
-	public OwnerType OwnerType { get; set; } = OwnerType.Default;
 }

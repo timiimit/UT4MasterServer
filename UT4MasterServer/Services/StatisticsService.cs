@@ -1,6 +1,6 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using System.Threading;
 using UT4MasterServer.DTOs;
 using UT4MasterServer.Enums;
 using UT4MasterServer.Models;
@@ -31,9 +31,9 @@ public sealed class StatisticsService
 		await statisticsCollection.Indexes.CreateManyAsync(statisticsIndexes);
 	}
 
-	public async Task<List<StatisticDTO>> GetAggregateAccountStatistics(EpicID accountID, StatisticWindow statisticWindow)
+	public async Task<List<StatisticDTO>> GetAggregateAccountStatisticsAsync(EpicID accountID, StatisticWindow statisticWindow)
 	{
-		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountId}.", statisticWindow.ToString().ToLower(), accountID);
+		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountID}.", statisticWindow.ToString().ToLower(), accountID);
 
 		var dateFrom = DateTime.UtcNow.Date;
 		if (statisticWindow != StatisticWindow.Daily)
@@ -46,2128 +46,444 @@ public sealed class StatisticsService
 					 Builders<Statistic>.Filter.Gte(f => f.CreatedAt, dateFrom) &
 					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateTo);
 
-		var statistics = await statisticsCollection
+		var statisticsGrouped = await statisticsCollection
 			.Aggregate()
 			.Match(filter)
-			.Group(k => k.Type,
-				   g => new { Type = g.Key, Value = g.Sum(s => s.Value) })
-			.ToListAsync();
+			.Group(k => k.AccountID,
+				   g => new StatisticBase
+				   {
+					   SkillRating = g.Sum(s => s.SkillRating),
+					   TDMSkillRating = g.Sum(s => s.TDMSkillRating),
+					   CTFSkillRating = g.Sum(s => s.CTFSkillRating),
+					   DMSkillRating = g.Sum(s => s.DMSkillRating),
+					   ShowdownSkillRating = g.Sum(s => s.ShowdownSkillRating),
+					   FlagRunSkillRating = g.Sum(s => s.FlagRunSkillRating),
+					   RankedDuelSkillRating = g.Sum(s => s.RankedDuelSkillRating),
+					   RankedCTFSkillRating = g.Sum(s => s.RankedCTFSkillRating),
+					   RankedShowdownSkillRating = g.Sum(s => s.RankedShowdownSkillRating),
+					   RankedFlagRunSkillRating = g.Sum(s => s.RankedFlagRunSkillRating),
+					   MatchesPlayed = g.Sum(s => s.MatchesPlayed),
+					   MatchesQuit = g.Sum(s => s.MatchesQuit),
+					   TimePlayed = g.Sum(s => s.TimePlayed),
+					   Wins = g.Sum(s => s.Wins),
+					   Losses = g.Sum(s => s.Losses),
+					   Kills = g.Sum(s => s.Kills),
+					   Deaths = g.Sum(s => s.Deaths),
+					   Suicides = g.Sum(s => s.Suicides),
+					   MultiKillLevel0 = g.Sum(s => s.MultiKillLevel0),
+					   MultiKillLevel1 = g.Sum(s => s.MultiKillLevel1),
+					   MultiKillLevel2 = g.Sum(s => s.MultiKillLevel2),
+					   MultiKillLevel3 = g.Sum(s => s.MultiKillLevel3),
+					   SpreeKillLevel0 = g.Sum(s => s.SpreeKillLevel0),
+					   SpreeKillLevel1 = g.Sum(s => s.SpreeKillLevel1),
+					   SpreeKillLevel2 = g.Sum(s => s.SpreeKillLevel2),
+					   SpreeKillLevel3 = g.Sum(s => s.SpreeKillLevel3),
+					   SpreeKillLevel4 = g.Sum(s => s.SpreeKillLevel4),
+					   BestShockCombo = g.Sum(s => s.BestShockCombo),
+					   AmazingCombos = g.Sum(s => s.AmazingCombos),
+					   AirRox = g.Sum(s => s.AirRox),
+					   FlakShreds = g.Sum(s => s.FlakShreds),
+					   AirSnot = g.Sum(s => s.AirSnot),
+					   UDamageTime = g.Sum(s => s.UDamageTime),
+					   BerserkTime = g.Sum(s => s.BerserkTime),
+					   InvisibilityTime = g.Sum(s => s.InvisibilityTime),
+					   UDamageCount = g.Sum(s => s.UDamageCount),
+					   BerserkCount = g.Sum(s => s.BerserkCount),
+					   InvisibilityCount = g.Sum(s => s.InvisibilityCount),
+					   BootJumps = g.Sum(s => s.BootJumps),
+					   ShieldBeltCount = g.Sum(s => s.ShieldBeltCount),
+					   ArmorVestCount = g.Sum(s => s.ArmorVestCount),
+					   ArmorPadsCount = g.Sum(s => s.ArmorPadsCount),
+					   HelmetCount = g.Sum(s => s.HelmetCount),
+					   KegCount = g.Sum(s => s.KegCount),
+					   ImpactHammerKills = g.Sum(s => s.ImpactHammerKills),
+					   ImpactHammerDeaths = g.Sum(s => s.ImpactHammerDeaths),
+					   EnforcerKills = g.Sum(s => s.EnforcerKills),
+					   EnforcerDeaths = g.Sum(s => s.EnforcerDeaths),
+					   EnforcerShots = g.Sum(s => s.EnforcerShots),
+					   EnforcerHits = g.Sum(s => s.EnforcerHits),
+					   BioRifleKills = g.Sum(s => s.BioRifleKills),
+					   BioRifleDeaths = g.Sum(s => s.BioRifleDeaths),
+					   BioRifleShots = g.Sum(s => s.BioRifleShots),
+					   BioRifleHits = g.Sum(s => s.BioRifleHits),
+					   BioLauncherKills = g.Sum(s => s.BioLauncherKills),
+					   BioLauncherDeaths = g.Sum(s => s.BioLauncherDeaths),
+					   BioLauncherShots = g.Sum(s => s.BioLauncherShots),
+					   BioLauncherHits = g.Sum(s => s.BioLauncherHits),
+					   ShockBeamKills = g.Sum(s => s.ShockBeamKills),
+					   ShockBeamDeaths = g.Sum(s => s.ShockBeamDeaths),
+					   ShockCoreKills = g.Sum(s => s.ShockCoreKills),
+					   ShockCoreDeaths = g.Sum(s => s.ShockCoreDeaths),
+					   ShockComboKills = g.Sum(s => s.ShockComboKills),
+					   ShockComboDeaths = g.Sum(s => s.ShockComboDeaths),
+					   ShockRifleShots = g.Sum(s => s.ShockRifleShots),
+					   ShockRifleHits = g.Sum(s => s.ShockRifleHits),
+					   LinkKills = g.Sum(s => s.LinkKills),
+					   LinkDeaths = g.Sum(s => s.LinkDeaths),
+					   LinkBeamKills = g.Sum(s => s.LinkBeamKills),
+					   LinkBeamDeaths = g.Sum(s => s.LinkBeamDeaths),
+					   LinkShots = g.Sum(s => s.LinkShots),
+					   LinkHits = g.Sum(s => s.LinkHits),
+					   MinigunKills = g.Sum(s => s.MinigunKills),
+					   MinigunDeaths = g.Sum(s => s.MinigunDeaths),
+					   MinigunShardKills = g.Sum(s => s.MinigunShardKills),
+					   MinigunShardDeaths = g.Sum(s => s.MinigunShardDeaths),
+					   MinigunShots = g.Sum(s => s.MinigunShots),
+					   MinigunHits = g.Sum(s => s.MinigunHits),
+					   FlakShardKills = g.Sum(s => s.FlakShardKills),
+					   FlakShardDeaths = g.Sum(s => s.FlakShardDeaths),
+					   FlakShellKills = g.Sum(s => s.FlakShellKills),
+					   FlakShellDeaths = g.Sum(s => s.FlakShellDeaths),
+					   FlakShots = g.Sum(s => s.FlakShots),
+					   FlakHits = g.Sum(s => s.FlakHits),
+					   RocketKills = g.Sum(s => s.RocketKills),
+					   RocketDeaths = g.Sum(s => s.RocketDeaths),
+					   RocketShots = g.Sum(s => s.RocketShots),
+					   RocketHits = g.Sum(s => s.RocketHits),
+					   SniperKills = g.Sum(s => s.SniperKills),
+					   SniperDeaths = g.Sum(s => s.SniperDeaths),
+					   SniperHeadshotKills = g.Sum(s => s.SniperHeadshotKills),
+					   SniperHeadshotDeaths = g.Sum(s => s.SniperHeadshotDeaths),
+					   SniperShots = g.Sum(s => s.SniperShots),
+					   SniperHits = g.Sum(s => s.SniperHits),
+					   LightningRiflePrimaryKills = g.Sum(s => s.LightningRiflePrimaryKills),
+					   LightningRiflePrimaryDeaths = g.Sum(s => s.LightningRiflePrimaryDeaths),
+					   LightningRifleSecondaryKills = g.Sum(s => s.LightningRifleSecondaryKills),
+					   LightningRifleSecondaryDeaths = g.Sum(s => s.LightningRifleSecondaryDeaths),
+					   LightningRifleShots = g.Sum(s => s.LightningRifleShots),
+					   LightningRifleHits = g.Sum(s => s.LightningRifleHits),
+					   RedeemerKills = g.Sum(s => s.RedeemerKills),
+					   RedeemerDeaths = g.Sum(s => s.RedeemerDeaths),
+					   RedeemerShots = g.Sum(s => s.RedeemerShots),
+					   RedeemerHits = g.Sum(s => s.RedeemerHits),
+					   InstagibKills = g.Sum(s => s.InstagibKills),
+					   InstagibDeaths = g.Sum(s => s.InstagibDeaths),
+					   InstagibShots = g.Sum(s => s.InstagibShots),
+					   InstagibHits = g.Sum(s => s.InstagibHits),
+					   TelefragKills = g.Sum(s => s.TelefragKills),
+					   TelefragDeaths = g.Sum(s => s.TelefragDeaths),
+					   RunDist = g.Sum(s => s.RunDist),
+					   SprintDist = g.Sum(s => s.SprintDist),
+					   InAirDist = g.Sum(s => s.InAirDist),
+					   SwimDist = g.Sum(s => s.SwimDist),
+					   TranslocDist = g.Sum(s => s.TranslocDist),
+					   NumDodges = g.Sum(s => s.NumDodges),
+					   NumWallDodges = g.Sum(s => s.NumWallDodges),
+					   NumJumps = g.Sum(s => s.NumJumps),
+					   NumLiftJumps = g.Sum(s => s.NumLiftJumps),
+					   NumFloorSlides = g.Sum(s => s.NumFloorSlides),
+					   NumWallRuns = g.Sum(s => s.NumWallRuns),
+					   NumImpactJumps = g.Sum(s => s.NumImpactJumps),
+					   NumRocketJumps = g.Sum(s => s.NumRocketJumps),
+					   SlideDist = g.Sum(s => s.SlideDist),
+					   WallRunDist = g.Sum(s => s.WallRunDist),
+					   FlagCaptures = g.Sum(s => s.FlagCaptures),
+					   FlagReturns = g.Sum(s => s.FlagReturns),
+					   FlagAssists = g.Sum(s => s.FlagAssists),
+					   FlagHeldDeny = g.Sum(s => s.FlagHeldDeny),
+					   FlagHeldDenyTime = g.Sum(s => s.FlagHeldDenyTime),
+					   FlagHeldTime = g.Sum(s => s.FlagHeldTime),
+					   FlagReturnPoints = g.Sum(s => s.FlagReturnPoints),
+					   CarryAssist = g.Sum(s => s.CarryAssist),
+					   CarryAssistPoints = g.Sum(s => s.CarryAssistPoints),
+					   FlagCapPoints = g.Sum(s => s.FlagCapPoints),
+					   DefendAssist = g.Sum(s => s.DefendAssist),
+					   DefendAssistPoints = g.Sum(s => s.DefendAssistPoints),
+					   ReturnAssist = g.Sum(s => s.ReturnAssist),
+					   ReturnAssistPoints = g.Sum(s => s.ReturnAssistPoints),
+					   TeamCapPoints = g.Sum(s => s.TeamCapPoints),
+					   EnemyFCDamage = g.Sum(s => s.EnemyFCDamage),
+					   FCKills = g.Sum(s => s.FCKills),
+					   FCKillPoints = g.Sum(s => s.FCKillPoints),
+					   FlagSupportKills = g.Sum(s => s.FlagSupportKills),
+					   FlagSupportKillPoints = g.Sum(s => s.FlagSupportKillPoints),
+					   RegularKillPoints = g.Sum(s => s.RegularKillPoints),
+					   FlagGrabs = g.Sum(s => s.FlagGrabs),
+					   AttackerScore = g.Sum(s => s.AttackerScore),
+					   DefenderScore = g.Sum(s => s.DefenderScore),
+					   SupporterScore = g.Sum(s => s.SupporterScore),
+					   TeamKills = g.Sum(s => s.TeamKills),
+				   })
+			.FirstOrDefaultAsync();
 
-		var result = new List<StatisticDTO>();
-
-		foreach (var type in Enum.GetValues<StatisticType>())
-		{
-			if (type == StatisticType.Unknown) continue;
-
-			var existingStatistic = statistics.FirstOrDefault(f => f.Type == type);
-			result.Add(new StatisticDTO()
-			{
-				Name = type.ToString(),
-				Value = GetValueForStatisticType(type, existingStatistic?.Value ?? 0),
-				Window = statisticWindow.ToString().ToLower(),
-				OwnerType = OwnerType.Default
-			});
-		}
-
-		return result;
+		return MapStatisticBaseToStatisticDTO(statisticsGrouped, statisticWindow);
 	}
 
-	public async Task<List<StatisticDTO>> GetAllTimeAccountStatistics(EpicID accountID)
+	public async Task<List<StatisticDTO>> GetAllTimeAccountStatisticsAsync(EpicID accountID)
 	{
-		logger.LogInformation("Calculating all-time statistics for account: {AccountId}.", accountID);
+		logger.LogInformation("Calculating all-time statistics for account: {AccountID}.", accountID);
 
 		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
 					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime);
 
-		var statistics = await statisticsCollection.Find(filter).ToListAsync();
+		var statistics = await statisticsCollection.Find(filter).FirstOrDefaultAsync();
 
 		var result = new List<StatisticDTO>();
 
-		foreach (var type in Enum.GetValues<StatisticType>())
+		if (statistics is not null)
 		{
-			if (type == StatisticType.Unknown) continue;
-
-			var existingStatistic = statistics.FirstOrDefault(f => f.Type == type);
-			result.Add(new StatisticDTO()
-			{
-				Name = type.ToString(),
-				Value = GetValueForStatisticType(type, existingStatistic?.Value ?? 0),
-				Window = "alltime",
-				OwnerType = OwnerType.Default
-			});
+			result = MapStatisticBaseToStatisticDTO(statistics, StatisticWindow.AllTime);
 		}
 
 		return result;
 	}
 
-	public async Task CreateAccountStatistics(EpicID accountID, OwnerType ownerType, StatisticBulkDTO statisticBulkDTO)
+	public async Task CreateAccountStatisticsAsync(EpicID accountID, OwnerType _, StatisticBase statisticBase)
 	{
-		logger.LogInformation("Creating statistics for account: {AccountId}.", accountID);
+		logger.LogInformation("Creating statistics for account: {AccountID}.", accountID);
 
-		var newStatistics = GenerateStatistics(accountID, ownerType, statisticBulkDTO);
+		var newStatistic = new Statistic(statisticBase)
+		{
+			AccountID = accountID,
+			CreatedAt = DateTime.UtcNow,
+			Window = StatisticWindow.Daily,
+		};
 
-		await statisticsCollection.InsertManyAsync(newStatistics);
-		await UpdateAllTimeAccountStatistics(accountID, newStatistics);
+		await statisticsCollection.InsertOneAsync(newStatistic);
+		await UpdateAllTimeAccountStatisticsAsync(newStatistic);
 	}
 
 	#region Private methods
 
-	private static List<Statistic> GenerateStatistics(EpicID accountID, OwnerType ownerType, StatisticBulkDTO statisticBulkDTO)
+	/// <summary>
+	/// This method will create or update all-time statistics record in the DB
+	/// </summary>
+	/// <param name="newStatistic"></param>
+	/// <returns></returns>
+	private async Task UpdateAllTimeAccountStatisticsAsync(Statistic newStatistic)
 	{
-		var currentDateTime = DateTime.UtcNow;
-		var newStatistics = new List<Statistic>();
+		logger.LogInformation("Updating all-time statistics for account: {AccountID}.", newStatistic.AccountID);
 
-		#region Quick Look
+		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, newStatistic.AccountID) &
+					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime);
 
-		if (statisticBulkDTO.SkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SkillRating,
-				Value = statisticBulkDTO.SkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.TDMSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.TDMSkillRating,
-				Value = statisticBulkDTO.TDMSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.CTFSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.CTFSkillRating,
-				Value = statisticBulkDTO.CTFSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.DMSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.DMSkillRating,
-				Value = statisticBulkDTO.DMSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShowdownSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShowdownSkillRating,
-				Value = statisticBulkDTO.ShowdownSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagRunSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagRunSkillRating,
-				Value = statisticBulkDTO.FlagRunSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RankedDuelSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RankedDuelSkillRating,
-				Value = statisticBulkDTO.RankedDuelSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RankedCTFSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RankedCTFSkillRating,
-				Value = statisticBulkDTO.RankedCTFSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RankedShowdownSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RankedShowdownSkillRating,
-				Value = statisticBulkDTO.RankedShowdownSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RankedFlagRunSkillRating.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RankedFlagRunSkillRating,
-				Value = statisticBulkDTO.RankedFlagRunSkillRating.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MatchesPlayed.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MatchesPlayed,
-				Value = statisticBulkDTO.MatchesPlayed.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MatchesQuit.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MatchesQuit,
-				Value = statisticBulkDTO.MatchesQuit.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.TimePlayed.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.TimePlayed,
-				Value = statisticBulkDTO.TimePlayed.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.Wins.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.Wins,
-				Value = statisticBulkDTO.Wins.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.Losses.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.Losses,
-				Value = statisticBulkDTO.Losses.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.Kills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.Kills,
-				Value = statisticBulkDTO.Kills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.Deaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.Deaths,
-				Value = statisticBulkDTO.Deaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.Suicides.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.Suicides,
-				Value = statisticBulkDTO.Suicides.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		#endregion
-
-		#region Kill Achievements
-
-		if (statisticBulkDTO.MultiKillLevel0.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MultiKillLevel0,
-				Value = statisticBulkDTO.MultiKillLevel0.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MultiKillLevel1.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MultiKillLevel1,
-				Value = statisticBulkDTO.MultiKillLevel1.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MultiKillLevel2.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MultiKillLevel2,
-				Value = statisticBulkDTO.MultiKillLevel2.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MultiKillLevel3.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MultiKillLevel3,
-				Value = statisticBulkDTO.MultiKillLevel3.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SpreeKillLevel0.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SpreeKillLevel0,
-				Value = statisticBulkDTO.SpreeKillLevel0.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SpreeKillLevel1.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SpreeKillLevel1,
-				Value = statisticBulkDTO.SpreeKillLevel1.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SpreeKillLevel2.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SpreeKillLevel2,
-				Value = statisticBulkDTO.SpreeKillLevel2.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SpreeKillLevel3.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SpreeKillLevel3,
-				Value = statisticBulkDTO.SpreeKillLevel3.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SpreeKillLevel4.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SpreeKillLevel4,
-				Value = statisticBulkDTO.SpreeKillLevel4.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BestShockCombo.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BestShockCombo,
-				Value = statisticBulkDTO.BestShockCombo.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.AmazingCombos.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.AmazingCombos,
-				Value = statisticBulkDTO.AmazingCombos.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.AirRox.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.AirRox,
-				Value = statisticBulkDTO.AirRox.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlakShreds.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlakShreds,
-				Value = statisticBulkDTO.FlakShreds.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.AirSnot.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.AirSnot,
-				Value = statisticBulkDTO.AirSnot.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		#endregion
-
-		#region Power Up Achievements
-
-		if (statisticBulkDTO.UDamageTime.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.UDamageTime,
-				Value = statisticBulkDTO.UDamageTime.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BerserkTime.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BerserkTime,
-				Value = statisticBulkDTO.BerserkTime.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.InvisibilityTime.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.InvisibilityTime,
-				Value = statisticBulkDTO.InvisibilityTime.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.UDamageCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.UDamageCount,
-				Value = statisticBulkDTO.UDamageCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BerserkCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BerserkCount,
-				Value = statisticBulkDTO.BerserkCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.InvisibilityCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.InvisibilityCount,
-				Value = statisticBulkDTO.InvisibilityCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BootJumps.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BootJumps,
-				Value = statisticBulkDTO.BootJumps.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShieldBeltCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShieldBeltCount,
-				Value = statisticBulkDTO.ShieldBeltCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ArmorVestCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ArmorVestCount,
-				Value = statisticBulkDTO.ArmorVestCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ArmorPadsCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ArmorPadsCount,
-				Value = statisticBulkDTO.ArmorPadsCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.HelmetCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.HelmetCount,
-				Value = statisticBulkDTO.HelmetCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.KegCount.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.KegCount,
-				Value = statisticBulkDTO.KegCount.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		#endregion
-
-		#region Weapon Stats
-
-		if (statisticBulkDTO.ImpactHammerKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ImpactHammerKills,
-				Value = statisticBulkDTO.ImpactHammerKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ImpactHammerDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ImpactHammerDeaths,
-				Value = statisticBulkDTO.ImpactHammerDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.EnforcerKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.EnforcerKills,
-				Value = statisticBulkDTO.EnforcerKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.EnforcerDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.EnforcerDeaths,
-				Value = statisticBulkDTO.EnforcerDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.EnforcerShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.EnforcerShots,
-				Value = statisticBulkDTO.EnforcerShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.EnforcerHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.EnforcerHits,
-				Value = statisticBulkDTO.EnforcerHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioRifleKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioRifleKills,
-				Value = statisticBulkDTO.BioRifleKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioRifleDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioRifleDeaths,
-				Value = statisticBulkDTO.BioRifleDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioRifleShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioRifleShots,
-				Value = statisticBulkDTO.BioRifleShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioRifleHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioRifleHits,
-				Value = statisticBulkDTO.BioRifleHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioLauncherKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioLauncherKills,
-				Value = statisticBulkDTO.BioLauncherKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioLauncherDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioLauncherDeaths,
-				Value = statisticBulkDTO.BioLauncherDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioLauncherShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioLauncherShots,
-				Value = statisticBulkDTO.BioLauncherShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.BioLauncherHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.BioLauncherHits,
-				Value = statisticBulkDTO.BioLauncherHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockBeamKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockBeamKills,
-				Value = statisticBulkDTO.ShockBeamKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockBeamDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockBeamDeaths,
-				Value = statisticBulkDTO.ShockBeamDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockCoreKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockCoreKills,
-				Value = statisticBulkDTO.ShockCoreKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockCoreDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockCoreDeaths,
-				Value = statisticBulkDTO.ShockCoreDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockComboKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockComboKills,
-				Value = statisticBulkDTO.ShockComboKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockComboDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockComboDeaths,
-				Value = statisticBulkDTO.ShockComboDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockRifleShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockRifleShots,
-				Value = statisticBulkDTO.ShockRifleShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ShockRifleHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ShockRifleHits,
-				Value = statisticBulkDTO.ShockRifleHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LinkKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LinkKills,
-				Value = statisticBulkDTO.LinkKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LinkDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LinkDeaths,
-				Value = statisticBulkDTO.LinkDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LinkBeamKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LinkBeamKills,
-				Value = statisticBulkDTO.LinkBeamKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LinkBeamDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LinkBeamDeaths,
-				Value = statisticBulkDTO.LinkBeamDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LinkShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LinkShots,
-				Value = statisticBulkDTO.LinkShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LinkHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LinkHits,
-				Value = statisticBulkDTO.LinkHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MinigunKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MinigunKills,
-				Value = statisticBulkDTO.MinigunKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MinigunDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MinigunDeaths,
-				Value = statisticBulkDTO.MinigunDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MinigunShardKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MinigunShardKills,
-				Value = statisticBulkDTO.MinigunShardKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MinigunShardDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MinigunShardDeaths,
-				Value = statisticBulkDTO.MinigunShardDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MinigunShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MinigunShots,
-				Value = statisticBulkDTO.MinigunShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.MinigunHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.MinigunHits,
-				Value = statisticBulkDTO.MinigunHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlakShardKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlakShardKills,
-				Value = statisticBulkDTO.FlakShardKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlakShardDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlakShardDeaths,
-				Value = statisticBulkDTO.FlakShardDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlakShellKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlakShellKills,
-				Value = statisticBulkDTO.FlakShellKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlakShellDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlakShellDeaths,
-				Value = statisticBulkDTO.FlakShellDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlakShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlakShots,
-				Value = statisticBulkDTO.FlakShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlakHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlakHits,
-				Value = statisticBulkDTO.FlakHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RocketKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RocketKills,
-				Value = statisticBulkDTO.RocketKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RocketDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RocketDeaths,
-				Value = statisticBulkDTO.RocketDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RocketShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RocketShots,
-				Value = statisticBulkDTO.RocketShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RocketHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RocketHits,
-				Value = statisticBulkDTO.RocketHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SniperKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SniperKills,
-				Value = statisticBulkDTO.SniperKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SniperDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SniperDeaths,
-				Value = statisticBulkDTO.SniperDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SniperHeadshotKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SniperHeadshotKills,
-				Value = statisticBulkDTO.SniperHeadshotKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SniperHeadshotDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SniperHeadshotDeaths,
-				Value = statisticBulkDTO.SniperHeadshotDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SniperShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SniperShots,
-				Value = statisticBulkDTO.SniperShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SniperHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SniperHits,
-				Value = statisticBulkDTO.SniperHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LightningRiflePrimaryKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LightningRiflePrimaryKills,
-				Value = statisticBulkDTO.LightningRiflePrimaryKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LightningRiflePrimaryDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LightningRiflePrimaryDeaths,
-				Value = statisticBulkDTO.LightningRiflePrimaryDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LightningRifleSecondaryKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LightningRifleSecondaryKills,
-				Value = statisticBulkDTO.LightningRifleSecondaryKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LightningRifleSecondaryDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LightningRifleSecondaryDeaths,
-				Value = statisticBulkDTO.LightningRifleSecondaryDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LightningRifleShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LightningRifleShots,
-				Value = statisticBulkDTO.LightningRifleShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.LightningRifleHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.LightningRifleHits,
-				Value = statisticBulkDTO.LightningRifleHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RedeemerKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RedeemerKills,
-				Value = statisticBulkDTO.RedeemerKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RedeemerDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RedeemerDeaths,
-				Value = statisticBulkDTO.RedeemerDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RedeemerShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RedeemerShots,
-				Value = statisticBulkDTO.RedeemerShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RedeemerHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RedeemerHits,
-				Value = statisticBulkDTO.RedeemerHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.InstagibKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.InstagibKills,
-				Value = statisticBulkDTO.InstagibKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.InstagibDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.InstagibDeaths,
-				Value = statisticBulkDTO.InstagibDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.InstagibShots.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.InstagibShots,
-				Value = statisticBulkDTO.InstagibShots.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.InstagibHits.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.InstagibHits,
-				Value = statisticBulkDTO.InstagibHits.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.TelefragKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.TelefragKills,
-				Value = statisticBulkDTO.TelefragKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.TelefragDeaths.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.TelefragDeaths,
-				Value = statisticBulkDTO.TelefragDeaths.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		#endregion
-
-		#region Miscellaneous - Movement
-
-		if (statisticBulkDTO.RunDist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RunDist,
-				Value = statisticBulkDTO.RunDist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SprintDist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SprintDist,
-				Value = statisticBulkDTO.SprintDist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.InAirDist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.InAirDist,
-				Value = statisticBulkDTO.InAirDist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SwimDist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SwimDist,
-				Value = statisticBulkDTO.SwimDist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.TranslocDist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.TranslocDist,
-				Value = statisticBulkDTO.TranslocDist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumDodges.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumDodges,
-				Value = statisticBulkDTO.NumDodges.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumWallDodges.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumWallDodges,
-				Value = statisticBulkDTO.NumWallDodges.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumJumps.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumJumps,
-				Value = statisticBulkDTO.NumJumps.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumLiftJumps.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumLiftJumps,
-				Value = statisticBulkDTO.NumLiftJumps.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumFloorSlides.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumFloorSlides,
-				Value = statisticBulkDTO.NumFloorSlides.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumWallRuns.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumWallRuns,
-				Value = statisticBulkDTO.NumWallRuns.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumImpactJumps.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumImpactJumps,
-				Value = statisticBulkDTO.NumImpactJumps.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.NumRocketJumps.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.NumRocketJumps,
-				Value = statisticBulkDTO.NumRocketJumps.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.SlideDist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SlideDist,
-				Value = statisticBulkDTO.SlideDist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.WallRunDist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.WallRunDist,
-				Value = statisticBulkDTO.WallRunDist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		#endregion
-
-		#region Miscellaneous - Capture the Flag
-
-		if (statisticBulkDTO.FlagCaptures.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagCaptures,
-				Value = statisticBulkDTO.FlagCaptures.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagReturns.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagReturns,
-				Value = statisticBulkDTO.FlagReturns.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagAssists.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagAssists,
-				Value = statisticBulkDTO.FlagAssists.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagHeldDeny.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagHeldDeny,
-				Value = statisticBulkDTO.FlagHeldDeny.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagHeldDenyTime.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagHeldDenyTime,
-				Value = statisticBulkDTO.FlagHeldDenyTime.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagHeldTime.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagHeldTime,
-				Value = statisticBulkDTO.FlagHeldTime.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagReturnPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagReturnPoints,
-				Value = statisticBulkDTO.FlagReturnPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.CarryAssist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.CarryAssist,
-				Value = statisticBulkDTO.CarryAssist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.CarryAssistPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.CarryAssistPoints,
-				Value = statisticBulkDTO.CarryAssistPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagCapPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagCapPoints,
-				Value = statisticBulkDTO.FlagCapPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.DefendAssist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.DefendAssist,
-				Value = statisticBulkDTO.DefendAssist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.DefendAssistPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.DefendAssistPoints,
-				Value = statisticBulkDTO.DefendAssistPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ReturnAssist.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ReturnAssist,
-				Value = statisticBulkDTO.ReturnAssist.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.ReturnAssistPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.ReturnAssistPoints,
-				Value = statisticBulkDTO.ReturnAssistPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.TeamCapPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.TeamCapPoints,
-				Value = statisticBulkDTO.TeamCapPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.EnemyFCDamage.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.EnemyFCDamage,
-				Value = statisticBulkDTO.EnemyFCDamage.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FCKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FCKills,
-				Value = statisticBulkDTO.FCKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FCKillPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FCKillPoints,
-				Value = statisticBulkDTO.FCKillPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagSupportKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagSupportKills,
-				Value = statisticBulkDTO.FlagSupportKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagSupportKillPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagSupportKillPoints,
-				Value = statisticBulkDTO.FlagSupportKillPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.RegularKillPoints.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.RegularKillPoints,
-				Value = statisticBulkDTO.RegularKillPoints.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
-
-		if (statisticBulkDTO.FlagGrabs.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.FlagGrabs,
-				Value = statisticBulkDTO.FlagGrabs.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
+		var existingStatistic = await statisticsCollection.Find(filter).FirstOrDefaultAsync();
 
-		if (statisticBulkDTO.AttackerScore.HasValue)
+		if (existingStatistic is not null)
 		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.AttackerScore,
-				Value = statisticBulkDTO.AttackerScore.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
+			var mergedStatistic = MergeStatistics(new List<Statistic>() { existingStatistic, newStatistic });
+			mergedStatistic.Window = StatisticWindow.AllTime;
+			mergedStatistic.ModifiedAt = DateTime.UtcNow;
 
-		if (statisticBulkDTO.DefenderScore.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.DefenderScore,
-				Value = statisticBulkDTO.DefenderScore.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
+			await statisticsCollection.ReplaceOneAsync(Builders<Statistic>.Filter.Eq(f => f.ID, existingStatistic.ID), mergedStatistic);
 		}
-
-		if (statisticBulkDTO.SupporterScore.HasValue)
+		else
 		{
-			newStatistics.Add(new Statistic()
+			var newAllTimeStatistics = new Statistic(newStatistic)
 			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.SupporterScore,
-				Value = statisticBulkDTO.SupporterScore.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
-		}
+				AccountID = newStatistic.AccountID,
+				Window = StatisticWindow.AllTime
+			};
 
-		if (statisticBulkDTO.TeamKills.HasValue)
-		{
-			newStatistics.Add(new Statistic()
-			{
-				CreatedAt = currentDateTime,
-				AccountID = accountID,
-				Type = StatisticType.TeamKills,
-				Value = statisticBulkDTO.TeamKills.Value,
-				Window = StatisticWindow.Daily,
-				OwnerType = ownerType
-			});
+			await statisticsCollection.InsertOneAsync(newAllTimeStatistics);
 		}
-
-		#endregion
-
-		return newStatistics;
 	}
 
-	private async Task UpdateAllTimeAccountStatistics(EpicID accountID, List<Statistic> newStatistics)
+	/// <summary>
+	/// This method will convert statistics from flat structure to array structure
+	/// Float values will be multiplied by 100
+	/// </summary>
+	/// <param name="statisticWindow"></param>
+	/// <returns></returns>
+	public static List<StatisticDTO> MapStatisticBaseToStatisticDTO(StatisticBase statisticBase, StatisticWindow statisticWindow)
 	{
-		logger.LogInformation("Updating all-time statistics for account: {AccountId}.", accountID);
+		var result = new List<StatisticDTO>();
 
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
-					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime) &
-					 Builders<Statistic>.Filter.In(f => f.Type, newStatistics.Select(s => s.Type).ToList());
-
-		var existingStatistics = await statisticsCollection.Find(filter).ToListAsync();
-
-		foreach (var newStatistic in newStatistics)
+		foreach (var element in statisticBase.ToBsonDocument().Elements)
 		{
-			if (existingStatistics.FirstOrDefault(f => f.Type == newStatistic.Type) is { } existingStatistic)
+			if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower())) continue;
+
+			var value = element.Value.BsonType switch
 			{
-				await statisticsCollection.UpdateOneAsync(
-					f => f.ID == existingStatistic.ID,
-					Builders<Statistic>.Update.Inc(i => i.Value, newStatistic.Value)
-											  .Set(s => s.ModifiedAt, DateTime.UtcNow));
-			}
-			else
+				BsonType.Double => (long)(element.Value.ToDouble() * 100D),
+				BsonType.Int32 => element.Value.ToInt32(),
+				_ => 0,
+			};
+
+			if (value > 0)
 			{
-				await statisticsCollection.InsertOneAsync(new Statistic()
+				result.Add(new StatisticDTO()
 				{
-					AccountID = accountID,
-					CreatedAt = DateTime.UtcNow,
-					Type = newStatistic.Type,
-					Value = newStatistic.Value,
-					Window = StatisticWindow.AllTime
+					Name = element.Name,
+					Value = value,
+					Window = statisticWindow.ToString().ToLower(),
+					OwnerType = OwnerType.Default
 				});
 			}
 		}
+
+		return result;
 	}
 
-	private static int GetValueForStatisticType(StatisticType type, float value)
+	/// <summary>
+	/// This method will merge list of Statistic objects by account ID and it will sum up all values
+	/// </summary>
+	/// <param name="statistics"></param>
+	/// <returns>Statistic object</returns>
+	private static Statistic MergeStatistics(List<Statistic> statistics)
 	{
-		switch (type)
-		{
-			case StatisticType.EnforcerHits:
-			case StatisticType.BioRifleHits:
-			case StatisticType.BioLauncherHits:
-			case StatisticType.ShockRifleHits:
-			case StatisticType.LinkHits:
-			case StatisticType.MinigunHits:
-			case StatisticType.FlakHits:
-			case StatisticType.RocketHits:
-			case StatisticType.SniperHits:
-			case StatisticType.LightningRifleHits:
-			case StatisticType.RedeemerHits:
-			case StatisticType.InstagibHits:
-			case StatisticType.RunDist:
-			case StatisticType.SprintDist:
-			case StatisticType.InAirDist:
-			case StatisticType.SwimDist:
-			case StatisticType.TranslocDist:
-			case StatisticType.SlideDist:
-			case StatisticType.WallRunDist:
-				return (int)(value * 100L);
+		var merged = statistics
+			.GroupBy(g => g.AccountID)
+			.Select(s => new Statistic
+			{
+				AccountID = s.Key,
+				CreatedAt = s.First().CreatedAt,
+				Window = s.First().Window,
+				SkillRating = s.Any(a => a.SkillRating.HasValue) ? s.Sum(sm => sm.SkillRating) : null,
+				TDMSkillRating = s.Any(a => a.TDMSkillRating.HasValue) ? s.Sum(sm => sm.TDMSkillRating) : null,
+				CTFSkillRating = s.Any(a => a.CTFSkillRating.HasValue) ? s.Sum(sm => sm.CTFSkillRating) : null,
+				DMSkillRating = s.Any(a => a.DMSkillRating.HasValue) ? s.Sum(sm => sm.DMSkillRating) : null,
+				ShowdownSkillRating = s.Any(a => a.ShowdownSkillRating.HasValue) ? s.Sum(sm => sm.ShowdownSkillRating) : null,
+				FlagRunSkillRating = s.Any(a => a.FlagRunSkillRating.HasValue) ? s.Sum(sm => sm.FlagRunSkillRating) : null,
+				RankedDuelSkillRating = s.Any(a => a.RankedDuelSkillRating.HasValue) ? s.Sum(sm => sm.RankedDuelSkillRating) : null,
+				RankedCTFSkillRating = s.Any(a => a.RankedCTFSkillRating.HasValue) ? s.Sum(sm => sm.RankedCTFSkillRating) : null,
+				RankedShowdownSkillRating = s.Any(a => a.RankedShowdownSkillRating.HasValue) ? s.Sum(sm => sm.RankedShowdownSkillRating) : null,
+				RankedFlagRunSkillRating = s.Any(a => a.RankedFlagRunSkillRating.HasValue) ? s.Sum(sm => sm.RankedFlagRunSkillRating) : null,
+				MatchesPlayed = s.Any(a => a.MatchesPlayed.HasValue) ? s.Sum(sm => sm.MatchesPlayed) : null,
+				MatchesQuit = s.Any(a => a.MatchesQuit.HasValue) ? s.Sum(sm => sm.MatchesQuit) : null,
+				TimePlayed = s.Any(a => a.TimePlayed.HasValue) ? s.Sum(sm => sm.TimePlayed) : null,
+				Wins = s.Any(a => a.Wins.HasValue) ? s.Sum(sm => sm.Wins) : null,
+				Losses = s.Any(a => a.Losses.HasValue) ? s.Sum(sm => sm.Losses) : null,
+				Kills = s.Any(a => a.Kills.HasValue) ? s.Sum(sm => sm.Kills) : null,
+				Deaths = s.Any(a => a.Deaths.HasValue) ? s.Sum(sm => sm.Deaths) : null,
+				Suicides = s.Any(a => a.Suicides.HasValue) ? s.Sum(sm => sm.Suicides) : null,
+				MultiKillLevel0 = s.Any(a => a.MultiKillLevel0.HasValue) ? s.Sum(sm => sm.MultiKillLevel0) : null,
+				MultiKillLevel1 = s.Any(a => a.MultiKillLevel1.HasValue) ? s.Sum(sm => sm.MultiKillLevel1) : null,
+				MultiKillLevel2 = s.Any(a => a.MultiKillLevel2.HasValue) ? s.Sum(sm => sm.MultiKillLevel2) : null,
+				MultiKillLevel3 = s.Any(a => a.MultiKillLevel3.HasValue) ? s.Sum(sm => sm.MultiKillLevel3) : null,
+				SpreeKillLevel0 = s.Any(a => a.SpreeKillLevel0.HasValue) ? s.Sum(sm => sm.SpreeKillLevel0) : null,
+				SpreeKillLevel1 = s.Any(a => a.SpreeKillLevel1.HasValue) ? s.Sum(sm => sm.SpreeKillLevel1) : null,
+				SpreeKillLevel2 = s.Any(a => a.SpreeKillLevel2.HasValue) ? s.Sum(sm => sm.SpreeKillLevel2) : null,
+				SpreeKillLevel3 = s.Any(a => a.SpreeKillLevel3.HasValue) ? s.Sum(sm => sm.SpreeKillLevel3) : null,
+				SpreeKillLevel4 = s.Any(a => a.SpreeKillLevel4.HasValue) ? s.Sum(sm => sm.SpreeKillLevel4) : null,
+				BestShockCombo = s.Any(a => a.BestShockCombo.HasValue) ? s.Sum(sm => sm.BestShockCombo) : null,
+				AmazingCombos = s.Any(a => a.AmazingCombos.HasValue) ? s.Sum(sm => sm.AmazingCombos) : null,
+				AirRox = s.Any(a => a.AirRox.HasValue) ? s.Sum(sm => sm.AirRox) : null,
+				FlakShreds = s.Any(a => a.FlakShreds.HasValue) ? s.Sum(sm => sm.FlakShreds) : null,
+				AirSnot = s.Any(a => a.AirSnot.HasValue) ? s.Sum(sm => sm.AirSnot) : null,
+				UDamageTime = s.Any(a => a.UDamageTime.HasValue) ? s.Sum(sm => sm.UDamageTime) : null,
+				BerserkTime = s.Any(a => a.BerserkTime.HasValue) ? s.Sum(sm => sm.BerserkTime) : null,
+				InvisibilityTime = s.Any(a => a.InvisibilityTime.HasValue) ? s.Sum(sm => sm.InvisibilityTime) : null,
+				UDamageCount = s.Any(a => a.UDamageCount.HasValue) ? s.Sum(sm => sm.UDamageCount) : null,
+				BerserkCount = s.Any(a => a.BerserkCount.HasValue) ? s.Sum(sm => sm.BerserkCount) : null,
+				InvisibilityCount = s.Any(a => a.InvisibilityCount.HasValue) ? s.Sum(sm => sm.InvisibilityCount) : null,
+				BootJumps = s.Any(a => a.BootJumps.HasValue) ? s.Sum(sm => sm.BootJumps) : null,
+				ShieldBeltCount = s.Any(a => a.ShieldBeltCount.HasValue) ? s.Sum(sm => sm.ShieldBeltCount) : null,
+				ArmorVestCount = s.Any(a => a.ArmorVestCount.HasValue) ? s.Sum(sm => sm.ArmorVestCount) : null,
+				ArmorPadsCount = s.Any(a => a.ArmorPadsCount.HasValue) ? s.Sum(sm => sm.ArmorPadsCount) : null,
+				HelmetCount = s.Any(a => a.HelmetCount.HasValue) ? s.Sum(sm => sm.HelmetCount) : null,
+				KegCount = s.Any(a => a.KegCount.HasValue) ? s.Sum(sm => sm.KegCount) : null,
+				ImpactHammerKills = s.Any(a => a.ImpactHammerKills.HasValue) ? s.Sum(sm => sm.ImpactHammerKills) : null,
+				ImpactHammerDeaths = s.Any(a => a.ImpactHammerDeaths.HasValue) ? s.Sum(sm => sm.ImpactHammerDeaths) : null,
+				EnforcerKills = s.Any(a => a.EnforcerKills.HasValue) ? s.Sum(sm => sm.EnforcerKills) : null,
+				EnforcerDeaths = s.Any(a => a.EnforcerDeaths.HasValue) ? s.Sum(sm => sm.EnforcerDeaths) : null,
+				EnforcerShots = s.Any(a => a.EnforcerShots.HasValue) ? s.Sum(sm => sm.EnforcerShots) : null,
+				EnforcerHits = s.Any(a => a.EnforcerHits.HasValue) ? s.Sum(sm => sm.EnforcerHits) : null,
+				BioRifleKills = s.Any(a => a.BioRifleKills.HasValue) ? s.Sum(sm => sm.BioRifleKills) : null,
+				BioRifleDeaths = s.Any(a => a.BioRifleDeaths.HasValue) ? s.Sum(sm => sm.BioRifleDeaths) : null,
+				BioRifleShots = s.Any(a => a.BioRifleShots.HasValue) ? s.Sum(sm => sm.BioRifleShots) : null,
+				BioRifleHits = s.Any(a => a.BioRifleHits.HasValue) ? s.Sum(sm => sm.BioRifleHits) : null,
+				BioLauncherKills = s.Any(a => a.BioLauncherKills.HasValue) ? s.Sum(sm => sm.BioLauncherKills) : null,
+				BioLauncherDeaths = s.Any(a => a.BioLauncherDeaths.HasValue) ? s.Sum(sm => sm.BioLauncherDeaths) : null,
+				BioLauncherShots = s.Any(a => a.BioLauncherShots.HasValue) ? s.Sum(sm => sm.BioLauncherShots) : null,
+				BioLauncherHits = s.Any(a => a.BioLauncherHits.HasValue) ? s.Sum(sm => sm.BioLauncherHits) : null,
+				ShockBeamKills = s.Any(a => a.ShockBeamKills.HasValue) ? s.Sum(sm => sm.ShockBeamKills) : null,
+				ShockBeamDeaths = s.Any(a => a.ShockBeamDeaths.HasValue) ? s.Sum(sm => sm.ShockBeamDeaths) : null,
+				ShockCoreKills = s.Any(a => a.ShockCoreKills.HasValue) ? s.Sum(sm => sm.ShockCoreKills) : null,
+				ShockCoreDeaths = s.Any(a => a.ShockCoreDeaths.HasValue) ? s.Sum(sm => sm.ShockCoreDeaths) : null,
+				ShockComboKills = s.Any(a => a.ShockComboKills.HasValue) ? s.Sum(sm => sm.ShockComboKills) : null,
+				ShockComboDeaths = s.Any(a => a.ShockComboDeaths.HasValue) ? s.Sum(sm => sm.ShockComboDeaths) : null,
+				ShockRifleShots = s.Any(a => a.ShockRifleShots.HasValue) ? s.Sum(sm => sm.ShockRifleShots) : null,
+				ShockRifleHits = s.Any(a => a.ShockRifleHits.HasValue) ? s.Sum(sm => sm.ShockRifleHits) : null,
+				LinkKills = s.Any(a => a.LinkKills.HasValue) ? s.Sum(sm => sm.LinkKills) : null,
+				LinkDeaths = s.Any(a => a.LinkDeaths.HasValue) ? s.Sum(sm => sm.LinkDeaths) : null,
+				LinkBeamKills = s.Any(a => a.LinkBeamKills.HasValue) ? s.Sum(sm => sm.LinkBeamKills) : null,
+				LinkBeamDeaths = s.Any(a => a.LinkBeamDeaths.HasValue) ? s.Sum(sm => sm.LinkBeamDeaths) : null,
+				LinkShots = s.Any(a => a.LinkShots.HasValue) ? s.Sum(sm => sm.LinkShots) : null,
+				LinkHits = s.Any(a => a.LinkHits.HasValue) ? s.Sum(sm => sm.LinkHits) : null,
+				MinigunKills = s.Any(a => a.MinigunKills.HasValue) ? s.Sum(sm => sm.MinigunKills) : null,
+				MinigunDeaths = s.Any(a => a.MinigunDeaths.HasValue) ? s.Sum(sm => sm.MinigunDeaths) : null,
+				MinigunShardKills = s.Any(a => a.MinigunShardKills.HasValue) ? s.Sum(sm => sm.MinigunShardKills) : null,
+				MinigunShardDeaths = s.Any(a => a.MinigunShardDeaths.HasValue) ? s.Sum(sm => sm.MinigunShardDeaths) : null,
+				MinigunShots = s.Any(a => a.MinigunShots.HasValue) ? s.Sum(sm => sm.MinigunShots) : null,
+				MinigunHits = s.Any(a => a.MinigunHits.HasValue) ? s.Sum(sm => sm.MinigunHits) : null,
+				FlakShardKills = s.Any(a => a.FlakShardKills.HasValue) ? s.Sum(sm => sm.FlakShardKills) : null,
+				FlakShardDeaths = s.Any(a => a.FlakShardDeaths.HasValue) ? s.Sum(sm => sm.FlakShardDeaths) : null,
+				FlakShellKills = s.Any(a => a.FlakShellKills.HasValue) ? s.Sum(sm => sm.FlakShellKills) : null,
+				FlakShellDeaths = s.Any(a => a.FlakShellDeaths.HasValue) ? s.Sum(sm => sm.FlakShellDeaths) : null,
+				FlakShots = s.Any(a => a.FlakShots.HasValue) ? s.Sum(sm => sm.FlakShots) : null,
+				FlakHits = s.Any(a => a.FlakHits.HasValue) ? s.Sum(sm => sm.FlakHits) : null,
+				RocketKills = s.Any(a => a.RocketKills.HasValue) ? s.Sum(sm => sm.RocketKills) : null,
+				RocketDeaths = s.Any(a => a.RocketDeaths.HasValue) ? s.Sum(sm => sm.RocketDeaths) : null,
+				RocketShots = s.Any(a => a.RocketShots.HasValue) ? s.Sum(sm => sm.RocketShots) : null,
+				RocketHits = s.Any(a => a.RocketHits.HasValue) ? s.Sum(sm => sm.RocketHits) : null,
+				SniperKills = s.Any(a => a.SniperKills.HasValue) ? s.Sum(sm => sm.SniperKills) : null,
+				SniperDeaths = s.Any(a => a.SniperDeaths.HasValue) ? s.Sum(sm => sm.SniperDeaths) : null,
+				SniperHeadshotKills = s.Any(a => a.SniperHeadshotKills.HasValue) ? s.Sum(sm => sm.SniperHeadshotKills) : null,
+				SniperHeadshotDeaths = s.Any(a => a.SniperHeadshotDeaths.HasValue) ? s.Sum(sm => sm.SniperHeadshotDeaths) : null,
+				SniperShots = s.Any(a => a.SniperShots.HasValue) ? s.Sum(sm => sm.SniperShots) : null,
+				SniperHits = s.Any(a => a.SniperHits.HasValue) ? s.Sum(sm => sm.SniperHits) : null,
+				LightningRiflePrimaryKills = s.Any(a => a.LightningRiflePrimaryKills.HasValue) ? s.Sum(sm => sm.LightningRiflePrimaryKills) : null,
+				LightningRiflePrimaryDeaths = s.Any(a => a.LightningRiflePrimaryDeaths.HasValue) ? s.Sum(sm => sm.LightningRiflePrimaryDeaths) : null,
+				LightningRifleSecondaryKills = s.Any(a => a.LightningRifleSecondaryKills.HasValue) ? s.Sum(sm => sm.LightningRifleSecondaryKills) : null,
+				LightningRifleSecondaryDeaths = s.Any(a => a.LightningRifleSecondaryDeaths.HasValue) ? s.Sum(sm => sm.LightningRifleSecondaryDeaths) : null,
+				LightningRifleShots = s.Any(a => a.LightningRifleShots.HasValue) ? s.Sum(sm => sm.LightningRifleShots) : null,
+				LightningRifleHits = s.Any(a => a.LightningRifleHits.HasValue) ? s.Sum(sm => sm.LightningRifleHits) : null,
+				RedeemerKills = s.Any(a => a.RedeemerKills.HasValue) ? s.Sum(sm => sm.RedeemerKills) : null,
+				RedeemerDeaths = s.Any(a => a.RedeemerDeaths.HasValue) ? s.Sum(sm => sm.RedeemerDeaths) : null,
+				RedeemerShots = s.Any(a => a.RedeemerShots.HasValue) ? s.Sum(sm => sm.RedeemerShots) : null,
+				RedeemerHits = s.Any(a => a.RedeemerHits.HasValue) ? s.Sum(sm => sm.RedeemerHits) : null,
+				InstagibKills = s.Any(a => a.InstagibKills.HasValue) ? s.Sum(sm => sm.InstagibKills) : null,
+				InstagibDeaths = s.Any(a => a.InstagibDeaths.HasValue) ? s.Sum(sm => sm.InstagibDeaths) : null,
+				InstagibShots = s.Any(a => a.InstagibShots.HasValue) ? s.Sum(sm => sm.InstagibShots) : null,
+				InstagibHits = s.Any(a => a.InstagibHits.HasValue) ? s.Sum(sm => sm.InstagibHits) : null,
+				TelefragKills = s.Any(a => a.TelefragKills.HasValue) ? s.Sum(sm => sm.TelefragKills) : null,
+				TelefragDeaths = s.Any(a => a.TelefragDeaths.HasValue) ? s.Sum(sm => sm.TelefragDeaths) : null,
+				RunDist = s.Any(a => a.RunDist.HasValue) ? s.Sum(sm => sm.RunDist) : null,
+				SprintDist = s.Any(a => a.SprintDist.HasValue) ? s.Sum(sm => sm.SprintDist) : null,
+				InAirDist = s.Any(a => a.InAirDist.HasValue) ? s.Sum(sm => sm.InAirDist) : null,
+				SwimDist = s.Any(a => a.SwimDist.HasValue) ? s.Sum(sm => sm.SwimDist) : null,
+				TranslocDist = s.Any(a => a.TranslocDist.HasValue) ? s.Sum(sm => sm.TranslocDist) : null,
+				NumDodges = s.Any(a => a.NumDodges.HasValue) ? s.Sum(sm => sm.NumDodges) : null,
+				NumWallDodges = s.Any(a => a.NumWallDodges.HasValue) ? s.Sum(sm => sm.NumWallDodges) : null,
+				NumJumps = s.Any(a => a.NumJumps.HasValue) ? s.Sum(sm => sm.NumJumps) : null,
+				NumLiftJumps = s.Any(a => a.NumLiftJumps.HasValue) ? s.Sum(sm => sm.NumLiftJumps) : null,
+				NumFloorSlides = s.Any(a => a.NumFloorSlides.HasValue) ? s.Sum(sm => sm.NumFloorSlides) : null,
+				NumWallRuns = s.Any(a => a.NumWallRuns.HasValue) ? s.Sum(sm => sm.NumWallRuns) : null,
+				NumImpactJumps = s.Any(a => a.NumImpactJumps.HasValue) ? s.Sum(sm => sm.NumImpactJumps) : null,
+				NumRocketJumps = s.Any(a => a.NumRocketJumps.HasValue) ? s.Sum(sm => sm.NumRocketJumps) : null,
+				SlideDist = s.Any(a => a.SlideDist.HasValue) ? s.Sum(sm => sm.SlideDist) : null,
+				WallRunDist = s.Any(a => a.WallRunDist.HasValue) ? s.Sum(sm => sm.WallRunDist) : null,
+				FlagCaptures = s.Any(a => a.FlagCaptures.HasValue) ? s.Sum(sm => sm.FlagCaptures) : null,
+				FlagReturns = s.Any(a => a.FlagReturns.HasValue) ? s.Sum(sm => sm.FlagReturns) : null,
+				FlagAssists = s.Any(a => a.FlagAssists.HasValue) ? s.Sum(sm => sm.FlagAssists) : null,
+				FlagHeldDeny = s.Any(a => a.FlagHeldDeny.HasValue) ? s.Sum(sm => sm.FlagHeldDeny) : null,
+				FlagHeldDenyTime = s.Any(a => a.FlagHeldDenyTime.HasValue) ? s.Sum(sm => sm.FlagHeldDenyTime) : null,
+				FlagHeldTime = s.Any(a => a.FlagHeldTime.HasValue) ? s.Sum(sm => sm.FlagHeldTime) : null,
+				FlagReturnPoints = s.Any(a => a.FlagReturnPoints.HasValue) ? s.Sum(sm => sm.FlagReturnPoints) : null,
+				CarryAssist = s.Any(a => a.CarryAssist.HasValue) ? s.Sum(sm => sm.CarryAssist) : null,
+				CarryAssistPoints = s.Any(a => a.CarryAssistPoints.HasValue) ? s.Sum(sm => sm.CarryAssistPoints) : null,
+				FlagCapPoints = s.Any(a => a.FlagCapPoints.HasValue) ? s.Sum(sm => sm.FlagCapPoints) : null,
+				DefendAssist = s.Any(a => a.DefendAssist.HasValue) ? s.Sum(sm => sm.DefendAssist) : null,
+				DefendAssistPoints = s.Any(a => a.DefendAssistPoints.HasValue) ? s.Sum(sm => sm.DefendAssistPoints) : null,
+				ReturnAssist = s.Any(a => a.ReturnAssist.HasValue) ? s.Sum(sm => sm.ReturnAssist) : null,
+				ReturnAssistPoints = s.Any(a => a.ReturnAssistPoints.HasValue) ? s.Sum(sm => sm.ReturnAssistPoints) : null,
+				TeamCapPoints = s.Any(a => a.TeamCapPoints.HasValue) ? s.Sum(sm => sm.TeamCapPoints) : null,
+				EnemyFCDamage = s.Any(a => a.EnemyFCDamage.HasValue) ? s.Sum(sm => sm.EnemyFCDamage) : null,
+				FCKills = s.Any(a => a.FCKills.HasValue) ? s.Sum(sm => sm.FCKills) : null,
+				FCKillPoints = s.Any(a => a.FCKillPoints.HasValue) ? s.Sum(sm => sm.FCKillPoints) : null,
+				FlagSupportKills = s.Any(a => a.FlagSupportKills.HasValue) ? s.Sum(sm => sm.FlagSupportKills) : null,
+				FlagSupportKillPoints = s.Any(a => a.FlagSupportKillPoints.HasValue) ? s.Sum(sm => sm.FlagSupportKillPoints) : null,
+				RegularKillPoints = s.Any(a => a.RegularKillPoints.HasValue) ? s.Sum(sm => sm.RegularKillPoints) : null,
+				FlagGrabs = s.Any(a => a.FlagGrabs.HasValue) ? s.Sum(sm => sm.FlagGrabs) : null,
+				AttackerScore = s.Any(a => a.AttackerScore.HasValue) ? s.Sum(sm => sm.AttackerScore) : null,
+				DefenderScore = s.Any(a => a.DefenderScore.HasValue) ? s.Sum(sm => sm.DefenderScore) : null,
+				SupporterScore = s.Any(a => a.SupporterScore.HasValue) ? s.Sum(sm => sm.SupporterScore) : null,
+				TeamKills = s.Any(a => a.TeamKills.HasValue) ? s.Sum(sm => sm.TeamKills) : null,
+			})
+			.First();
 
-			default:
-				return (int)value;
-		}
+		return merged;
 	}
 
 	#endregion

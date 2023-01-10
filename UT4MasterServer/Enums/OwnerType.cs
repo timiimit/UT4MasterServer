@@ -2,6 +2,5 @@
 
 public enum OwnerType
 {
-	Unknown = 0,
 	Default = 1,
 }
