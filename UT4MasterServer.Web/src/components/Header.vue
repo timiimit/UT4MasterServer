@@ -65,7 +65,7 @@ import { SessionStore } from '../stores/session-store';
 
 const router = useRouter();
 const showProfileDropdown = shallowRef(false);
-const authenticationService = new AuthenticationService()
+const authenticationService = new AuthenticationService();
 
 function logOut() {
   authenticationService.logOut();
