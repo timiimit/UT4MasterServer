@@ -29,13 +29,13 @@ export default class AuthenticationService extends HttpService {
 
         const token = session.access_token;
         UserStore.authToken = token;
-        
+        UserStore.username = request.username;
+    }
+
+    async getAuthCode() {
         const authResponse = await this.get<IAuthResponse>(this.authUrl);
         console.debug('Auth response JSON: ', authResponse);
-        UserStore.authCode = authResponse.authorizationCode;
-        UserStore.username = request.username;
-
-        return authResponse;
+        return authResponse.authorizationCode;
     }
 
     async register(request: IRegisterRequest) {

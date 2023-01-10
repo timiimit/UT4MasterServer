@@ -63,6 +63,8 @@ const formValid = computed(() => validateEmail(email.value) && username.value &&
 
 const authenticationService = new AuthenticationService();
 
+const router = useRouter();
+
 async function register() {
   try {
     status.value = AsyncStatus.BUSY;
@@ -75,7 +77,7 @@ async function register() {
     console.debug('Register', formData);
     await authenticationService.register(formData);
     status.value = AsyncStatus.OK;
-    useRouter().push('/Login');
+    router.push('/Login');
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     console.error(err);
