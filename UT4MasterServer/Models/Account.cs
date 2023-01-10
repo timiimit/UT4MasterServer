@@ -80,13 +80,14 @@ public class Account
 	[BsonElement("XP")]
 	public int XP { get; set; } = 0;
 
+	// TODO: this is kind of just wasting space in db. find a way to just cache it in memory.
 	[BsonDefaultValue(0), BsonIgnoreIfDefault]
 	[BsonElement("XPLastMatch")]
 	public int XPLastMatch { get; set; } = 0;
 
 	[BsonIgnoreIfDefault] // default value is set in Program.cs
 	[BsonElement("XPLastMatchAt")]
-	public DateTime XPLastMatchAt { get; set; } = DateTime.UnixEpoch;
+	public DateTime LastMatchAt { get; set; } = DateTime.UnixEpoch;
 
 	[BsonIgnore]
 	public float Level

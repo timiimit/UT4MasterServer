@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Models;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
@@ -123,12 +123,13 @@ public class UnrealTournamentProfileController : JsonAPIController
 
 		// TODO: Permission: "Sorry your login does not posses the permissions 'ut:profile:{id_from_params}:commands ALL' needed to perform the requested operation"
 
-		JObject obj = JObject.Parse(await Request.BodyReader.ReadAsStringAsync(1024));
 
-		string? avatar = obj["newAvatar"]?.ToObject<string>();
-		string? flag = obj["newFlag"]?.ToObject<string>();
 
 		int revisionNumber = 3;
+
+		JObject obj = JObject.Parse(await Request.BodyReader.ReadAsStringAsync(1024));
+		string? avatar = obj["newAvatar"]?.ToObject<string>();
+		string? flag = obj["newFlag"]?.ToObject<string>();
 
 		obj = new JObject();
 		obj.Add("profileRevision", revisionNumber);
@@ -176,25 +177,106 @@ public class UnrealTournamentProfileController : JsonAPIController
 		obj.Add("responseVersion", 1);
 		obj.Add("command", "SetAvatarAndFlag");
 
-		/* input:
-		{
-			"newAvatar": "UT.Avatar.0",
-			"newFlag": "Algeria"
-		}
-
-		*/
-		// response: {"profileRevision":3,"profileId":"profile0","profileChangesBaseRevision":2,"profileChanges":[{"changeType":"statModified","name":"Avatar","value":"UT.Avatar.0"},{"changeType":"statModified","name":"CountryFlag","value":"Algeria"}],"profileCommandRevision":2,"serverTime":"2022-12-20T18:31:46.948Z","responseVersion":1,"command":"SetAvatarAndFlag"}
 		return Json(obj);
 	}
 
 	[HttpPost("{id}/{clientKind}/GrantXP")]
-	public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
+	public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] GrantXP body)
 	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		var eid = EpicID.FromString(id);
+
 		// only known to be sent by dedicated_server so far
 		bool isRequestSentFromClient = clientKind.ToLower() == "client";
 		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
-		return NotFound(); // TODO: unknown response
+		if (!isRequestSentFromServer)
+			return BadRequest();
+
+		var acc = await accountService.GetAccountAsync(eid);
+		if (acc == null)
+			return BadRequest();
+
+
+		const double maxXPPerHour = 500.0;
+		var hoursSinceLastMatch = (DateTime.UtcNow - acc.LastMatchAt).TotalHours;
+
+		var maxEarnableXP = maxXPPerHour * hoursSinceLastMatch;
+		if (body.XPAmount > maxEarnableXP)
+			body.XPAmount = (int)maxEarnableXP;
+
+		// this is just some hard limit on max xp allowed per request/match
+		if (body.XPAmount > 300)
+			body.XPAmount = 300;
+
+
+		var prevXP = acc.XP;
+		var prevLevel = acc.LevelStockLimited;
+
+		var revisionNumber = 3;
+
+		var obj = new JObject();
+		obj.Add("profileRevision", revisionNumber);
+		obj.Add("profileId", "profile0");
+		obj.Add("profileChangesBaseRevision", revisionNumber - 1);
+		JArray profileChanges = new JArray();
+		{
+			acc.LastMatchAt = DateTime.UtcNow;
+			profileChanges.Add(new JObject()
+			{
+				{ "changeType", "statModified" },
+				{ "name", "LastXPTime" },
+				{ "value", acc.LastMatchAt.ToUnixTimestamp() }
+			});
+
+			acc.XPLastMatch = body.XPAmount;
+			profileChanges.Add(new JObject()
+			{
+				{ "changeType", "statModified" },
+				{ "name", "RecentXP" },
+				{ "value", acc.XPLastMatch }
+			});
+
+			acc.XP += body.XPAmount;
+			profileChanges.Add(new JObject()
+			{
+				{ "changeType", "statModified" },
+				{ "name", "XP" },
+				{ "value", acc.XPLastMatch }
+			});
+
+			profileChanges.Add(new JObject()
+			{
+				{ "changeType", "statModified" },
+				{ "name", "Level" },
+				{ "value", acc.LevelStockLimited }
+			});
+
+		}
+
+		JArray notifications = new JArray();
+		{
+			notifications.Add(new JObject()
+			{
+				{ "type", "XPProgress" },
+				{ "primary", false },
+				{ "prevXP", prevXP },
+				{ "XP", acc.XP },
+				{ "prevLevel", prevLevel },
+				{ "level", acc.LevelStockLimited }
+			});
+		}
+
+		obj.Add("profileCommandRevision", revisionNumber - 1);
+		obj.Add("serverTime", DateTime.UtcNow.ToStringISO());
+		obj.Add("responseVersion", 1);
+		obj.Add("command", "GrantXP");
+
+		await accountService.UpdateAccountAsync(acc);
+
+		return Json(obj);
 	}
 
 	[HttpPost("{id}/{clientKind}/SetStars")]

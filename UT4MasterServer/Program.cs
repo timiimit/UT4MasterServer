@@ -21,7 +21,7 @@ public static class Program
 		BsonClassMap.RegisterClassMap<Account>(x =>
 		{
 			x.AutoMap();
-			x.MapMember(x => x.XPLastMatchAt).SetDefaultValue(DateTime.UnixEpoch);
+			x.MapMember(x => x.LastMatchAt).SetDefaultValue(DateTime.UnixEpoch);
 		});
 
 		// start up asp.net
