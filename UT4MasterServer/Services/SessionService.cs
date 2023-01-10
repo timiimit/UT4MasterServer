@@ -80,10 +80,15 @@ public class SessionService
 	public async Task<int> RemoveAllExpiredSessionsAsync()
 	{
 		var now = DateTime.UtcNow;
-		var result = await sessionCollection.DeleteManyAsync(
-			Builders<Session>.Filter.Lt(x => x.RefreshToken.ExpirationTime, now) &
-			Builders<Session>.Filter.Lt(x => x.AccessToken.ExpirationTime, now)
-		);
+
+		var expiredRefreshToken =
+			Builders<Session>.Filter.Exists(x => x.RefreshToken, false) |
+			Builders<Session>.Filter.Lt(x => x.RefreshToken.ExpirationTime, now);
+
+		var expiredAccessToken =
+			Builders<Session>.Filter.Lt(x => x.AccessToken.ExpirationTime, now);
+
+		var result = await sessionCollection.DeleteManyAsync(expiredRefreshToken & expiredAccessToken);
 		if (result.IsAcknowledged)
 			return (int)result.DeletedCount;
 		return -1;
