@@ -157,6 +157,31 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		if (server == null)
 			return UnknownSessionId(id);
 
+		// HACK: server will create new session 2h before current one expires.
+		//       to guarantee us a way to track a single server between sessions
+		//       we start sending failed heartbeat before server would
+		//       have created it. by doing so we force the server to:
+		//         - create new session token
+		//         - use new session token to stop old server
+		//         - use new session token to start new server
+
+		if (user.Session.CreationMethod == SessionCreationMethod.ClientCredentials &&
+			user.Session.AccessToken.ExpirationDuration < TimeSpan.FromHours(2) + TimeSpan.FromSeconds(25))
+		{
+			return NotFound(new ErrorResponse
+			{
+				ErrorCode = "errors.com.epicgames.common.oauth.unauthorized_client",
+				ErrorMessage = $"Sorry your client is not allowed to use the grant type client_credentials. Please download and use UT4UU",
+				NumericErrorCode = 1015,
+				OriginatingService = "com.epicgames.account.public",
+				Intent = "prod",
+				ErrorDescription = $"Sorry your client is not allowed to use the grant type client_credentials. Please download and use UT4UU",
+				Error = "unauthorized_client",
+			});
+
+			//return UnknownSessionId(id); // trigger server recreation
+		}
+
 		server.LastUpdated = DateTime.UtcNow;
 		await matchmakingService.UpdateAsync(server);
 

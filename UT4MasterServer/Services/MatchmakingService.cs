@@ -53,15 +53,8 @@ public class MatchmakingService
 		if (server == null)
 			return null;
 
-		// TODO: there needs to be verification for session...
-		//       however, EPIC isn't making this easy.
-		//       VERIFY THAT YOUR CODE WORKS BEFORE MAKING A PR!!!
-		//
-		// for now, we just allow any server to get info about any
-		// server without explicit knowledge of any secret
-
 		if (server.SessionID != sessionID)
-		//	return null;
+			return null;
 
 		return server;
 	}
