@@ -1,10 +1,9 @@
 using System.Text.Json.Serialization;
 
-namespace UT4MasterServer.Models.Requests
+namespace UT4MasterServer.Models.Requests;
+
+public sealed class GrantXP
 {
-	public class GrantXP
-	{
-		[JsonPropertyName("xpAmount")]
-		public int XPAmount { get; set; }
-	}
+	[JsonPropertyName("xpAmount")]
+	public int XPAmount { get; set; }
 }
