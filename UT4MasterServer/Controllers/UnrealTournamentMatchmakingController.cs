@@ -50,6 +50,9 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 			return BadRequest();
 
 		server.SessionID = user.Session.ID;
+#if DEBUG
+		server.SessionAccessToken = user.AccessToken;
+#endif
 		server.ID = EpicID.GenerateNew();
 		server.LastUpdated = DateTime.UtcNow;
 

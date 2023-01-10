@@ -111,6 +111,11 @@ public class GameServer
 	[BsonElement("SessionID")]
 	public EpicID SessionID { get; set; } = EpicID.Empty;
 
+#if DEBUG
+	[BsonElement("SessionAccessToken")]
+	public string SessionAccessToken { get; set; } = string.Empty;
+#endif
+
 	[BsonElement("OwnerID")]
 	[JsonPropertyName("ownerId")]
 	public EpicID OwnerID { get; set; } = EpicID.Empty;
@@ -284,6 +289,10 @@ public class GameServer
 		var obj = new JObject();
 
 		obj.Add("id", ID.ToString());
+#if DEBUG
+		obj.Add("UT4MS__SESSION_ID__DEBUG_ONLY_VALUE", SessionID.ToString());
+		obj.Add("UT4MS__SESSION_TOKEN__DEBUG_ONLY_VALUE", SessionAccessToken);
+#endif
 		obj.Add("ownerId", OwnerID.ToString().ToUpper());
 		obj.Add("ownerName", OwnerName);
 		obj.Add("serverName", ServerName);
