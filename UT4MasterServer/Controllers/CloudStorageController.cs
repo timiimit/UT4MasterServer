@@ -113,7 +113,7 @@ public class CloudStorageController : JsonAPIController
 				return Unauthorized();
 		}
 
-		await cloudStorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.BodyReader);
+		await cloudStorageService.UpdateFileAsync(accountID, filename, Request.BodyReader);
 		return Ok();
 	}
 
