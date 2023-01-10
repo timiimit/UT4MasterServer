@@ -8,12 +8,12 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarColor02">
         <ul class="navbar-nav me-auto">
-          <template v-if="!UserStore.isAuthenticated">
+          <template v-if="!SessionStore.isAuthenticated">
             <HeaderLink text="Register" path="/Register" />
             <HeaderLink text="Log In" path="/Login" />
           </template>
 
-          <li class="nav-item dropdown pull-right" v-if="UserStore.isAuthenticated">
+          <li class="nav-item dropdown pull-right" v-if="SessionStore.isAuthenticated">
             <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
               @click.stop="showProfileDropdown = !showProfileDropdown">Profile</a>
             <div class="dropdown-menu" :class="{ 'show': showProfileDropdown }">
@@ -56,19 +56,19 @@
 </style>
   
 <script setup lang="ts">
-import { UserStore } from '../stores/user-store';
 import { onMounted, onUnmounted, shallowRef } from 'vue';
 import HeaderLink from './HeaderLink.vue';
 import { useRouter } from 'vue-router';
 import UserInfo from './UserInfo.vue';
+import AuthenticationService from '../services/authentication.service';
+import { SessionStore } from '../stores/session-store';
 
 const router = useRouter();
 const showProfileDropdown = shallowRef(false);
+const authenticationService = new AuthenticationService()
 
 function logOut() {
-  // TODO: call service to kill session
-  UserStore.authToken = null;
-  UserStore.username = null;
+  authenticationService.logOut();
   router.push('/Login');
 }
 

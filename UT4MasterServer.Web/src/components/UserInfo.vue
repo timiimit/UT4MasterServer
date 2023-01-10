@@ -2,7 +2,7 @@
   <div class="navbar navbar-primary bg-light user-info">
     <div class="container">
       <div>
-        <label>Logged in as: </label>{{ UserStore.username }}
+        <label>Logged in as: </label>{{ SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">
@@ -35,7 +35,7 @@
 </style>
   
 <script setup lang="ts">
-import { UserStore } from '../stores/user-store';
+import { SessionStore } from '../stores/session-store';
 import { shallowRef } from 'vue';
 import AuthenticationService from '../services/authentication.service';
 import { AsyncStatus } from '../types/async-status';

@@ -1,10 +1,9 @@
 import {
   createRouter,
   createWebHistory,
-  RouteLocationNormalized,
   RouteRecordRaw
 } from 'vue-router';
-import { UserStore } from './stores/user-store';
+import { beforeEachGuard } from './route-guards';
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -78,20 +77,6 @@ const router = createRouter({
   routes
 });
 
-function publicGuard(to: RouteLocationNormalized) {
-  if (UserStore.isAuthenticated) {
-    return { path: '/Profile/Stats' };
-  }
-}
-
-function privateGuard(to: RouteLocationNormalized) {
-  if (!UserStore.isAuthenticated) {
-    return { path: '/Login' };
-  }
-}
-
-router.beforeEach((to) => {
-  return to.meta.public ? publicGuard(to) : privateGuard(to);
-});
+router.beforeEach(beforeEachGuard);
 
 export { router };

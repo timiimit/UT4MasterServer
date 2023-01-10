@@ -1,4 +1,4 @@
-import { UserStore } from "../stores/user-store";
+import { SessionStore } from "../stores/session-store";
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -16,8 +16,8 @@ export default class HttpService {
 
         const headers: HeadersInit = { 'Content-Type': form ? 'application/x-www-form-urlencoded' : 'application/json' };
 
-        if (UserStore.authToken) {
-            headers.Authorization = `bearer ${UserStore.authToken}`;
+        if (SessionStore.authToken) {
+            headers.Authorization = `bearer ${SessionStore.authToken}`;
         }
 
         fetchOptions.headers = { ...headers, ...options?.headers };
