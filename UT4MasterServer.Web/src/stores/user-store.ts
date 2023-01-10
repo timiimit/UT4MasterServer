@@ -2,11 +2,10 @@ import { ref } from "vue";
 
 const _username = ref<string | null>(localStorage.getItem('username'));
 const _authToken = ref<string | null>(localStorage.getItem('authorizationToken'));
-const _authCode = ref<string | null>(localStorage.getItem('authorizationCode'));
 
 export const UserStore = {
     get isAuthenticated() {
-        return !!_authCode.value && !!_authToken.value;
+        return !!_authToken.value;
     },
     get saveUsername() {
         return localStorage.getItem('save_username') === 'true';
@@ -23,17 +22,6 @@ export const UserStore = {
             localStorage.setItem('username', user);
         } else {
             localStorage.removeItem('username');
-        }
-    },
-    get authCode() {
-        return _authCode.value;
-    },
-    set authCode(code: string | null) {
-        _authCode.value = code;
-        if (code) {
-            localStorage.setItem('authorizationCode', code);
-        } else {
-            localStorage.removeItem('authorizationCode');
         }
     },
     get authToken() {

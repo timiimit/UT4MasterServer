@@ -28,17 +28,7 @@
       </div>
     </div>
   </nav>
-  <div class="navbar navbar-primary bg-light user-info" v-if="UserStore.isAuthenticated">
-    <div class="container">
-      <div>
-        <label>Logged in as: </label>{{ UserStore.username }}
-      </div>
-      <div>
-        <label>Authorization Code: </label>{{ UserStore.authCode }}
-        <button type="button" class="btn btn-secondary" @click="copyCode">Copy</button>
-      </div>
-    </div>
-  </div>
+  <UserInfo />
 </template>
 
 <style lang="scss" scoped>
@@ -70,24 +60,20 @@ import { UserStore } from '../stores/user-store';
 import { onMounted, onUnmounted, shallowRef } from 'vue';
 import HeaderLink from './HeaderLink.vue';
 import { useRouter } from 'vue-router';
+import UserInfo from './UserInfo.vue';
 
 const router = useRouter();
 const showProfileDropdown = shallowRef(false);
 
 function logOut() {
   // TODO: call service to kill session
-  UserStore.authCode = null;
+  UserStore.authToken = null;
+  UserStore.username = null;
   router.push('/Login');
 }
 
 function closeNav() {
   showProfileDropdown.value = false;
-}
-
-function copyCode() {
-  if (UserStore.authCode) {
-    navigator.clipboard.writeText(UserStore.authCode);
-  }
 }
 
 onMounted(() => {
