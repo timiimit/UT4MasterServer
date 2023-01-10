@@ -72,7 +72,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		// TODO: figure out trusted keys & determine trust level
 		server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)GameServerTrust.Untrusted);
 
-		await matchmakingService.Add(server);
+		await matchmakingService.AddAsync(server);
 
 		return Json(server.ToJson(false));
 	}
@@ -89,13 +89,13 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		if (update == null)
 			return BadRequest();
 
-		var old = await matchmakingService.Get(user.Session.ID, update.ID);
+		var old = await matchmakingService.GetAsync(user.Session.ID, update.ID);
 		if (old == null)
 			return UnknownSessionId(id);
 
 		old.Update(update);
 
-		await matchmakingService.Update(old);
+		await matchmakingService.UpdateAsync(old);
 
 		return Json(old.ToJson(false));
 	}
@@ -118,12 +118,12 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		var server = await matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
+		var server = await matchmakingService.GetAsync(user.Session.ID, EpicID.FromString(id));
 		if (server == null)
 			return UnknownSessionId(id);
 
 		server.LastUpdated = DateTime.UtcNow;
-		await matchmakingService.Update(server);
+		await matchmakingService.UpdateAsync(server);
 
 		return NoContent();
 	}
@@ -142,14 +142,14 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		var serverID = EpicID.FromString(id);
 
-		var old = await matchmakingService.Get(user.Session.ID, serverID);
+		var old = await matchmakingService.GetAsync(user.Session.ID, serverID);
 		if (old == null)
 			return NoContent();
 
 		old.PublicPlayers = serverOnlyWithPlayers.PublicPlayers;
 		old.PrivatePlayers = serverOnlyWithPlayers.PrivatePlayers;
 
-		await matchmakingService.Update(old);
+		await matchmakingService.UpdateAsync(old);
 
 		return Json(old.ToJson(false));
 	}
@@ -165,7 +165,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		if (players == null)
 			return BadRequest();
 
-		var server = await matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
+		var server = await matchmakingService.GetAsync(user.Session.ID, EpicID.FromString(id));
 		if (server == null)
 			return UnknownSessionId(id);
 
@@ -193,7 +193,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
 
-		var servers = await matchmakingService.List(filter);
+		var servers = await matchmakingService.ListAsync(filter);
 
 		//var list = new GameServer[]
 		//{
@@ -282,14 +282,14 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.Get(user.Session.ID, serverID);
+		var server = await matchmakingService.GetAsync(user.Session.ID, serverID);
 		if (server == null)
 			return UnknownSessionId(id);
 
 		server.Started = started;
 
 		// Don't immediately remove it, let it become stale.
-		await matchmakingService.Update(server);
+		await matchmakingService.UpdateAsync(server);
 
 		return NoContent();
 	}
