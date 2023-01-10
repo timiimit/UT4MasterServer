@@ -23,7 +23,12 @@ namespace UT4MasterServer.Services
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			tmrExpiredSessionDeletor = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+#if DEBUG
+			var period = TimeSpan.FromMinutes(1);
+#else
+			var period = TimeSpan.FromMinutes(30);
+#endif
+			tmrExpiredSessionDeletor = new Timer(DoWork, null, TimeSpan.Zero, period);
 			return Task.CompletedTask;
 		}
 
@@ -37,15 +42,17 @@ namespace UT4MasterServer.Services
 		{
 			Task.Run(async () =>
 			{
-				int deleteCount = 0;
-
 				using (var scope = services.CreateScope())
 				{
 					var sessionService = scope.ServiceProvider.GetRequiredService<SessionService>();
-					deleteCount = await sessionService.RemoveAllExpiredSessionsAsync();
+					var deleteCount = await sessionService.RemoveAllExpiredSessionsAsync();
+					logger.LogInformation("Background task deleted {DeleteCount} expired sessions.", deleteCount);
+
+					var matchmakingService = scope.ServiceProvider.GetRequiredService<MatchmakingService>();
+					deleteCount = await matchmakingService.RemoveAllStaleAsync();
+					logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
 				}
 
-				logger.LogInformation($"Deleted {deleteCount} expired sessions in a background task.");
 			});
 		}
 
