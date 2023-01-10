@@ -41,7 +41,10 @@ public class MatchmakingService
 	public async Task<bool> Remove(EpicID sessionID, EpicID serverID)
 	{
 		var result = await serverCollection.DeleteOneAsync(x => x.SessionID == sessionID && x.ID == serverID);
-		return result.IsAcknowledged;
+		if (!result.IsAcknowledged)
+			return false;
+
+		return result.DeletedCount > 0;
 	}
 
 	public async Task<GameServer?> Get(EpicID sessionID, EpicID serverID)
