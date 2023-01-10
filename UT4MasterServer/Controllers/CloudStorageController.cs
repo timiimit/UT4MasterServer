@@ -102,7 +102,7 @@ public class CloudStorageController : JsonAPIController
 		{
 			// cannot modify other's files
 
-			var isServerWithPlayer = await matchmakingService.DoesSessionOwnGameServerWithPlayer(user.Session.ID, accountID);
+			var isServerWithPlayer = await matchmakingService.DoesSessionOwnGameServerWithPlayerAsync(user.Session.ID, accountID);
 
 			// unless you are a game server with this player
 			if (!isServerWithPlayer)

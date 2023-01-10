@@ -60,7 +60,7 @@ public class MatchmakingService
 		// for now, we just allow any server to get info about any
 		// server without explicit knowledge of any secret
 
-		//if (server.SessionID != sessionID)
+		if (server.SessionID != sessionID)
 		//	return null;
 
 		return server;
@@ -182,12 +182,11 @@ public class MatchmakingService
 		return -1;
 	}
 
-	public async Task<bool> DoesSessionOwnGameServerWithPlayer(EpicID sessionID, EpicID accountID)
+	public async Task<bool> DoesSessionOwnGameServerWithPlayerAsync(EpicID sessionID, EpicID accountID)
 	{
 		var filterSession = Builders<GameServer>.Filter.Eq(x => x.SessionID, sessionID);
-		var filterPlayers =
-			Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID) |
-			Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
+		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
+		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
 		var options = new CountOptions()
 		{
 			Limit = 1
@@ -195,7 +194,12 @@ public class MatchmakingService
 
 		// TODO: this should check if player accountID is in GameServer with specified sessionID
 
-		var result = await serverCollection.CountDocumentsAsync(filterSession /*& filterPlayers*/, options);
+
+		var result1 = await serverCollection.CountDocumentsAsync(filterPrivatePlayers, options);
+		var result2 = await serverCollection.CountDocumentsAsync(filterPublicPlayers, options);
+
+
+		var result = await serverCollection.CountDocumentsAsync(filterSession, options);
 		return result > 0;
 	}
 
