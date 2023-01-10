@@ -70,10 +70,10 @@ public class CloudStorageService
 
 	public async Task<CloudFile?> GetFileAsync(EpicID accountID, string filename)
 	{
-		var cursor = await cloudStorageCollection.FindAsync(
-			x => x.AccountID == accountID &&
-			x.Filename == filename
-		);
+		var filter =
+			Builders<CloudFile>.Filter.Eq(x => x.AccountID, accountID) &
+			Builders<CloudFile>.Filter.Eq(x => x.Filename, filename);
+		var cursor = await cloudStorageCollection.FindAsync(filter);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
