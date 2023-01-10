@@ -88,6 +88,9 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		if (update == null)
 			return BadRequest();
 
+		if (update.ID != EpicID.FromString(id))
+			return UnknownSessionId(id);
+
 		var old = await matchmakingService.GetAsync(user.Session.ID, update.ID);
 		if (old == null)
 			return UnknownSessionId(id);
