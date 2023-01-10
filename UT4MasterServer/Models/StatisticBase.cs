@@ -401,7 +401,7 @@ public class StatisticBase
 	public int? SpreeKillLevel4 { get; set; }
 
 	[BsonElement("bestShockCombo"), BsonIgnoreIfNull]
-	public float? BestShockCombo { get; set; }
+	public double? BestShockCombo { get; set; }
 
 	[BsonElement("amazingCombos"), BsonIgnoreIfNull]
 	public int? AmazingCombos { get; set; }
@@ -418,13 +418,13 @@ public class StatisticBase
 
 	#region Power Up Achievements
 	[BsonElement("uDamageTime"), BsonIgnoreIfNull]
-	public int? UDamageTime { get; set; }
+	public double? UDamageTime { get; set; }
 
 	[BsonElement("berserkTime"), BsonIgnoreIfNull]
-	public int? BerserkTime { get; set; }
+	public double? BerserkTime { get; set; }
 
 	[BsonElement("invisibilityTime"), BsonIgnoreIfNull]
-	public int? InvisibilityTime { get; set; }
+	public double? InvisibilityTime { get; set; }
 
 	[BsonElement("uDamageCount"), BsonIgnoreIfNull]
 	public int? UDamageCount { get; set; }
@@ -471,7 +471,7 @@ public class StatisticBase
 	public int? EnforcerShots { get; set; }
 
 	[BsonElement("enforcerHits"), BsonIgnoreIfNull]
-	public float? EnforcerHits { get; set; }
+	public double? EnforcerHits { get; set; }
 
 	[BsonElement("bioRifleKills"), BsonIgnoreIfNull]
 	public int? BioRifleKills { get; set; }
@@ -482,7 +482,7 @@ public class StatisticBase
 	public int? BioRifleShots { get; set; }
 
 	[BsonElement("bioRifleHits"), BsonIgnoreIfNull]
-	public float? BioRifleHits { get; set; }
+	public double? BioRifleHits { get; set; }
 
 	[BsonElement("bioLauncherKills"), BsonIgnoreIfNull]
 	public int? BioLauncherKills { get; set; }
@@ -494,7 +494,7 @@ public class StatisticBase
 	public int? BioLauncherShots { get; set; }
 
 	[BsonElement("bioLauncherHits"), BsonIgnoreIfNull]
-	public float? BioLauncherHits { get; set; }
+	public double? BioLauncherHits { get; set; }
 
 	[BsonElement("shockBeamKills"), BsonIgnoreIfNull]
 	public int? ShockBeamKills { get; set; }
@@ -518,7 +518,7 @@ public class StatisticBase
 	public int? ShockRifleShots { get; set; }
 
 	[BsonElement("shockRifleHits"), BsonIgnoreIfNull]
-	public float? ShockRifleHits { get; set; }
+	public double? ShockRifleHits { get; set; }
 
 	[BsonElement("linkKills"), BsonIgnoreIfNull]
 	public int? LinkKills { get; set; }
@@ -536,7 +536,7 @@ public class StatisticBase
 	public int? LinkShots { get; set; }
 
 	[BsonElement("linkHits"), BsonIgnoreIfNull]
-	public float? LinkHits { get; set; }
+	public double? LinkHits { get; set; }
 
 	[BsonElement("minigunKills"), BsonIgnoreIfNull]
 	public int? MinigunKills { get; set; }
@@ -554,7 +554,7 @@ public class StatisticBase
 	public int? MinigunShots { get; set; }
 
 	[BsonElement("minigunHits"), BsonIgnoreIfNull]
-	public float? MinigunHits { get; set; }
+	public double? MinigunHits { get; set; }
 
 	[BsonElement("flakShardKills"), BsonIgnoreIfNull]
 	public int? FlakShardKills { get; set; }
@@ -572,7 +572,7 @@ public class StatisticBase
 	public int? FlakShots { get; set; }
 
 	[BsonElement("flakHits"), BsonIgnoreIfNull]
-	public float? FlakHits { get; set; }
+	public double? FlakHits { get; set; }
 
 	[BsonElement("rocketKills"), BsonIgnoreIfNull]
 	public int? RocketKills { get; set; }
@@ -584,7 +584,7 @@ public class StatisticBase
 	public int? RocketShots { get; set; }
 
 	[BsonElement("rocketHits"), BsonIgnoreIfNull]
-	public float? RocketHits { get; set; }
+	public double? RocketHits { get; set; }
 
 	[BsonElement("sniperKills"), BsonIgnoreIfNull]
 	public int? SniperKills { get; set; }
@@ -602,7 +602,7 @@ public class StatisticBase
 	public int? SniperShots { get; set; }
 
 	[BsonElement("sniperHits"), BsonIgnoreIfNull]
-	public float? SniperHits { get; set; }
+	public double? SniperHits { get; set; }
 
 	[BsonElement("lightningRiflePrimaryKills"), BsonIgnoreIfNull]
 	public int? LightningRiflePrimaryKills { get; set; }
@@ -620,7 +620,7 @@ public class StatisticBase
 	public int? LightningRifleShots { get; set; }
 
 	[BsonElement("lightningRifleHits"), BsonIgnoreIfNull]
-	public float? LightningRifleHits { get; set; }
+	public double? LightningRifleHits { get; set; }
 
 	[BsonElement("redeemerKills"), BsonIgnoreIfNull]
 	public int? RedeemerKills { get; set; }
@@ -632,7 +632,7 @@ public class StatisticBase
 	public int? RedeemerShots { get; set; }
 
 	[BsonElement("redeemerHits"), BsonIgnoreIfNull]
-	public float? RedeemerHits { get; set; }
+	public double? RedeemerHits { get; set; }
 
 	[BsonElement("instagibKills"), BsonIgnoreIfNull]
 	public int? InstagibKills { get; set; }
@@ -644,7 +644,7 @@ public class StatisticBase
 	public int? InstagibShots { get; set; }
 
 	[BsonElement("instagibHits"), BsonIgnoreIfNull]
-	public float? InstagibHits { get; set; }
+	public double? InstagibHits { get; set; }
 
 	[BsonElement("telefragKills"), BsonIgnoreIfNull]
 	public int? TelefragKills { get; set; }
@@ -655,19 +655,19 @@ public class StatisticBase
 
 	#region Miscellaneous - Movement
 	[BsonElement("runDist"), BsonIgnoreIfNull]
-	public float? RunDist { get; set; }
+	public double? RunDist { get; set; }
 
 	[BsonElement("sprintDist"), BsonIgnoreIfNull]
-	public float? SprintDist { get; set; }
+	public double? SprintDist { get; set; }
 
 	[BsonElement("inAirDist"), BsonIgnoreIfNull]
-	public float? InAirDist { get; set; }
+	public double? InAirDist { get; set; }
 
 	[BsonElement("swimDist"), BsonIgnoreIfNull]
-	public float? SwimDist { get; set; }
+	public double? SwimDist { get; set; }
 
 	[BsonElement("translocDist"), BsonIgnoreIfNull]
-	public float? TranslocDist { get; set; }
+	public double? TranslocDist { get; set; }
 
 	[BsonElement("numDodges"), BsonIgnoreIfNull]
 	public int? NumDodges { get; set; }
@@ -694,10 +694,10 @@ public class StatisticBase
 	public int? NumRocketJumps { get; set; }
 
 	[BsonElement("slideDist"), BsonIgnoreIfNull]
-	public float? SlideDist { get; set; }
+	public double? SlideDist { get; set; }
 
 	[BsonElement("wallRunDist"), BsonIgnoreIfNull]
-	public float? WallRunDist { get; set; }
+	public double? WallRunDist { get; set; }
 	#endregion
 
 	#region Miscellaneous - Capture the Flag
@@ -714,10 +714,10 @@ public class StatisticBase
 	public int? FlagHeldDeny { get; set; }
 
 	[BsonElement("flagHeldDenyTime"), BsonIgnoreIfNull]
-	public int? FlagHeldDenyTime { get; set; }
+	public double? FlagHeldDenyTime { get; set; }
 
 	[BsonElement("flagHeldTime"), BsonIgnoreIfNull]
-	public int? FlagHeldTime { get; set; }
+	public double? FlagHeldTime { get; set; }
 
 	[BsonElement("flagReturnPoints"), BsonIgnoreIfNull]
 	public int? FlagReturnPoints { get; set; }
