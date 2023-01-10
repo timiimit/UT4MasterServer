@@ -39,7 +39,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	#region Endpoints for Game Servers
 
 	[HttpPost("session")]
-	public async Task<IActionResult> StartGameServer()
+	public async Task<IActionResult> CreateGameServer()
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -63,7 +63,6 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		if (ipClient.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
 		{
 			logger.LogWarning("Client is using IPv6. GameServer might not be accessible by others.");
-			//return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
 		server.ServerAddress = ipClient.ToString();
@@ -98,6 +97,22 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		await matchmakingService.UpdateAsync(old);
 
 		return Json(old.ToJson(false));
+	}
+
+	[HttpDelete("session/{id}")]
+	public async Task<IActionResult> DeleteGameServer(string id)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		bool wasDeleted = await matchmakingService.RemoveAsync(user.Session.ID, EpicID.FromString(id));
+
+		// TODO: unknown actual responses but these seem to work
+
+		if (!wasDeleted)
+			return UnknownSessionId(id);
+
+		return Ok();
 	}
 
 	[HttpPost("session/{id}/start")]
