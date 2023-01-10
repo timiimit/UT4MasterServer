@@ -70,44 +70,44 @@ public class UnrealTournamentProfileController : JsonAPIController
 		profileChange.Add("changeType", "fullProfileUpdate");
 		JObject profile = new();
 		{
-		profile.Add("_id", account.ID.ToString());
-		profile.Add("created", account.CreatedAt.ToStringISO());
-		profile.Add("updated", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToStringISO()); // we don't store this info, send an arbitrary one
-		profile.Add("rvn", revisionNumber);
+			profile.Add("_id", account.ID.ToString());
+			profile.Add("created", account.CreatedAt.ToStringISO());
+			profile.Add("updated", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToStringISO()); // we don't store this info, send an arbitrary one
+			profile.Add("rvn", revisionNumber);
 			profile.Add("wipeNumber", 0);
-		profile.Add("accountId", account.ID.ToString());
+			profile.Add("accountId", account.ID.ToString());
 			profile.Add("commandRevision", commandRevision);
-		profile.Add("profileId", profileId);
-		profile.Add("version", "ut_base");
+			profile.Add("profileId", profileId);
+			profile.Add("version", "ut_base");
 		}
 		JObject items = new();
 		{
-		// TODO !!!
+			// TODO !!!
 		}
 		profile.Add("items", items);
 		JObject stats = new();
 		{
-		stats.Add("templateId", "profile_v2");
-		JObject attributes = new();
-		attributes.Add("CountryFlag", account.CountryFlag);
-		attributes.Add("GoldStars", account.GoldStars);
-		JObject login_rewards = new();
-		login_rewards.Add("nextClaimTime", null);
-		login_rewards.Add("level", 0);
-		login_rewards.Add("totalDays", 0);
-		attributes.Add("login_rewards", login_rewards);
-		attributes.Add("Avatar", account.Avatar);
-		attributes.Add("inventory_limit_bonus", 0);
-		attributes.Add("daily_purchases", new JObject());
-		attributes.Add("in_app_purchases", new JObject());
-		attributes.Add("LastXPTime", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToUnixTimestamp()); // we don't store this info, send an arbitrary one
-		attributes.Add("XP", account.XP);
-		attributes.Add("Level", account.LevelStockLimited); // TODO: try values over 50
-		attributes.Add("BlueStars", account.BlueStars);
-		attributes.Add("RecentXP", account.XPLastMatch); // probably xp from last finished match
-		attributes.Add("boosts", new JArray());
-		attributes.Add("new_items", new JObject());
-		stats.Add("attributes", attributes);
+			stats.Add("templateId", "profile_v2");
+			JObject attributes = new();
+			attributes.Add("CountryFlag", account.CountryFlag);
+			attributes.Add("GoldStars", account.GoldStars);
+			JObject login_rewards = new();
+			login_rewards.Add("nextClaimTime", null);
+			login_rewards.Add("level", 0);
+			login_rewards.Add("totalDays", 0);
+			attributes.Add("login_rewards", login_rewards);
+			attributes.Add("Avatar", account.Avatar);
+			attributes.Add("inventory_limit_bonus", 0);
+			attributes.Add("daily_purchases", new JObject());
+			attributes.Add("in_app_purchases", new JObject());
+			attributes.Add("LastXPTime", (account.LastLoginAt - TimeSpan.FromSeconds(10)).ToUnixTimestamp()); // we don't store this info, send an arbitrary one
+			attributes.Add("XP", account.XP);
+			attributes.Add("Level", account.LevelStockLimited); // TODO: try values over 50
+			attributes.Add("BlueStars", account.BlueStars);
+			attributes.Add("RecentXP", account.XPLastMatch); // probably xp from last finished match
+			attributes.Add("boosts", new JArray());
+			attributes.Add("new_items", new JObject());
+			stats.Add("attributes", attributes);
 		}
 		profile.Add("stats", stats);
 		profileChange.Add("profile", profile);
@@ -263,21 +263,23 @@ public class UnrealTournamentProfileController : JsonAPIController
 				{ "name", "Level" },
 				{ "value", acc.LevelStockLimited }
 			});
-
 		}
+		obj.Add("profileChanges", profileChanges);
 
-		JArray notifications = new JArray();
+		obj.Add("notifications", new JArray()
 		{
-			notifications.Add(new JObject()
 			{
-				{ "type", "XPProgress" },
-				{ "primary", false },
-				{ "prevXP", prevXP },
-				{ "XP", acc.XP },
-				{ "prevLevel", prevLevel },
-				{ "level", acc.LevelStockLimited }
-			});
-		}
+				new JObject()
+				{
+					{ "type", "XPProgress" },
+					{ "primary", false },
+					{ "prevXP", prevXP },
+					{ "XP", acc.XP },
+					{ "prevLevel", prevLevel },
+					{ "level", acc.LevelStockLimited }
+				}
+			}
+		});
 
 		obj.Add("profileCommandRevision", revisionNumber - 1);
 		obj.Add("serverTime", DateTime.UtcNow.ToStringISO());
