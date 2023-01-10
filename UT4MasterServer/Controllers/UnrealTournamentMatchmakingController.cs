@@ -91,7 +91,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		var old = await matchmakingService.Get(user.Session.ID, update.ID);
 		if (old == null)
-			return BadRequest();
+			return UnknownSessionId(id);
 
 		old.Update(update);
 
@@ -167,7 +167,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		var server = await matchmakingService.Get(user.Session.ID, EpicID.FromString(id));
 		if (server == null)
-			return BadRequest();
+			return UnknownSessionId(id);
 
 		foreach (var player in players)
 		{
