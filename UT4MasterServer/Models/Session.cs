@@ -67,7 +67,7 @@ public class Session
 
 #if DEBUG
 				// debug with short sessions
-				AccessToken = Token.Generate(TimeSpan.FromHours(2) + TimeSpan.FromMinutes(5));
+				AccessToken = Token.Generate(TimeSpan.FromHours(2) + TimeSpan.FromMinutes(10));
 #else
 				AccessToken = Token.Generate(TimeSpan.FromHours(4));
 #endif
