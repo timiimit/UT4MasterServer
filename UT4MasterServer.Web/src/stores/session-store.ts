@@ -17,7 +17,7 @@ export const SessionStore = {
     get username() {
         return _session.value?.displayName;
     },
-    get authToken() {
+    get token() {
         return _session.value?.access_token;
     },
     get session() {

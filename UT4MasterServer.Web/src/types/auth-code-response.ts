@@ -1,5 +1,5 @@
 export interface IAuthCodeResponse {
-    authorizationCode: string;
-    redirectUrl: string;
+    authorizationCode: string | null;
+    redirectUrl: string | null;
     sid: string | null;
 }

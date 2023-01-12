@@ -55,6 +55,7 @@ import { AsyncStatus } from '../types/async-status';
 import { useRouter } from 'vue-router';
 import { SessionStore } from '../stores/session-store';
 import LoadingPanel from '../components/LoadingPanel.vue';
+import { AccountStore } from '../stores/account-store';
 
 const accountService = new AccountService();
 const router = useRouter();
@@ -74,11 +75,13 @@ const formValid = computed(() => currentPasswordValid.value && newPasswordValid.
 
 async function handleSubmit() {
   submitAttempted.value = true;
-  if (!formValid.value) { return; }
+  if (!formValid.value || !AccountStore.account?.displayName) {
+    return;
+  }
   try {
     status.value = AsyncStatus.BUSY;
     const request: IChangePasswordRequest = {
-      username: SessionStore.username!,
+      username: AccountStore.account?.displayName,
       currentPassword: CryptoJS.SHA512(currentPassword.value).toString(),
       newPassword: CryptoJS.SHA512(currentPassword.value).toString()
     };

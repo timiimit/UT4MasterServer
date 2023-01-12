@@ -11,7 +11,7 @@ export default class AuthenticationService extends HttpService {
 
     async passwordLogin(request: ILoginRequest) {
         try {
-            const session = await this.postForm<ISession, ILoginRequest>(`${this.baseUrl}/token`, {
+            const session = await this.post<ISession, ILoginRequest>(`${this.baseUrl}/token`, {
                 body: request,
                 headers: {
                     'Authorization': `${__WEB_BASIC_AUTH}`
@@ -33,7 +33,7 @@ export default class AuthenticationService extends HttpService {
             return false;
         }
         try {
-            const session = await this.postForm<ISession, IRefreshSessionRequest>(`${this.baseUrl}/token`, {
+            const session = await this.post<ISession, IRefreshSessionRequest>(`${this.baseUrl}/token`, {
                 body: {
                     refresh_token: SessionStore.session!.refresh_token,
                     grant_type: GrantType.RefreshToken

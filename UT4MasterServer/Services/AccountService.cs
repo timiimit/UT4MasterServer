@@ -80,9 +80,9 @@ public class AccountService
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 
-	public async Task UpdateAccountPasswordAsync(Account updatedAccount, string newHashedPassword)
+	public async Task UpdateAccountPasswordAsync(Account updatedAccount, string password)
 	{
-		updatedAccount.Password = GetPasswordHash(updatedAccount.ID, newHashedPassword);
+		updatedAccount.Password = GetPasswordHash(updatedAccount.ID, password);
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 

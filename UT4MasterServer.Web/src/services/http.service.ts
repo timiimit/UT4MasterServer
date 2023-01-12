@@ -8,16 +8,26 @@ export interface HttpRequestOptions<T = unknown> {
 }
 
 export default class HttpService {
-    async send<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, method: HttpMethod = 'GET', form = false): Promise<K> {
-        const fetchOptions: RequestInit = { method };
-        if (options?.body) {
-            fetchOptions.body = form ? this.formEncode(options.body) : JSON.stringify(options.body);;
+
+    private formEncode(request: object) {
+        const form = new URLSearchParams();
+        for (const [key, value] of Object.entries(request)) {
+            form.append(key, value);
         }
 
-        const headers: HeadersInit = { 'Content-Type': form ? 'application/x-www-form-urlencoded' : 'application/json' };
+        return form;
+    }
 
-        if (SessionStore.authToken) {
-            headers.Authorization = `bearer ${SessionStore.authToken}`;
+    async send<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, method: HttpMethod = 'GET'): Promise<K> {
+        const fetchOptions: RequestInit = { method };
+        if (options?.body) {
+            fetchOptions.body = this.formEncode(options.body);
+        }
+
+        const headers: HeadersInit = { 'Content-Type': 'application/x-www-form-urlencoded' };
+
+        if (SessionStore.token) {
+            headers.Authorization = `bearer ${SessionStore.token}`;
         }
 
         fetchOptions.headers = { ...headers, ...options?.headers };
@@ -51,18 +61,5 @@ export default class HttpService {
 
     async delete<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>) {
         return this.send<K, T>(url, options, 'DELETE');
-    }
-
-    private formEncode(request: object) {
-        const form = new URLSearchParams();
-        for (const [key, value] of Object.entries(request)) {
-            form.append(key, value);
-        }
-
-        return form;
-    }
-
-    async postForm<K = unknown, T = object>(url: string, options?: HttpRequestOptions<T>) {
-        return this.send<K, T>(url, options, 'POST', true);
     }
 }

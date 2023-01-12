@@ -171,26 +171,26 @@ public class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromBody] RegisterRequest request)
+	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password, [FromForm] string email)
 	{
 		// TODO: Add validation
-		var account = await accountService.GetAccountAsync(request.Username);
+		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate account: {request.Username}");
+			logger.LogInformation($"Could not register duplicate account: {username}");
 			return Conflict("Username already exists");
 		}
 
 		// TODO: should we also get user's email?
-		await accountService.CreateAccountAsync(request.Username, request.Password); // TODO: this cannot fail?
+		await accountService.CreateAccountAsync(username, password); // TODO: this cannot fail?
 
-		logger.LogInformation($"Registered new user: {request.Username}");
+		logger.LogInformation($"Registered new user: {username}");
 
 		return Ok("Account created successfully");
 	}
 
 	[HttpPatch("update/username")]
-	public async Task<IActionResult> UpdateUsername([FromBody] string newUsername)
+	public async Task<IActionResult> UpdateUsername([FromForm] string newUsername)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
@@ -225,7 +225,7 @@ public class AccountController : JsonAPIController
 		}
 		catch (Exception ex)
 		{
-			logger.LogInformation($"Change Username failed: {ex.Message}");
+			logger.LogError($"Change Username failed: {ex.Message}");
 			return StatusCode(500);
 		}
 
@@ -235,7 +235,7 @@ public class AccountController : JsonAPIController
 	}
 
 	[HttpPatch("update/email")]
-	public async Task<IActionResult> UpdateEmail([FromBody] string newEmail)
+	public async Task<IActionResult> UpdateEmail([FromForm] string newEmail)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
@@ -265,7 +265,7 @@ public class AccountController : JsonAPIController
 		}
 		catch (Exception ex)
 		{
-			logger.LogInformation($"Change Email failed: {ex.Message}");
+			logger.LogError($"Change Email failed: {ex.Message}");
 			return StatusCode(500);
 		}
 
@@ -275,19 +275,19 @@ public class AccountController : JsonAPIController
 	}
 
 	[HttpPatch("update/password")]
-	public async Task<IActionResult> UpdatePassword([FromBody] ChangePasswordRequest request)
+	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword, [FromForm] string username)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
 			return Unauthorized();
 		}
 
-		if (request.CurrentPassword?.Length < 7 || request.NewPassword?.Length < 7)
+		if (currentPassword?.Length < 7 || newPassword?.Length < 7)
 		{
 			return ValidationProblem();
 		}
 
-		var account = await accountService.GetAccountAsync(request.Username, request.CurrentPassword);
+		var account = await accountService.GetAccountAsync(username, currentPassword);
 		if (account == null)
 		{
 			return NotFound(new ErrorResponse()
@@ -298,11 +298,11 @@ public class AccountController : JsonAPIController
 
 		try
 		{
-			await accountService.UpdateAccountPasswordAsync(account, request.NewPassword);
+			await accountService.UpdateAccountPasswordAsync(account, newPassword);
 		}
 		catch (Exception ex)
 		{
-			logger.LogInformation($"Change Email failed: {ex.Message}");
+			logger.LogError($"Change Email failed: {ex.Message}");
 			return StatusCode(500);
 		}
 

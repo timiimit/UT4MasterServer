@@ -36,17 +36,17 @@
 <script setup lang="ts">
 import { IChangeEmailRequest } from '../types/change-email-request';
 import { shallowRef, computed } from 'vue';
-import { SessionStore } from '../stores/session-store';
 import AccountService from '../services/account.service';
 import { AsyncStatus } from '../types/async-status';
 import { useRouter } from 'vue-router';
 import LoadingPanel from '../components/LoadingPanel.vue';
+import { AccountStore } from '../stores/account-store';
 
 const accountService = new AccountService();
 const router = useRouter();
 
 const status = shallowRef(AsyncStatus.OK);
-const currentEmail = shallowRef(SessionStore.session?.email);
+const currentEmail = shallowRef(AccountStore.account?.email);
 const newEmail = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 

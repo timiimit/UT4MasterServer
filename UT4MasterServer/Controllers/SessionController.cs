@@ -198,7 +198,6 @@ public class SessionController : JsonAPIController
 			obj.Add("app", "ut");
 			obj.Add("in_app_id", account.ID.ToString());
 			obj.Add("device_id", "465a117c2b144b5c8222ee71b9bc8da2"); // unsure about this, probably some ip tracking feature
-			obj.Add("email", account.Email);
 		}
 		return Json(obj);
 	}
@@ -385,8 +384,7 @@ public class SessionController : JsonAPIController
 			{ "app", "ut" },
 			{ "in_app_id", user.Session.AccountID.ToString() },
 			{ "device_id", "ee64ee5f292b45f089a368cb7e43d82d" }, // TODO: figure out proper handling of device id
-			{ "perms", new JArray() }, // TODO: none for now
-			{ "email", account?.Email }
+			{ "perms", new JArray() } // TODO: none for now
 		};
 
 		return Json(obj);

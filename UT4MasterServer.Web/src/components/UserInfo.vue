@@ -2,7 +2,7 @@
   <div class="navbar navbar-primary bg-light user-info">
     <div class="container">
       <div>
-        <label>Logged in as: </label>{{ SessionStore.username }}
+        <label>Logged in as: </label>{{ AccountStore.account?.displayName }}
       </div>
       <div>
         <LoadingPanel :status="status">
@@ -35,14 +35,14 @@
 </style>
   
 <script setup lang="ts">
-import { SessionStore } from '../stores/session-store';
-import { shallowRef } from 'vue';
+import { shallowRef, onMounted } from 'vue';
 import AuthenticationService from '../services/authentication.service';
 import { AsyncStatus } from '../types/async-status';
 import LoadingPanel from './LoadingPanel.vue';
+import { AccountStore } from '../stores/account-store';
 
 const service = new AuthenticationService();
-const authCode = shallowRef<string | undefined>(undefined);
+const authCode = shallowRef<string | null>(null);
 const status = shallowRef(AsyncStatus.OK);
 
 async function getAuthCode() {
@@ -61,4 +61,11 @@ function copyAuthCode() {
     navigator.clipboard.writeText(authCode.value);
   }
 }
+
+onMounted(async () => {
+  // TODO: I may move this, but this works for now
+  if (AccountStore.account === null) {
+    AccountStore.fetchUserAccount();
+  }
+});
 </script>

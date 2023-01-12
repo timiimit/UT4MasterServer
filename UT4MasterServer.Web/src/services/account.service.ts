@@ -1,3 +1,4 @@
+import { IAccount } from '../types/account';
 import { IChangeEmailRequest } from '../types/change-email-request';
 import { IChangePasswordRequest } from '../types/change-password-request';
 import { IChangeUsernameRequest } from '../types/change-username-request';
@@ -21,5 +22,9 @@ export default class AccountService extends HttpService {
 
     async changeEmail(request: IChangeEmailRequest) {
         return await this.patch<unknown, IChangeEmailRequest>(`${this.baseUrl}/update/email`, { body: request });
+    }
+
+    async getAccount(id: string) {
+        return await this.get<IAccount>(`${this.baseUrl}/public/account/${id}`);
     }
 }

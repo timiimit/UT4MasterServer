@@ -36,17 +36,17 @@
 <script setup lang="ts">
 import { IChangeUsernameRequest } from '../types/change-username-request';
 import { shallowRef, computed } from 'vue';
-import { SessionStore } from '../stores/session-store';
 import AccountService from '../services/account.service';
 import { useRouter } from 'vue-router';
 import { AsyncStatus } from '../types/async-status';
 import LoadingPanel from '../components/LoadingPanel.vue';
+import { AccountStore } from '../stores/account-store';
 
 const accountService = new AccountService();
 const router = useRouter();
 
 const status = shallowRef(AsyncStatus.OK);
-const currentUsername = shallowRef(SessionStore.username);
+const currentUsername = shallowRef(AccountStore.account?.displayName);
 const newUsername = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 
