@@ -189,5 +189,127 @@ public class AccountController : JsonAPIController
 		return Ok("Account created successfully");
 	}
 
+	[HttpPatch("update/username")]
+	public async Task<IActionResult> UpdateUsername([FromBody] string newUsername)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
+
+		if (newUsername.Length < 1)
+		{
+			return ValidationProblem();
+
+		}
+		var matchingAccount = await accountService.GetAccountAsync(newUsername);
+		if (matchingAccount != null)
+		{
+			logger.LogInformation($"Change Username failed, already taken: {newUsername}");
+			return Conflict("Username already taken");
+		}
+
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		if (account == null)
+		{
+			return NotFound(new ErrorResponse()
+			{
+				Error = $"No account for ID: {user.Session.AccountID}"
+			});
+		}
+
+		try
+		{
+			account.Username = newUsername;
+			await accountService.UpdateAccountAsync(account);
+		}
+		catch (Exception ex)
+		{
+			logger.LogInformation($"Change Username failed: {ex.Message}");
+			return StatusCode(500);
+		}
+
+		logger.LogInformation($"Updated username for {user.Session.AccountID} to: {newUsername}");
+
+		return Ok("Changed username successfully");
+	}
+
+	[HttpPatch("update/email")]
+	public async Task<IActionResult> UpdateEmail([FromBody] string newEmail)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
+
+		// TODO: match email validation performed by create account (not yet implemented)
+		if (newEmail.Length < 1)
+		{
+			return ValidationProblem();
+
+		}
+
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		if (account == null)
+		{
+			return NotFound(new ErrorResponse()
+			{
+				Error = $"No account for ID: {user.Session.AccountID}"
+			});
+		}
+
+		try
+		{
+			account.Email = newEmail;
+			await accountService.UpdateAccountAsync(account);
+		}
+		catch (Exception ex)
+		{
+			logger.LogInformation($"Change Email failed: {ex.Message}");
+			return StatusCode(500);
+		}
+
+		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
+
+		return Ok("Changed email successfully");
+	}
+
+	[HttpPatch("update/password")]
+	public async Task<IActionResult> UpdatePassword([FromBody] ChangePasswordRequest request)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
+
+		if (request.CurrentPassword?.Length < 7 || request.NewPassword?.Length < 7)
+		{
+			return ValidationProblem();
+		}
+
+		var account = await accountService.GetAccountAsync(request.Username, request.CurrentPassword);
+		if (account == null)
+		{
+			return NotFound(new ErrorResponse()
+			{
+				Error = $"No account for ID: {user.Session.AccountID}"
+			});
+		}
+
+		try
+		{
+			await accountService.UpdateAccountPasswordAsync(account, request.NewPassword);
+		}
+		catch (Exception ex)
+		{
+			logger.LogInformation($"Change Email failed: {ex.Message}");
+			return StatusCode(500);
+		}
+
+		logger.LogInformation($"Updated password for {user.Session.AccountID}");
+
+		return Ok("Changed password successfully");
+	}
+
 	#endregion
 }

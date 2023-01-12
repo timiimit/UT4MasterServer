@@ -3,65 +3,66 @@
     <template #default>
       <form :class="{ 'was-validated': submitAttempted }" @submit.prevent="handleSubmit" novalidate>
         <fieldset>
-          <legend>Change Username</legend>
+          <legend>Change Email</legend>
           <div class="form-group row">
-            <label for="currentUsername" class="col-sm-12 col-form-label">Current Username</label>
+            <label for="currentEmail" class="col-sm-12 col-form-label">Current Email</label>
             <div class="col-sm-6">
-              <input type="text" class="form-control" id="currentUsername" name="currentUsername"
-                v-model="currentUsername" readonly disabled />
+              <input type="email" class="form-control" id="currentEmail" name="currentEmail" v-model="currentEmail"
+                readonly disabled />
             </div>
           </div>
           <div class="form-group row">
-            <label for="newUsername" class="col-sm-12 col-form-label">New Username</label>
+            <label for="newEmail" class="col-sm-12 col-form-label">New Email</label>
             <div class="col-sm-6">
-              <input type="text" class="form-control" id="newUsername" name="newUsername" placeholder="New Username"
-                v-model="newUsername" required />
-              <div class="invalid-feedback">New Username is required</div>
+              <input type="email" placeholder="player@example.com" class="form-control" id="newEmail" name="newEmail"
+                v-model="newEmail" required />
+              <div class="invalid-feedback">A valid email address is required</div>
             </div>
           </div>
           <div class="form-group row">
             <div class="col-sm-12">
-              <button type="submit" class="btn btn-primary">Change Username</button>
+              <button type="submit" class="btn btn-primary">Change Email</button>
             </div>
           </div>
         </fieldset>
       </form>
     </template>
     <template #error>
-      Error changing username. Please try again.
+      Error changing email. Please try again.
     </template>
   </LoadingPanel>
 </template>
 
 <script setup lang="ts">
-import { IChangeUsernameRequest } from '../types/change-username-request';
+import { IChangeEmailRequest } from '../types/change-email-request';
 import { shallowRef, computed } from 'vue';
 import { SessionStore } from '../stores/session-store';
 import AccountService from '../services/account.service';
-import { useRouter } from 'vue-router';
 import { AsyncStatus } from '../types/async-status';
+import { useRouter } from 'vue-router';
 import LoadingPanel from '../components/LoadingPanel.vue';
 
 const accountService = new AccountService();
 const router = useRouter();
 
 const status = shallowRef(AsyncStatus.OK);
-const currentUsername = shallowRef(SessionStore.username);
-const newUsername = shallowRef<string>('');
+const currentEmail = shallowRef(SessionStore.session?.email);
+const newEmail = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 
-const formValid = computed(() => newUsername.value?.length);
+const formValid = computed(() => newEmail.value?.length);
 
 async function handleSubmit() {
   submitAttempted.value = true;
   if (!formValid.value) { return; }
+
   try {
     status.value = AsyncStatus.BUSY;
-    const request: IChangeUsernameRequest = {
-      newUsername: newUsername.value
+    const request: IChangeEmailRequest = {
+      newEmail: newEmail.value
     };
     console.debug('Change username request', request);
-    await accountService.changeUsername(request);
+    await accountService.changeEmail(request);
     status.value = AsyncStatus.OK;
     router.push('/Profile');
   }

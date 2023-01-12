@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <a class="navbar-brand" href="#">UT4MasterServer</a>
+      <a class="navbar-brand" href="#">UT4UU Master Server</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02"
         aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -20,6 +20,7 @@
               <HeaderLink text="Stats" path="/Profile/Stats" dropdown />
               <HeaderLink text="Change Username" path="/Profile/ChangeUsername" dropdown />
               <HeaderLink text="Change Password" path="/Profile/ChangePassword" dropdown />
+              <HeaderLink text="Change Email" path="/Profile/ChangeEmail" dropdown />
               <div class="dropdown-divider"></div>
               <button class="dropdown-item" @click="logOut">Log Out</button>
             </div>

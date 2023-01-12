@@ -1,18 +1,25 @@
+import { IChangeEmailRequest } from '../types/change-email-request';
+import { IChangePasswordRequest } from '../types/change-password-request';
+import { IChangeUsernameRequest } from '../types/change-username-request';
 import { IRegisterRequest } from '../types/register-request';
 import HttpService from './http.service';
 
 export default class AccountService extends HttpService {
-    private registerUrl = `${__BACKEND_URL}/account/api/create/account`;
+    private baseUrl = `${__BACKEND_URL}/account/api`;
 
     async register(request: IRegisterRequest) {
-        return await this.post<unknown, IRegisterRequest>(this.registerUrl, { body: request });
+        return await this.post<unknown, IRegisterRequest>(`${this.baseUrl}/create/account`, { body: request });
     }
 
-    changeUsername() {
-
+    async changeUsername(request: IChangeUsernameRequest) {
+        return await this.patch<unknown, IChangeUsernameRequest>(`${this.baseUrl}/update/username`, { body: request });
     }
 
-    changePassword() {
+    async changePassword(request: IChangePasswordRequest) {
+        return await this.patch<unknown, IChangePasswordRequest>(`${this.baseUrl}/update/password`, { body: request });
+    }
 
+    async changeEmail(request: IChangeEmailRequest) {
+        return await this.patch<unknown, IChangeEmailRequest>(`${this.baseUrl}/update/email`, { body: request });
     }
 }

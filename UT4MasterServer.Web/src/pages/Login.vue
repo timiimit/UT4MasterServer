@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import LoadingPanel from '../components/LoadingPanel.vue';
 import { AsyncStatus } from '../types/async-status';
-import { computed, ref, shallowRef } from 'vue';
+import { computed, shallowRef } from 'vue';
 import CryptoJS from 'crypto-js';
 import AuthenticationService from '../services/authentication.service';
 import { SessionStore } from '../stores/session-store';
@@ -56,7 +56,7 @@ import { GrantType } from '../enums/grant-type';
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
-const status = ref(AsyncStatus.OK);
+const status = shallowRef(AsyncStatus.OK);
 const formValid = computed(() => username.value && password.value.length > 7);
 
 const authenticationService = new AuthenticationService();
@@ -74,7 +74,7 @@ async function logIn() {
     SessionStore.saveUsername = saveUsername.value;
     await authenticationService.passwordLogin(formData);
     status.value = AsyncStatus.OK;
-    router.push('/Profile/Stats');
+    router.push('/Profile');
   }
   catch (err: unknown) {
     status.value = AsyncStatus.ERROR;

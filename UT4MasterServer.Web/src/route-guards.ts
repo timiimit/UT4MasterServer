@@ -5,7 +5,7 @@ const authenticationService = new AuthenticationService();
 
 async function publicGuard(to: RouteLocationNormalized, authenticated: boolean) {
   if (authenticated) {
-    return { path: '/Profile/Stats' };
+    return { path: '/Profile' };
   }
 }
 

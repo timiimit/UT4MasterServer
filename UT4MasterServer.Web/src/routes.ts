@@ -12,6 +12,7 @@ export const routes: RouteRecordRaw[] = [
       import(
         './pages/Profile.vue'
       ),
+    redirect: '/Profile/Stats',
     children: [
       {
         path: `ChangeUsername`,
@@ -25,6 +26,13 @@ export const routes: RouteRecordRaw[] = [
         component: async () =>
           import(
             './pages/ChangePassword.vue'
+          )
+      },
+      {
+        path: `ChangeEmail`,
+        component: async () =>
+          import(
+            './pages/ChangeEmail.vue'
           )
       },
       {

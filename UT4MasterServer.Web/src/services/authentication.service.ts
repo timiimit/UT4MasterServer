@@ -7,12 +7,11 @@ import { IRefreshSessionRequest } from '../types/refresh-session-request';
 import { IAuthCodeResponse } from '../types/auth-code-response';
 
 export default class AuthenticationService extends HttpService {
-    private sessionUrl = `${__BACKEND_URL}/account/api/oauth/token`;
-    private authCode = `${__BACKEND_URL}/account/api/oauth/auth`;
+    private baseUrl = `${__BACKEND_URL}/account/api/oauth`;
 
     async passwordLogin(request: ILoginRequest) {
         try {
-            const session = await this.postForm<ISession, ILoginRequest>(this.sessionUrl, {
+            const session = await this.postForm<ISession, ILoginRequest>(`${this.baseUrl}/token`, {
                 body: request,
                 headers: {
                     'Authorization': `${__WEB_BASIC_AUTH}`
@@ -34,7 +33,7 @@ export default class AuthenticationService extends HttpService {
             return false;
         }
         try {
-            const session = await this.postForm<ISession, IRefreshSessionRequest>(this.sessionUrl, {
+            const session = await this.postForm<ISession, IRefreshSessionRequest>(`${this.baseUrl}/token`, {
                 body: {
                     refresh_token: SessionStore.session!.refresh_token,
                     grant_type: GrantType.RefreshToken
@@ -64,12 +63,13 @@ export default class AuthenticationService extends HttpService {
     }
 
     logOut() {
+        const accessToken = SessionStore.session?.access_token;
         SessionStore.session = null;
-        // TODO: call api to kill session
+        this.delete(`${this.baseUrl}/sessions/kill/${accessToken}`);
     }
 
     async getAuthCode() {
-        const authResponse = await this.get<IAuthCodeResponse>(this.authCode);
+        const authResponse = await this.get<IAuthCodeResponse>(`${this.baseUrl}/auth`);
         console.debug('Auth code response: ', authResponse);
         return authResponse.authorizationCode;
     }
