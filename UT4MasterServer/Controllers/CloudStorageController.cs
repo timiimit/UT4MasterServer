@@ -14,10 +14,14 @@ namespace UT4MasterServer.Controllers;
 public class CloudStorageController : JsonAPIController
 {
 	private readonly CloudStorageService cloudStorageService;
+	private readonly MatchmakingService matchmakingService;
 
-	public CloudStorageController(ILogger<CloudStorageController> logger, CloudStorageService cloudStorageService) : base(logger)
+	public CloudStorageController(ILogger<CloudStorageController> logger,
+		CloudStorageService cloudStorageService,
+		MatchmakingService matchmakingService) : base(logger)
 	{
 		this.cloudStorageService = cloudStorageService;
+		this.matchmakingService = matchmakingService;
 	}
 
 	[HttpGet("user/{id}")]
@@ -93,11 +97,23 @@ public class CloudStorageController : JsonAPIController
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
+		var accountID = EpicID.FromString(id);
+		if (user.Session.AccountID != accountID)
+		{
+			// cannot modify other's files
 
-		if (user.Session.AccountID != EpicID.FromString(id))
-			return Unauthorized(); // users can modify only their own files
+			var isServerWithPlayer = await matchmakingService.DoesSessionOwnGameServerWithPlayerAsync(user.Session.ID, accountID);
 
-		await cloudStorageService.UpdateFileAsync(user.Session.AccountID, filename, Request.BodyReader);
+			// unless you are a game server with this player
+			if (!isServerWithPlayer)
+				return Unauthorized();
+
+			// and are modifying this player's stats file
+			if (filename != "stats.json")
+				return Unauthorized();
+		}
+
+		await cloudStorageService.UpdateFileAsync(accountID, filename, Request.BodyReader);
 		return Ok();
 	}
 

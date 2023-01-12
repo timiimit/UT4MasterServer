@@ -18,7 +18,7 @@ public class MatchmakingService
 		serverCollection = dbContext.Database.GetCollection<GameServer>("servers");
 	}
 
-	public async Task<bool> Add(GameServer server)
+	public async Task<bool> AddAsync(GameServer server)
 	{
 		var options = new CountOptions() { Limit = 1 };
 		long count = await serverCollection.CountDocumentsAsync(x => x.SessionID == server.SessionID, options);
@@ -31,41 +31,38 @@ public class MatchmakingService
 		return true;
 	}
 
-	public async Task<bool> Update(GameServer server)
+	public async Task<bool> UpdateAsync(GameServer server)
 	{
 		var result = await serverCollection.ReplaceOneAsync(x => x.SessionID == server.SessionID && x.ID == server.ID, server);
 
 		return result.IsAcknowledged;
 	}
 
-	public async Task<bool> Remove(EpicID sessionID, EpicID serverID)
+	public async Task<bool> RemoveAsync(EpicID sessionID, EpicID serverID)
 	{
 		var result = await serverCollection.DeleteOneAsync(x => x.SessionID == sessionID && x.ID == serverID);
-		return result.IsAcknowledged;
+		if (!result.IsAcknowledged)
+			return false;
+
+		return result.DeletedCount > 0;
 	}
 
-	public async Task<GameServer?> Get(EpicID sessionID, EpicID serverID)
+	public async Task<GameServer?> GetAsync(EpicID sessionID, EpicID serverID)
 	{
-		var server = await Get(sessionID);
+		var server = await GetByIDAsync(serverID);
 		if (server == null)
 			return null;
 
-		if (server.ID != serverID)
+		if (server.SessionID != sessionID)
 			return null;
 
 		return server;
 	}
 
-	public async Task<GameServer?> Get(EpicID sessionID)
-	{
-		var cursor = await serverCollection.FindAsync(x => x.SessionID == sessionID);
-		return await cursor.FirstOrDefaultAsync();
-	}
-
-	public async Task<List<GameServer>> List(GameServerFilter inputFilter)
+	public async Task<List<GameServer>> ListAsync(GameServerFilter inputFilter)
 	{
 		// Begin removing stale GameServers
-		var taskStaleRemoval = RemoveStale();
+		var taskStaleRemoval = RemoveAllStaleAsync();
 
 		// Build BsonDocument representing Find filter
 		var doc = new BsonDocument();
@@ -158,20 +155,56 @@ public class MatchmakingService
 		return await cursor.ToListAsync();
 	}
 
-	public async Task<int> RemoveStale()
+	public async Task<int> RemoveAllStaleAsync()
 	{
 		var now = DateTime.UtcNow; // Use the same value for all checks in this call
 
 		// Start removing stale servers only after some time has passed.
 		// This allows game servers from before reboot to send a heartbeat again and continue operating normally.
-		if (Program.StartupTime < now - StaleAfter * 2)
+		if (Program.StartupTime > now - StaleAfter * 2)
 			return 0;
 
-		var result = await serverCollection.DeleteManyAsync(x => x.LastUpdated < now - StaleAfter);
+		var result = await serverCollection.DeleteManyAsync(
+			Builders<GameServer>.Filter.Lt(x => x.LastUpdated, now - StaleAfter)
+		);
+
 		if (result.IsAcknowledged)
 		{
 			return (int)result.DeletedCount;
 		}
 		return -1;
+	}
+
+	public async Task<bool> DoesSessionOwnGameServerWithPlayerAsync(EpicID sessionID, EpicID accountID)
+	{
+		var filterSession = Builders<GameServer>.Filter.Eq(x => x.SessionID, sessionID);
+		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
+		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
+		var options = new CountOptions()
+		{
+			Limit = 1
+		};
+
+		// TODO: this should check if player accountID is in GameServer with specified sessionID
+
+
+		var result1 = await serverCollection.CountDocumentsAsync(filterPrivatePlayers, options);
+		var result2 = await serverCollection.CountDocumentsAsync(filterPublicPlayers, options);
+
+
+		var result = await serverCollection.CountDocumentsAsync(filterSession, options);
+		return result > 0;
+	}
+
+	private async Task<GameServer?> GetBySessionAsync(EpicID sessionID)
+	{
+		var cursor = await serverCollection.FindAsync(x => x.SessionID == sessionID);
+		return await cursor.FirstOrDefaultAsync();
+	}
+
+	private async Task<GameServer?> GetByIDAsync(EpicID id)
+	{
+		var cursor = await serverCollection.FindAsync(x => x.ID == id);
+		return await cursor.FirstOrDefaultAsync();
 	}
 }
