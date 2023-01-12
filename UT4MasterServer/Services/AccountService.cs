@@ -33,7 +33,6 @@ public class AccountService
 		newAccount.Password = GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
-
 	}
 
 	public async Task<Account?> GetAccountAsync(EpicID id)
