@@ -4,6 +4,7 @@ using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
 using UT4MasterServer.Other;
+using Xceed.Wpf.AvalonDock.Controls;
 
 namespace UT4MasterServer.Services;
 
@@ -11,6 +12,7 @@ public class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
 	private readonly bool allowPasswordGrant;
+
 
 	public AccountService(DatabaseContext dbContext, IOptions<ApplicationSettings> settings)
 	{
@@ -20,6 +22,10 @@ public class AccountService
 
 	public async Task CreateAccountAsync(string username, string email, string password)
 	{
+		while (!accountCollection.Find(email).Equals(true))
+		{
+			await CreateAccountAsync(username, email, password);
+		}
 		var newAccount = new Account();
 		newAccount.ID = EpicID.GenerateNew();
 		newAccount.Username = username;
@@ -27,6 +33,7 @@ public class AccountService
 		newAccount.Password = GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
+
 	}
 
 	public async Task<Account?> GetAccountAsync(EpicID id)

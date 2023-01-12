@@ -173,7 +173,7 @@ public class AccountController : JsonAPIController
 	[AllowAnonymous]
 	public async Task<IActionResult> RegisterAccount([FromBody] RegisterRequest request)
 	{
-		// TODO: Add validation
+		// TODO: Add validation6
 		var account = await accountService.GetAccountAsync(request.Username);
 		if (account != null)
 		{

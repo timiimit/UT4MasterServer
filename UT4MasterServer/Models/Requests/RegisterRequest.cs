@@ -14,6 +14,6 @@ namespace UT4MasterServer.Models.Requests
 		[JsonPropertyName("password")]
 		public string Password { get => password; set => password = value; }
 		[JsonPropertyName("email")]
-		public string Email { get => email; set => password = value; }
+		public string Email { get => email; set => email = value; }
 	}
 }
