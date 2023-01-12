@@ -8,7 +8,6 @@ namespace UT4MasterServer.Models.Requests
 		private string password = "";
 		private string email = "";
 
-
 		[JsonPropertyName("username")]
 		public string Username { get => username; set => username = value; }
 		[JsonPropertyName("password")]
