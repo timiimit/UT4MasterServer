@@ -25,7 +25,7 @@ public class AccountService
 		Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
 		Match match = regex.Match(email);
 
-		while (!accountCollection.Find(email).Equals(true)&&!match.Success)
+		while (!accountCollection.Find(email).Equals(true)||!match.Success)
 		{
 			await CreateAccountAsync(username, email, password);
 		}
