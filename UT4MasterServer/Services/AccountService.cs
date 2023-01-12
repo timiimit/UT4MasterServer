@@ -14,7 +14,6 @@ public class AccountService
 	private readonly IMongoCollection<Account> accountCollection;
 	private readonly bool allowPasswordGrant;
 
-
 	public AccountService(DatabaseContext dbContext, IOptions<ApplicationSettings> settings)
 	{
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
