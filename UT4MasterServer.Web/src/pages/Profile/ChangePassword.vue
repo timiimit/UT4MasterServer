@@ -82,7 +82,7 @@ async function handleSubmit() {
     const request: IChangePasswordRequest = {
       username: AccountStore.account?.displayName,
       currentPassword: CryptoJS.SHA512(currentPassword.value).toString(),
-		newPassword: CryptoJS.SHA512(newPassword.value).toString()
+      newPassword: CryptoJS.SHA512(newPassword.value).toString()
     };
     console.debug('Change password request', request);
     await accountService.changePassword(request);
