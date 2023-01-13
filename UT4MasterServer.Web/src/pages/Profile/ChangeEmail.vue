@@ -34,13 +34,13 @@
 </template>
 
 <script setup lang="ts">
-import { IChangeEmailRequest } from '../types/change-email-request';
+import { IChangeEmailRequest } from '../../types/change-email-request';
 import { shallowRef, computed } from 'vue';
-import AccountService from '../services/account.service';
-import { AsyncStatus } from '../types/async-status';
+import AccountService from '../../services/account.service';
+import { AsyncStatus } from '../../types/async-status';
 import { useRouter } from 'vue-router';
-import LoadingPanel from '../components/LoadingPanel.vue';
-import { AccountStore } from '../stores/account-store';
+import LoadingPanel from '../../components/LoadingPanel.vue';
+import { AccountStore } from '../../stores/account-store';
 
 const accountService = new AccountService();
 const router = useRouter();
