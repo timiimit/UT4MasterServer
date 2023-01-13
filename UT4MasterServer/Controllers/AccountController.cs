@@ -53,7 +53,7 @@ public class AccountController : JsonAPIController
 		obj.Add("id", account.ID.ToString());
 		obj.Add("displayName", account.Username);
 		obj.Add("name", $"{account.Username}"); // fake a random one
-		obj.Add("email", $"{account.ID}@{Request.Host}"); // fake a random one
+		obj.Add("email", account.Email);//$"{account.ID}@{Request.Host}"); // fake a random one
 		obj.Add("failedLoginAttempts", 0);
 		obj.Add("lastLogin", account.LastLoginAt.ToStringISO());
 		obj.Add("numberOfDisplayNameChanges", 0);
@@ -64,7 +64,7 @@ public class AccountController : JsonAPIController
 		obj.Add("preferredLanguage", "en"); // two letter language code
 		obj.Add("canUpdateDisplayName", true);
 		obj.Add("tfaEnabled", true);
-		obj.Add("emailVerified", true);
+		obj.Add("emailVerified", false);//true);
 		obj.Add("minorVerified", false);
 		obj.Add("minorExpected", false);
 		obj.Add("minorStatus", "UNKNOWN");
