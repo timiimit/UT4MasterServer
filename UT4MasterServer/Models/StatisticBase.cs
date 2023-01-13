@@ -342,7 +342,7 @@ public class StatisticBase
 			RedeemerKills,
 			InstagibKills,
 			TelefragKills
-		}.Sum();
+		}.Sum() ?? 0;
 
 		#region Quick Look Validations
 
@@ -392,7 +392,7 @@ public class StatisticBase
 				flaggedFields.Add(nameof(TimePlayed));
 			}
 			// Kills are reported if they don't match the sum of individual weapon kills
-			if (Kills.Value != totalKills.Value)
+			if (Kills.Value != totalKills)
 			{
 				flaggedFields.Add(nameof(Kills));
 			}
