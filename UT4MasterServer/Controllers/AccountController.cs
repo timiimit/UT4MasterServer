@@ -282,7 +282,7 @@ public class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		if (currentPassword?.Length < 7 || newPassword?.Length < 7)
+		if (currentPassword.Length < 7 || newPassword.Length < 7)
 		{
 			return ValidationProblem();
 		}
