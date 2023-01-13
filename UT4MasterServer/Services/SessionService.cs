@@ -16,7 +16,28 @@ public class SessionService
 	public async Task<Session?> CreateSessionAsync(EpicID accountID, EpicID clientID, SessionCreationMethod method)
 	{
 		var session = new Session(EpicID.GenerateNew(), accountID, clientID, method);
+
+		bool isOnlyOneSessionAllowed =
+			method == SessionCreationMethod.Password ||
+			method == SessionCreationMethod.AuthorizationCode ||
+			method == SessionCreationMethod.ExchangeCode;
+
+		bool isInsertRequired = !isOnlyOneSessionAllowed;
+
+		if (isOnlyOneSessionAllowed)
+		{
+			// since _id field is immutable, we need to delete old entry
+
+			var filter = new ExpressionFilterDefinition<Session>(
+				x => x.AccountID == accountID &&
+				x.ClientID == clientID &&
+				x.CreationMethod == method);
+
+			await sessionCollection.DeleteManyAsync(filter);
+		}
+
 		await sessionCollection.InsertOneAsync(session);
+
 		return session;
 	}
 
