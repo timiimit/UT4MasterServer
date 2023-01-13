@@ -62,10 +62,9 @@ export default class AuthenticationService extends HttpService {
         return await this.refreshSession();
     }
 
-    logOut() {
-        const accessToken = SessionStore.session?.access_token;
+    async logOut() {
+        await this.delete(`${this.baseUrl}/sessions/kill/${SessionStore.session?.access_token}`);
         SessionStore.session = null;
-        this.delete(`${this.baseUrl}/sessions/kill/${accessToken}`);
     }
 
     async getAuthCode() {
