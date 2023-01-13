@@ -123,14 +123,14 @@ public static class Program
 
 		builder.Services.AddCors(options =>
 		{
-			options.AddPolicy(name: allowOriginsPolicy,
+			options.AddPolicy(allowOriginsPolicy,
 							  policy =>
 							  {
-								  policy.WithOrigins( "https://ut4.timiimit.com");
+								  policy.WithOrigins("https://ut4.timiimit.com");
 								  policy.AllowAnyHeader();
 								  policy.AllowAnyMethod();
 							  });
-			options.AddPolicy(name: devAllowOriginsPolicy,
+			options.AddPolicy(devAllowOriginsPolicy,
 							  policy =>
 							  {
 								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080");

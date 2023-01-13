@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Security.Cryptography;
 using UT4MasterServer.Helpers;
 
 namespace UT4MasterServer.Other;
@@ -7,7 +8,7 @@ namespace UT4MasterServer.Other;
 [Serializable]
 public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IBsonClassMapAttribute
 {
-	private static readonly Random r = new Random();
+	private static readonly RandomNumberGenerator r = RandomNumberGenerator.Create();
 
 	// TODO: make EpicID store 16 raw bytes (or 2x ulong?) for better performance
 	public string ID { get; set; }
@@ -42,9 +43,9 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 	public static EpicID GenerateNew()
 	{
 		// MongoDB driver seems to do a similar thing, except that
-		// it uses custom randomness generation instead of Random.
+		// it uses custom randomness generation with some pattern.
 		byte[] bytes = new byte[16];
-		r.NextBytes(bytes);
+		r.GetBytes(bytes);
 		string? id = Convert.ToHexString(bytes).ToLower();
 
 		return new EpicID(id);

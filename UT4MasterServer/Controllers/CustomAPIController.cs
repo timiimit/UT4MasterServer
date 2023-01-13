@@ -8,7 +8,6 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
-[Route("api")]
 public class CustomAPIController : JsonAPIController
 {
 	private readonly IOptions<ApplicationSettings> configuration;
@@ -18,7 +17,7 @@ public class CustomAPIController : JsonAPIController
 		this.configuration = configuration;
 	}
 
-	[HttpGet("ShowMyInfo")]
+	[HttpGet("api/ShowMyInfo")]
 	public IActionResult ShowMyInfo()
 	{
 		var ip = GetClientIP(configuration);
@@ -50,5 +49,17 @@ public class CustomAPIController : JsonAPIController
 		}
 
 		return Content(sb.ToString());
+	}
+
+	// www.epicgames.com/id/login?noHostRedirect=true
+	[HttpGet("id/login")]
+	public IActionResult EpicLoginPage()
+	{
+		return Redirect($"https://{configuration.Value.WebsiteDomain}/Login");
+	}
+	[HttpGet("id/api/redirect")]
+	public IActionResult EpicGetAuthCodePage()
+	{
+		return Redirect($"https://{configuration.Value.WebsiteDomain}/Login");
 	}
 }
