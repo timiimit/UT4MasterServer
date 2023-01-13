@@ -384,7 +384,7 @@ public class SessionController : JsonAPIController
 			{ "app", "ut" },
 			{ "in_app_id", user.Session.AccountID.ToString() },
 			{ "device_id", "ee64ee5f292b45f089a368cb7e43d82d" }, // TODO: figure out proper handling of device id
-			{ "perms", new JArray() }, // TODO: none for now
+			{ "perms", new JArray() } // TODO: none for now
 		};
 
 		return Json(obj);

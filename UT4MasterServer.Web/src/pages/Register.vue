@@ -1,6 +1,6 @@
 <template>
   <LoadingPanel :status="status">
-    <form @keydown.enter="register">
+    <form @submit.prevent="register">
       <fieldset>
         <legend>Register</legend>
         <div class="form-group row">
@@ -29,7 +29,7 @@
         </div>
         <div class="form-group row">
           <div class="col-sm-12">
-            <button type="button" class="btn btn-primary" :disabled="!formValid" @click="register">Register</button>
+            <button type="submit" class="btn btn-primary" :disabled="!formValid">Register</button>
           </div>
         </div>
       </fieldset>
@@ -40,20 +40,14 @@
   </LoadingPanel>
 </template>
 
-<style>
-.form-group {
-  margin-bottom: 1rem;
-}
-</style>
-
 <script setup lang="ts">
 import LoadingPanel from '../components/LoadingPanel.vue';
 import { AsyncStatus } from '../types/async-status';
 import { computed, shallowRef } from 'vue';
-import AuthenticationService from '../services/authentication.service';
 import { validateEmail } from '../utils/validation';
 import CryptoJS from 'crypto-js';
 import { useRouter } from 'vue-router';
+import AccountService from '../services/account.service';
 
 const username = shallowRef('');
 const password = shallowRef('');
@@ -61,21 +55,19 @@ const email = shallowRef('');
 const status = shallowRef(AsyncStatus.OK);
 const formValid = computed(() => validateEmail(email.value) && username.value && password.value.length > 7 && status.value != AsyncStatus.BUSY);
 
-const authenticationService = new AuthenticationService();
+const accountService = new AccountService();
 
 const router = useRouter();
 
 async function register() {
   try {
     status.value = AsyncStatus.BUSY;
-
     const formData = {
       email: email.value,
       username: username.value,
       password: CryptoJS.SHA512(password.value).toString(),
     };
-    console.debug('Register', formData);
-    await authenticationService.register(formData);
+    await accountService.register(formData);
     status.value = AsyncStatus.OK;
     router.push('/Login');
   } catch (err: unknown) {

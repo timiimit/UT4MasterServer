@@ -80,6 +80,12 @@ public class AccountService
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 
+	public async Task UpdateAccountPasswordAsync(Account updatedAccount, string password)
+	{
+		updatedAccount.Password = GetPasswordHash(updatedAccount.ID, password);
+		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
+	}
+
 	public async Task RemoveAccountAsync(EpicID id)
 	{
 		await accountCollection.DeleteOneAsync(user => user.ID == id);

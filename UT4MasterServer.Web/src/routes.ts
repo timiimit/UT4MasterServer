@@ -1,10 +1,9 @@
 import {
   createRouter,
   createWebHistory,
-  RouteLocationNormalized,
   RouteRecordRaw
 } from 'vue-router';
-import { UserStore } from './stores/user-store';
+import { beforeEachGuard } from './route-guards';
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -13,6 +12,7 @@ export const routes: RouteRecordRaw[] = [
       import(
         './pages/Profile.vue'
       ),
+    redirect: '/Profile/Stats',
     children: [
       {
         path: `ChangeUsername`,
@@ -26,6 +26,13 @@ export const routes: RouteRecordRaw[] = [
         component: async () =>
           import(
             './pages/ChangePassword.vue'
+          )
+      },
+      {
+        path: `ChangeEmail`,
+        component: async () =>
+          import(
+            './pages/ChangeEmail.vue'
           )
       },
       {
@@ -78,20 +85,6 @@ const router = createRouter({
   routes
 });
 
-function publicGuard(to: RouteLocationNormalized) {
-  if (UserStore.isAuthenticated) {
-    return { path: '/Profile/Stats' };
-  }
-}
-
-function privateGuard(to: RouteLocationNormalized) {
-  if (!UserStore.isAuthenticated) {
-    return { path: '/Login' };
-  }
-}
-
-router.beforeEach((to) => {
-  return to.meta.public ? publicGuard(to) : privateGuard(to);
-});
+router.beforeEach(beforeEachGuard);
 
 export { router };

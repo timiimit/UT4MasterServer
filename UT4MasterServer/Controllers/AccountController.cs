@@ -171,22 +171,144 @@ public class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromBody] RegisterRequest request)
+	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password, [FromForm] string email)
 	{
 		// TODO: Add validation
-		var account = await accountService.GetAccountAsync(request.Username);
+		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate account: {request.Username}");
+			logger.LogInformation($"Could not register duplicate account: {username}");
 			return Conflict("Username already exists");
 		}
 
 		// TODO: should we also get user's email?
-		await accountService.CreateAccountAsync(request.Username, request.Password); // TODO: this cannot fail?
+		await accountService.CreateAccountAsync(username, password); // TODO: this cannot fail?
 
-		logger.LogInformation($"Registered new user: {request.Username}");
+		logger.LogInformation($"Registered new user: {username}");
 
 		return Ok("Account created successfully");
+	}
+
+	[HttpPatch("update/username")]
+	public async Task<IActionResult> UpdateUsername([FromForm] string newUsername)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
+
+		if (newUsername.Length < 1)
+		{
+			return ValidationProblem();
+
+		}
+		var matchingAccount = await accountService.GetAccountAsync(newUsername);
+		if (matchingAccount != null)
+		{
+			logger.LogInformation($"Change Username failed, already taken: {newUsername}");
+			return Conflict("Username already taken");
+		}
+
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		if (account == null)
+		{
+			return NotFound(new ErrorResponse()
+			{
+				Error = $"No account for ID: {user.Session.AccountID}"
+			});
+		}
+
+		try
+		{
+			account.Username = newUsername;
+			await accountService.UpdateAccountAsync(account);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError($"Change Username failed: {ex.Message}");
+			return StatusCode(500);
+		}
+
+		logger.LogInformation($"Updated username for {user.Session.AccountID} to: {newUsername}");
+
+		return Ok("Changed username successfully");
+	}
+
+	[HttpPatch("update/email")]
+	public async Task<IActionResult> UpdateEmail([FromForm] string newEmail)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
+
+		// TODO: match email validation performed by create account (not yet implemented)
+		if (newEmail.Length < 1)
+		{
+			return ValidationProblem();
+
+		}
+
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		if (account == null)
+		{
+			return NotFound(new ErrorResponse()
+			{
+				Error = $"No account for ID: {user.Session.AccountID}"
+			});
+		}
+
+		try
+		{
+			account.Email = newEmail;
+			await accountService.UpdateAccountAsync(account);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError($"Change Email failed: {ex.Message}");
+			return StatusCode(500);
+		}
+
+		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
+
+		return Ok("Changed email successfully");
+	}
+
+	[HttpPatch("update/password")]
+	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword, [FromForm] string username)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
+
+		if (currentPassword?.Length < 7 || newPassword?.Length < 7)
+		{
+			return ValidationProblem();
+		}
+
+		var account = await accountService.GetAccountAsync(username, currentPassword);
+		if (account == null)
+		{
+			return NotFound(new ErrorResponse()
+			{
+				Error = $"No account for ID: {user.Session.AccountID}"
+			});
+		}
+
+		try
+		{
+			await accountService.UpdateAccountPasswordAsync(account, newPassword);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError($"Change Email failed: {ex.Message}");
+			return StatusCode(500);
+		}
+
+		logger.LogInformation($"Updated password for {user.Session.AccountID}");
+
+		return Ok("Changed password successfully");
 	}
 
 	#endregion
