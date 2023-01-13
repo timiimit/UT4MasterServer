@@ -407,5 +407,4 @@ FodyWeavers.xsd
 
 # ignore all database files
 db/
-/UT4MasterServer.Web
 
