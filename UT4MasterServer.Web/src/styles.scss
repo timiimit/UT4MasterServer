@@ -6,3 +6,19 @@
     display: flex;
     align-items: center;
 }
+
+.code {
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
+.codeblock {
+    margin: 10px 0;
+    position: relative;
+}
+
+.btn.btn-smaller {
+    padding: 3px 5px;
+}

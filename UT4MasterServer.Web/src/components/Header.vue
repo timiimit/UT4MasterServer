@@ -8,6 +8,15 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarColor02">
         <ul class="navbar-nav me-auto">
+          <li class="nav-item dropdown pull-right">
+            <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
+              @click.stop="showInstructionsDropdown = !showInstructionsDropdown">Instructions</a>
+            <div class="dropdown-menu" :class="{ 'show': showInstructionsDropdown }">
+              <HeaderLink text="Stock UT4" path="/Instructions/StockUT4" dropdown />
+              <HeaderLink text="UT4UU" path="/Instructions/UT4UU" dropdown />
+              <HeaderLink text="Hub Owners" path="/Instructions/HubOwners" dropdown />
+            </div>
+          </li>
           <template v-if="!SessionStore.isAuthenticated">
             <HeaderLink text="Register" path="/Register" />
             <HeaderLink text="Log In" path="/Login" />
@@ -29,7 +38,7 @@
       </div>
     </div>
   </nav>
-  <UserInfo />
+  <UserInfo v-if="SessionStore.isAuthenticated" />
 </template>
 
 <style lang="scss" scoped>
@@ -66,15 +75,17 @@ import { SessionStore } from '../stores/session-store';
 
 const router = useRouter();
 const showProfileDropdown = shallowRef(false);
+const showInstructionsDropdown = shallowRef(false);
 const authenticationService = new AuthenticationService();
 
-function logOut() {
-  authenticationService.logOut();
+async function logOut() {
+  await authenticationService.logOut();
   router.push('/Login');
 }
 
 function closeNav() {
   showProfileDropdown.value = false;
+  showInstructionsDropdown.value = false;
 }
 
 onMounted(() => {

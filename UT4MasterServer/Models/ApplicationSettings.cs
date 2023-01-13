@@ -11,6 +11,11 @@ public class ApplicationSettings
 	public bool AllowPasswordGrantType { get; set; } = false;
 
 	/// <summary>
+	/// Used just to redirect users to correct domain when UT4UU is being used.
+	/// </summary>
+	public string WebsiteDomain { get; set; } = string.Empty;
+
+	/// <summary>
 	/// File containing a list of trusted proxy servers (one per line).
 	/// This file is loaded only once when program starts and it add values to <see cref="ProxyServers"/>.
 	/// </summary>

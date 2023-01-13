@@ -46,16 +46,15 @@
 </template>
 
 <script setup lang="ts">
-import { IChangePasswordRequest } from '../types/change-password-request';
+import { IChangePasswordRequest } from '../../types/change-password-request';
 import { shallowRef, computed } from 'vue';
-import { valid as vValid } from '../directives/valid';
+import { valid as vValid } from '../../directives/valid';
 import CryptoJS from 'crypto-js';
-import AccountService from '../services/account.service';
-import { AsyncStatus } from '../types/async-status';
+import AccountService from '../../services/account.service';
+import { AsyncStatus } from '../../types/async-status';
 import { useRouter } from 'vue-router';
-import { SessionStore } from '../stores/session-store';
-import LoadingPanel from '../components/LoadingPanel.vue';
-import { AccountStore } from '../stores/account-store';
+import LoadingPanel from '../../components/LoadingPanel.vue';
+import { AccountStore } from '../../stores/account-store';
 
 const accountService = new AccountService();
 const router = useRouter();
@@ -83,7 +82,7 @@ async function handleSubmit() {
     const request: IChangePasswordRequest = {
       username: AccountStore.account?.displayName,
       currentPassword: CryptoJS.SHA512(currentPassword.value).toString(),
-      newPassword: CryptoJS.SHA512(currentPassword.value).toString()
+      newPassword: CryptoJS.SHA512(newPassword.value).toString()
     };
     console.debug('Change password request', request);
     await accountService.changePassword(request);
