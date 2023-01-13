@@ -174,7 +174,7 @@ public class AccountController : JsonAPIController
 	public async Task<IActionResult> RegisterAccount([FromBody] RegisterRequest request)
 	{
 		// TODO: Add validation
-		var account = await accountService.GetAccountAsync(request.Username);
+		var account = await accountService.GetAccountEmailAsync(request.Username);
 		if (account != null)
 		{
 			logger.LogInformation($"Could not register duplicate account: {request.Username}");

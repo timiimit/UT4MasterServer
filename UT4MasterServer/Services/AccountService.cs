@@ -4,6 +4,7 @@ using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
 using UT4MasterServer.Other;
+using System.Security.Principal;
 
 namespace UT4MasterServer.Services;
 
@@ -20,22 +21,14 @@ public class AccountService
 
 	public async Task CreateAccountAsync(string username, string email, string password)
 	{
-		Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
-		Match match = regex.Match(email);
+		var newAccount = new Account();
+		newAccount.ID = EpicID.GenerateNew();
+		newAccount.Username = username;
+		newAccount.Email = email;
+		newAccount.Password = GetPasswordHash(newAccount.ID, password);
 
-		if (!accountCollection.Find(email).Equals(true)||!match.Success)
-		{
-			await CreateAccountAsync(username, email, password);
-		}
-		else
-		{
-			var newAccount = new Account();
-			newAccount.ID = EpicID.GenerateNew();
-			newAccount.Username = username;
-			newAccount.Email = email;
-			newAccount.Password = GetPasswordHash(newAccount.ID, password);
-		}
-
+		await accountCollection.InsertOneAsync(newAccount);
+	}
 
 	public async Task<Account?> GetAccountEmailAsync(string email)
 	{
