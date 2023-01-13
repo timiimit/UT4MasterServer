@@ -295,26 +295,29 @@ public sealed class StatisticsService
 	{
 		var result = new List<StatisticDTO>();
 
-		foreach (var element in statisticBase.ToBsonDocument().Elements)
+		if (statisticBase is not null)
 		{
-			if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower())) continue;
-
-			var value = element.Value.BsonType switch
+			foreach (var element in statisticBase.ToBsonDocument().Elements)
 			{
-				BsonType.Double => (long)(element.Value.ToDouble() * 100D),
-				BsonType.Int32 => element.Value.ToInt32(),
-				_ => 0,
-			};
+				if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower())) continue;
 
-			if (value > 0)
-			{
-				result.Add(new StatisticDTO()
+				var value = element.Value.BsonType switch
 				{
-					Name = element.Name,
-					Value = value,
-					Window = statisticWindow.ToString().ToLower(),
-					OwnerType = OwnerType.Default
-				});
+					BsonType.Double => (long)(element.Value.ToDouble() * 100D),
+					BsonType.Int32 => element.Value.ToInt32(),
+					_ => 0,
+				};
+
+				if (value > 0)
+				{
+					result.Add(new StatisticDTO()
+					{
+						Name = element.Name,
+						Value = value,
+						Window = statisticWindow.ToString().ToLower(),
+						OwnerType = OwnerType.Default
+					});
+				}
 			}
 		}
 
