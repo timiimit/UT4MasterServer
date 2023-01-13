@@ -242,8 +242,7 @@ public sealed class StatisticsService
 		var flags = statisticBase.Validate();
 		if (flags.Any())
 		{
-			newStatistic.Flagged = true;
-			newStatistic.FlaggedProperties = flags;
+			newStatistic.Flagged = flags;
 		}
 
 		await statisticsCollection.InsertOneAsync(newStatistic);
