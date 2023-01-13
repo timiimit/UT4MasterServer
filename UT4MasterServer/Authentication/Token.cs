@@ -1,9 +1,13 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using System.Security.Cryptography;
 
 namespace UT4MasterServer.Authentication;
 
 public class Token
 {
+	private static readonly RandomNumberGenerator r = RandomNumberGenerator.Create();
+
+
 	[BsonElement("Value")]
 	public string Value { get; set; }
 
@@ -44,9 +48,8 @@ public class Token
 
 		// we could infer importance of length/security based on expiration
 
-		Random random = new Random();
 		byte[] bytes = new byte[32];
-		random.NextBytes(bytes);
+		r.GetBytes(bytes);
 
 		var tokenString = Convert.ToHexString(bytes).ToLower();
 
