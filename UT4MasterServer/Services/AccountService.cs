@@ -25,16 +25,18 @@ public class AccountService
 		Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
 		Match match = regex.Match(email);
 
-		while (!accountCollection.Find(email).Equals(true)||!match.Success)
+		if (!accountCollection.Find(email).Equals(true)||!match.Success)
 		{
 			await CreateAccountAsync(username, email, password);
 		}
-		
-		var newAccount = new Account();
-		newAccount.ID = EpicID.GenerateNew();
-		newAccount.Username = username;
-		newAccount.Email = email;
-		newAccount.Password = GetPasswordHash(newAccount.ID, password);
+		else
+		{
+			var newAccount = new Account();
+			newAccount.ID = EpicID.GenerateNew();
+			newAccount.Username = username;
+			newAccount.Email = email;
+			newAccount.Password = GetPasswordHash(newAccount.ID, password);
+		}
 
 		await accountCollection.InsertOneAsync(newAccount);
 	}
