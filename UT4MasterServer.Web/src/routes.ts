@@ -3,7 +3,7 @@ import {
   createWebHistory,
   RouteRecordRaw
 } from 'vue-router';
-import { beforeEachGuard } from './route-guards';
+import { privateGuard, publicGuard } from './route-guards';
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -13,34 +13,39 @@ export const routes: RouteRecordRaw[] = [
         './pages/Profile/Profile.vue'
       ),
     redirect: '/Profile/Stats',
+    beforeEnter: privateGuard,
     children: [
       {
         path: `ChangeUsername`,
         component: async () =>
           import(
             './pages/Profile/ChangeUsername.vue'
-          )
+          ),
+          beforeEnter: privateGuard
       },
       {
         path: `ChangePassword`,
         component: async () =>
           import(
             './pages/Profile/ChangePassword.vue'
-          )
+          ),
+          beforeEnter: privateGuard
       },
       {
         path: `ChangeEmail`,
         component: async () =>
           import(
             './pages/Profile/ChangeEmail.vue'
-          )
+          ),
+          beforeEnter: privateGuard
       },
       {
         path: `Stats`,
         component: async () =>
           import(
             './pages/Stats.vue'
-          )
+          ),
+          beforeEnter: privateGuard
       }
     ]
   },
@@ -52,30 +57,21 @@ export const routes: RouteRecordRaw[] = [
         component: async () =>
           import(
             './pages/Instructions/StockUT4.vue'
-          ),
-        meta: {
-          public: true
-        }
+          )
       },
       {
         path: `UT4UU`,
         component: async () =>
           import(
             './pages/Instructions/UT4UU.vue'
-          ),
-        meta: {
-          public: true
-        }
+          )
       },
       {
         path: `HubOwners`,
         component: async () =>
           import(
             './pages/Instructions/HubOwners.vue'
-          ),
-        meta: {
-          public: true
-        }
+          )
       }
     ]
   },
@@ -85,9 +81,7 @@ export const routes: RouteRecordRaw[] = [
       import(
         './pages/Register.vue'
       ),
-    meta: {
-      public: true
-    }
+      beforeEnter: publicGuard
   },
   {
     path: `/Login`,
@@ -95,23 +89,15 @@ export const routes: RouteRecordRaw[] = [
       import(
         './pages/Login.vue'
       ),
-    meta: {
-      public: true
-    }
+      beforeEnter: publicGuard
   },
   {
     path: `/`,
-    redirect: '/Login',
-    meta: {
-      public: true
-    }
+    redirect: '/Login'
   },
   {
     path: '/:catchAll(.*)',
-    component: async () => import('./pages/NotFound.vue'),
-    meta: {
-      public: true
-    }
+    component: async () => import('./pages/NotFound.vue')
   }
 ];
 
@@ -119,7 +105,5 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 });
-
-router.beforeEach(beforeEachGuard);
 
 export { router };
