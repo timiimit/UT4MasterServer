@@ -19,7 +19,7 @@ export default defineConfig(({ command, mode }) => {
       port: 8080
     };
   } else {
-    viteConfig.base = '/dist/';
+    viteConfig.base = '/';
   }
   return viteConfig;
 });
