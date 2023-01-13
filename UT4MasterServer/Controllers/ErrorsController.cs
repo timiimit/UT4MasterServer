@@ -6,7 +6,7 @@ namespace UT4MasterServer.Controllers;
 
 [ApiController, ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/errors")]
-public class ErrorsController : Controller
+public class ErrorsController : ControllerBase
 {
 	[HttpGet]
 	public IActionResult Index()
