@@ -239,6 +239,13 @@ public sealed class StatisticsService
 			Window = StatisticWindow.Daily,
 		};
 
+		var flags = statisticBase.Validate();
+		if (flags.Any())
+		{
+			newStatistic.Flagged = true;
+			newStatistic.FlaggedProperties = flags;
+		}
+
 		await statisticsCollection.InsertOneAsync(newStatistic);
 		await UpdateAllTimeAccountStatisticsAsync(newStatistic);
 	}
