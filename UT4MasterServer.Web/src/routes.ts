@@ -10,7 +10,7 @@ export const routes: RouteRecordRaw[] = [
     path: `/Profile`,
     component: async () =>
       import(
-        './pages/Profile.vue'
+        './pages/Profile/Profile.vue'
       ),
     redirect: '/Profile/Stats',
     children: [
@@ -18,21 +18,21 @@ export const routes: RouteRecordRaw[] = [
         path: `ChangeUsername`,
         component: async () =>
           import(
-            './pages/ChangeUsername.vue'
+            './pages/Profile/ChangeUsername.vue'
           )
       },
       {
         path: `ChangePassword`,
         component: async () =>
           import(
-            './pages/ChangePassword.vue'
+            './pages/Profile/ChangePassword.vue'
           )
       },
       {
         path: `ChangeEmail`,
         component: async () =>
           import(
-            './pages/ChangeEmail.vue'
+            './pages/Profile/ChangeEmail.vue'
           )
       },
       {
@@ -41,6 +41,41 @@ export const routes: RouteRecordRaw[] = [
           import(
             './pages/Stats.vue'
           )
+      }
+    ]
+  },
+  {
+    path: `/Instructions`,
+    children: [
+      {
+        path: `StockUT4`,
+        component: async () =>
+          import(
+            './pages/Instructions/StockUT4.vue'
+          ),
+        meta: {
+          public: true
+        }
+      },
+      {
+        path: `UT4UU`,
+        component: async () =>
+          import(
+            './pages/Instructions/UT4UU.vue'
+          ),
+        meta: {
+          public: true
+        }
+      },
+      {
+        path: `HubOwners`,
+        component: async () =>
+          import(
+            './pages/Instructions/HubOwners.vue'
+          ),
+        meta: {
+          public: true
+        }
       }
     ]
   },
