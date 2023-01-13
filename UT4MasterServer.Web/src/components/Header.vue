@@ -29,7 +29,7 @@
       </div>
     </div>
   </nav>
-  <UserInfo />
+  <UserInfo v-if="SessionStore.isAuthenticated" />
 </template>
 
 <style lang="scss" scoped>
@@ -68,8 +68,8 @@ const router = useRouter();
 const showProfileDropdown = shallowRef(false);
 const authenticationService = new AuthenticationService();
 
-function logOut() {
-  authenticationService.logOut();
+async function logOut() {
+  await authenticationService.logOut();
   router.push('/Login');
 }
 

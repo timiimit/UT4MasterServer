@@ -63,6 +63,7 @@ async function handleSubmit() {
     console.debug('Change username request', request);
     await accountService.changeUsername(request);
     status.value = AsyncStatus.OK;
+    AccountStore.fetchUserAccount();
     router.push('/Profile');
   }
   catch (err: unknown) {

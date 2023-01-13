@@ -118,12 +118,38 @@ public static class Program
 			});
 		});
 
+		var allowOriginsPolicy = "_ut4msOriginsPolicy";
+		var devAllowOriginsPolicy = "_ut4msDevOriginsPolicy";
+
+		builder.Services.AddCors(options =>
+		{
+			options.AddPolicy(name: allowOriginsPolicy,
+							  policy =>
+							  {
+								  policy.WithOrigins( "https://ut4.timiimit.com");
+								  policy.AllowAnyHeader();
+								  policy.AllowAnyMethod();
+							  });
+			options.AddPolicy(name: devAllowOriginsPolicy,
+							  policy =>
+							  {
+								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080");
+								  policy.AllowAnyHeader();
+								  policy.AllowAnyMethod();
+							  });
+		});
+
 		var app = builder.Build();
 
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseSwagger();
 			app.UseSwaggerUI();
+			app.UseCors(devAllowOriginsPolicy);
+		}
+		else
+		{
+			app.UseCors(allowOriginsPolicy);
 		}
 
 		//app.UseHttpsRedirection();
@@ -131,14 +157,6 @@ public static class Program
 		app.UseAuthentication();
 		app.MapControllers();
 		app.UseStaticFiles();
-
-		// TODO: restrict origin
-		app.UseCors(x =>
-		{
-			x.AllowAnyOrigin()
-				.AllowAnyHeader()
-				.AllowAnyMethod();
-		});
 
 		app.Run();
 	}
