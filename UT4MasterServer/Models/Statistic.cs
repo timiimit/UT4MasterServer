@@ -24,4 +24,7 @@ public sealed class Statistic : StatisticBase
 
 	[BsonElement("window")]
 	public StatisticWindow Window { get; set; } = StatisticWindow.Daily;
+
+	[BsonElement("flaggedProperties"), BsonIgnoreIfNull]
+	public List<string>? Flagged { get; set; }
 }
