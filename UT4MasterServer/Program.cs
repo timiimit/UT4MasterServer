@@ -131,6 +131,7 @@ public static class Program
 		app.UseAuthentication();
 		app.MapControllers();
 		app.UseStaticFiles();
+		app.UseExceptionHandler("/api/errors");
 
 		// TODO: restrict origin
 		app.UseCors(x =>
