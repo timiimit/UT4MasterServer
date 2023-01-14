@@ -18,14 +18,21 @@ public class AccountService
 		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
-	public async Task CreateAccountAsync(string username, string password)
+	public async Task CreateAccountAsync(string username, string email, string password)
 	{
 		var newAccount = new Account();
 		newAccount.ID = EpicID.GenerateNew();
 		newAccount.Username = username;
+		newAccount.Email = email;
 		newAccount.Password = GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
+	}
+
+	public async Task<Account?> GetAccountEmailAsync(string email)
+	{
+		var cursor = await accountCollection.FindAsync(account => account.Email == email);
+		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<Account?> GetAccountAsync(EpicID id)
