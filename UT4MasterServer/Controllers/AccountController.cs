@@ -182,18 +182,16 @@ public class AccountController : JsonAPIController
 			return Conflict("Username already exists");
 		}
 
-		var emailCheck = await accountService.GetAccountEmailAsync(email);
-		if (emailCheck != null)
+		account = await accountService.GetAccountEmailAsync(email);
+		if (account != null)
 		{
 			logger.LogInformation($"Could not register duplicate email: {email}");
 			return Conflict("Email already exists");
 		}
 
-		Regex regex = new Regex(@"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
-		Match match = regex.Match(email);
-		if (!match.Success)
+		if (!ValidateEmail(email) || email.Length < 6)
 		{
-			logger.LogInformation($"Entered an incorrect email format: {email}");
+			logger.LogInformation($"Entered an invalid email format: {email}");
 			return Conflict("You have entered an invalid email address");
 		}
 
@@ -258,8 +256,7 @@ public class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		// TODO: match email validation performed by create account (not yet implemented)
-		if (newEmail.Length < 1)
+		if (!ValidateEmail(newEmail) || newEmail.Length < 6)
 		{
 			return ValidationProblem();
 
@@ -328,4 +325,11 @@ public class AccountController : JsonAPIController
 	}
 
 	#endregion
+
+	[NonAction]
+	private static bool ValidateEmail(string email)
+	{
+		Regex regex = new Regex(@"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+		return regex.IsMatch(email);
+	}
 }
