@@ -18,6 +18,7 @@ public static class Program
 		// register serializers for custom types
 		BsonSerializer.RegisterSerializationProvider(new BsonSerializationProvider());
 
+		// set defaults for bson, where defaults are not a constant expression
 		BsonClassMap.RegisterClassMap<Account>(x =>
 		{
 			x.AutoMap();
@@ -25,6 +26,11 @@ public static class Program
 			x.MapMember(x => x.DeviceIDs).SetDefaultValue(Array.Empty<string>());
 		});
 		BsonClassMap.RegisterClassMap<Session>(x =>
+		{
+			x.AutoMap();
+			x.MapMember(x => x.AccountID).SetDefaultValue(EpicID.Empty);
+		});
+		BsonClassMap.RegisterClassMap<CloudFile>(x =>
 		{
 			x.AutoMap();
 			x.MapMember(x => x.AccountID).SetDefaultValue(EpicID.Empty);

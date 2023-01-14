@@ -8,6 +8,7 @@ public class CloudFile
 {
 	// ID = AccountID + Filename = unique key
 
+	[BsonIgnoreIfDefault] // default value is set in Program.cs
 	[BsonElement("AccountID")]
 	public EpicID AccountID { get; set; } = EpicID.Empty; // EpicID.Empty is used for system files
 
@@ -15,10 +16,10 @@ public class CloudFile
 	public string Filename { get; set; } = string.Empty;
 
 	[BsonElement("Hash")]
-	public string Hash { get; set; } = string.Empty; // TODO: figure out hash algo
+	public string Hash { get; set; } = string.Empty;
 
 	[BsonElement("Hash256")]
-	public string Hash256 { get; set; } = string.Empty; // TODO: figure out hash algo
+	public string Hash256 { get; set; } = string.Empty;
 
 	[BsonElement("UploadedAt")]
 	public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
