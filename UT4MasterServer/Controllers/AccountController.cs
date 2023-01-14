@@ -194,7 +194,7 @@ public class AccountController : JsonAPIController
 		if (!match.Success)
 		{
 			logger.LogInformation($"Entered an incorrect email format: {email}");
-			return Conflict("You have entered and invalid email address");
+			return Conflict("You have entered an invalid email address");
 		}
 
 		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
