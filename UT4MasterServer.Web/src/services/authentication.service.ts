@@ -1,7 +1,7 @@
 import { SessionStore as SessionStore } from '../stores/session-store';
 import { ILoginRequest } from '../types/login-request';
 import HttpService from './http.service';
-import { ISession } from '../types/session';
+import { ISession, IVerifySession } from '../types/session';
 import { GrantType } from '../enums/grant-type';
 import { IRefreshSessionRequest } from '../types/refresh-session-request';
 import { IAuthCodeResponse } from '../types/auth-code-response';
@@ -53,11 +53,14 @@ export default class AuthenticationService extends HttpService {
 
     async checkAuth() {
         try {
-            const session = await this.get<ISession>(`${this.baseUrl}/verify`);
-            // quick and dirty fix for the mismatch in the return object between /token and /verify
-            if (session.token) {
-                session.access_token = session.token;
-            }
+            const verifySession = await this.get<IVerifySession>(`${this.baseUrl}/verify`);
+            const session: ISession = { 
+                ...SessionStore.session!,
+                access_token: verifySession.token,
+                account_id: verifySession.account_id,
+                displayName: verifySession.display_name,
+                expires_at: verifySession.expires_at
+            };
             SessionStore.session = session;
         }
         catch (err: unknown) {
