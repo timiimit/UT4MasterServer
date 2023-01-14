@@ -182,7 +182,7 @@ public class AccountController : JsonAPIController
 			return Conflict("Username already exists");
 		}
 
-		account = await accountService.GetAccountEmailAsync(email);
+		account = await accountService.GetAccountByEmailAsync(email);
 		if (account != null)
 		{
 			logger.LogInformation($"Could not register duplicate email: {email}");
