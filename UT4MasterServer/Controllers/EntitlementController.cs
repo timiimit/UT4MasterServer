@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Controllers;
 
@@ -12,6 +14,24 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class EntitlementController : JsonAPIController
 {
+	private static readonly List<string> mapEntitlementIDs;
+
+	static EntitlementController()
+	{
+		// UT entitlement name: UnrealTournament
+		// UT entitlement id:   b8538c739273426aa35a98220e258d55
+
+		// the following ids are found in UT4's source code in file UnrealTournament.cpp
+		mapEntitlementIDs = new List<string>();
+		mapEntitlementIDs.Add("0d5e275ca99d4cf0b03c518a6b279e26"); // DM-Lea
+		mapEntitlementIDs.Add("48d281f487154bb29dd75bd7bb95ac8e"); // CTF-Pistola
+		mapEntitlementIDs.Add("d8ac8a7ce06d44ab8e6b7284184e556e"); // DM-Batrankus
+		mapEntitlementIDs.Add("08af4962353443058766998d6b881707"); // DM-Backspace
+		mapEntitlementIDs.Add("27f36270a1ec44509e72687c4ba6845a"); // DM-Salt
+		mapEntitlementIDs.Add("a99f379bfb9b41c69ddf0bfbc4a48860"); // CTF-Polaris
+		mapEntitlementIDs.Add("65fb5029cddb4de7b5fa155b6992e6a3"); // DM-Unsaved
+	}
+
 	public EntitlementController(ILogger<EntitlementController> logger) : base(logger)
 	{
 
@@ -20,58 +40,35 @@ public class EntitlementController : JsonAPIController
 	[HttpGet]
 	public IActionResult QueryProfile(string id)
 	{
-		// TODO: we should at least return entitlement for those 3 or so community made maps
-		//       that are in the game and need to normally be redeemed in store. it is important
-		//       that we find the id's of those items before its too late.
-
-		/*
-		Here is one for DM-Unsaved, the only one i own.
-
-		[{
-			"id": "87e81495602a42bfb8f11066886f7276",
-			"entitlementName": "Unsaved",
-			"namespace": "ut",
-			"catalogItemId": "65fb5029cddb4de7b5fa155b6992e6a3",
-			"accountId": "0b0f09b400854b9b98932dd9e5abe7c5",
-			"identityId": "0b0f09b400854b9b98932dd9e5abe7c5",
-			"entitlementType": "EXECUTABLE",
-			"grantDate": "2017-10-12T16:20:24.736Z",
-			"startDate": "2016-11-03T00:00:00.000Z",
-			"consumable": false,
-			"status": "ACTIVE",
-			"active": true,
-			"useCount": 0,
-			"created": "2017-10-12T16:20:24.740Z",
-			"updated": "2017-10-12T16:20:24.740Z",
-			"groupEntitlement": false
-			}]
-
-		[
-			{
-				"id": "47573a6c0df04f81908e652ffcab5f26",
-				"entitlementName": "UnrealTournament",
-				"namespace": "ut",
-				"catalogItemId": "b8538c739273426aa35a98220e258d55",
-				"accountId": "64bf8c6d81004e88823d577abe157373",
-				"identityId": "64bf8c6d81004e88823d577abe157373",
-				"entitlementType": "EXECUTABLE",
-				"grantDate": "2020-06-02T13:21:18.729Z",
-				"consumable": false,
-				"status": "ACTIVE",
-				"active": true,
-				"useCount": 0,
-				"originalUseCount": 0,
-				"platformType": "EPIC",
-				"created": "2020-06-02T13:21:18.732Z",
-				"updated": "2020-06-02T13:21:18.732Z",
-				"groupEntitlement": false,
-				"country": "SI"
-			}
-		]
-		*/
-
 		// TODO: Permission: "Sorry your login does not posses the permissions 'entitlement:account:{id_from_param}:entitlements READ' needed to perform the requested operation"
 
-		return Json("[]");
+		var commonDate = new DateTime(2023, 1, 1).ToStringISO();
+
+		JArray arr = new JArray();
+		foreach (var mapEntitlementID in mapEntitlementIDs)
+		{
+			JObject obj = new JObject();
+			obj.Add("id", EpicID.GenerateNew().ToString()); // does not matter to us
+			obj.Add("entitlementName", mapEntitlementID); // usually same as map entitlement id
+			obj.Add("namespace", "ut");
+			obj.Add("catalogItemId", mapEntitlementID); // this is what is checked in the game
+			obj.Add("accountId", id);
+			obj.Add("identityId", id);
+			obj.Add("entitlementType", "EXECUTABLE"); // EXECUTABLE is the only known value
+			obj.Add("grantDate", commonDate);
+			obj.Add("consumable", false);
+			obj.Add("status", "ACTIVE"); // ACTIVE is the only known value
+			obj.Add("active", true);
+			obj.Add("useCount", 0);
+			obj.Add("originalUseCount", 0);
+			obj.Add("platformType", "EPIC");
+			obj.Add("created", commonDate);
+			obj.Add("updated", commonDate);
+			obj.Add("groupEntitlement", false);
+			obj.Add("country", "US"); // does not matter to us
+			arr.Add(obj);
+		}
+
+		return Json(arr);
 	}
 }
