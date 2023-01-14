@@ -62,18 +62,13 @@ public class CloudStorageService
 
 		// upsert = update or insert if doesn't exist
 		var options = new ReplaceOptions { IsUpsert = true };
-		await cloudStorageCollection.ReplaceOneAsync(
-			x => x.AccountID == accountID &&
-			x.Filename == filename, file, options
-		);
+
+		await cloudStorageCollection.ReplaceOneAsync(GetFilter(accountID, filename), file, options);
 	}
 
 	public async Task<CloudFile?> GetFileAsync(EpicID accountID, string filename)
 	{
-		var filter =
-			Builders<CloudFile>.Filter.Eq(x => x.AccountID, accountID) &
-			Builders<CloudFile>.Filter.Eq(x => x.Filename, filename);
-		var cursor = await cloudStorageCollection.FindAsync(filter);
+		var cursor = await cloudStorageCollection.FindAsync(GetFilter(accountID, filename));
 		return await cursor.SingleOrDefaultAsync();
 	}
 
@@ -84,17 +79,16 @@ public class CloudStorageService
 		{
 			Projection = Builders<CloudFile>.Projection.Exclude(x => x.RawContent)
 		};
-		var cursor = await cloudStorageCollection.FindAsync(x => x.AccountID == accountID, options);
+		var cursor = await cloudStorageCollection.FindAsync(GetFilter(accountID), options);
 		return await cursor.ToListAsync();
 	}
 
 	public async Task DeleteFileAsync(EpicID accountID, string filename)
 	{
-		await cloudStorageCollection.DeleteOneAsync(
-			x => x.AccountID == accountID &&
-			x.Filename == filename
-		);
+		await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
 	}
+
+
 
 	private static bool IsCommonUserFileFilename(string filename)
 	{
@@ -114,5 +108,31 @@ public class CloudStorageService
 		var hashedBytes = SHA256.HashData(data);
 		var hash = Convert.ToHexString(hashedBytes).ToLower();
 		return hash;
+	}
+
+	private static FilterDefinition<CloudFile> GetFilter(EpicID accountID, string filename)
+	{
+		if (accountID.IsEmpty)
+		{
+			return
+				Builders<CloudFile>.Filter.Exists(x => x.AccountID, false) &
+				Builders<CloudFile>.Filter.Eq(x => x.Filename, filename);
+		}
+
+		return
+			Builders<CloudFile>.Filter.Eq(x => x.AccountID, accountID) &
+			Builders<CloudFile>.Filter.Eq(x => x.Filename, filename);
+	}
+
+	private static FilterDefinition<CloudFile> GetFilter(EpicID accountID)
+	{
+		if (accountID.IsEmpty)
+		{
+			return
+				Builders<CloudFile>.Filter.Exists(x => x.AccountID, false);
+		}
+
+		return
+			Builders<CloudFile>.Filter.Eq(x => x.AccountID, accountID);
 	}
 }

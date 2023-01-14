@@ -44,17 +44,15 @@ public class Account
 	[BsonElement("CreatedAt")]
 	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+	/**** Not required for proper operation ****/
+
 	[BsonElement("LastLoginAt")]
 	public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
 
-	/**** Not required for proper operation ****/
-
-	[BsonIgnoreIfNull]
 	[BsonElement("Email")]
-	public string? Email { get; set; } = null;
+	public string Email { get; set; } = string.Empty;
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue(new string[0])]
+	[BsonIgnoreIfDefault] // default value is set in Program.cs
 	[BsonElement("DeviceIDs")]
 	public string[] DeviceIDs { get; set; } = Array.Empty<string>();
 

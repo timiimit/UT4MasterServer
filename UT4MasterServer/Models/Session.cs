@@ -17,7 +17,7 @@ public class Session
 	[BsonId]
 	public EpicID ID { get; set; } = EpicID.Empty;
 
-	[BsonElement("UserID")]
+	[BsonElement("AccountID"), BsonIgnoreIfDefault] // default value is set in Program.cs
 	public EpicID AccountID { get; set; } = EpicID.Empty;
 
 	/// <summary>

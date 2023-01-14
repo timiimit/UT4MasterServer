@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Helpers;
 using UT4MasterServer.Models;
-using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
@@ -19,6 +19,21 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class AccountController : JsonAPIController
 {
+	private static readonly Regex regexEmail;
+	private static readonly List<string> disallowedUsernameWords;
+
+	static AccountController()
+	{
+		regexEmail = new Regex(@"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+		disallowedUsernameWords = new List<string>
+		{
+			"cock", "dick", "penis", "vagina", "tits",
+			"shit", "fuck", "bitch", "slut", "sex", "cum",
+			"nigger", "hitler", "nazi"
+		};
+	}
+
+
 	private readonly AccountService accountService;
 
 	public AccountController(ILogger<AccountController> logger, AccountService accountService) : base(logger)
@@ -34,10 +49,14 @@ public class AccountController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
 
-		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for account {id}");
-
 		// TODO: EPIC doesn't throw here if id is invalid (like 'abc'). Return this same ErrorResponse like for account_not_found
 		EpicID eid = EpicID.FromString(id);
+
+		if (eid != authenticatedUser.Session.AccountID)
+			return Unauthorized();
+
+		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for account {id}");
+
 		var account = await accountService.GetAccountAsync(eid);
 		if (account == null)
 			return NotFound(new ErrorResponse
@@ -172,9 +191,8 @@ public class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password, [FromForm] string email)
+	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password)
 	{
-		// TODO: Add validation
 		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
@@ -182,19 +200,29 @@ public class AccountController : JsonAPIController
 			return Conflict("Username already exists");
 		}
 
-		var emailCheck = await accountService.GetAccountEmailAsync(email);
-		if (emailCheck != null)
+		if (!ValidateUsername(username))
+		{
+			logger.LogInformation($"Entered an invalid username: {username}");
+			return Conflict("You have entered an invalid username");
+		}
+
+		account = await accountService.GetAccountByEmailAsync(email);
+		if (account != null)
 		{
 			logger.LogInformation($"Could not register duplicate email: {email}");
 			return Conflict("Email already exists");
 		}
 
-		Regex regex = new Regex(@"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
-		Match match = regex.Match(email);
-		if (!match.Success)
+		if (!ValidateEmail(email))
 		{
-			logger.LogInformation($"Entered an incorrect email format: {email}");
-			return Conflict("You have entered and invalid email address");
+			logger.LogInformation($"Entered an invalid email format: {email}");
+			return Conflict("You have entered an invalid email address");
+		}
+
+		if (!ValidatePassword(password))
+		{
+			logger.LogInformation($"Entered password was in invalid format");
+			return Conflict("Unexpected password format");
 		}
 
 		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
@@ -213,11 +241,11 @@ public class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		if (newUsername.Length < 1)
+		if (!ValidateUsername(newUsername))
 		{
 			return ValidationProblem();
-
 		}
+
 		var matchingAccount = await accountService.GetAccountAsync(newUsername);
 		if (matchingAccount != null)
 		{
@@ -258,11 +286,9 @@ public class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		// TODO: match email validation performed by create account (not yet implemented)
-		if (newEmail.Length < 1)
+		if (!ValidateEmail(newEmail))
 		{
 			return ValidationProblem();
-
 		}
 
 		var account = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -298,7 +324,8 @@ public class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		if (currentPassword.Length < 7 || newPassword.Length < 7)
+		// passwords should already be hashed, but check it's length just in case
+		if (!ValidatePassword(newPassword))
 		{
 			return ValidationProblem();
 		}
@@ -328,4 +355,48 @@ public class AccountController : JsonAPIController
 	}
 
 	#endregion
+
+	[NonAction]
+	private static bool ValidateEmail(string email)
+	{
+		if (email.Length < 6 || email.Length > 64)
+			return false;
+
+		return regexEmail.IsMatch(email);
+	}
+
+	[NonAction]
+	private static bool ValidateUsername(string username)
+	{
+		if (username.Length < 3 || username.Length > 32)
+			return false;
+
+		username = username.ToLower();
+
+		// try to prevent impersonation of authority
+		if (username == "admin" || username == "administrator" || username == "system")
+			return false;
+
+		// there's no way to prevent people from getting highly creative.
+		// we just try some minimal filtering for now...
+		foreach (var word in disallowedUsernameWords)
+		{
+			if (username.Contains(word))
+				return false;
+		}
+		return true;
+	}
+
+	[NonAction]
+	private static bool ValidatePassword(string password)
+	{
+		// we are expecting password to be SHA512 hash (64 bytes) in hex string form (128 chars)
+		if (password.Length != 128)
+			return false;
+
+		if (!password.IsHexString())
+			return false;
+
+		return true;
+	}
 }

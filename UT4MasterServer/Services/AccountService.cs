@@ -29,7 +29,7 @@ public class AccountService
 		await accountCollection.InsertOneAsync(newAccount);
 	}
 
-	public async Task<Account?> GetAccountEmailAsync(string email)
+	public async Task<Account?> GetAccountByEmailAsync(string email)
 	{
 		var cursor = await accountCollection.FindAsync(account => account.Email == email);
 		return await cursor.SingleOrDefaultAsync();
@@ -52,7 +52,11 @@ public class AccountService
 		// look for account just with username
 		var account = await GetAccountAsync(username);
 		if (account == null)
-			return null;
+		{
+			account = await GetAccountByEmailAsync(username);
+			if (account == null)
+				return null;
+		}
 
 		// now verify that password is correct
 		if (account.Password != GetPasswordHash(account.ID, password))
@@ -67,7 +71,7 @@ public class AccountService
 			// put password into the form as it would be in, if it were transmitted from our website
 			password = GetPasswordHash(password);
 
-			// hash the password with
+			// hash the password with account id
 			if (account.Password != GetPasswordHash(account.ID, password))
 				return null;
 		}
