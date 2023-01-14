@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Helpers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
@@ -214,6 +215,12 @@ public class AccountController : JsonAPIController
 			return Conflict("You have entered an invalid email address");
 		}
 
+		if (!ValidatePassword(password))
+		{
+			logger.LogInformation($"Entered password was in invalid format");
+			return Conflict("Unexpected password format");
+		}
+
 		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
 
 
@@ -314,7 +321,7 @@ public class AccountController : JsonAPIController
 		}
 
 		// passwords should already be hashed, but check it's length just in case
-		if (currentPassword.Length < 32 || newPassword.Length < 32)
+		if (ValidatePassword(newPassword))
 		{
 			return ValidationProblem();
 		}
@@ -373,6 +380,19 @@ public class AccountController : JsonAPIController
 			if (username.Contains(word))
 				return false;
 		}
+		return true;
+	}
+
+	[NonAction]
+	private static bool ValidatePassword(string password)
+	{
+		// we are expecting password to be SHA512 hash
+		if (password.Length != 64)
+			return false;
+
+		if (!password.IsHexString())
+			return false;
+
 		return true;
 	}
 }
