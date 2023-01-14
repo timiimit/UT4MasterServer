@@ -362,7 +362,8 @@ public class AccountController : JsonAPIController
 
 		username = username.ToLower();
 
-		if (username == "admin" || username == "system")
+		// try to prevent impersonation of authority
+		if (username == "admin" || username == "administrator" || username == "system")
 			return false;
 
 		// there's no way to prevent people from getting highly creative.
