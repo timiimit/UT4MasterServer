@@ -185,14 +185,7 @@ public class MatchmakingService
 			Limit = 1
 		};
 
-		// TODO: this should check if player accountID is in GameServer with specified sessionID
-
-
-		var result1 = await serverCollection.CountDocumentsAsync(filterPrivatePlayers, options);
-		var result2 = await serverCollection.CountDocumentsAsync(filterPublicPlayers, options);
-
-
-		var result = await serverCollection.CountDocumentsAsync(filterSession, options);
+		var result = await serverCollection.CountDocumentsAsync(filterSession & (filterPrivatePlayers | filterPublicPlayers), options);
 		return result > 0;
 	}
 
