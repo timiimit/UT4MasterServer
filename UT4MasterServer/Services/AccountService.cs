@@ -74,6 +74,12 @@ public class AccountService
 		return await result.ToListAsync();
 	}
 
+	public async Task<List<Account>> GetAllAccountsAsync()
+	{
+		var result = await accountCollection.FindAsync(account => true);
+		return await result.ToListAsync();
+	}
+
 	public async Task UpdateAccountAsync(Account updatedAccount)
 	{
 		// we never want to change the ID, so ID can be implied from 'updatedAccount'

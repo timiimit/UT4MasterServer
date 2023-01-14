@@ -50,6 +50,11 @@
   .navbar-nav .show>.nav-link {
     color: var(--bs-navbar-active-color);
   }
+
+  .nav-item.pull-right {
+    margin-right: 0;
+    margin-left: 1rem;
+  }
 }
 
 .user-info {

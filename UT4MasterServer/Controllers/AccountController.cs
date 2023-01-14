@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
-using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
@@ -115,6 +114,29 @@ public class AccountController : JsonAPIController
 			}
 
 			obj.Add("externalAuths", new JObject());
+			arr.Add(obj);
+		}
+
+		return Json(arr);
+	}
+
+	[HttpGet("public/accounts")]
+	public async Task<IActionResult> GetAllAccounts()
+	{
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+			return Unauthorized();
+
+		// TODO: paging
+		var accounts = await accountService.GetAllAccountsAsync();
+		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for all accounts");
+
+		// create json response
+		var arr = new JArray();
+		foreach (var account in accounts)
+		{
+			var obj = new JObject();
+			obj.Add("id", account.ID.ToString());
+			obj.Add("displayName", account.Username);
 			arr.Add(obj);
 		}
 

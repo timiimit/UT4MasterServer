@@ -4,7 +4,6 @@
       <div class="spinner" />
     </div>
     <div class="content">
-      &nbsp;
       <slot />
     </div>
     <div class="alert alert-dismissible alert-danger" v-show="asyncStatus === AsyncStatus.ERROR">
