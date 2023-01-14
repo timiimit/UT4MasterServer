@@ -39,10 +39,12 @@ public static class Program
 		// start up asp.net
 		var builder = WebApplication.CreateBuilder(args);
 
-		builder.Services.AddControllers(o =>
-		{
-			o.RespectBrowserAcceptHeader = true;
-		});
+		builder.Services
+			.AddControllers(o =>
+			{
+				o.RespectBrowserAcceptHeader = true;
+			})
+			.AddNewtonsoftJson();
 
 		builder.Services.Configure<ApplicationSettings>(
 			builder.Configuration.GetSection("ApplicationSettings")
