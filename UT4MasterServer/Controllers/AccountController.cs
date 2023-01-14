@@ -386,8 +386,8 @@ public class AccountController : JsonAPIController
 	[NonAction]
 	private static bool ValidatePassword(string password)
 	{
-		// we are expecting password to be SHA512 hash
-		if (password.Length != 64)
+		// we are expecting password to be SHA512 hash (64 bytes) in hex string form (128 chars)
+		if (password.Length != 128)
 			return false;
 
 		if (!password.IsHexString())
