@@ -379,7 +379,7 @@ public class SessionController : JsonAPIController
 
 		var obj = new JObject()
 		{
-			{ "access_token", user.AccessToken },
+			{ "token", user.AccessToken },
 			{ "session_id", user.Session.ID.ToString() },
 			{ "token_type", HttpAuthorization.BearerScheme.ToLower() },
 			{ "client_id", user.Session.ClientID.ToString() },

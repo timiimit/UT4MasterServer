@@ -54,6 +54,10 @@ export default class AuthenticationService extends HttpService {
     async checkAuth() {
         try {
             const session = await this.get<ISession>(`${this.baseUrl}/verify`);
+            // quick and dirty fix for the mismatch in the return object between /token and /verify
+            if (session.token) {
+                session.access_token = session.token;
+            }
             SessionStore.session = session;
         }
         catch (err: unknown) {
