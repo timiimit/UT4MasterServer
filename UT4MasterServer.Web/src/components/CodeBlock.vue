@@ -1,5 +1,5 @@
 <template>
-    <div  class="code codeblock">
+    <div class="code codeblock">
         <div ref="code">
             <slot />
         </div>

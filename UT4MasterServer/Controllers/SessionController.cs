@@ -169,6 +169,12 @@ public class SessionController : JsonAPIController
 			account = await accountService.GetAccountAsync(session.AccountID);
 		logger.LogInformation($"User '{account?.ToString() ?? EpicID.Empty.ToString()}' was authorized via {request.GrantType}");
 
+		if (account != null)
+		{
+			account.LastLoginAt = DateTime.UtcNow;
+			await accountService.UpdateAccountAsync(account);
+		}
+
 		JObject obj = new JObject();
 		obj.Add("access_token", session.AccessToken.Value);
 		obj.Add("expires_in", session.AccessToken.ExpirationDurationInSeconds);
@@ -176,9 +182,12 @@ public class SessionController : JsonAPIController
 		obj.Add("token_type", HttpAuthorization.BearerScheme.ToLower());
 		if (!session.AccountID.IsEmpty && account != null)
 		{
-			obj.Add("refresh_token", session.RefreshToken.Value);
-			obj.Add("refresh_expires", session.RefreshToken.ExpirationDurationInSeconds);
-			obj.Add("refresh_expires_at", session.RefreshToken.ExpirationTime.ToStringISO());
+			if (session.RefreshToken != null) // should never be null here
+			{
+				obj.Add("refresh_token", session.RefreshToken.Value);
+				obj.Add("refresh_expires", session.RefreshToken.ExpirationDurationInSeconds);
+				obj.Add("refresh_expires_at", session.RefreshToken.ExpirationTime.ToStringISO());
+			}
 			obj.Add("account_id", account.ID.ToString());
 		}
 		obj.Add("client_id", session.ClientID.ToString());
