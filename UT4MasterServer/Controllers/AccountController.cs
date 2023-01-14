@@ -172,20 +172,20 @@ public class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromBody] RegisterRequest request)
+	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string password, [FromForm] string email)
 	{
 		// TODO: Add validation
-		var account = await accountService.GetAccountAsync(request.Username);
+		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate account: {request.Username}");
+			logger.LogInformation($"Could not register duplicate account: {username}");
 			return Conflict("Username already exists");
 		}
 
-		var email = await accountService.GetAccountEmailAsync(request.Email);
+		var email = await accountService.GetAccountEmailAsync(email);
 		if (email != null)
 		{
-			logger.LogInformation($"Could not register duplicate email: {request.Email}");
+			logger.LogInformation($"Could not register duplicate email: {email}");
 			return Conflict("Email already exists");
 		}
 
@@ -193,14 +193,14 @@ public class AccountController : JsonAPIController
 		Match match = regex.Match(request.Email);
 		if (!match.Success)
 		{
-			logger.LogInformation($"Entered an incorrect email format: {request.Email}");
+			logger.LogInformation($"Entered an incorrect email format: {email}");
 			return Conflict("You have entered and invalid email address");
 		}
 
-		await accountService.CreateAccountAsync(request.Username, request.Email, request.Password); // TODO: this cannot fail?
+		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
 
 
-		logger.LogInformation($"Registered new user: {request.Username}");
+		logger.LogInformation($"Registered new user: {username}");
 
 		return Ok("Account created successfully");
 	}
