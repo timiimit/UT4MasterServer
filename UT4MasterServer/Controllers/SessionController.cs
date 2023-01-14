@@ -169,6 +169,12 @@ public class SessionController : JsonAPIController
 			account = await accountService.GetAccountAsync(session.AccountID);
 		logger.LogInformation($"User '{account?.ToString() ?? EpicID.Empty.ToString()}' was authorized via {request.GrantType}");
 
+		if (account != null)
+		{
+			account.LastLoginAt = DateTime.UtcNow;
+			await accountService.UpdateAccountAsync(account);
+		}
+
 		JObject obj = new JObject();
 		obj.Add("access_token", session.AccessToken.Value);
 		obj.Add("expires_in", session.AccessToken.ExpirationDurationInSeconds);
