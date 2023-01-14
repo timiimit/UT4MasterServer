@@ -35,7 +35,10 @@ export default class HttpService {
         const response = await fetch(url, fetchOptions);
 
         if (!response.ok) {
-            throw new Error(`HTTP request error - ${response.status}: ${response.statusText}`);
+            const error =  await response.json().catch(() => { });
+            const errorMessage = error.errorMessage ?? error;
+            const defaultErrorMessage = `HTTP request error - ${response.status}: ${response.statusText}`;
+            throw new Error(errorMessage ?? defaultErrorMessage);
         }
 
         const responseObj = await response.json().catch(() => { });

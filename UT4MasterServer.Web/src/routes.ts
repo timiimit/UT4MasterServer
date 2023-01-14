@@ -12,16 +12,25 @@ export const routes: RouteRecordRaw[] = [
       import(
         './pages/Profile/Profile.vue'
       ),
+    // TODO: change to player card maybe?
     redirect: '/Profile/Stats',
     beforeEnter: privateGuard,
     children: [
+      {
+        path: `PlayerCard`,
+        component: async () =>
+          import(
+            './pages/Profile/PlayerCard.vue'
+          ),
+        beforeEnter: privateGuard
+      },
       {
         path: `ChangeUsername`,
         component: async () =>
           import(
             './pages/Profile/ChangeUsername.vue'
           ),
-          beforeEnter: privateGuard
+        beforeEnter: privateGuard
       },
       {
         path: `ChangePassword`,
@@ -29,7 +38,7 @@ export const routes: RouteRecordRaw[] = [
           import(
             './pages/Profile/ChangePassword.vue'
           ),
-          beforeEnter: privateGuard
+        beforeEnter: privateGuard
       },
       {
         path: `ChangeEmail`,
@@ -37,7 +46,7 @@ export const routes: RouteRecordRaw[] = [
           import(
             './pages/Profile/ChangeEmail.vue'
           ),
-          beforeEnter: privateGuard
+        beforeEnter: privateGuard
       },
       {
         path: `Stats`,
@@ -45,7 +54,7 @@ export const routes: RouteRecordRaw[] = [
           import(
             './pages/Stats.vue'
           ),
-          beforeEnter: privateGuard
+        beforeEnter: privateGuard
       }
     ]
   },
@@ -81,7 +90,7 @@ export const routes: RouteRecordRaw[] = [
       import(
         './pages/Register.vue'
       ),
-      beforeEnter: publicGuard
+    beforeEnter: publicGuard
   },
   {
     path: `/Login`,
@@ -89,7 +98,7 @@ export const routes: RouteRecordRaw[] = [
       import(
         './pages/Login.vue'
       ),
-      beforeEnter: publicGuard
+    beforeEnter: publicGuard
   },
   {
     path: `/`,

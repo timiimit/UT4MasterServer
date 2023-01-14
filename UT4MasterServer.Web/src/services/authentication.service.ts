@@ -1,7 +1,7 @@
 import { SessionStore as SessionStore } from '../stores/session-store';
 import { ILoginRequest } from '../types/login-request';
 import HttpService from './http.service';
-import { ISession } from '../types/session';
+import { ISession, IVerifySession } from '../types/session';
 import { GrantType } from '../enums/grant-type';
 import { IRefreshSessionRequest } from '../types/refresh-session-request';
 import { IAuthCodeResponse } from '../types/auth-code-response';
@@ -17,11 +17,11 @@ export default class AuthenticationService extends HttpService {
                     'Authorization': `${__WEB_BASIC_AUTH}`
                 }
             });
-            console.debug('Password login response: ', session);
             SessionStore.session = session;
         }
         catch (err: unknown) {
             SessionStore.session = null;
+            throw err;
         }
     }
 
@@ -42,7 +42,6 @@ export default class AuthenticationService extends HttpService {
                     'Authorization': `${__WEB_BASIC_AUTH}`
                 }
             });
-            console.debug('Refresh Session response: ', session);
             SessionStore.session = session;
             return true;
         }
@@ -53,23 +52,41 @@ export default class AuthenticationService extends HttpService {
     }
 
     async checkAuth() {
+        try {
+            const verifySession = await this.get<IVerifySession>(`${this.baseUrl}/verify`);
+            const session: ISession = { 
+                ...SessionStore.session!,
+                access_token: verifySession.token,
+                account_id: verifySession.account_id,
+                displayName: verifySession.display_name,
+                expires_at: verifySession.expires_at
+            };
+            SessionStore.session = session;
+        }
+        catch (err: unknown) {
+            SessionStore.session = null;
+        }
         const tokenValid = SessionStore.session && SessionStore.session.access_token && new Date() < new Date(SessionStore.session.expires_at);
         if (tokenValid) {
             return true;
-
         }
         // If token expired try and refresh
         return await this.refreshSession();
     }
 
     async logOut() {
-        await this.delete(`${this.baseUrl}/sessions/kill/${SessionStore.session?.access_token}`);
-        SessionStore.session = null;
+        try {
+            await this.delete(`${this.baseUrl}/sessions/kill/${SessionStore.session?.access_token}`);
+        } catch (err: unknown) {
+            console.error('Error killing session', err);
+        }
+        finally {
+            SessionStore.session = null;
+        }
     }
 
     async getAuthCode() {
         const authResponse = await this.get<IAuthCodeResponse>(`${this.baseUrl}/auth`);
-        console.debug('Auth code response: ', authResponse);
         return authResponse.authorizationCode;
     }
 
