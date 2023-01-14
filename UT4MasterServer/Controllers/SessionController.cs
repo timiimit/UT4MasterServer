@@ -182,9 +182,12 @@ public class SessionController : JsonAPIController
 		obj.Add("token_type", HttpAuthorization.BearerScheme.ToLower());
 		if (!session.AccountID.IsEmpty && account != null)
 		{
-			obj.Add("refresh_token", session.RefreshToken.Value);
-			obj.Add("refresh_expires", session.RefreshToken.ExpirationDurationInSeconds);
-			obj.Add("refresh_expires_at", session.RefreshToken.ExpirationTime.ToStringISO());
+			if (session.RefreshToken != null) // should never be null here
+			{
+				obj.Add("refresh_token", session.RefreshToken.Value);
+				obj.Add("refresh_expires", session.RefreshToken.ExpirationDurationInSeconds);
+				obj.Add("refresh_expires_at", session.RefreshToken.ExpirationTime.ToStringISO());
+			}
 			obj.Add("account_id", account.ID.ToString());
 		}
 		obj.Add("client_id", session.ClientID.ToString());
