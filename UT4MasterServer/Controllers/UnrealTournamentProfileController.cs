@@ -123,7 +123,7 @@ public class UnrealTournamentProfileController : JsonAPIController
 	}
 
 	[HttpPost("{id}/{clientKind}/SetAvatarAndFlag")]
-	public async Task<IActionResult> SetAvatarAndFlag(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
+	public async Task<IActionResult> SetAvatarAndFlag(string id, string clientKind, [FromQuery] string profileId, [FromQuery] int rvn)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -133,9 +133,10 @@ public class UnrealTournamentProfileController : JsonAPIController
 
 		// TODO: Permission: "Sorry your login does not posses the permissions 'ut:profile:{id_from_params}:commands ALL' needed to perform the requested operation"
 
+		if (rvn == -1)
+			rvn = 1;
 
-
-		int revisionNumber = 3;
+		int revisionNumber = rvn;
 
 		JObject obj = JObject.Parse(await Request.BodyReader.ReadAsStringAsync(1024));
 		string? avatar = obj["newAvatar"]?.ToObject<string>();
@@ -191,7 +192,7 @@ public class UnrealTournamentProfileController : JsonAPIController
 	}
 
 	[HttpPost("{id}/{clientKind}/GrantXP")]
-	public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] GrantXP body)
+	public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] int rvn, [FromBody] GrantXP body)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
@@ -225,7 +226,9 @@ public class UnrealTournamentProfileController : JsonAPIController
 		var prevXP = acc.XP;
 		var prevLevel = acc.LevelStockLimited;
 
-		var revisionNumber = 3;
+		if (rvn == -1)
+			rvn = 1;
+		var revisionNumber = rvn;
 
 		var obj = new JObject();
 		obj.Add("profileRevision", revisionNumber);
@@ -292,12 +295,30 @@ public class UnrealTournamentProfileController : JsonAPIController
 	}
 
 	[HttpPost("{id}/{clientKind}/SetStars")]
-	public async Task<IActionResult> SetStars(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn)
+	public async Task<IActionResult> SetStars(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] SetStars body)
 	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+
+		if (user.Session.AccountID != EpicID.FromString(id))
+			return Unauthorized();
+
 		// only known to be sent by client so far
 		bool isRequestSentFromClient = clientKind.ToLower() == "client";
 		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
-		return NotFound(); // TODO: unknown response
+		// this endpoint is kind of pointless. the actual stars are stored in cloudstorage progression file.
+		// then whenever it is changed, it sends an update to master server.
+
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		if (account == null)
+			return BadRequest();
+
+		account.GoldStars = body.NewGoldStars;
+		account.BlueStars = body.NewBlueStars;
+
+		// TODO: send out a proper response which is similar to QueryProfile
+
+		return Ok();
 	}
 }
