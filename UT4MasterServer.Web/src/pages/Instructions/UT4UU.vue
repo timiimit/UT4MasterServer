@@ -11,7 +11,7 @@
         <li>Press APPLY in bottom right of the window</li>
         <li>Close the game</li>
         <li>Start game</li>
-        <li>Get Auth Code and use it in UT4UU's login page</li>
+        <li>Get Auth Code and use it in UT4UU's login window</li>
         <li>Use the newly added account to log in</li>
     </ol>
 </template>
