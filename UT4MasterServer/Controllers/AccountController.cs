@@ -237,7 +237,7 @@ public class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		if (ValidateUsername(newUsername))
+		if (!ValidateUsername(newUsername))
 		{
 			return ValidationProblem();
 		}
@@ -321,7 +321,7 @@ public class AccountController : JsonAPIController
 		}
 
 		// passwords should already be hashed, but check it's length just in case
-		if (ValidatePassword(newPassword))
+		if (!ValidatePassword(newPassword))
 		{
 			return ValidationProblem();
 		}
