@@ -22,6 +22,12 @@ public static class Program
 		{
 			x.AutoMap();
 			x.MapMember(x => x.LastMatchAt).SetDefaultValue(DateTime.UnixEpoch);
+			x.MapMember(x => x.DeviceIDs).SetDefaultValue(Array.Empty<string>());
+		});
+		BsonClassMap.RegisterClassMap<Session>(x =>
+		{
+			x.AutoMap();
+			x.MapMember(x => x.AccountID).SetDefaultValue(EpicID.Empty);
 		});
 
 		// start up asp.net

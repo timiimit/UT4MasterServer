@@ -49,12 +49,10 @@ public class Account
 
 	/**** Not required for proper operation ****/
 
-	[BsonIgnoreIfNull]
 	[BsonElement("Email")]
-	public string? Email { get; set; } = null;
+	public string Email { get; set; } = String.Empty;
 
-	[BsonIgnoreIfDefault]
-	[BsonDefaultValue(new string[0])]
+	[BsonIgnoreIfDefault] // default value is set in Program.cs
 	[BsonElement("DeviceIDs")]
 	public string[] DeviceIDs { get; set; } = Array.Empty<string>();
 
