@@ -53,7 +53,7 @@ const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
 const status = shallowRef(AsyncStatus.OK);
-const formValid = computed(() => username.value && password.value.length > 7);
+const formValid = computed(() => username.value && password.value.length >= 7);
 const errorMessage = shallowRef('Error logging in. Please try again.');
 
 const authenticationService = new AuthenticationService();

@@ -8,7 +8,7 @@
           <div class="col-sm-6">
             <input type="password" class="form-control" id="currentPassword" name="currentPassword" required
               v-model="currentPassword" placeholder="Current Password" autocomplete="off" minlength="7" />
-            <div class="invalid-feedback">Current password must be at least 8 characters</div>
+            <div class="invalid-feedback">Current password must be at least 7 characters</div>
           </div>
         </div>
         <div class="form-group row">
@@ -16,7 +16,7 @@
           <div class="col-sm-6">
             <input type="password" class="form-control" id="newPassword" name="newPassword" v-model="newPassword"
               placeholder="New Password" autocomplete="off" required minlength="7" v-valid="newPasswordValid" />
-            <div v-if="!newPasswordLength" class="invalid-feedback">New Password must be at least 8 characters</div>
+            <div v-if="!newPasswordLength" class="invalid-feedback">New Password must be at least 7 characters</div>
             <div v-if="!newPasswordDiffers" class="invalid-feedback">New Password must differ from Current Password
             </div>
           </div>
@@ -59,8 +59,8 @@ const newPassword = shallowRef<string>('');
 const confirmPassword = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 
-const currentPasswordValid = computed(() => currentPassword.value.length > 7);
-const newPasswordLength = computed(() => newPassword.value.length > 7);
+const currentPasswordValid = computed(() => currentPassword.value.length >= 7);
+const newPasswordLength = computed(() => newPassword.value.length >= 7);
 const newPasswordDiffers = computed(() => newPassword.value !== currentPassword.value);
 const newPasswordValid = computed(() => newPasswordDiffers.value && newPasswordLength.value);
 const confirmPasswordValid = computed(() => confirmPassword.value === newPassword.value);
