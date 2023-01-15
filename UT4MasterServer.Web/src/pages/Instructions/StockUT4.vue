@@ -44,6 +44,7 @@
     <li>Use the shortcut to start the game</li>
     <li>When prompted to log in, enter your UT4 Master Server username (the one you use to log into this site) instead
       of email</li>
+    <li>You may want to configure your settings again as they are stored in the cloud and they will not be transfered over from epic's servers</li>
   </ol>
   <p>To switch back to official epic's servers remove all lines that you added to <span class="code">Engine.ini</span> file. (added lines may have moved)</p>
 </template>
