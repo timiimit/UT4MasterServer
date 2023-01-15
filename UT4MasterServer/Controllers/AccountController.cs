@@ -49,7 +49,6 @@ public class AccountController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
 
-		// TODO: EPIC doesn't throw here if id is invalid (like 'abc'). Return this same ErrorResponse like for account_not_found
 		EpicID eid = EpicID.FromString(id);
 
 		if (eid != authenticatedUser.Session.AccountID)

@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using System.Security.Cryptography;
 using UT4MasterServer.Exceptions;
 using UT4MasterServer.Helpers;
+using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Other;
 
@@ -27,14 +28,22 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 	{
 		if (id.Length != 32)
 		{
-			throw new InvalidEpicIDException("ID needs to be 32 characters long.");
+			
+			catch (InvalidEpicIDException)
+			{
+				throw new InvalidEpicIDException("ID needs to be 32 characters long");
+			}
+
 		}
 
 		ID = id.ToLower();
 
 		if (!ID.IsHexString())
 		{
-			throw new InvalidEpicIDException("ID needs to be a hexadecimal string.");
+			catch (InvalidEpicIDException)
+			{
+				throw new InvalidEpicIDException("ID needs to be a hexadecimal string.");
+			}
 		}
 	}
 
