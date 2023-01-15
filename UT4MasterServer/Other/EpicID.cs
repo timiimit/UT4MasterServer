@@ -27,7 +27,7 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 	{
 		if (id.Length != 32)
 		{
-			throw new InvalidEpicIDException("ID needs to be 32 characters long.", id, 18009, "errors.com.epicgames.account.id_not_32_Characters");
+			throw new InvalidEpicIDException("ID needs to be 32 characters long.", id, 18009, "errors.com.epicgames.account.id_not_32_characters");
 		}
 
 		ID = id.ToLower();
