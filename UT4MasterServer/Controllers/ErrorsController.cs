@@ -9,6 +9,12 @@ namespace UT4MasterServer.Controllers;
 [Route("api/errors")]
 public class ErrorsController : ControllerBase
 {
+	private readonly ILogger<ErrorsController> logger;
+	public ErrorsController(ILogger<ErrorsController> logger)
+	{
+		this.logger = logger;
+	}
+
 	[HttpGet]
 	public IActionResult Index()
 	{
@@ -16,10 +22,13 @@ public class ErrorsController : ControllerBase
 		var statusCode = 500;
 
 		var exceptionHandlerFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+		var exception = exceptionHandlerFeature?.Error;
 
-		if (exceptionHandlerFeature?.Error is { } ex)
+		logger.LogError(exception, "Internal server error occurred.");
+
+		if (exception is not null)
 		{
-			switch (ex)
+			switch (exception)
 			{
 				case InvalidEpicIDException invalidEpicIDException:
 					return StatusCode(400, new ErrorResponse()
