@@ -8,7 +8,7 @@
           <div class="col-sm-6">
             <input type="password" class="form-control" id="currentPassword" name="currentPassword" required
               v-model="currentPassword" placeholder="Current Password" autocomplete="off" minlength="7" />
-            <div class="invalid-feedback">Current password must be at least 7 characters</div>
+            <div class="invalid-feedback">Current password must be at least 8 characters</div>
           </div>
         </div>
         <div class="form-group row">
@@ -16,7 +16,7 @@
           <div class="col-sm-6">
             <input type="password" class="form-control" id="newPassword" name="newPassword" v-model="newPassword"
               placeholder="New Password" autocomplete="off" required minlength="7" v-valid="newPasswordValid" />
-            <div v-if="!newPasswordLength" class="invalid-feedback">New Password must be at least 7 characters</div>
+            <div v-if="!newPasswordLength" class="invalid-feedback">New Password must be at least 8 characters</div>
             <div v-if="!newPasswordDiffers" class="invalid-feedback">New Password must differ from Current Password
             </div>
           </div>
