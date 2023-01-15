@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Exceptions;
+using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Controllers;
 
@@ -20,10 +21,14 @@ public class ErrorsController : ControllerBase
 		{
 			switch (ex)
 			{
-				case InvalidEpicIDException:
-					message = ex.Message;
-					statusCode = 400;
-					break;
+				case InvalidEpicIDException invalidEpicIDException:
+					return StatusCode(400, new ErrorResponse()
+					{
+						ErrorCode = invalidEpicIDException.ErrorCode,
+						ErrorMessage = invalidEpicIDException.Message,
+						MessageVars = new string[] { invalidEpicIDException.ID },
+						NumericErrorCode = invalidEpicIDException.NumericErrorCode
+					});
 			}
 		}
 
