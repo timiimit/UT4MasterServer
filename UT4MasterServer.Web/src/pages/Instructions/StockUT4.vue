@@ -35,13 +35,18 @@
     <li>Create a shortcut to <span class="code">UE4-Win64-Shipping.exe</span> on your desktop (Right click -> Send to ->
       Desktop)</li>
     <li>Open properties of the shortcut (Right click, properties)</li>
-    <li>In textbox target at the very end add <span class="code">UnrealTournament -epicapp=UnrealTournamentDev
-        -epicenv=Prod -EpicPortal</span></li>
+    <li>In textbox target at the very end add
+      <CodeBlock>
+        UnrealTournament -epicapp=UnrealTournamentDev -epicenv=Prod -EpicPortal
+      </CodeBlock>
+    </li>
     <li>make sure there is space between what was in there before and what you added</li>
     <li>Use the shortcut to start the game</li>
     <li>When prompted to log in, enter your UT4 Master Server username (the one you use to log into this site) instead
       of email</li>
+    <li>You may want to configure your settings again as they are stored in the cloud and they will not be transfered over from epic's servers</li>
   </ol>
+  <p>To switch back to official epic's servers remove all lines that you added to <span class="code">Engine.ini</span> file. (added lines may have moved)</p>
 </template>
 <script setup lang="ts">
 import CodeBlock from '../../components/CodeBlock.vue';
