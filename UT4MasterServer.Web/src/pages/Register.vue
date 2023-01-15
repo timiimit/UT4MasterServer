@@ -50,7 +50,7 @@ const username = shallowRef('');
 const password = shallowRef('');
 const email = shallowRef('');
 const status = shallowRef(AsyncStatus.OK);
-const formValid = computed(() => validateEmail(email.value) && username.value && password.value.length > 7 && status.value != AsyncStatus.BUSY);
+const formValid = computed(() => validateEmail(email.value) && username.value && password.value.length >= 7 && status.value != AsyncStatus.BUSY);
 const errorMessage = shallowRef('Error registering account. Please try again.');
 
 const accountService = new AccountService();
