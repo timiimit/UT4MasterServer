@@ -50,6 +50,32 @@ public class AccountController : JsonAPIController
 			return Unauthorized();
 
 		// TODO: EPIC doesn't throw here if id is invalid (like 'abc'). Return this same ErrorResponse like for account_not_found
+		if (id.Length != 32)
+		{
+			return NotFound(new ErrorResponse
+			{
+				ErrorCode = "errors.com.epicgames.account.id_not_32_Characters",
+				ErrorMessage = "ID needs to be 32 characters long.",
+				MessageVars = new[] { id },
+				NumericErrorCode = 18009,
+				OriginatingService = "com.epicgames.account.public",
+				Intent = "prod",
+			});
+		}
+		string ID = id.ToLower();
+
+		if (!ID.IsHexString())
+		{
+			return NotFound(new ErrorResponse
+			{
+				ErrorCode = "errors.com.epicgames.account.id_not_hexadecimal",
+				ErrorMessage = "ID needs to be a hexadecimal string",
+				MessageVars = new[] { id },
+				NumericErrorCode = 18008,
+				OriginatingService = "com.epicgames.account.public",
+				Intent = "prod",
+			});
+		}
 		EpicID eid = EpicID.FromString(id);
 
 		if (eid != authenticatedUser.Session.AccountID)
