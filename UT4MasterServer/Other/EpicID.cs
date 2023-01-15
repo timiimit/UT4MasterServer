@@ -27,14 +27,14 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 	{
 		if (id.Length != 32)
 		{
-			throw new InvalidEpicIDException("ID needs to be 32 characters long.", 18009, "errors.com.epicgames.account.id_not_32_Characters");
+			throw new InvalidEpicIDException("ID needs to be 32 characters long.", id, 18009, "errors.com.epicgames.account.id_not_32_Characters");
 		}
 
 		ID = id.ToLower();
 
 		if (!ID.IsHexString())
 		{
-			throw new InvalidEpicIDException("ID needs to be a hexadecimal string.", 18008, "errors.com.epicgames.account.id_not_hexadecimal");
+			throw new InvalidEpicIDException("ID needs to be a hexadecimal string.", id, 18008, "errors.com.epicgames.account.id_not_hexadecimal");
 		}
 	}
 
