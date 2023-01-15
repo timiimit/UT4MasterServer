@@ -9,7 +9,10 @@ namespace UT4MasterServer.Controllers;
 [Route("api/errors")]
 public class ErrorsController : ControllerBase
 {
+	private const string InternalServerError = "Internal server error occurred.";
+
 	private readonly ILogger<ErrorsController> logger;
+
 	public ErrorsController(ILogger<ErrorsController> logger)
 	{
 		this.logger = logger;
@@ -18,13 +21,13 @@ public class ErrorsController : ControllerBase
 	[HttpGet]
 	public IActionResult Index()
 	{
-		var message = "Internal server error occurred.";
+		var message = InternalServerError;
 		var statusCode = 500;
 
 		var exceptionHandlerFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
 		var exception = exceptionHandlerFeature?.Error;
 
-		logger.LogError(exception, "Internal server error occurred.");
+		logger.LogError(exception, InternalServerError);
 
 		if (exception is not null)
 		{
