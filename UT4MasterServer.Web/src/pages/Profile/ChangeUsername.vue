@@ -45,7 +45,7 @@ const currentUsername = shallowRef(AccountStore.account?.displayName);
 const newUsername = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 const formValid = computed(() => newUsername.value?.length);
-const errorMessage = shallowRef('Error changing email. Please try again.');
+const errorMessage = shallowRef('Error changing username. Please try again.');
 
 async function handleSubmit() {
   submitAttempted.value = true;
