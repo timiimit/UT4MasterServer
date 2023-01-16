@@ -2,6 +2,8 @@ version: "3.7"
 
 services:
   ut4masterserver:
+    build:
+      dockerfile: .docker/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
   ut4masterserver-web:

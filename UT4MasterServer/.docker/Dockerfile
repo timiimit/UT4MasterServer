@@ -6,10 +6,10 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["UT4MasterServer/UT4MasterServer.csproj", "UT4MasterServer/"]
+COPY ["UT4MasterServer.csproj", "UT4MasterServer/"]
 RUN dotnet restore "UT4MasterServer/UT4MasterServer.csproj"
-COPY . .
 WORKDIR "/src/UT4MasterServer"
+COPY . .
 # We don't use build
 #RUN dotnet build "UT4MasterServer.csproj" -c Release -o /app/build
 

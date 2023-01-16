@@ -7,8 +7,8 @@ services:
     container_name: UT4MasterServer
     image: ${DOCKER_REGISTRY-}ut4masterserver
     build:
-      context: .
-      dockerfile: UT4MasterServer/Dockerfile
+      context: UT4MasterServer
+      dockerfile: .docker/Dockerfile
     ports:
       - "5000:80"
     networks:
