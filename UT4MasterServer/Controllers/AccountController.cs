@@ -147,13 +147,13 @@ public class AccountController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
 			return Unauthorized();
 
-		// TODO: paging
 		var accounts = await accountService.GetAllAccountsAsync();
 		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for all accounts");
 
 		// create json response
 		var arr = new JArray();
-		foreach (var account in accounts)
+		// TODO: Limit to 1000 for now, just to not allow unlimited access to the accounts collection. Should be replaced with paging or a search function at some point.
+		foreach (var account in accounts.Take(1000))
 		{
 			var obj = new JObject();
 			obj.Add("id", account.ID.ToString());
