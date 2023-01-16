@@ -1,44 +1,40 @@
 <template>
-  <LoadingPanel :status="status">
-    <template #default>
-      <form @submit.prevent="logIn">
-        <fieldset>
-          <legend>Log In</legend>
-          <div class="form-group row">
-            <label for="username" class="col-sm-12 col-form-label">Username</label>
-            <div class="col-sm-6">
-              <input type="text" class="form-control" id="username" name="username" required v-model="username"
-                placeholder="Username" autocomplete="username" />
-              <div class="invalid-feedback">Username is required</div>
-            </div>
-            <div class="col-sm-6 flex-v-center">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="saveUsername" v-model="saveUsername">
-                <label class="form-check-label" for="saveUsername">
-                  Save Username
-                </label>
-              </div>
+  <LoadingPanel :status="status" :error="errorMessage">
+    <form @submit.prevent="logIn">
+      <fieldset>
+        <legend>Log In</legend>
+        <div class="form-group row">
+          <label for="username" class="col-sm-12 col-form-label">Username</label>
+          <div class="col-sm-6">
+            <input type="text" class="form-control" id="username" name="username" required v-model="username"
+              placeholder="Username" autocomplete="username" autofocus />
+            <div class="invalid-feedback">Username is required</div>
+          </div>
+          <div class="col-sm-6 flex-v-center">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="saveUsername" v-model="saveUsername"
+                tabindex="-1">
+              <label class="form-check-label" for="saveUsername">
+                Save Username
+              </label>
             </div>
           </div>
-          <div class="form-group row">
-            <label for="password" class="col-sm-12 col-form-label">Password</label>
-            <div class="col-sm-6">
-              <input type="password" class="form-control" id="password" name="password" minlength="7" v-model="password"
-                placeholder="Password" autocomplete="current-password" />
-              <div class="invalid-feedback">Password must be at least 7 characters</div>
-            </div>
+        </div>
+        <div class="form-group row">
+          <label for="password" class="col-sm-12 col-form-label">Password</label>
+          <div class="col-sm-6">
+            <input type="password" class="form-control" id="password" name="password" minlength="7" v-model="password"
+              placeholder="Password" autocomplete="current-password" />
+            <div class="invalid-feedback">Password must be at least 7 characters</div>
           </div>
-          <div class="form-group row">
-            <div class="col-sm-12">
-              <button type="submit" class="btn btn-primary" :disabled="!formValid">Log In</button>
-            </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-12">
+            <button type="submit" class="btn btn-primary" :disabled="!formValid" tabindex="2">Log In</button>
           </div>
-        </fieldset>
-      </form>
-    </template>
-    <template #error>
-      Error logging in. Please try again.
-    </template>
+        </div>
+      </fieldset>
+    </form>
   </LoadingPanel>
   <RouterLink to="/Register">Create an account</RouterLink>
 </template>
@@ -57,7 +53,8 @@ const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
 const status = shallowRef(AsyncStatus.OK);
-const formValid = computed(() => username.value && password.value.length > 7);
+const formValid = computed(() => username.value && password.value.length >= 7);
+const errorMessage = shallowRef('Error logging in. Please try again.');
 
 const authenticationService = new AuthenticationService();
 
@@ -78,7 +75,7 @@ async function logIn() {
   }
   catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
-    console.error(err);
+    errorMessage.value = (err as Error)?.message;
   }
 }
 </script>

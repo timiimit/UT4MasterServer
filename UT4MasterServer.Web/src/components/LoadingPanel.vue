@@ -8,8 +8,8 @@
     </div>
     <div class="alert alert-dismissible alert-danger" v-show="asyncStatus === AsyncStatus.ERROR">
       <button type="button" class="btn-close" @click="dismissError"></button>
-      <slot name="error" />
-      <div v-if="!$slots.error">An error occurred. Please try again.</div>
+      <div v-if="error">{{ error }}</div>
+      <div v-else>An error occurred. Please try again.</div>
     </div>
   </div>
 </template>
@@ -45,7 +45,8 @@ import { PropType, ref, watch, onUnmounted } from 'vue';
 import { AsyncStatus } from '../types/async-status';
 
 const props = defineProps({
-  status: Number as PropType<AsyncStatus>
+  status: Number as PropType<AsyncStatus>,
+  error: String
 })
 
 const asyncStatus = ref(props.status);

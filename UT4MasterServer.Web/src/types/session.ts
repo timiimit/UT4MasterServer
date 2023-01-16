@@ -6,3 +6,11 @@ export interface ISession {
     account_id: string;
     displayName: string;
 }
+
+export interface IVerifySession {
+    token: string;
+    session_id: string;
+    display_name: string;
+    expires_at: string; //ISO date
+    account_id: string;
+}

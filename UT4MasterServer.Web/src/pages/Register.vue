@@ -1,5 +1,5 @@
 <template>
-  <LoadingPanel :status="status">
+  <LoadingPanel :status="status" :error="errorMessage">
     <form @submit.prevent="register">
       <fieldset>
         <legend>Register</legend>
@@ -34,9 +34,6 @@
         </div>
       </fieldset>
     </form>
-    <template #error>
-      Error registering account. Please try again.
-    </template>
   </LoadingPanel>
 </template>
 
@@ -53,7 +50,8 @@ const username = shallowRef('');
 const password = shallowRef('');
 const email = shallowRef('');
 const status = shallowRef(AsyncStatus.OK);
-const formValid = computed(() => validateEmail(email.value) && username.value && password.value.length > 7 && status.value != AsyncStatus.BUSY);
+const formValid = computed(() => validateEmail(email.value) && username.value && password.value.length >= 7 && status.value != AsyncStatus.BUSY);
+const errorMessage = shallowRef('Error registering account. Please try again.');
 
 const accountService = new AccountService();
 
@@ -72,7 +70,7 @@ async function register() {
     router.push('/Login');
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
-    console.error(err);
+    errorMessage.value = (err as Error)?.message;
   }
 }
 </script>
