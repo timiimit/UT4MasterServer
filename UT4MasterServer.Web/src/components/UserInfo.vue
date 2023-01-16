@@ -2,7 +2,7 @@
   <div class="navbar navbar-primary bg-light user-info">
     <div class="container">
       <div>
-        <label>Logged in as: </label>{{ AccountStore.account?.displayName }}
+        <label>Logged in as: </label>{{ AccountStore.account?.displayName ?? SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">
@@ -27,6 +27,7 @@
     font-size: 0.6rem;
     margin-right: 5px;
   }
+
   button {
     margin-left: 5px;
     padding: 3px 5px;
@@ -40,6 +41,7 @@ import AuthenticationService from '../services/authentication.service';
 import { AsyncStatus } from '../types/async-status';
 import LoadingPanel from './LoadingPanel.vue';
 import { AccountStore } from '../stores/account-store';
+import { SessionStore } from '../stores/session-store';
 
 const service = new AuthenticationService();
 const authCode = shallowRef<string | null>(null);
@@ -62,10 +64,4 @@ function copyAuthCode() {
   }
 }
 
-onMounted(async () => {
-  // TODO: I may move this, but this works for now
-  if (AccountStore.account === null) {
-    AccountStore.fetchUserAccount();
-  }
-});
 </script>

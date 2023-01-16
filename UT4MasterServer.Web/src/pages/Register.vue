@@ -15,7 +15,7 @@
           <label for="username" class="col-sm-12 col-form-label">Username</label>
           <div class="col-sm-6">
             <input type="text" class="form-control" id="username" name="username" required v-model="username"
-              placeholder="Username" autocomplete="username" />
+              placeholder="Username" autocomplete="off" />
             <div class="invalid-feedback">Username is required</div>
           </div>
         </div>
@@ -41,7 +41,7 @@
 import LoadingPanel from '../components/LoadingPanel.vue';
 import { AsyncStatus } from '../types/async-status';
 import { computed, shallowRef } from 'vue';
-import { validateEmail } from '../utils/validation';
+import { validateEmail, validatePassword } from '../utils/validation';
 import CryptoJS from 'crypto-js';
 import { useRouter } from 'vue-router';
 import AccountService from '../services/account.service';
@@ -50,7 +50,7 @@ const username = shallowRef('');
 const password = shallowRef('');
 const email = shallowRef('');
 const status = shallowRef(AsyncStatus.OK);
-const formValid = computed(() => validateEmail(email.value) && username.value && password.value.length >= 7 && status.value != AsyncStatus.BUSY);
+const formValid = computed(() => validateEmail(email.value) && username.value && validatePassword(password.value) && status.value != AsyncStatus.BUSY);
 const errorMessage = shallowRef('Error registering account. Please try again.');
 
 const accountService = new AccountService();

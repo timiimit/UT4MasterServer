@@ -3,10 +3,10 @@
     <div class="container">
       <a class="navbar-brand" href="/">UT4 Master Server</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor02"
-        aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+        aria-controls="navbarColor02" :aria-expanded="menuExpanded" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon" @click="menuExpanded = !menuExpanded"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarColor02">
+      <div class="collapse navbar-collapse" :class="{ 'show': menuExpanded}">
         <ul class="navbar-nav me-auto">
           <li class="nav-item dropdown pull-right">
             <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
@@ -77,6 +77,7 @@ const router = useRouter();
 const showProfileDropdown = shallowRef(false);
 const showInstructionsDropdown = shallowRef(false);
 const authenticationService = new AuthenticationService();
+const menuExpanded = shallowRef(false);
 
 async function logOut() {
   await authenticationService.logOut();
