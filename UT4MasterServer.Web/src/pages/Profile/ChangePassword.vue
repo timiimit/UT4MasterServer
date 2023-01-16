@@ -59,8 +59,8 @@ const newPassword = shallowRef<string>('');
 const confirmPassword = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 
-const currentPasswordValid = computed(() => currentPassword.value.length > 6);
-const newPasswordLength = computed(() => newPassword.value.length > 6);
+const currentPasswordValid = computed(() => currentPassword.value.length >= 7);
+const newPasswordLength = computed(() => newPassword.value.length >= 7);
 const newPasswordDiffers = computed(() => newPassword.value !== currentPassword.value);
 const newPasswordValid = computed(() => newPasswordDiffers.value && newPasswordLength.value);
 const confirmPasswordValid = computed(() => confirmPassword.value === newPassword.value);
