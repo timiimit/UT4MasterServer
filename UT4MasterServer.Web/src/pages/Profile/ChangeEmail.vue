@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { IChangeEmailRequest } from '../../types/change-email-request';
-import { shallowRef, computed } from 'vue';
+import { shallowRef, computed, onMounted } from 'vue';
 import AccountService from '../../services/account.service';
 import { AsyncStatus } from '../../types/async-status';
 import { useRouter } from 'vue-router';
@@ -68,5 +68,10 @@ async function handleSubmit() {
     errorMessage.value = (err as Error)?.message;
   }
 }
+
+onMounted(async () => {
+  // force account to be up to date before allowing a user to change
+  AccountStore.fetchUserAccount();
+});
 </script>
 
