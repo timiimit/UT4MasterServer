@@ -400,14 +400,14 @@ public class StatisticBase
 		// Deaths are reported if you manage to achieve 1 death each 2 seconds
 		if (Deaths.HasValue && TimePlayed.HasValue && Deaths.Value > (TimePlayed.Value / 2))
 		{
-			flaggedFields.Add(nameof(TimePlayed));
 			flaggedFields.Add(nameof(Deaths));
+			flaggedFields.Add(nameof(TimePlayed));
 		}
 		// Suicides are reported if you manage to achieve 1 suicide each 2 seconds
 		if (Suicides.HasValue && TimePlayed.HasValue && Suicides.Value > (TimePlayed.Value / 2))
 		{
-			flaggedFields.Add(nameof(TimePlayed));
 			flaggedFields.Add(nameof(Suicides));
+			flaggedFields.Add(nameof(TimePlayed));
 		}
 
 		#endregion
@@ -419,8 +419,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel0.Value * 2 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel0));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have multi kills without or more than actual kills
@@ -428,8 +428,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel1.Value * 3 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel1));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have ultra kills without or more than actual kills
@@ -437,8 +437,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel2.Value * 4 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel2));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have monster kills without or more than actual kills
@@ -446,8 +446,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel3.Value * 5 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel3));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have killing spree without or more than actual kills
@@ -455,8 +455,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel0.Value * 5 < Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel0));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have rampages without or more than actual kills
@@ -464,8 +464,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel1.Value * 10 < Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel1));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have dominatings without or more than actual kills
@@ -473,8 +473,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel2.Value * 15 < Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel2));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have unstoppables without or more than actual kills
@@ -482,8 +482,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel3.Value * 20 < Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel3));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have godlikes without or more than actual kills
@@ -491,8 +491,8 @@ public class StatisticBase
 		{
 			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel4.Value * 25 < Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel4));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 
@@ -505,8 +505,8 @@ public class StatisticBase
 			// UDamage time cannot be longer than match time
 			if (TimePlayed.HasValue && UDamageTime.Value > TimePlayed.Value)
 			{
-				flaggedFields.Add(nameof(TimePlayed));
 				flaggedFields.Add(nameof(UDamageTime));
+				flaggedFields.Add(nameof(TimePlayed));
 			}
 		}
 		if (BerserkTime.HasValue)
@@ -514,8 +514,8 @@ public class StatisticBase
 			// BerserkTime time cannot be longer than match time
 			if (TimePlayed.HasValue && BerserkTime.Value > TimePlayed.Value)
 			{
-				flaggedFields.Add(nameof(TimePlayed));
 				flaggedFields.Add(nameof(BerserkTime));
+				flaggedFields.Add(nameof(TimePlayed));
 			}
 		}
 		if (InvisibilityTime.HasValue)
@@ -523,8 +523,8 @@ public class StatisticBase
 			// InvisibilityTime time cannot be longer than match time
 			if (TimePlayed.HasValue && InvisibilityTime.Value > TimePlayed.Value)
 			{
-				flaggedFields.Add(nameof(TimePlayed));
 				flaggedFields.Add(nameof(InvisibilityTime));
+				flaggedFields.Add(nameof(TimePlayed));
 			}
 		}
 
