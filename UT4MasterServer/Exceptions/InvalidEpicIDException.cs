@@ -5,34 +5,29 @@ namespace UT4MasterServer.Exceptions;
 [Serializable]
 public class InvalidEpicIDException : Exception
 {
-	private string _id { get; set; }
-	public string ID { get { return _id; } }
-
-	private int _numericErrorCode { get; set; }
-	public int NumericErrorCode { get { return _numericErrorCode; } }
-
-	private string _errorCode { get; set; }
-	public string ErrorCode { get { return _errorCode; } }
+	public string ID { get; private set; }
+	public int NumericErrorCode { get; private set; }
+	public string ErrorCode { get; private set; }
 
 	public InvalidEpicIDException(string message, string id, int numericErrorCode, string errorCode) : base(message)
 	{
-		_id = id;
-		_numericErrorCode = numericErrorCode;
-		_errorCode = errorCode;
+		ID = id;
+		NumericErrorCode = numericErrorCode;
+		ErrorCode = errorCode;
 	}
 
 	public InvalidEpicIDException(string message, string id, int numericErrorCode, string errorCode, Exception innerException) : base(message, innerException)
 	{
-		_id = id;
-		_numericErrorCode = numericErrorCode;
-		_errorCode = errorCode;
+		ID = id;
+		NumericErrorCode = numericErrorCode;
+		ErrorCode = errorCode;
 	}
 
 	protected InvalidEpicIDException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
 	{
-		_id = serializationInfo.GetString(nameof(ID)) ?? string.Empty;
-		_numericErrorCode = serializationInfo.GetInt32(nameof(NumericErrorCode));
-		_errorCode = serializationInfo.GetString(nameof(ErrorCode)) ?? string.Empty;
+		ID = serializationInfo.GetString(nameof(ID)) ?? string.Empty;
+		NumericErrorCode = serializationInfo.GetInt32(nameof(NumericErrorCode));
+		ErrorCode = serializationInfo.GetString(nameof(ErrorCode)) ?? string.Empty;
 	}
 
 	public override void GetObjectData(SerializationInfo info, StreamingContext context)
