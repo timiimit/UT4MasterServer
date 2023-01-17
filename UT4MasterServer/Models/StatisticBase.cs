@@ -441,15 +441,6 @@ public class StatisticBase
 				flaggedFields.Add(nameof(Kills));
 			}
 		}
-		// Cannot have monster kills without or more than actual kills
-		if (MultiKillLevel3.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel3.Value * 5 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(MultiKillLevel3));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
 		// Cannot have killing spree without or more than actual kills
 		if (SpreeKillLevel0.HasValue)
 		{
@@ -483,15 +474,6 @@ public class StatisticBase
 			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel3.Value * 20 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(SpreeKillLevel3));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Cannot have godlikes without or more than actual kills
-		if (SpreeKillLevel4.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel4.Value * 25 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(SpreeKillLevel4));
 				flaggedFields.Add(nameof(Kills));
 			}
 		}
