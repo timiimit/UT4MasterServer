@@ -415,15 +415,16 @@ public class StatisticBase
 		// Cannot have double kills without or more than actual kills                                                                   
 		if (MultiKillLevel0.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel0.Value * 2 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel0.Value * 2 > Kills.Value))
 			{
+				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel0));
 			}
 		}
 		// Cannot have multi kills without or more than actual kills
 		if (MultiKillLevel1.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel1.Value * 3 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel1.Value * 3 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel1));
@@ -432,7 +433,7 @@ public class StatisticBase
 		// Cannot have ultra kills without or more than actual kills
 		if (MultiKillLevel2.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel2.Value * 4 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel2.Value * 4 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel2));
@@ -441,7 +442,7 @@ public class StatisticBase
 		// Cannot have monster kills without or more than actual kills
 		if (MultiKillLevel3.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel3.Value * 5 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel3.Value * 5 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel3));
