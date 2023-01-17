@@ -385,8 +385,8 @@ public class StatisticBase
 		}
 		if (Kills.HasValue)
 		{
-			// Kills are reported if you manage to achieve 1 kill each 5 seconds
-			if (TimePlayed.HasValue && Kills.Value > (TimePlayed.Value / 5))
+			// Kills are reported if you manage to achieve 1 kill each second
+			if (TimePlayed.HasValue && Kills.Value > TimePlayed.Value)
 			{
 				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(TimePlayed));
