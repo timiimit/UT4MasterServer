@@ -386,7 +386,7 @@ public class StatisticBase
 		if (Kills.HasValue)
 		{
 			// Kills are reported if you manage to achieve 1 kill each 1.5 second
-			if (TimePlayed.HasValue && Kills.Value > (TimePlayed.Value / 1.5m))
+			if (TimePlayed.HasValue && Kills.Value > (TimePlayed.Value / 1.5))
 			{
 				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(TimePlayed));
