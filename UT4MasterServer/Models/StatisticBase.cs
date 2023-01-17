@@ -453,7 +453,7 @@ public class StatisticBase
 		// Cannot have killing spree without or more than actual kills
 		if (SpreeKillLevel0.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel0.Value * 5 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel0.Value * 5 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(SpreeKillLevel0));
 				flaggedFields.Add(nameof(Kills));
@@ -462,7 +462,7 @@ public class StatisticBase
 		// Cannot have rampages without or more than actual kills
 		if (SpreeKillLevel1.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel1.Value * 10 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel1.Value * 10 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(SpreeKillLevel1));
 				flaggedFields.Add(nameof(Kills));
@@ -471,7 +471,7 @@ public class StatisticBase
 		// Cannot have dominatings without or more than actual kills
 		if (SpreeKillLevel2.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel2.Value * 15 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel2.Value * 15 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(SpreeKillLevel2));
 				flaggedFields.Add(nameof(Kills));
@@ -480,7 +480,7 @@ public class StatisticBase
 		// Cannot have unstoppables without or more than actual kills
 		if (SpreeKillLevel3.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel3.Value * 20 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel3.Value * 20 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(SpreeKillLevel3));
 				flaggedFields.Add(nameof(Kills));
@@ -489,7 +489,7 @@ public class StatisticBase
 		// Cannot have godlikes without or more than actual kills
 		if (SpreeKillLevel4.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel4.Value * 25 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel4.Value * 25 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(SpreeKillLevel4));
 				flaggedFields.Add(nameof(Kills));
