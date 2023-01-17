@@ -13,18 +13,15 @@ public sealed class Statistic : StatisticBase
 	[BsonId, BsonIgnoreIfDefault, BsonElement("_id"), BsonRepresentation(BsonType.ObjectId)]
 	public string ID { get; set; } = default!;
 
-	[BsonElement("accountId")]
 	public EpicID AccountID { get; set; } = default!;
 
-	[BsonElement("createdAt")]
 	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-	[BsonElement("modifiedAt"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public DateTime? ModifiedAt { get; set; }
 
-	[BsonElement("window")]
 	public StatisticWindow Window { get; set; } = StatisticWindow.Daily;
 
-	[BsonElement("flaggedProperties"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public List<string>? Flagged { get; set; }
 }
