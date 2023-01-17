@@ -403,9 +403,10 @@ public class StatisticBase
 			flaggedFields.Add(nameof(TimePlayed));
 			flaggedFields.Add(nameof(Deaths));
 		}
-		// Suicides are reported if you manage to achieve 1 suicide each 5 seconds
-		if (Suicides.HasValue && TimePlayed.HasValue && Suicides.Value > (TimePlayed.Value / 5))
+		// Suicides are reported if you manage to achieve 1 suicide each 2 seconds
+		if (Suicides.HasValue && TimePlayed.HasValue && Suicides.Value > (TimePlayed.Value / 2))
 		{
+			flaggedFields.Add(nameof(TimePlayed));
 			flaggedFields.Add(nameof(Suicides));
 		}
 
