@@ -5,6 +5,7 @@ using Serilog;
 using System.Net;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Configuration;
+using UT4MasterServer.Formatters;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
@@ -44,6 +45,7 @@ public static class Program
 		builder.Services.AddControllers(o =>
 		{
 			o.RespectBrowserAcceptHeader = true;
+			o.InputFormatters.Insert(0, new StatisticBaseInputFormatter());
 		});
 
 		builder.Services.Configure<ApplicationSettings>(
