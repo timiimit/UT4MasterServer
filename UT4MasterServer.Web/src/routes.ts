@@ -6,14 +6,22 @@ import {
 import { privateGuard, publicGuard } from './route-guards';
 
 export const routes: RouteRecordRaw[] = [
+  // Secure Pages
+  {
+    path: `/Stats`,
+    component: async () =>
+      import(
+        './pages/Stats.vue'
+      ),
+    beforeEnter: privateGuard
+  },
   {
     path: `/Profile`,
     component: async () =>
       import(
         './pages/Profile/Profile.vue'
       ),
-    // TODO: change to player card maybe?
-    redirect: '/Profile/Stats',
+    redirect: '/Profile/PlayerCard',
     beforeEnter: privateGuard,
     children: [
       {
@@ -47,17 +55,10 @@ export const routes: RouteRecordRaw[] = [
             './pages/Profile/ChangeEmail.vue'
           ),
         beforeEnter: privateGuard
-      },
-      {
-        path: `Stats`,
-        component: async () =>
-          import(
-            './pages/Stats.vue'
-          ),
-        beforeEnter: privateGuard
       }
     ]
   },
+  // Public Pages
   {
     path: `/Instructions`,
     children: [
@@ -84,6 +85,14 @@ export const routes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: `/Servers`,
+    component: async () =>
+      import(
+        './pages/Servers.vue'
+      )
+  },
+  // Public Only Pages
   {
     path: `/Register`,
     component: async () =>

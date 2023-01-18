@@ -1,0 +1,45 @@
+<template>
+    <a href="#" class="hub list-group-item list-group-item-action"
+        :class="{ 'active-hub': selectedHub?.id === hub.id }">
+        <h4>{{ hub.serverName }}</h4>
+        <div class="flex-space-btw">
+            <div>{{ hub.matches.length }} Matches</div>
+            <div>{{ hub.totalPlayers }} Players</div>
+        </div>
+    </a>
+</template>
+
+<style lang="scss" scoped>
+.hub {
+    &.active-hub {
+        z-index: 1;
+        color: var(--bs-list-group-action-hover-color);
+        text-decoration: none;
+        background-color: var(--bs-list-group-action-hover-bg);
+    }
+
+    h4,
+    div {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+}
+</style>
+
+<script setup lang="ts">
+import { IGameHub } from '../types/game-server';
+import { PropType } from 'vue';
+
+defineProps({
+    hub: {
+        type: Object as PropType<IGameHub>,
+        required: true
+    },
+    selectedHub: {
+        type: Object as PropType<IGameHub>,
+        default: undefined
+    }
+});
+
+</script>

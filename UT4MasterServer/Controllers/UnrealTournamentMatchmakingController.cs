@@ -255,18 +255,20 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 
 		var servers = await matchmakingService.ListAsync(filter);
 
-		//var list = new GameServer[]
-		//{
-		//	new GameServer("we", "[DS]dallastn-22938", "192.223.24.243"),
-		//	new GameServer("cracked", "[DS]dallastn-22938", "192.223.24.243"),
-		//	new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"),
-		//	new GameServer("code", "[DS]dallastn-22938", "192.223.24.243"),
-		//	new GameServer("and", "[DS]dallastn-22938", "192.223.24.243"),
-		//	new GameServer("entered", "[DS]dallastn-22938", "192.223.24.243"),
-		//	new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"), // does not show, due to duplicate data
-		//	new GameServer("matrix", "[DS]dallastn-22938", "192.223.24.243"),
-		//};
-
+#if DEBUG
+		var list = new GameServer[]
+		{
+			new GameServer("we", "[DS]dallastn-22938", "192.223.24.243"),
+			new GameServer("cracked", "[DS]dallastn-22938", "192.223.24.243"),
+			new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"),
+			new GameServer("code", "[DS]dallastn-22938", "192.223.24.243"),
+			new GameServer("and", "[DS]dallastn-22938", "192.223.24.243"),
+			new GameServer("entered", "[DS]dallastn-22938", "192.223.24.243"),
+			new GameServer("the", "[DS]dallastn-22938", "192.223.24.243"), // does not show, due to duplicate data
+			new GameServer("matrix", "[DS]dallastn-22938", "192.223.24.243"),
+		};
+		servers.AddRange(list);
+#endif
 		var arr = new JArray();
 		foreach (var server in servers)
 		{
