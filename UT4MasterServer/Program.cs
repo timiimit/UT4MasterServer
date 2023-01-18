@@ -153,10 +153,7 @@ public static class Program
 
 		var app = builder.Build();
 
-		IConfiguration configuration = app.Configuration;
-		IWebHostEnvironment environment = app.Environment;
-
-		InternalLoggerConfiguration.Configure(environment, configuration);
+		InternalLoggerConfiguration.Configure(app.Environment, app.Configuration);
 
 		if (app.Environment.IsDevelopment())
 		{
