@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization;
+using Serilog;
 using System.Net;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Configuration;
 using UT4MasterServer.Formatters;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
@@ -49,6 +51,7 @@ public static class Program
 		builder.Services.Configure<ApplicationSettings>(
 			builder.Configuration.GetSection("ApplicationSettings")
 		);
+
 		builder.Services.Configure<ApplicationSettings>(x =>
 		{
 			// handle proxy list loading
@@ -71,7 +74,6 @@ public static class Program
 				// we ignore the fact that proxy list file was not found
 			}
 		});
-
 
 		// services whose instance is created per-request
 		builder.Services
@@ -97,12 +99,10 @@ public static class Program
 			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>(HttpAuthorization.BearerScheme, null)
 			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(HttpAuthorization.BasicScheme, null);
 
-		builder.Host
-			.ConfigureLogging(logging =>
-			{
-				logging.ClearProviders();
-				logging.AddConsole();
-			});
+		builder.Services.AddLogging(builder =>
+		{
+			builder.AddSerilog();
+		});
 
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(config =>
@@ -154,6 +154,8 @@ public static class Program
 		});
 
 		var app = builder.Build();
+
+		InternalLoggerConfiguration.Configure(app.Environment, app.Configuration);
 
 		if (app.Environment.IsDevelopment())
 		{
