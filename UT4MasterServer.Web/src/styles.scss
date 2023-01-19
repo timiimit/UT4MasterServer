@@ -1,3 +1,7 @@
+body {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
 .form-group {
     margin-bottom: 1rem;
 }
@@ -22,4 +26,15 @@
 
 .btn.btn-smaller {
     padding: 2px 4px;
+}
+
+.flex-space-btw {
+    display: flex;
+    justify-content: space-between;
+}
+
+.list-group-item {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }

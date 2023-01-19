@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text;
 using UT4MasterServer.Models;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -11,10 +12,12 @@ namespace UT4MasterServer.Controllers;
 public class CustomAPIController : JsonAPIController
 {
 	private readonly IOptions<ApplicationSettings> configuration;
+	private readonly AccountService accountService;
 
-	public CustomAPIController(ILogger<UnrealTournamentMatchmakingController> logger, IOptions<ApplicationSettings> configuration) : base(logger)
+	public CustomAPIController(ILogger<UnrealTournamentMatchmakingController> logger, IOptions<ApplicationSettings> configuration, AccountService accountService) : base(logger)
 	{
 		this.configuration = configuration;
+		this.accountService = accountService;
 	}
 
 	[HttpGet("api/ShowMyInfo")]
@@ -61,5 +64,18 @@ public class CustomAPIController : JsonAPIController
 	public IActionResult EpicGetAuthCodePage()
 	{
 		return Redirect($"https://{configuration.Value.WebsiteDomain}/Login");
+	}
+
+	[HttpGet("api/playerCard/{id}")]
+	public async Task<IActionResult> GetPlayerCard(string id)
+	{
+		// Epic doesn't require any authentication to serve player card, there is nothing sensitive here
+		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
+		if (account == null)
+		{
+			return NotFound();
+		}
+
+		return Json(account);
 	}
 }
