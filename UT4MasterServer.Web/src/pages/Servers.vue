@@ -1,14 +1,14 @@
 <template>
   <LoadingPanel :status="ServerStore.status">
     <div class="row">
-      <div class="col-sm-4 col-xs-6">
+      <div class="col-sm-6">
         <div class="list-group">
           <a class="list-group-item list-group-item-action active">Hubs</a>
           <Hub :hub="hub" v-for="hub in ServerStore.hubs" :selected-hub="selectedHub" @click="viewHub(hub)" />
         </div>
         <!-- TODO: Should also have Servers listed here in addition to Hubs, but I'm not yet sure how to differentiate -->
       </div>
-      <div v-if="selectedHub" class="col-sm-8 col-xs-6">
+      <div v-if="selectedHub" class="col-sm-6">
         <HubListing :hub="selectedHub" />
       </div>
     </div>

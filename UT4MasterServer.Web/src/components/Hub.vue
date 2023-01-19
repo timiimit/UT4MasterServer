@@ -1,7 +1,7 @@
 <template>
-    <a href="#" class="hub list-group-item list-group-item-action"
+    <a href="#" class="hub list-group-item list-group-item-action" :title="hub.attributes.UT_SERVERNAME_s"
         :class="{ 'active-hub': selectedHub?.id === hub.id }">
-        <h4>{{ hub.serverName }}</h4>
+        <h5>{{ hub.attributes.UT_SERVERNAME_s }}</h5>
         <div class="flex-space-btw">
             <div>{{ hub.matches.length }} Matches</div>
             <div>{{ hub.totalPlayers }} Players</div>
@@ -18,8 +18,9 @@
         background-color: var(--bs-list-group-action-hover-bg);
     }
 
-    h4,
+    h5,
     div {
+        text-transform: none;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;

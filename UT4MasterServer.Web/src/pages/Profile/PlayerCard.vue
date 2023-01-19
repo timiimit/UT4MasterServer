@@ -1,3 +1,7 @@
+  <!-- 
+    Rough replacement for the playerCard UI, e.g.
+  https://www.epicgames.com/unrealtournament/en-US/playerCard?playerId=0b0f09b400854b9b98932dd9e5abe7c5
+  -->
 <template>
   <h1>Player Card</h1>
   <div class="row">
@@ -50,14 +54,15 @@ img.avatar {
   font-size: 1.25rem;
   line-height: 1rem;
   padding-right: 1rem;
+
   &.blue {
     color: blue;
   }
+
   &.gold {
     color: gold;
   }
 }
-
 </style>
 
 <script lang="ts" setup>
