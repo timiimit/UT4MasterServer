@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Exceptions;
+using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Controllers;
 
@@ -8,22 +9,38 @@ namespace UT4MasterServer.Controllers;
 [Route("api/errors")]
 public class ErrorsController : ControllerBase
 {
+	private const string InternalServerError = "Internal server error occurred.";
+
+	private readonly ILogger<ErrorsController> logger;
+
+	public ErrorsController(ILogger<ErrorsController> logger)
+	{
+		this.logger = logger;
+	}
+
 	[HttpGet]
 	public IActionResult Index()
 	{
-		var message = "Internal server error occurred.";
+		var message = InternalServerError;
 		var statusCode = 500;
 
 		var exceptionHandlerFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+		var exception = exceptionHandlerFeature?.Error;
 
-		if (exceptionHandlerFeature?.Error is { } ex)
+		logger.LogError(exception, InternalServerError);
+
+		if (exception is not null)
 		{
-			switch (ex)
+			switch (exception)
 			{
-				case InvalidEpicIDException:
-					message = ex.Message;
-					statusCode = 400;
-					break;
+				case InvalidEpicIDException invalidEpicIDException:
+					return StatusCode(400, new ErrorResponse()
+					{
+						ErrorCode = invalidEpicIDException.ErrorCode,
+						ErrorMessage = invalidEpicIDException.Message,
+						MessageVars = new string[] { invalidEpicIDException.ID },
+						NumericErrorCode = invalidEpicIDException.NumericErrorCode
+					});
 			}
 		}
 
