@@ -3,7 +3,7 @@
         <div ref="code">
             <slot />
         </div>
-        <CopyButton v-if="code" :subject="code?.innerText" custom-class="btn-primary btn-sm btn-smaller" />
+        <CopyButton v-if="code" :subject="code?.innerText" custom-class="btn-smaller" />
     </div>
 </template>
 

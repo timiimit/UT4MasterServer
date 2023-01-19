@@ -7,7 +7,7 @@
 <style lang="scss" scoped>
     button.copy-button {
         min-width: 50px;
-        transition: background-color color 0.4s ease-in-out;
+        transition: background-color color 0.5s ease-in-out;
     }
 </style>
 
@@ -38,7 +38,7 @@ function copy() {
         const content = props.subject;
         navigator.clipboard.writeText(content);
         copied.value = true;
-        setTimeout(() => copied.value = false, 5000);
+        setTimeout(() => copied.value = false, 2000);
     }
 }
 </script>
