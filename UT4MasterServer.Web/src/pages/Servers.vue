@@ -5,8 +5,9 @@
         <div class="list-group">
           <a class="list-group-item list-group-item-action active">Hubs</a>
           <Hub :hub="hub" v-for="hub in ServerStore.hubs" :selected-hub="selectedHub" @click="viewHub(hub)" />
+          <Hub v-if="!ServerStore.hubs.length" />
         </div>
-        <!-- TODO: Should also have Servers listed here in addition to Hubs, but I'm not yet sure how to differentiate -->
+        <!-- TODO: Should(?) also have Servers listed here in addition to Hubs, but I'm not yet sure how to differentiate -->
       </div>
       <div v-if="selectedHub" class="col-sm-6">
         <HubListing :hub="selectedHub" />

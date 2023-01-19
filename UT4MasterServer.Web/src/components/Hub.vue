@@ -1,11 +1,14 @@
 <template>
-    <a href="#" class="hub list-group-item list-group-item-action" :title="hub.attributes.UT_SERVERNAME_s"
-        :class="{ 'active-hub': selectedHub?.id === hub.id }">
-        <h5>{{ hub.attributes.UT_SERVERNAME_s }}</h5>
-        <div class="flex-space-btw">
-            <div>{{ hub.matches.length }} Matches</div>
-            <div>{{ hub.totalPlayers }} Players</div>
-        </div>
+    <a :href="hub ? '#' : undefined" class="hub list-group-item list-group-item-action" :title="hub?.attributes.UT_SERVERNAME_s"
+        :class="{ 'active-hub': selectedHub?.id === hub?.id }">
+        <template v-if="hub">
+            <h5>{{ hub.attributes.UT_SERVERNAME_s }}</h5>
+            <div class="flex-space-btw">
+                <div>{{ hub.matches.length }} Matches</div>
+                <div>{{ hub.totalPlayers }} Players</div>
+            </div>
+        </template>
+        <h5 v-else>No hubs online</h5>
     </a>
 </template>
 
@@ -35,7 +38,7 @@ import { PropType } from 'vue';
 defineProps({
     hub: {
         type: Object as PropType<IGameHub>,
-        required: true
+        required: undefined
     },
     selectedHub: {
         type: Object as PropType<IGameHub>,
