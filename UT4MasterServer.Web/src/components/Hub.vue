@@ -38,7 +38,7 @@ import { PropType } from 'vue';
 defineProps({
     hub: {
         type: Object as PropType<IGameHub>,
-        required: undefined
+        default: undefined
     },
     selectedHub: {
         type: Object as PropType<IGameHub>,
