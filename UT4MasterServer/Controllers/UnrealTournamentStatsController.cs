@@ -17,10 +17,15 @@ namespace UT4MasterServer.Controllers;
 public class UnrealTournamentStatsController : JsonAPIController
 {
 	private readonly StatisticsService statisticsService;
+	private readonly MatchmakingService matchmakingService;
 
-	public UnrealTournamentStatsController(ILogger<UnrealTournamentStatsController> logger, StatisticsService statisticsService) : base(logger)
+	public UnrealTournamentStatsController(
+		ILogger<UnrealTournamentStatsController> logger,
+		StatisticsService statisticsService,
+		MatchmakingService matchmakingService) : base(logger)
 	{
 		this.statisticsService = statisticsService;
+		this.matchmakingService = matchmakingService;
 	}
 
 	// Examples:
@@ -77,7 +82,16 @@ public class UnrealTournamentStatsController : JsonAPIController
 			return Unauthorized();
 
 		if (user.Session.AccountID != accountId)
-			return Unauthorized(); // Users can post their own stats only
+		{
+			bool isMultiplayerMatch = await matchmakingService.DoesSessionOwnGameServerWithPlayerAsync(user.Session.ID, accountId);
+
+#if DEBUG
+			// in debug we allow anyone to post stats for easier testing
+#else
+			if (!isMultiplayerMatch)
+				return Unauthorized(); // Only servers can post stats
+#endif
+		}
 
 		await statisticsService.CreateAccountStatisticsAsync(accountId, ownerType, statisticBase);
 		return Ok();
