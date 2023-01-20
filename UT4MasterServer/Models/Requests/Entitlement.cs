@@ -81,7 +81,7 @@ public class Entitlement
 
 	public Entitlement(string name, string id, EpicID accountID)
 	{
-		var commonDate = new DateTime(2023, 1, 1);
+		var commonDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
 		EntitlementName = name;
 		CatalogItemID = id;
