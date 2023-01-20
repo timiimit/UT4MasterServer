@@ -315,7 +315,7 @@ public class UnrealTournamentProfileController : JsonAPIController
 			{
 				{ "changeType", "statModified" },
 				{ "name", "XP" },
-				{ "value", acc.XPLastMatch }
+				{ "value", acc.XP }
 			});
 
 			profileChanges.Add(new JObject()
