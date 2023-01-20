@@ -162,7 +162,7 @@ public class UnrealTournamentProfileController : JsonAPIController
 			attributes.Add("XP", account.XP);
 			attributes.Add("Level", account.LevelStockLimited); // TODO: try values over 50
 			attributes.Add("BlueStars", account.BlueStars);
-			attributes.Add("RecentXP", account.XPLastMatch); // probably xp from last finished match
+			attributes.Add("RecentXP", 0);//account.XPLastMatch); // probably xp from last finished match
 			attributes.Add("boosts", new JArray());
 			attributes.Add("new_items", new JObject());
 			stats.Add("attributes", attributes);
@@ -302,12 +302,12 @@ public class UnrealTournamentProfileController : JsonAPIController
 				{ "value", acc.LastMatchAt.ToUnixTimestamp() }
 			});
 
-			acc.XPLastMatch = body.XPAmount;
+			//acc.XPLastMatch = body.XPAmount;
 			profileChanges.Add(new JObject()
 			{
 				{ "changeType", "statModified" },
 				{ "name", "RecentXP" },
-				{ "value", acc.XPLastMatch }
+				{ "value", 0 } //acc.XPLastMatch }
 			});
 
 			acc.XP += body.XPAmount;
