@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { IChangeUsernameRequest } from '../../types/change-username-request';
-import { shallowRef, computed } from 'vue';
+import { shallowRef, computed, onMounted } from 'vue';
 import AccountService from '../../services/account.service';
 import { useRouter } from 'vue-router';
 import { AsyncStatus } from '../../types/async-status';
@@ -65,5 +65,10 @@ async function handleSubmit() {
     errorMessage.value = (err as Error)?.message;
   }
 }
+
+onMounted(async () => {
+  // force account to be up to date before allowing a user to change
+  AccountStore.fetchUserAccount();
+});
 </script>
 

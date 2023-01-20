@@ -301,12 +301,7 @@ public sealed class StatisticsService
 			{
 				if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower())) continue;
 
-				var value = element.Value.BsonType switch
-				{
-					BsonType.Double => (long)(element.Value.ToDouble() * 100D),
-					BsonType.Int32 => element.Value.ToInt32(),
-					_ => 0,
-				};
+				var value = element.Value.ToInt64();
 
 				if (value > 0)
 				{
