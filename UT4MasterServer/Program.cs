@@ -46,6 +46,7 @@ public static class Program
 		{
 			o.JsonSerializerOptions.Converters.Add(new EpicIDJsonConverter());
 			o.JsonSerializerOptions.Converters.Add(new GameServerAttributesJsonConverter());
+			o.JsonSerializerOptions.Converters.Add(new DateTimeISOJsonConverter());
 		});
 
 		builder.Services.Configure<ApplicationSettings>(
