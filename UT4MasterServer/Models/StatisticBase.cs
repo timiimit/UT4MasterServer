@@ -336,7 +336,8 @@ public class StatisticBase
 			FlakShardKills,
 			FlakShellKills,
 			RocketKills,
-			SniperKills, // SniperHeadshotKills are already included in SniperKills
+			SniperKills,
+			SniperHeadshotKills,
 			LightningRiflePrimaryKills,
 			LightningRifleSecondaryKills,
 			RedeemerKills,
