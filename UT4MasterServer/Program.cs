@@ -42,6 +42,10 @@ public static class Program
 		builder.Services.AddControllers(o =>
 		{
 			o.RespectBrowserAcceptHeader = true;
+		}).AddJsonOptions(o =>
+		{
+			o.JsonSerializerOptions.Converters.Add(new EpicIDJsonConverter());
+			o.JsonSerializerOptions.Converters.Add(new GameServerAttributesJsonConverter());
 		});
 
 		builder.Services.Configure<ApplicationSettings>(
