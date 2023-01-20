@@ -16,6 +16,45 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public class UnrealTournamentProfileController : JsonAPIController
 {
+	private static readonly List<(string item, int requiredLevel)> profileItems;
+
+	static UnrealTournamentProfileController()
+	{
+		profileItems = new()
+		{
+			("BeanieBlack", 2),
+			("Sunglasses", 3),
+			("HockeyMask", 4),
+			("ThundercrashMale05", 5),
+			("NecrisMale01", 7),
+			("ThundercrashMale03", 8),
+			("NecrisHelm01", 10),
+			("ThundercrashBeanieGreen", 12),
+			("HockeyMask02", 14),
+			("ThundercrashMale02", 17),
+			("NecrisFemale02", 20),
+			("BeanieWhite", 23),
+			("NecrisHelm02", 26),
+			("SkaarjMale01", 30),
+			("BeanieGrey", 34),
+			("ThundercrashBeanieRed", 39),
+			("SkaarjMale02", 40),
+			("ThundercrashBeret", 45),
+			("NecrisMale04", 50),
+
+			// TODO: figure out how profile items below should be unlocked
+			//("ThundercrashSunglasses", 0),
+			//("ThundercrashMale01", 0),
+			//("ThundercrashBeanieWhite", 0),
+			//("PhayderStealthHelm", 0),
+			//("NanoblackHelmGreen", 0),
+			//("NanoblackHelmBlack", 0),
+			//("Infiltrator", 0),
+			//("EnergyHelm", 0),
+			//("EliteAssassinHelm", 0),
+		};
+	}
+
 	private readonly AccountService accountService;
 
 	public UnrealTournamentProfileController(ILogger<SessionController> logger, AccountService accountService) : base(logger)
@@ -81,8 +120,27 @@ public class UnrealTournamentProfileController : JsonAPIController
 			profile.Add("version", "ut_base");
 		}
 		JObject items = new();
+		foreach (var profileItem in profileItems)
 		{
-			// TODO !!!
+#if (!DEBUG) || (DEBUG && true)
+			if (account.Level < profileItem.requiredLevel)
+				continue;
+#endif
+
+			// guid probably represents the id of profile item
+			// we don't really store obtained items, so we generate new id
+			// each time
+			string profileItemGuid = Guid.NewGuid().ToString();
+			items.Add(profileItemGuid, new JObject()
+			{
+				{ "templateId", "Item." + profileItem.item },
+				{ "attributes", new JObject()
+					{
+						{ "tradable", false }
+					}
+				},
+				{ "quantity", 1 }
+			});
 		}
 		profile.Add("items", items);
 		JObject stats = new();
