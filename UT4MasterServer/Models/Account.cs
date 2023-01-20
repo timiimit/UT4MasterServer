@@ -2,6 +2,7 @@
 using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
+using System.Text.Json.Serialization;
 
 public class Account
 {
@@ -39,6 +40,7 @@ public class Account
 	public string Username { get; set; } = string.Empty;
 
 	[BsonElement("Password")]
+	[JsonIgnore]
 	public string Password { get; set; } = string.Empty;
 
 	[BsonElement("CreatedAt")]

@@ -385,8 +385,8 @@ public class StatisticBase
 		}
 		if (Kills.HasValue)
 		{
-			// Kills are reported if you manage to achieve 1 kill each 5 seconds
-			if (TimePlayed.HasValue && Kills.Value > (TimePlayed.Value / 5))
+			// Kills are reported if you manage to achieve 1 kill each 1.5 second
+			if (TimePlayed.HasValue && Kills.Value > (TimePlayed.Value / 1.5))
 			{
 				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(TimePlayed));
@@ -397,15 +397,17 @@ public class StatisticBase
 				flaggedFields.Add(nameof(Kills));
 			}
 		}
-		// Deaths are reported if you manage to achieve 1 death each 5 seconds
-		if (Deaths.HasValue && TimePlayed.HasValue && Deaths.Value > (TimePlayed.Value / 5))
+		// Deaths are reported if you manage to achieve 1 death each 2 seconds
+		if (Deaths.HasValue && TimePlayed.HasValue && Deaths.Value > (TimePlayed.Value / 2))
 		{
 			flaggedFields.Add(nameof(Deaths));
+			flaggedFields.Add(nameof(TimePlayed));
 		}
-		// Suicides are reported if you manage to achieve 1 suicide each 5 seconds
-		if (Suicides.HasValue && TimePlayed.HasValue && Suicides.Value > (TimePlayed.Value / 5))
+		// Suicides are reported if you manage to achieve 1 suicide each 2 seconds
+		if (Suicides.HasValue && TimePlayed.HasValue && Suicides.Value > (TimePlayed.Value / 2))
 		{
 			flaggedFields.Add(nameof(Suicides));
+			flaggedFields.Add(nameof(TimePlayed));
 		}
 
 		#endregion
@@ -415,81 +417,64 @@ public class StatisticBase
 		// Cannot have double kills without or more than actual kills                                                                   
 		if (MultiKillLevel0.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel0.Value * 2 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel0.Value * 2 > Kills.Value))
 			{
 				flaggedFields.Add(nameof(MultiKillLevel0));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have multi kills without or more than actual kills
 		if (MultiKillLevel1.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel1.Value * 3 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel1.Value * 3 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel1));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have ultra kills without or more than actual kills
 		if (MultiKillLevel2.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel2.Value * 4 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel2.Value * 4 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(MultiKillLevel2));
-			}
-		}
-		// Cannot have monster kills without or more than actual kills
-		if (MultiKillLevel3.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel3.Value * 5 < Kills.Value))
-			{
 				flaggedFields.Add(nameof(Kills));
-				flaggedFields.Add(nameof(MultiKillLevel3));
 			}
 		}
 		// Cannot have killing spree without or more than actual kills
 		if (SpreeKillLevel0.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel0.Value * 5 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel0.Value * 5 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel0));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have rampages without or more than actual kills
 		if (SpreeKillLevel1.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel1.Value * 10 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel1.Value * 10 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel1));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have dominatings without or more than actual kills
 		if (SpreeKillLevel2.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel2.Value * 15 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel2.Value * 15 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel2));
+				flaggedFields.Add(nameof(Kills));
 			}
 		}
 		// Cannot have unstoppables without or more than actual kills
 		if (SpreeKillLevel3.HasValue)
 		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel3.Value * 20 < Kills.Value))
+			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel3.Value * 20 > Kills.Value))
 			{
-				flaggedFields.Add(nameof(Kills));
 				flaggedFields.Add(nameof(SpreeKillLevel3));
-			}
-		}
-		// Cannot have godlikes without or more than actual kills
-		if (SpreeKillLevel4.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel4.Value * 25 < Kills.Value))
-			{
 				flaggedFields.Add(nameof(Kills));
-				flaggedFields.Add(nameof(SpreeKillLevel4));
 			}
 		}
 
@@ -502,8 +487,8 @@ public class StatisticBase
 			// UDamage time cannot be longer than match time
 			if (TimePlayed.HasValue && UDamageTime.Value > TimePlayed.Value)
 			{
-				flaggedFields.Add(nameof(TimePlayed));
 				flaggedFields.Add(nameof(UDamageTime));
+				flaggedFields.Add(nameof(TimePlayed));
 			}
 		}
 		if (BerserkTime.HasValue)
@@ -511,8 +496,8 @@ public class StatisticBase
 			// BerserkTime time cannot be longer than match time
 			if (TimePlayed.HasValue && BerserkTime.Value > TimePlayed.Value)
 			{
-				flaggedFields.Add(nameof(TimePlayed));
 				flaggedFields.Add(nameof(BerserkTime));
+				flaggedFields.Add(nameof(TimePlayed));
 			}
 		}
 		if (InvisibilityTime.HasValue)
@@ -520,8 +505,8 @@ public class StatisticBase
 			// InvisibilityTime time cannot be longer than match time
 			if (TimePlayed.HasValue && InvisibilityTime.Value > TimePlayed.Value)
 			{
-				flaggedFields.Add(nameof(TimePlayed));
 				flaggedFields.Add(nameof(InvisibilityTime));
+				flaggedFields.Add(nameof(TimePlayed));
 			}
 		}
 
@@ -641,466 +626,466 @@ public class StatisticBase
 	}
 
 	#region Quick Look
-	[BsonElement("skillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SkillRating { get; set; }
 
-	[BsonElement("tdmSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? TDMSkillRating { get; set; }
 
-	[BsonElement("ctfSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? CTFSkillRating { get; set; }
 
-	[BsonElement("dmSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? DMSkillRating { get; set; }
 
-	[BsonElement("showdownSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShowdownSkillRating { get; set; }
 
-	[BsonElement("flagRunSkilLRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagRunSkillRating { get; set; }
 
-	[BsonElement("rankedDuelSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RankedDuelSkillRating { get; set; }
 
-	[BsonElement("rankedCtfSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RankedCTFSkillRating { get; set; }
 
-	[BsonElement("rankedShowdownSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RankedShowdownSkillRating { get; set; }
 
-	[BsonElement("rankedFlagRunSkillRating"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RankedFlagRunSkillRating { get; set; }
 
-	[BsonElement("matchesPlayed"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MatchesPlayed { get; set; }
 
-	[BsonElement("matchesQuit"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MatchesQuit { get; set; }
 
-	[BsonElement("timePlayed"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? TimePlayed { get; set; }
 
-	[BsonElement("wins"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? Wins { get; set; }
 
-	[BsonElement("losses"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? Losses { get; set; }
 
-	[BsonElement("kills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? Kills { get; set; }
 
-	[BsonElement("deaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? Deaths { get; set; }
 
-	[BsonElement("suicides"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? Suicides { get; set; }
 	#endregion
 
 	#region Kill Achievements
-	[BsonElement("multiKillLevel0"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MultiKillLevel0 { get; set; }
 
-	[BsonElement("multiKillLevel1"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MultiKillLevel1 { get; set; }
 
-	[BsonElement("multiKillLevel2"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MultiKillLevel2 { get; set; }
 
-	[BsonElement("multiKillLevel3"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MultiKillLevel3 { get; set; }
 
-	[BsonElement("spreeKillLevel0"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SpreeKillLevel0 { get; set; }
 
-	[BsonElement("spreeKillLevel1"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SpreeKillLevel1 { get; set; }
 
-	[BsonElement("spreeKillLevel2"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SpreeKillLevel2 { get; set; }
 
-	[BsonElement("spreeKillLevel3"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SpreeKillLevel3 { get; set; }
 
-	[BsonElement("spreeKillLevel4"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SpreeKillLevel4 { get; set; }
 
-	[BsonElement("bestShockCombo"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? BestShockCombo { get; set; }
 
-	[BsonElement("amazingCombos"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? AmazingCombos { get; set; }
 
-	[BsonElement("airRox"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? AirRox { get; set; }
 
-	[BsonElement("flakShreds"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlakShreds { get; set; }
 
-	[BsonElement("airSnot"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? AirSnot { get; set; }
 	#endregion
 
 	#region Power Up Achievements
-	[BsonElement("uDamageTime"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? UDamageTime { get; set; }
 
-	[BsonElement("berserkTime"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? BerserkTime { get; set; }
 
-	[BsonElement("invisibilityTime"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? InvisibilityTime { get; set; }
 
-	[BsonElement("uDamageCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? UDamageCount { get; set; }
 
-	[BsonElement("berserkCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BerserkCount { get; set; }
 
-	[BsonElement("invisibilityCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? InvisibilityCount { get; set; }
 
-	[BsonElement("bootJumps"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BootJumps { get; set; }
 
-	[BsonElement("shieldBeltCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShieldBeltCount { get; set; }
 
-	[BsonElement("armorVestCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ArmorVestCount { get; set; }
 
-	[BsonElement("armorPadsCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ArmorPadsCount { get; set; }
 
-	[BsonElement("helmetCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? HelmetCount { get; set; }
 
-	[BsonElement("kegCount"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? KegCount { get; set; }
 	#endregion
 
 	#region Weapon Stats
-	[BsonElement("impactHammerKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ImpactHammerKills { get; set; }
 
-	[BsonElement("impactHammerDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ImpactHammerDeaths { get; set; }
 
-	[BsonElement("enforcerKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? EnforcerKills { get; set; }
 
-	[BsonElement("enforcerDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? EnforcerDeaths { get; set; }
 
-	[BsonElement("enforcerShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? EnforcerShots { get; set; }
 
-	[BsonElement("enforcerHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? EnforcerHits { get; set; }
 
-	[BsonElement("bioRifleKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BioRifleKills { get; set; }
-	[BsonElement("bioRifleDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BioRifleDeaths { get; set; }
 
-	[BsonElement("bioRifleShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BioRifleShots { get; set; }
 
-	[BsonElement("bioRifleHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? BioRifleHits { get; set; }
 
-	[BsonElement("bioLauncherKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BioLauncherKills { get; set; }
 
-	[BsonElement("bioLauncherDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BioLauncherDeaths { get; set; }
 
-	[BsonElement("bioLauncherShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? BioLauncherShots { get; set; }
 
-	[BsonElement("bioLauncherHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? BioLauncherHits { get; set; }
 
-	[BsonElement("shockBeamKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShockBeamKills { get; set; }
 
-	[BsonElement("shockBeamDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShockBeamDeaths { get; set; }
 
-	[BsonElement("shockCoreKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShockCoreKills { get; set; }
 
-	[BsonElement("shockCoreDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShockCoreDeaths { get; set; }
 
-	[BsonElement("shockComboKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShockComboKills { get; set; }
 
-	[BsonElement("shockComboDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShockComboDeaths { get; set; }
 
-	[BsonElement("shockRifleShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ShockRifleShots { get; set; }
 
-	[BsonElement("shockRifleHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? ShockRifleHits { get; set; }
 
-	[BsonElement("linkKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LinkKills { get; set; }
 
-	[BsonElement("linkDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LinkDeaths { get; set; }
 
-	[BsonElement("linkBeamKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LinkBeamKills { get; set; }
 
-	[BsonElement("linkBeamDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LinkBeamDeaths { get; set; }
 
-	[BsonElement("linkShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LinkShots { get; set; }
 
-	[BsonElement("linkHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? LinkHits { get; set; }
 
-	[BsonElement("minigunKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MinigunKills { get; set; }
 
-	[BsonElement("minigunDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MinigunDeaths { get; set; }
 
-	[BsonElement("minigunShardKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MinigunShardKills { get; set; }
 
-	[BsonElement("minigunShardDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MinigunShardDeaths { get; set; }
 
-	[BsonElement("minigunShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? MinigunShots { get; set; }
 
-	[BsonElement("minigunHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? MinigunHits { get; set; }
 
-	[BsonElement("flakShardKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlakShardKills { get; set; }
 
-	[BsonElement("flakShardDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlakShardDeaths { get; set; }
 
-	[BsonElement("flakShellKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlakShellKills { get; set; }
 
-	[BsonElement("flakShellDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlakShellDeaths { get; set; }
 
-	[BsonElement("flakShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlakShots { get; set; }
 
-	[BsonElement("flakHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? FlakHits { get; set; }
 
-	[BsonElement("rocketKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RocketKills { get; set; }
 
-	[BsonElement("rocketDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RocketDeaths { get; set; }
 
-	[BsonElement("rocketShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RocketShots { get; set; }
 
-	[BsonElement("rocketHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? RocketHits { get; set; }
 
-	[BsonElement("sniperKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SniperKills { get; set; }
 
-	[BsonElement("sniperDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SniperDeaths { get; set; }
 
-	[BsonElement("sniperHeadshotKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SniperHeadshotKills { get; set; }
 
-	[BsonElement("sniperHeadshotDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SniperHeadshotDeaths { get; set; }
 
-	[BsonElement("sniperShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SniperShots { get; set; }
 
-	[BsonElement("sniperHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? SniperHits { get; set; }
 
-	[BsonElement("lightningRiflePrimaryKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LightningRiflePrimaryKills { get; set; }
 
-	[BsonElement("lightningRiflePrimaryDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LightningRiflePrimaryDeaths { get; set; }
 
-	[BsonElement("lightningRifleSecondaryKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LightningRifleSecondaryKills { get; set; }
 
-	[BsonElement("lightningRifleSecondaryDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LightningRifleSecondaryDeaths { get; set; }
 
-	[BsonElement("lightningRifleShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? LightningRifleShots { get; set; }
 
-	[BsonElement("lightningRifleHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? LightningRifleHits { get; set; }
 
-	[BsonElement("redeemerKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RedeemerKills { get; set; }
 
-	[BsonElement("redeemerDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RedeemerDeaths { get; set; }
 
-	[BsonElement("redeemerShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RedeemerShots { get; set; }
 
-	[BsonElement("redeemerHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? RedeemerHits { get; set; }
 
-	[BsonElement("instagibKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? InstagibKills { get; set; }
 
-	[BsonElement("instagibDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? InstagibDeaths { get; set; }
 
-	[BsonElement("instagibShots"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? InstagibShots { get; set; }
 
-	[BsonElement("instagibHits"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? InstagibHits { get; set; }
 
-	[BsonElement("telefragKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? TelefragKills { get; set; }
 
-	[BsonElement("telefragDeaths"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? TelefragDeaths { get; set; }
 	#endregion
 
 	#region Miscellaneous - Movement
-	[BsonElement("runDist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? RunDist { get; set; }
 
-	[BsonElement("sprintDist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? SprintDist { get; set; }
 
-	[BsonElement("inAirDist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? InAirDist { get; set; }
 
-	[BsonElement("swimDist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? SwimDist { get; set; }
 
-	[BsonElement("translocDist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? TranslocDist { get; set; }
 
-	[BsonElement("numDodges"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumDodges { get; set; }
 
-	[BsonElement("numWallDodges"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumWallDodges { get; set; }
 
-	[BsonElement("numJumps"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumJumps { get; set; }
 
-	[BsonElement("numLiftJumps"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumLiftJumps { get; set; }
 
-	[BsonElement("numFloorSlides"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumFloorSlides { get; set; }
 
-	[BsonElement("numWallRuns"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumWallRuns { get; set; }
 
-	[BsonElement("numImpactJumps"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumImpactJumps { get; set; }
 
-	[BsonElement("numRocketJumps"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? NumRocketJumps { get; set; }
 
-	[BsonElement("slideDist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? SlideDist { get; set; }
 
-	[BsonElement("wallRunDist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? WallRunDist { get; set; }
 	#endregion
 
 	#region Miscellaneous - Capture the Flag
-	[BsonElement("flagCaptures"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagCaptures { get; set; }
 
-	[BsonElement("flagReturns"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagReturns { get; set; }
 
-	[BsonElement("flagAssists"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagAssists { get; set; }
 
-	[BsonElement("flagHeldDeny"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagHeldDeny { get; set; }
 
-	[BsonElement("flagHeldDenyTime"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? FlagHeldDenyTime { get; set; }
 
-	[BsonElement("flagHeldTime"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public double? FlagHeldTime { get; set; }
 
-	[BsonElement("flagReturnPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagReturnPoints { get; set; }
 
-	[BsonElement("carryAssist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? CarryAssist { get; set; }
 
-	[BsonElement("carryAssistPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? CarryAssistPoints { get; set; }
 
-	[BsonElement("flagCapPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagCapPoints { get; set; }
 
-	[BsonElement("defendAssist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? DefendAssist { get; set; }
 
-	[BsonElement("defendAssistPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? DefendAssistPoints { get; set; }
 
-	[BsonElement("returnAssist"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ReturnAssist { get; set; }
 
-	[BsonElement("returnAssistPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? ReturnAssistPoints { get; set; }
 
-	[BsonElement("teamCapPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? TeamCapPoints { get; set; }
 
-	[BsonElement("enemyFCDamage"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? EnemyFCDamage { get; set; }
 
-	[BsonElement("FCKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FCKills { get; set; }
 
-	[BsonElement("FCKillPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FCKillPoints { get; set; }
 
-	[BsonElement("flagSupportKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagSupportKills { get; set; }
 
-	[BsonElement("flagSupportKillPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagSupportKillPoints { get; set; }
 
-	[BsonElement("regularKillPoints"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? RegularKillPoints { get; set; }
 
-	[BsonElement("flagGrabs"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? FlagGrabs { get; set; }
 
-	[BsonElement("attackerScore"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? AttackerScore { get; set; }
 
-	[BsonElement("defenderScore"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? DefenderScore { get; set; }
 
-	[BsonElement("supporterScore"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? SupporterScore { get; set; }
 
-	[BsonElement("teamKills"), BsonIgnoreIfNull]
+	[BsonIgnoreIfNull]
 	public int? TeamKills { get; set; }
 	#endregion
 }

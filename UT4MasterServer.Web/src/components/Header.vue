@@ -6,7 +6,7 @@
         aria-controls="navbarColor02" :aria-expanded="menuExpanded" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon" @click="menuExpanded = !menuExpanded"></span>
       </button>
-      <div class="collapse navbar-collapse" :class="{ 'show': menuExpanded}">
+      <div class="collapse navbar-collapse" :class="{ 'show': menuExpanded }">
         <ul class="navbar-nav me-auto">
           <li class="nav-item dropdown pull-right">
             <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
@@ -17,16 +17,18 @@
               <HeaderLink text="Hub Owners" path="/Instructions/HubOwners" dropdown />
             </div>
           </li>
+          <HeaderLink text="Servers" path="/Servers" />
           <template v-if="!SessionStore.isAuthenticated">
             <HeaderLink text="Register" path="/Register" />
             <HeaderLink text="Log In" path="/Login" />
           </template>
-
+          <template v-else>
+            <HeaderLink text="Stats" path="/Stats" />
+          </template>
           <li class="nav-item dropdown pull-right" v-if="SessionStore.isAuthenticated">
             <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
               @click.stop="showProfileDropdown = !showProfileDropdown">Profile</a>
             <div class="dropdown-menu" :class="{ 'show': showProfileDropdown }">
-              <HeaderLink text="Stats" path="/Profile/Stats" dropdown />
               <HeaderLink text="Change Username" path="/Profile/ChangeUsername" dropdown />
               <HeaderLink text="Change Password" path="/Profile/ChangePassword" dropdown />
               <HeaderLink text="Change Email" path="/Profile/ChangeEmail" dropdown />
@@ -49,6 +51,11 @@
   .nav-link.router-link-active,
   .navbar-nav .show>.nav-link {
     color: var(--bs-navbar-active-color);
+  }
+
+  .nav-item.pull-right {
+    margin-right: 0;
+    margin-left: 1rem;
   }
 }
 
