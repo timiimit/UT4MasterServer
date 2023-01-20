@@ -19,6 +19,11 @@
                 </div>
             </div>
         </a>
+        <a v-if="!hub.matches.length" class="list-group-item list-group-item-action">
+            <div class="match">
+                <h5>No matches in progress</h5>
+            </div>
+        </a>
     </div>
 </template>
 
