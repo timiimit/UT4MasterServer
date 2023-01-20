@@ -46,6 +46,11 @@ public static class Program
 		{
 			o.RespectBrowserAcceptHeader = true;
 			o.InputFormatters.Insert(0, new StatisticBaseInputFormatter());
+		}).AddJsonOptions(o =>
+		{
+			o.JsonSerializerOptions.Converters.Add(new EpicIDJsonConverter());
+			o.JsonSerializerOptions.Converters.Add(new GameServerAttributesJsonConverter());
+			o.JsonSerializerOptions.Converters.Add(new DateTimeISOJsonConverter());
 		});
 
 		builder.Services.Configure<ApplicationSettings>(
@@ -147,7 +152,7 @@ public static class Program
 			options.AddPolicy(devAllowOriginsPolicy,
 							  policy =>
 							  {
-								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080");
+								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080", "http://localhost:80");
 								  policy.AllowAnyHeader();
 								  policy.AllowAnyMethod();
 							  });
