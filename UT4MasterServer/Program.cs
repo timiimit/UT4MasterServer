@@ -152,7 +152,7 @@ public static class Program
 			options.AddPolicy(devAllowOriginsPolicy,
 							  policy =>
 							  {
-								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080");
+								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080", "http://localhost:80");
 								  policy.AllowAnyHeader();
 								  policy.AllowAnyMethod();
 							  });
