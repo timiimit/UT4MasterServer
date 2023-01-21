@@ -9,9 +9,6 @@ public class TrustedGameServer
 	[BsonElement("ID"), BsonId]
 	public EpicID ID { get; set; }
 
-	[BsonElement("Secret")]
-	public EpicID Secret { get; set; }
-
 	[BsonElement("OwnerID")]
 	public EpicID OwnerID { get; set; }
 
