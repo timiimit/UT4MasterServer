@@ -24,7 +24,6 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 {
 	private readonly MatchmakingService matchmakingService;
 	private readonly TrustedGameServerService trustedGameServerService;
-	private readonly ClientService clientService;
 
 	private readonly IOptions<ApplicationSettings> configuration;
 	private const int MAX_READ_SIZE = 1024 * 4;
@@ -38,7 +37,6 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	{
 		this.configuration = configuration;
 		this.matchmakingService = matchmakingService;
-		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
 	}
 
