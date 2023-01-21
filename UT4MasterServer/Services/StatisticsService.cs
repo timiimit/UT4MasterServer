@@ -293,7 +293,7 @@ public sealed class StatisticsService
 	/// </summary>
 	/// <param name="statisticWindow"></param>
 	/// <returns></returns>
-	public static List<StatisticDTO> MapStatisticBaseToStatisticDTO(StatisticBase statisticBase, StatisticWindow statisticWindow)
+	private static List<StatisticDTO> MapStatisticBaseToStatisticDTO(StatisticBase statisticBase, StatisticWindow statisticWindow)
 	{
 		var result = new List<StatisticDTO>();
 
