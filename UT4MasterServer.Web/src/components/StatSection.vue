@@ -2,7 +2,7 @@
     <h3>
         {{ section.heading }}
     </h3>
-    <div class="stat-section">
+    <div class="stat-section row">
         <StatCard :card="card" :data="data" v-for="card in section.cards" />
     </div>
 </template>
@@ -10,9 +10,7 @@
 <style lang="scss" scoped>
 .stat-section {
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    justify-content: center;
     margin-bottom: 30px;
 }
 </style>

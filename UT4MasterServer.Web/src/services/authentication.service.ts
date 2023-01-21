@@ -53,10 +53,15 @@ export default class AuthenticationService extends HttpService {
     }
 
     async checkAuth() {
+        // No need to verify auth if we know we aren't authenticated
+        if (!SessionStore.isAuthenticated) {
+            return false;
+        }
         try {
             const verifySession = await this.get<IVerifySession>(`${this.baseUrl}/verify`);
-            const session: ISession = { 
+            const session: ISession = {
                 ...SessionStore.session!,
+                session_id: verifySession.session_id,
                 access_token: verifySession.token,
                 account_id: verifySession.account_id,
                 displayName: verifySession.display_name,
@@ -65,7 +70,7 @@ export default class AuthenticationService extends HttpService {
             SessionStore.session = session;
         }
         catch (err: unknown) {
-            SessionStore.session = null;
+            this.clearSession();
         }
         const tokenValid = SessionStore.session && SessionStore.session.access_token && new Date() < new Date(SessionStore.session.expires_at);
         if (tokenValid) {
@@ -77,13 +82,14 @@ export default class AuthenticationService extends HttpService {
 
     async logOut() {
         try {
-            await this.delete(`${this.baseUrl}/sessions/kill/${SessionStore.session?.access_token}`);
+            if (SessionStore.session?.session_id) {
+                await this.delete(`${this.baseUrl}/sessions/kill/${SessionStore.session.session_id}`);
+            }
         } catch (err: unknown) {
             console.error('Error killing session', err);
         }
         finally {
-            AccountStore.account = null;
-            SessionStore.session = null;
+            this.clearSession();
         }
     }
 
@@ -92,4 +98,8 @@ export default class AuthenticationService extends HttpService {
         return authResponse.authorizationCode;
     }
 
+    private clearSession() {
+        AccountStore.account = null;
+        SessionStore.session = null;
+    }
 }
