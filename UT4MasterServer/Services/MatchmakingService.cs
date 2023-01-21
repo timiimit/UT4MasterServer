@@ -18,45 +18,40 @@ public class MatchmakingService
 		serverCollection = dbContext.Database.GetCollection<GameServer>("servers");
 	}
 
-	public async Task<bool> AddAsync(GameServer server)
+	public async Task<bool> DoesExistWithSessionAsync(EpicID sessionID)
 	{
 		var options = new CountOptions() { Limit = 1 };
-		long count = await serverCollection.CountDocumentsAsync(x => x.SessionID == server.SessionID, options);
+		long count = await serverCollection.CountDocumentsAsync(x => x.SessionID == sessionID, options);
 
-		// each session is only allowed a single server
-		if (count > 0)
-			return false;
+		return count > 0;
+	}
 
+	public async Task<bool> AddAsync(GameServer server)
+	{
 		await serverCollection.InsertOneAsync(server);
 		return true;
 	}
 
 	public async Task<bool> UpdateAsync(GameServer server)
 	{
-		var result = await serverCollection.ReplaceOneAsync(x => x.SessionID == server.SessionID && x.ID == server.ID, server);
+		var result = await serverCollection.ReplaceOneAsync(x => x.ID == server.ID, server);
 
 		return result.IsAcknowledged;
 	}
 
-	public async Task<bool> RemoveAsync(EpicID sessionID, EpicID serverID)
+	public async Task<bool> RemoveAsync(EpicID serverID)
 	{
-		var result = await serverCollection.DeleteOneAsync(x => x.SessionID == sessionID && x.ID == serverID);
+		var result = await serverCollection.DeleteOneAsync(x => x.ID == serverID);
 		if (!result.IsAcknowledged)
 			return false;
 
 		return result.DeletedCount > 0;
 	}
 
-	public async Task<GameServer?> GetAsync(EpicID sessionID, EpicID serverID)
+	public async Task<GameServer?> GetAsync(EpicID id)
 	{
-		var server = await GetByIDAsync(serverID);
-		if (server == null)
-			return null;
-
-		if (server.SessionID != sessionID)
-			return null;
-
-		return server;
+		var cursor = await serverCollection.FindAsync(x => x.ID == id);
+		return await cursor.FirstOrDefaultAsync();
 	}
 
 	public async Task<List<GameServer>> ListAsync(GameServerFilter inputFilter)
@@ -187,17 +182,5 @@ public class MatchmakingService
 
 		var result = await serverCollection.CountDocumentsAsync(filterSession & (filterPrivatePlayers | filterPublicPlayers), options);
 		return result > 0;
-	}
-
-	private async Task<GameServer?> GetBySessionAsync(EpicID sessionID)
-	{
-		var cursor = await serverCollection.FindAsync(x => x.SessionID == sessionID);
-		return await cursor.FirstOrDefaultAsync();
-	}
-
-	private async Task<GameServer?> GetByIDAsync(EpicID id)
-	{
-		var cursor = await serverCollection.FindAsync(x => x.ID == id);
-		return await cursor.FirstOrDefaultAsync();
 	}
 }
