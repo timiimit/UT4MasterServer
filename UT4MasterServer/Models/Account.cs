@@ -4,6 +4,7 @@ using UT4MasterServer.Other;
 namespace UT4MasterServer.Models;
 using System.Text.Json.Serialization;
 
+[BsonIgnoreExtraElements]
 public class Account
 {
 	//        {
@@ -80,8 +81,7 @@ public class Account
 	[BsonElement("XP")]
 	public int XP { get; set; } = 0;
 
-	//// TODO: this is kind of just wasting space in db. find a way to just cache it in memory.
-	//[BsonDefaultValue(0), BsonIgnoreIfDefault]
+	//[BsonDefaultValue(0), BsonIgnore] // do not save this property to db anymore, it is not needed
 	//[BsonElement("XPLastMatch")]
 	//public int XPLastMatch { get; set; } = 0;
 
