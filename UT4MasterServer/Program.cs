@@ -88,6 +88,7 @@ public static class Program
 			.AddScoped<SessionService>()
 			.AddScoped<FriendService>()
 			.AddScoped<CloudStorageService>()
+			.AddScoped<TrustedGameServerService>()
 			.AddScoped<MatchmakingService>()
 			.AddScoped<StatisticsService>();
 
