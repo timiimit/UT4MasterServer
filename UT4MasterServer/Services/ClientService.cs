@@ -15,6 +15,15 @@ public class ClientService
 		collection = dbContext.Database.GetCollection<Client>("clients");
 	}
 
+	public async Task<bool?> Update(Client client)
+	{
+		var options = new ReplaceOptions() { IsUpsert = true };
+		var result = await collection.ReplaceOneAsync(x => x.ID == client.ID, client, options);
+		if (!result.IsAcknowledged)
+			return null;
+		return result.ModifiedCount == 1;
+	}
+
 	public async Task<Client?> Get(EpicID id)
 	{
 		var options = new FindOptions<Client>() { Limit = 1 };
