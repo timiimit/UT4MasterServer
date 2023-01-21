@@ -30,7 +30,6 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 			if (client.ID.IsEmpty || client.Secret.IsEmpty)
 			{
 				const string errMessage = "unexpected value in authorization header";
-				Logger.LogInformation(errMessage);
 				return AuthenticateResult.Fail(errMessage);
 			}
 
