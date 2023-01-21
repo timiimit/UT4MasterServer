@@ -22,6 +22,7 @@
     .autocomplete-menu {
         width: 100%;
         max-height: 50vh;
+        overflow: auto;
 
         .autocomplete-menu-item {
             cursor: pointer;
