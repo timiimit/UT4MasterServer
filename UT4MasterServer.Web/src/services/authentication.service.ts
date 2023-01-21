@@ -5,6 +5,7 @@ import { ISession, IVerifySession } from '../types/session';
 import { GrantType } from '../enums/grant-type';
 import { IRefreshSessionRequest } from '../types/refresh-session-request';
 import { IAuthCodeResponse } from '../types/auth-code-response';
+import { AccountStore } from '../stores/account-store';
 
 export default class AuthenticationService extends HttpService {
     private baseUrl = `${__BACKEND_URL}/account/api/oauth`;
@@ -81,6 +82,7 @@ export default class AuthenticationService extends HttpService {
             console.error('Error killing session', err);
         }
         finally {
+            AccountStore.account = null;
             SessionStore.session = null;
         }
     }

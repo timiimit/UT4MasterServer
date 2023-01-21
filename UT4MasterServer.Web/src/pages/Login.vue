@@ -48,12 +48,13 @@ import AuthenticationService from '../services/authentication.service';
 import { SessionStore } from '../stores/session-store';
 import { useRouter } from 'vue-router';
 import { GrantType } from '../enums/grant-type';
+import { validatePassword } from '../utils/validation';
 
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
 const status = shallowRef(AsyncStatus.OK);
-const formValid = computed(() => username.value && password.value.length >= 7);
+const formValid = computed(() => username.value && validatePassword(password.value));
 const errorMessage = shallowRef('Error logging in. Please try again.');
 
 const authenticationService = new AuthenticationService();

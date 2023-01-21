@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Controllers;
@@ -10,17 +11,16 @@ namespace UT4MasterServer.Controllers;
 /// </summary>
 [ApiController]
 [Route("entitlement/api/account/{id}/entitlements")]
-[AuthorizeBearer]
+//[AuthorizeBearer]
 [Produces("application/json")]
 public class EntitlementController : JsonAPIController
 {
 	private static readonly List<string> mapEntitlementIDs;
+	private static readonly List<string> cosmeticEntitlementIDs;
+	private const string UTEntitlementID = "b8538c739273426aa35a98220e258d55";
 
 	static EntitlementController()
 	{
-		// UT entitlement name: UnrealTournament
-		// UT entitlement id:   b8538c739273426aa35a98220e258d55
-
 		// the following ids are found in UT4's source code in file UnrealTournament.cpp
 		mapEntitlementIDs = new List<string>();
 		mapEntitlementIDs.Add("0d5e275ca99d4cf0b03c518a6b279e26"); // DM-Lea
@@ -30,6 +30,19 @@ public class EntitlementController : JsonAPIController
 		mapEntitlementIDs.Add("27f36270a1ec44509e72687c4ba6845a"); // DM-Salt
 		mapEntitlementIDs.Add("a99f379bfb9b41c69ddf0bfbc4a48860"); // CTF-Polaris
 		mapEntitlementIDs.Add("65fb5029cddb4de7b5fa155b6992e6a3"); // DM-Unsaved
+
+		// list of these is also partially in UnrealTournament.cpp,
+		// but this was retrieved by looping over all cosmetics and calling
+		// GetRequiredEntitlementFromAsset.
+		cosmeticEntitlementIDs = new List<string>();
+		cosmeticEntitlementIDs.Add("a18ab3a3eb6644b7842750fc7613ec01"); // TC_ArmorNewV
+		cosmeticEntitlementIDs.Add("606862e8a0ec4f5190f67c6df9d4ea81"); // BP_SkullHornsMask & BP_SkullMask
+		cosmeticEntitlementIDs.Add("91afa66fbf744726af33dba391657296"); // BP_Round_HelmetLeader & BP_Round_HelmetGoggles
+		cosmeticEntitlementIDs.Add("9a1ad6c3c10e438f9602c14ad1b67bfa"); // BP_CardboardHat_Leader & BP_CardboardHat
+		cosmeticEntitlementIDs.Add("8747335f79dd4bec8ddc03214c307950"); // BP_BaseballHat_Leader & BP_BaseballHat
+		//cosmeticEntitlementIDS.Add("527E7E209F4142F8835BA696919E2BEC"); // BP_Char_Oct2015, broken character that we don't want people to have
+
+		// TODO: find a way to include halloween cosmetics, they seem to be handled differently in the game
 	}
 
 	public EntitlementController(ILogger<EntitlementController> logger) : base(logger)
@@ -38,37 +51,24 @@ public class EntitlementController : JsonAPIController
 	}
 
 	[HttpGet]
-	public IActionResult QueryProfile(string id)
+	public IActionResult ListEntitlements(string id)
 	{
 		// TODO: Permission: "Sorry your login does not posses the permissions 'entitlement:account:{id_from_param}:entitlements READ' needed to perform the requested operation"
 
-		var commonDate = new DateTime(2023, 1, 1).ToStringISO();
+		EpicID eid = EpicID.FromString(id);
 
-		JArray arr = new JArray();
-		foreach (var mapEntitlementID in mapEntitlementIDs)
+		List<Entitlement> entitlements = new List<Entitlement>();
+		entitlements.Add(new Entitlement("UnrealTournament", UTEntitlementID, eid));
+		foreach (var entitlementID in mapEntitlementIDs)
 		{
-			JObject obj = new JObject();
-			obj.Add("id", EpicID.GenerateNew().ToString()); // does not matter to us
-			obj.Add("entitlementName", mapEntitlementID); // usually same as map entitlement id
-			obj.Add("namespace", "ut");
-			obj.Add("catalogItemId", mapEntitlementID); // this is what is checked in the game
-			obj.Add("accountId", id);
-			obj.Add("identityId", id);
-			obj.Add("entitlementType", "EXECUTABLE"); // EXECUTABLE is the only known value
-			obj.Add("grantDate", commonDate);
-			obj.Add("consumable", false);
-			obj.Add("status", "ACTIVE"); // ACTIVE is the only known value
-			obj.Add("active", true);
-			obj.Add("useCount", 0);
-			obj.Add("originalUseCount", 0);
-			obj.Add("platformType", "EPIC");
-			obj.Add("created", commonDate);
-			obj.Add("updated", commonDate);
-			obj.Add("groupEntitlement", false);
-			obj.Add("country", "US"); // does not matter to us
-			arr.Add(obj);
+			entitlements.Add(new Entitlement(entitlementID, entitlementID, eid));
 		}
+		// TODO: decide how players unlock these special cosmetics
+		//foreach (var entitlementID in cosmeticEntitlementIDs)
+		//{
+		//	entitlements.Add(new Entitlement(entitlementID, entitlementID, eid));
+		//}
 
-		return Json(arr);
+		return new JsonResult(entitlements);
 	}
 }

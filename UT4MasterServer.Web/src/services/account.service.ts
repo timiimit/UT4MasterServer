@@ -27,4 +27,8 @@ export default class AccountService extends HttpService {
     async getAccount(id: string) {
         return await this.get<IAccount>(`${this.baseUrl}/public/account/${id}`);
     }
+
+    async getAllAccounts() {
+        return await this.get<IAccount[]>(`${this.baseUrl}/public/accounts`);
+    }
 }

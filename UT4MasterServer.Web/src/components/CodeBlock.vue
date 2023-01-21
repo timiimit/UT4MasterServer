@@ -3,12 +3,12 @@
         <div ref="code">
             <slot />
         </div>
-        <button id="copy-button" class="btn btn-primary btn-sm btn-smaller" @click="copyCode">Copy</button>
+        <CopyButton v-if="code" :subject="code?.innerText" custom-class="btn-smaller" />
     </div>
 </template>
 
 <style lang="scss" scoped>
-#copy-button {
+.copy-button {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -17,12 +17,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import CopyButton from './CopyButton.vue';
 
 const code = ref<HTMLElement | undefined>(undefined);
-function copyCode() {
-    if (code.value) {
-        const content = code.value.innerText;
-        navigator.clipboard.writeText(content);
-    }
-}
 </script>

@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization;
+using Serilog;
 using System.Net;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Configuration;
+using UT4MasterServer.Formatters;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
@@ -42,11 +45,18 @@ public static class Program
 		builder.Services.AddControllers(o =>
 		{
 			o.RespectBrowserAcceptHeader = true;
+			o.InputFormatters.Insert(0, new StatisticBaseInputFormatter());
+		}).AddJsonOptions(o =>
+		{
+			o.JsonSerializerOptions.Converters.Add(new EpicIDJsonConverter());
+			o.JsonSerializerOptions.Converters.Add(new GameServerAttributesJsonConverter());
+			o.JsonSerializerOptions.Converters.Add(new DateTimeISOJsonConverter());
 		});
 
 		builder.Services.Configure<ApplicationSettings>(
 			builder.Configuration.GetSection("ApplicationSettings")
 		);
+
 		builder.Services.Configure<ApplicationSettings>(x =>
 		{
 			// handle proxy list loading
@@ -69,7 +79,6 @@ public static class Program
 				// we ignore the fact that proxy list file was not found
 			}
 		});
-
 
 		// services whose instance is created per-request
 		builder.Services
@@ -95,12 +104,10 @@ public static class Program
 			.AddScheme<AuthenticationSchemeOptions, BearerAuthenticationHandler>(HttpAuthorization.BearerScheme, null)
 			.AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(HttpAuthorization.BasicScheme, null);
 
-		builder.Host
-			.ConfigureLogging(logging =>
-			{
-				logging.ClearProviders();
-				logging.AddConsole();
-			});
+		builder.Services.AddLogging(builder =>
+		{
+			builder.AddSerilog();
+		});
 
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(config =>
@@ -145,13 +152,15 @@ public static class Program
 			options.AddPolicy(devAllowOriginsPolicy,
 							  policy =>
 							  {
-								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080");
+								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080", "http://localhost:80");
 								  policy.AllowAnyHeader();
 								  policy.AllowAnyMethod();
 							  });
 		});
 
 		var app = builder.Build();
+
+		InternalLoggerConfiguration.Configure(app.Environment, app.Configuration);
 
 		if (app.Environment.IsDevelopment())
 		{

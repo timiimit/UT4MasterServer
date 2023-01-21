@@ -49,6 +49,7 @@ import { AsyncStatus } from '../../types/async-status';
 import { useRouter } from 'vue-router';
 import LoadingPanel from '../../components/LoadingPanel.vue';
 import { AccountStore } from '../../stores/account-store';
+import { validatePassword } from '../../utils/validation';
 
 const accountService = new AccountService();
 const router = useRouter();
@@ -59,8 +60,8 @@ const newPassword = shallowRef<string>('');
 const confirmPassword = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 
-const currentPasswordValid = computed(() => currentPassword.value.length >= 7);
-const newPasswordLength = computed(() => newPassword.value.length >= 7);
+const currentPasswordValid = computed(() => validatePassword(currentPassword.value));
+const newPasswordLength = computed(() => validatePassword(newPassword.value));
 const newPasswordDiffers = computed(() => newPassword.value !== currentPassword.value);
 const newPasswordValid = computed(() => newPasswordDiffers.value && newPasswordLength.value);
 const confirmPasswordValid = computed(() => confirmPassword.value === newPassword.value);

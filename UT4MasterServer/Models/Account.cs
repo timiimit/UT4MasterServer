@@ -2,6 +2,7 @@
 using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
+using System.Text.Json.Serialization;
 
 public class Account
 {
@@ -39,6 +40,7 @@ public class Account
 	public string Username { get; set; } = string.Empty;
 
 	[BsonElement("Password")]
+	[JsonIgnore]
 	public string Password { get; set; } = string.Empty;
 
 	[BsonElement("CreatedAt")]
@@ -78,10 +80,10 @@ public class Account
 	[BsonElement("XP")]
 	public int XP { get; set; } = 0;
 
-	// TODO: this is kind of just wasting space in db. find a way to just cache it in memory.
-	[BsonDefaultValue(0), BsonIgnoreIfDefault]
-	[BsonElement("XPLastMatch")]
-	public int XPLastMatch { get; set; } = 0;
+	//// TODO: this is kind of just wasting space in db. find a way to just cache it in memory.
+	//[BsonDefaultValue(0), BsonIgnoreIfDefault]
+	//[BsonElement("XPLastMatch")]
+	//public int XPLastMatch { get; set; } = 0;
 
 	[BsonIgnoreIfDefault] // default value is set in Program.cs
 	[BsonElement("XPLastMatchAt")]

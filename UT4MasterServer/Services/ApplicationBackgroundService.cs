@@ -46,11 +46,13 @@ namespace UT4MasterServer.Services
 				{
 					var sessionService = scope.ServiceProvider.GetRequiredService<SessionService>();
 					var deleteCount = await sessionService.RemoveAllExpiredSessionsAsync();
-					logger.LogInformation("Background task deleted {DeleteCount} expired sessions.", deleteCount);
+					if (deleteCount > 0)
+						logger.LogInformation("Background task deleted {DeleteCount} expired sessions.", deleteCount);
 
 					var matchmakingService = scope.ServiceProvider.GetRequiredService<MatchmakingService>();
 					deleteCount = await matchmakingService.RemoveAllStaleAsync();
-					logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
+					if (deleteCount > 0)
+						logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
 				}
 
 			});
