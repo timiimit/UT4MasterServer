@@ -13,7 +13,7 @@ public class Client
 	public EpicID Secret { get; set; }
 
 	[BsonIgnoreIfNull]
-	[BsonElement("Secret")]
+	[BsonElement("Name")]
 	public string? Name { get; set; }
 
 	public Client(EpicID id, EpicID secret, string? name = null)
