@@ -101,7 +101,7 @@ public class Account
 	public DateTime LastMatchAt { get; set; } = DateTime.UnixEpoch;
 
 	[BsonIgnoreIfDefault, BsonDefaultValue(AccountFlags.None)]
-	public AccountFlags Flags { get; set; }
+	public AccountFlags Flags { get; set; } = AccountFlags.None;
 
 	[BsonIgnore]
 	public float Level
