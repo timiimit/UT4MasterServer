@@ -13,7 +13,7 @@ public class TrustedGameServerService
 		collection = dbContext.Database.GetCollection<TrustedGameServer>("trustedservers");
 	}
 
-	public async Task<TrustedGameServer?> Get(EpicID id)
+	public async Task<TrustedGameServer?> GetAsync(EpicID id)
 	{
 		var options = new FindOptions<TrustedGameServer>() { Limit = 1 };
 		var cursor = await collection.FindAsync(x => x.ID == id, options);

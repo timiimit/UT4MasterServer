@@ -15,7 +15,7 @@ public class ClientService
 		collection = dbContext.Database.GetCollection<Client>("clients");
 	}
 
-	public async Task<bool?> Update(Client client)
+	public async Task<bool?> UpdateAsync(Client client)
 	{
 		var options = new ReplaceOptions() { IsUpsert = true };
 		var result = await collection.ReplaceOneAsync(x => x.ID == client.ID, client, options);
@@ -24,21 +24,21 @@ public class ClientService
 		return result.ModifiedCount == 1;
 	}
 
-	public async Task<Client?> Get(EpicID id)
+	public async Task<Client?> GetAsync(EpicID id)
 	{
 		var options = new FindOptions<Client>() { Limit = 1 };
 		var cursor = await collection.FindAsync(x => x.ID == id, options);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<Client?> Get(EpicID id, EpicID secret)
+	public async Task<Client?> GetAsync(EpicID id, string secret)
 	{
 		var options = new FindOptions<Client>() { Limit = 1 };
 		var cursor = await collection.FindAsync(x => x.ID == id && x.Secret == secret, options);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<List<Client>> List()
+	public async Task<List<Client>> ListAsync()
 	{
 		var options = new FindOptions<Client>() { Limit = 1 };
 		var cursor = await collection.FindAsync(x => true, options);

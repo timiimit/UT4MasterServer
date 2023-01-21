@@ -32,12 +32,12 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 			}
 
 			var clientParser = new ClientIdentification(authorization.Value);
-			if (clientParser.ID.IsEmpty || clientParser.Secret.IsEmpty)
+			if (clientParser.ID.IsEmpty || string.IsNullOrEmpty(clientParser.Secret))
 			{
 				return AuthenticateResult.Fail("unexpected value in authorization header");
 			}
 
-			var client = await clientService.Get(clientParser.ID);
+			var client = await clientService.GetAsync(clientParser.ID);
 			if (client == null)
 			{
 				return AuthenticateResult.Fail("unknown client tried to authenticate");
