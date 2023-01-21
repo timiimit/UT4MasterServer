@@ -23,16 +23,23 @@ namespace UT4MasterServer.Controllers;
 public class UnrealTournamentMatchmakingController : JsonAPIController
 {
 	private readonly MatchmakingService matchmakingService;
+	private readonly TrustedGameServerService trustedGameServerService;
+	private readonly ClientService clientService;
+
 	private readonly IOptions<ApplicationSettings> configuration;
 	private const int MAX_READ_SIZE = 1024 * 4;
 
 	public UnrealTournamentMatchmakingController(
 		ILogger<UnrealTournamentMatchmakingController> logger,
 		IOptions<ApplicationSettings> configuration,
-		MatchmakingService matchmakingService) : base(logger)
+		MatchmakingService matchmakingService,
+		ClientService clientService,
+		TrustedGameServerService trustedGameServerService) : base(logger)
 	{
 		this.configuration = configuration;
 		this.matchmakingService = matchmakingService;
+		this.clientService = clientService;
+		this.trustedGameServerService = trustedGameServerService;
 	}
 
 	#region Endpoints for Game Servers
@@ -70,8 +77,14 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		server.ServerAddress = ipClient.ToString();
 		server.Started = false;
 
-		// TODO: figure out trusted keys & determine trust level
-		server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)GameServerTrust.Untrusted);
+		GameServerTrust trust = GameServerTrust.Untrusted;
+		var trusted = await trustedGameServerService.Get(user.Session.ClientID);
+		if (trusted != null)
+		{
+			trust = trusted.TrustLevel;
+		}
+
+		server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)trust);
 
 		await matchmakingService.AddAsync(server);
 
