@@ -513,7 +513,7 @@ public sealed class StatisticsService
 		
 		if (skipFlagged)
 		{
-			filter &= Builders<Statistic>.Filter.Eq(f => f.Flagged, null);
+			filter &= Builders<Statistic>.Filter.Exists(f => f.Flagged, false);
 		}
 
 		var result = await statisticsCollection.DeleteManyAsync(filter);
