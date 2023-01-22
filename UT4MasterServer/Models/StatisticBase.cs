@@ -516,109 +516,130 @@ public class StatisticBase
 		#region Weapon Stats Validations
 
 		// Impact Hammer kills are reported if they are more than the actual kills
-		if (ImpactHammerKills.HasValue && Kills.HasValue && ImpactHammerKills.Value > Kills.Value)
+		if (ImpactHammerKills.HasValue && (!Kills.HasValue || ImpactHammerKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(ImpactHammerKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Enforcer kills are reported if they are more than the actual kills
-		if (EnforcerKills.HasValue && Kills.HasValue && EnforcerKills.Value > Kills.Value)
+		if (EnforcerKills.HasValue && (!Kills.HasValue || EnforcerKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(EnforcerKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Bio Rifle kills are reported if they are more than the actual kills
-		if (BioRifleKills.HasValue && Kills.HasValue && BioRifleKills.Value > Kills.Value)
+		if (BioRifleKills.HasValue && (!Kills.HasValue || BioRifleKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(BioRifleKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Grenade Launcher kills are reported if they are more than the actual kills
-		if (BioLauncherKills.HasValue && Kills.HasValue && BioLauncherKills.Value > Kills.Value)
+		if (BioLauncherKills.HasValue && (!Kills.HasValue || BioLauncherKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(BioLauncherKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Shock Beam kills are reported if they are more than the actual kills
-		if (ShockBeamKills.HasValue && Kills.HasValue && ShockBeamKills.Value > Kills.Value)
+		if (ShockBeamKills.HasValue && (!Kills.HasValue || ShockBeamKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(ShockBeamKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Shock Core kills are reported if they are more than the actual kills
-		if (ShockCoreKills.HasValue && Kills.HasValue && ShockCoreKills.Value > Kills.Value)
+		if (ShockCoreKills.HasValue && (!Kills.HasValue || ShockCoreKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(ShockCoreKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Shock Combo kills are reported if they are more than the actual kills
-		if (ShockComboKills.HasValue && Kills.HasValue && ShockComboKills.Value > Kills.Value)
+		if (ShockComboKills.HasValue && (!Kills.HasValue || ShockComboKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(ShockComboKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Link kills are reported if they are more than the actual kills
-		if (LinkKills.HasValue && Kills.HasValue && LinkKills.Value > Kills.Value)
+		if (LinkKills.HasValue && (!Kills.HasValue || LinkKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(LinkKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Link Beam kills are reported if they are more than the actual kills
-		if (LinkBeamKills.HasValue && Kills.HasValue && LinkBeamKills.Value > Kills.Value)
+		if (LinkBeamKills.HasValue && (!Kills.HasValue || LinkBeamKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(LinkBeamKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Minigun kills are reported if they are more than the actual kills
-		if (MinigunKills.HasValue && Kills.HasValue && MinigunKills.Value > Kills.Value)
+		if (MinigunKills.HasValue && (!Kills.HasValue || MinigunKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(MinigunKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Minigun Shard kills are reported if they are more than the actual kills
-		if (MinigunShardKills.HasValue && Kills.HasValue && MinigunShardKills.Value > Kills.Value)
+		if (MinigunShardKills.HasValue && (!Kills.HasValue || MinigunShardKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(MinigunShardKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Flak Shard kills are reported if they are more than the actual kills
-		if (FlakShardKills.HasValue && Kills.HasValue && FlakShardKills.Value > Kills.Value)
+		if (FlakShardKills.HasValue && (!Kills.HasValue || FlakShardKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(FlakShardKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Flak Shell kills are reported if they are more than the actual kills
-		if (FlakShellKills.HasValue && Kills.HasValue && FlakShellKills.Value > Kills.Value)
+		if (FlakShellKills.HasValue && (!Kills.HasValue || FlakShellKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(FlakShellKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Rocket kills are reported if they are more than the actual kills
-		if (RocketKills.HasValue && Kills.HasValue && RocketKills.Value > Kills.Value)
+		if (RocketKills.HasValue && (!Kills.HasValue || RocketKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(RocketKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Sniper kills are reported if they are more than the actual kills
-		if (SniperKills.HasValue && Kills.HasValue && SniperKills.Value > Kills.Value)
+		if (SniperKills.HasValue && (!Kills.HasValue || SniperKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(SniperKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Sniper Headshot kills are reported if they are more than the actual kills
-		if (SniperHeadshotKills.HasValue && Kills.HasValue && SniperHeadshotKills.Value > Kills.Value)
+		if (SniperHeadshotKills.HasValue && (!Kills.HasValue || SniperHeadshotKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(SniperHeadshotKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Lightning Rifle Primary kills are reported if they are more than the actual kills
-		if (LightningRiflePrimaryKills.HasValue && Kills.HasValue && LightningRiflePrimaryKills.Value > Kills.Value)
+		if (LightningRiflePrimaryKills.HasValue && (!Kills.HasValue || LightningRiflePrimaryKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(LightningRiflePrimaryKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Lightning Rifle Secondary kills are reported if they are more than the actual kills
-		if (LightningRifleSecondaryKills.HasValue && Kills.HasValue && LightningRifleSecondaryKills.Value > Kills.Value)
+		if (LightningRifleSecondaryKills.HasValue && (!Kills.HasValue || LightningRifleSecondaryKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(LightningRifleSecondaryKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Redeemer kills are reported if they are more than the actual kills
-		if (RedeemerKills.HasValue && Kills.HasValue && RedeemerKills.Value > Kills.Value)
+		if (RedeemerKills.HasValue && (!Kills.HasValue || RedeemerKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(RedeemerKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Instagib kills are reported if they are more than the actual kills
-		if (InstagibKills.HasValue && Kills.HasValue && InstagibKills.Value > Kills.Value)
+		if (InstagibKills.HasValue && (!Kills.HasValue || InstagibKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(InstagibKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 		// Telefrag kills are reported if they are more than the actual kills
-		if (TelefragKills.HasValue && Kills.HasValue && TelefragKills.Value > Kills.Value)
+		if (TelefragKills.HasValue && (!Kills.HasValue || TelefragKills.Value > Kills.Value))
 		{
 			flaggedFields.Add(nameof(TelefragKills));
+			flaggedFields.Add(nameof(Kills));
 		}
 
 		#endregion
