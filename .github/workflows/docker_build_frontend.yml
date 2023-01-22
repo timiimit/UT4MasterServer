@@ -5,14 +5,14 @@ on:
     paths:
       - 'UT4MasterServer.Web/**'
       - '.github/workflows/docker_build_frontend.yml'
-    paths-ignore:
-      - '*.md'
+      # ignored paths
+      - '!*.md'
   push:
     paths:
       - 'UT4MasterServer.Web/**'
       - '.github/workflows/docker_build_frontend.yml'
-    paths-ignore:
-      - '*.md'
+      # ignored paths
+      - '!*.md'
 
 env:
   IMAGE_NAME: ut4masterserver-web
