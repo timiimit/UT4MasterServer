@@ -25,9 +25,7 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
 				context.Writer.WriteBoolean(key, valBool);
 			else
 			{
-				// Other kv-pairs are ignored because they are invalid
-				// TODO: Is throw more appropriate?
-				continue;
+				throw new FormatException("Invalid kv-pairs detected");
 			}
 		}
 
