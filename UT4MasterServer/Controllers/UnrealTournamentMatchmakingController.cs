@@ -335,14 +335,15 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	}
 
 	[HttpPost("session/{id}/join")]
-	public IActionResult PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
+	public async Task<IActionResult> PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
 		EpicID eid = EpicID.FromString(id);
 
-		// TODO: Return UnknownSessionId(id);
+		if (!await matchmakingService.DoesExistAsync(eid))
+			return UnknownSessionId(id);
 
 		// TODO: we should verify that specific user has joined specific GameServer
 		//       instead of just relying on GameServer blindly believing that user
