@@ -40,7 +40,7 @@ public class UnrealTournamentWaitTimesController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		service.AddWaitTime(ratingMode, timeWaited);
+		service.AddWaitTime(ratingType, timeWaited);
 
 		return NotFound();
 	}
