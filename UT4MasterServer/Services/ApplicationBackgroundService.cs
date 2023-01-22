@@ -10,7 +10,7 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 	private readonly IServiceProvider services;
 
 	private Timer? tmrExpiredSessionDeletor;
-	private DateTime? lastDateMergeStatisticsExecuted;
+	private DateTime? lastDateMergeOldStatisticsExecuted;
 
 	public ApplicationBackgroundCleanupService(
 		ILogger<ApplicationStartupService> logger,
@@ -56,16 +56,7 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 			if (deleteCount > 0)
 				logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
 
-			// Merging old daily statistic records
-			var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(settings.MergeOldStatisticsTimeZone));
-			if (currentTime.Hour == settings.MergeOldStatisticsHour &&
-			   (!lastDateMergeStatisticsExecuted.HasValue || lastDateMergeStatisticsExecuted.Value.Date != currentTime.Date))
-			{
-				lastDateMergeStatisticsExecuted = currentTime.Date;
-				
-				var statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
-				await statisticsService.MergeOldStatisticsAsync();
-			}
+			await MergeOldStatisticsAsync(scope);
 		});
 	}
 
@@ -73,4 +64,24 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 	{
 		tmrExpiredSessionDeletor?.Dispose();
 	}
+
+	#region Jobs
+
+	/// <summary>
+	/// This job is executed each day, and it merges statistics older than 7 days into single record per day per account
+	/// </summary>
+	private async Task MergeOldStatisticsAsync(IServiceScope scope)
+	{
+		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(settings.MergeOldStatisticsTimeZone));
+		if (currentTime.Hour == settings.MergeOldStatisticsHour &&
+		   (!lastDateMergeOldStatisticsExecuted.HasValue || lastDateMergeOldStatisticsExecuted.Value.Date != currentTime.Date))
+		{
+			lastDateMergeOldStatisticsExecuted = currentTime.Date;
+
+			var statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
+			await statisticsService.MergeOldStatisticsAsync();
+		}
+	}
+
+	#endregion
 }
