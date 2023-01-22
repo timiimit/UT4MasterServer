@@ -342,7 +342,7 @@ public class StatisticBase
 			LightningRifleSecondaryKills,
 			RedeemerKills,
 			InstagibKills,
-			TelefragKills
+			TelefragKills,
 		}.Sum() ?? 0;
 
 		#region Quick Look Validations

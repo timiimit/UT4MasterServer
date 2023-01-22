@@ -26,7 +26,7 @@ public sealed class StatisticsService
 		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
 			{
 				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
-				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt))
+				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt)),
 			};
 		await statisticsCollection.Indexes.CreateManyAsync(statisticsIndexes);
 	}
@@ -274,7 +274,7 @@ public sealed class StatisticsService
 				AccountId = s.Key.AccountID,
 				CreatedAt = s.Key.Date,
 				Statistics = s.ToList(),
-				Count = s.Count()
+				Count = s.Count(),
 			})
 			.ToList();
 
@@ -397,7 +397,7 @@ public sealed class StatisticsService
 			var newAllTimeStatistics = new Statistic(newStatistic)
 			{
 				AccountID = newStatistic.AccountID,
-				Window = StatisticWindow.AllTime
+				Window = StatisticWindow.AllTime,
 			};
 
 			await statisticsCollection.InsertOneAsync(newAllTimeStatistics);
@@ -429,7 +429,7 @@ public sealed class StatisticsService
 						Name = element.Name,
 						Value = value,
 						Window = statisticWindow.ToString().ToLower(),
-						OwnerType = OwnerType.Default
+						OwnerType = OwnerType.Default,
 					});
 				}
 			}
