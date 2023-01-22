@@ -32,7 +32,6 @@
 </style>
   
 <script setup lang="ts">
-import { start } from 'repl';
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue';
 import { ServerStore } from '../stores/server-store';
 
