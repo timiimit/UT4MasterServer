@@ -25,7 +25,7 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
 				context.Writer.WriteBoolean(key, valBool);
 			else
 			{
-				throw new FormatException("Invalid kv-pairs detected");
+				throw new FormatException($"Invalid KeyValue-pairs detected. Key: {key}");
 			}
 		}
 
