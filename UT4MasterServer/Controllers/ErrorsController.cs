@@ -18,7 +18,6 @@ public class ErrorsController : ControllerBase
 		this.logger = logger;
 	}
 
-	[HttpGet]
 	public IActionResult Index()
 	{
 		var message = InternalServerError;

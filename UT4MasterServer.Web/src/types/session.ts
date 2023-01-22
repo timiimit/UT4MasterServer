@@ -5,6 +5,7 @@ export interface ISession {
     refresh_expires_at: string; //ISO date
     account_id: string;
     displayName: string;
+    session_id: string;
 }
 
 export interface IVerifySession {

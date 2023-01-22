@@ -35,12 +35,15 @@ import { computed, onMounted } from 'vue';
 import { ServerStore } from '../stores/server-store';
 
 const playersOnline = computed(() => {
-  return ServerStore.allServers.reduce((sum, s) => sum + s.attributes.UT_PLAYERONLINE_i, 0);
-});
-const matchesInProgress = computed(() => {
-  return ServerStore.hubs.reduce((sum, h) => sum + h.matches.length, 0);
+  return ServerStore.hubs.reduce((sum, s) => sum + s.totalPlayers, 0);
 });
 
-// TODO: maybe poll this every 60 seconds or something
+const matchesInProgress = computed(() => {
+  return ServerStore.hubs
+    .reduce((sum, h) => sum +
+      h.matches.filter((m) => m.attributes.UT_MATCHSTATE_s === 'InProgress').length,
+      0);
+});
+
 onMounted(ServerStore.fetchGameServers);
 </script>

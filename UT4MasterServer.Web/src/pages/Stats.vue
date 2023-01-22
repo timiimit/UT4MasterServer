@@ -4,15 +4,8 @@
     <div class="form-group row">
       <div class="col-sm-6">
         <label for="accountId" class="col-sm-6 col-form-label">Account</label>
-        <!-- TODO: I will replace this with a better control at some point, an autocomplete, or searchable list, something like that -->
-        <select class="form-select" v-model="accountId" @change="handleParameterChange">
-          <option :value="AccountStore.account?.id">
-            {{ AccountStore.account?.displayName }} (You)
-          </option>
-          <option :value="account.id" v-for="account in accounts">
-            {{ account.displayName }}
-          </option>
-        </select>
+        <Autocomplete :value="accountId" :items="accounts" item-key="id" search-key="displayName"
+          @select="handleSelectAccount" />
       </div>
       <div class="col-sm-6">
         <label for="statWindow" class="col-sm-6 col-form-label">Timeframe</label>
@@ -32,21 +25,21 @@
 <script setup lang="ts">
 import LoadingPanel from '../components/LoadingPanel.vue';
 import { AsyncStatus } from '../types/async-status';
-import { shallowRef, onMounted } from 'vue';
+import { shallowRef, onMounted, computed } from 'vue';
 import { SessionStore } from '../stores/session-store';
 import StatsService from '../services/stats.service';
 import { StatisticWindow } from '../enums/statistic-window';
 import { IAccount } from '../types/account';
 import AccountService from '../services/account.service';
-import { AccountStore } from '../stores/account-store';
 import { Statistic } from '../enums/statistic';
 import { IStatisticSection } from '../types/statistic-config';
 import StatSection from '../components/StatSection.vue';
 import { IStatisticData } from '../types/statistic-data';
+import Autocomplete from '../components/Autocomplete.vue';
 
 const statsStatus = shallowRef(AsyncStatus.OK);
 const accountsStatus = shallowRef(AsyncStatus.OK);
-const accountId = shallowRef(SessionStore.session?.account_id ?? '');
+const accountId = shallowRef<string | undefined>(undefined);
 const statWindow = shallowRef(StatisticWindow.AllTime);
 const accounts = shallowRef<IAccount[]>([]);
 const stats = shallowRef<IStatisticData[]>([]);
@@ -346,6 +339,9 @@ const statSections: IStatisticSection[] = [
 ];
 
 async function loadStats() {
+  if (!accountId.value) {
+    return;
+  }
   try {
     statsStatus.value = AsyncStatus.BUSY;
     stats.value = await statsService.getStats(accountId.value, statWindow.value);
@@ -360,8 +356,8 @@ async function loadStats() {
 async function loadAccounts() {
   try {
     accountsStatus.value = AsyncStatus.BUSY;
-    const response = await accountService.getAllAccounts();
-    accounts.value = response.filter((a) => a.id !== AccountStore.account?.id);
+    accounts.value = await accountService.getAllAccounts();
+    accountId.value = SessionStore.session?.account_id?.toString();
     accountsStatus.value = AsyncStatus.OK;
   }
   catch (err: unknown) {
@@ -375,6 +371,11 @@ function handleParameterChange() {
     return;
   }
   loadStats();
+}
+
+function handleSelectAccount(account: IAccount) {
+  accountId.value = account.id;
+  handleParameterChange();
 }
 
 onMounted(async () => {

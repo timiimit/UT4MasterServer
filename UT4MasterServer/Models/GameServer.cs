@@ -108,8 +108,21 @@ public class GameServer
 	/// <summary>
 	/// GameServer's Session
 	/// </summary>
+	/// <remarks>
+	/// Each session is allowed to have only a single server
+	/// </remarks>
 	[BsonElement("SessionID")]
 	public EpicID SessionID { get; set; } = EpicID.Empty;
+
+	/// <summary>
+	/// GameServer's OwningClientID
+	/// </summary>
+	/// <remarks>
+	/// All game servers owned by a single entity (hub owner) have the same client ID
+	/// </remarks>
+	[BsonElement("OwningClientID")]
+	public EpicID OwningClientID { get; set; } = EpicID.Empty;
+
 
 #if DEBUG
 	[BsonElement("SessionAccessToken")]
@@ -263,6 +276,9 @@ public class GameServer
 
 	public void Update(GameServer update)
 	{
+		SessionID = update.SessionID;
+		OwningClientID = update.OwningClientID;
+
 		MaxPublicPlayers = update.MaxPublicPlayers;
 		MaxPrivatePlayers = update.MaxPrivatePlayers;
 		//OpenPublicPlayers = update.OpenPublicPlayers;
