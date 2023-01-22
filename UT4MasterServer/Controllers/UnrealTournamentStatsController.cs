@@ -96,11 +96,4 @@ public class UnrealTournamentStatsController : JsonAPIController
 		await statisticsService.CreateAccountStatisticsAsync(accountId, ownerType, statisticBase);
 		return Ok();
 	}
-
-	[HttpDelete]
-	public async Task<IActionResult> DeleteOldStatistics(int days = 30, bool skipFlagged = true)
-	{
-		var result = await statisticsService.DeleteOldStatisticsAsync(days, skipFlagged);
-		return Ok(result);
-	}
 }
