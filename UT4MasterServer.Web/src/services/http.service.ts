@@ -1,4 +1,5 @@
 import { SessionStore } from "../stores/session-store";
+import AuthenticationService from "./authentication.service";
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -35,10 +36,18 @@ export default class HttpService {
         const response = await fetch(url, fetchOptions);
 
         if (!response.ok) {
-            const error =  await response.json().catch(() => { });
-            const errorMessage = error.errorMessage ?? error;
-            const defaultErrorMessage = `HTTP request error - ${response.status}: ${response.statusText}`;
-            throw new Error(errorMessage ?? defaultErrorMessage);
+            // Note: Logging the user out on any API request returning 401 may not be the perfect solution,
+            //       there could be a legitimate case for returning 401 that wouldn't require logout,
+            //       but I don't think we have such a case at this point.
+            if (response.status === 401 && SessionStore.isAuthenticated) {
+                new AuthenticationService().logOut();
+                window.location.href = '/';
+            } else {
+                const error = await response.json().catch(() => { });
+                const errorMessage = error?.errorMessage ?? error;
+                const defaultErrorMessage = `HTTP request error - ${response.status}: ${response.statusText}`;
+                throw new Error(errorMessage ?? defaultErrorMessage);
+            }
         }
 
         const responseObj = await response.json().catch(() => { });

@@ -1,4 +1,4 @@
 export interface IStatisticData {
-    Name: string;
-    Value: number;
+    name: string;
+    value: number;
 }
