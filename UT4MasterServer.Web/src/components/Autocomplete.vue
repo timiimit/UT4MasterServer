@@ -130,7 +130,7 @@ function valueChanged(value?: string) {
         }
     }
 }
-// TODO: keyboard input handling (arrow keys, enter, etc)
+
 watch(() => props.value, valueChanged);
 onMounted(valueChanged);
 </script>
