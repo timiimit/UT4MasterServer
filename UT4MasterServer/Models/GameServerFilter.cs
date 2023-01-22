@@ -34,5 +34,7 @@ public class GameServerFilter
 	public List<GameServerAttributeCriteria> Criteria { get; set; } = new();
 	public string? BuildUniqueId { get; set; } = null;
 	public int? OpenPlayersRequired { get; set; } = null;
+	public int? MaxCurrentPlayers { get; set; } = null;
+	public bool? RequireDedicated { get; set; } = null;
 	public int? MaxResults { get; set; } = null;
 }
