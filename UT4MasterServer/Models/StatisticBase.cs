@@ -919,25 +919,19 @@ public class StatisticBase
 
 	private void ValidateMultiAndSpreeKillStatistic(int? value, int multiplier, string statisticName, List<string> flaggedFields)
 	{
-		if (value.HasValue)
+		if (value.HasValue && (!Kills.HasValue || (Kills.HasValue && value.Value * multiplier > Kills.Value)))
 		{
-			if (!Kills.HasValue || (Kills.HasValue && value.Value * multiplier > Kills.Value))
-			{
-				flaggedFields.Add(statisticName);
-				flaggedFields.Add(nameof(Kills));
-			}
+			flaggedFields.Add(statisticName);
+			flaggedFields.Add(nameof(Kills));
 		}
 	}
 
 	private void ValidateTimeStatistic(double? value, string statisticName, List<string> flaggedFields)
 	{
-		if (value.HasValue)
+		if (value.HasValue && TimePlayed.HasValue && value.Value > TimePlayed.Value)
 		{
-			if (TimePlayed.HasValue && value.Value > TimePlayed.Value)
-			{
-				flaggedFields.Add(statisticName);
-				flaggedFields.Add(nameof(TimePlayed));
-			}
+			flaggedFields.Add(statisticName);
+			flaggedFields.Add(nameof(TimePlayed));
 		}
 	}
 
