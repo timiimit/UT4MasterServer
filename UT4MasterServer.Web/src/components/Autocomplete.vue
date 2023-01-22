@@ -6,7 +6,7 @@
             <a href="#" class="autocomplete-menu-item dropdown-item" :class="{ 'active': index === activeIndex }"
                 v-for="(item, index) in filteredItems" @click.stop.prevent="handleSelect(item)">
                 <div class="autocomplete-menu-item-display" v-show="!$slots.item">
-                    {{ searchKey? item[searchKey]: item }} ({{ index }})
+                    {{ searchKey? item[searchKey]: item }}
                 </div>
             </a>
             <div class="autocomplete-menu-item dropdown-item no-items" v-show="!filteredItems.length">
