@@ -249,6 +249,83 @@ public sealed class StatisticsService
 		await UpdateAllTimeAccountStatisticsAsync(newStatistic);
 	}
 
+	public async Task MergeOldStatisticsAsync()
+	{
+		var dateBefore = DateTime.UtcNow.AddDays(-7).Date;
+
+		logger.LogInformation("Merging statistics older than: {Date}.", dateBefore);
+
+		var filter = Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
+					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateBefore);
+
+		var statistics = await statisticsCollection.Find(filter).ToListAsync();
+
+		if (!statistics.Any()) return;
+
+		var statisticsGrouped = statistics
+			.GroupBy(g => new { g.AccountID, g.CreatedAt.Date })
+			.Select(s => new
+			{
+				AccountId = s.Key.AccountID,
+				CreatedAt = s.Key.Date,
+				Statistics = s.ToList(),
+				Count = s.Count()
+			})
+			.ToList();
+
+		var mergedStatistics = new List<Statistic>();
+		var modifiedStatisticIds = new List<string>();
+		var deletedStatisticIds = new List<string>();
+
+		foreach (var statisticsGroup in statisticsGrouped)
+		{
+			if (statisticsGroup.Count > 1)
+			{
+				var mergedStatistic = MergeStatistics(statisticsGroup.Statistics);
+				mergedStatistic.CreatedAt = mergedStatistic.CreatedAt.Date;
+				mergedStatistic.Window = StatisticWindow.DailyMerged;
+				mergedStatistics.Add(mergedStatistic);
+
+				var mergedStatisticsIds = statisticsGroup.Statistics.Select(s => s.ID).ToList();
+
+				deletedStatisticIds.AddRange(mergedStatisticsIds);
+
+				logger.LogInformation("Merged the following statistics into one record: {StatisticIds}.", string.Join(",", mergedStatisticsIds));
+			}
+			else
+			{
+				var modifiedStatisticId = statisticsGroup.Statistics.First().ID;
+				modifiedStatisticIds.Add(modifiedStatisticId);
+				logger.LogInformation("Changing the window for statistic: {StatisticId}.", modifiedStatisticId);
+			}
+		}
+
+		// Inserting merged statistics and deleting the old ones
+		if (mergedStatistics.Any())
+		{
+			await statisticsCollection.InsertManyAsync(mergedStatistics);
+
+			var deleteFilter = Builders<Statistic>.Filter.In(f => f.ID, deletedStatisticIds);
+			await statisticsCollection.DeleteManyAsync(deleteFilter);
+			logger.LogInformation("Deleting the following statistics: {StatisticIds}.", string.Join(",", deletedStatisticIds));
+		}
+
+		// Modifying Window and removing Flagged property for statistics which are single per day
+		if (modifiedStatisticIds.Any())
+		{
+			var bulkWriteModelList = new List<WriteModel<Statistic>>();
+			foreach (var modifiedStatisticId in modifiedStatisticIds)
+			{
+				var updateFilter = Builders<Statistic>.Filter.Eq(f => f.ID, modifiedStatisticId);
+				var updateDefinition = Builders<Statistic>.Update
+					.Set(s => s.Window, StatisticWindow.DailyMerged)
+					.Unset(u => u.Flagged);
+				bulkWriteModelList.Add(new UpdateOneModel<Statistic>(updateFilter, updateDefinition));
+			}
+			await statisticsCollection.BulkWriteAsync(bulkWriteModelList);
+		}
+	}
+
 	#region Private methods
 
 	/// <summary>
