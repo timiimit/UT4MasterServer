@@ -316,337 +316,6 @@ public class StatisticBase
 		TeamKills = statisticBase.TeamKills;
 	}
 
-	public List<string> Validate()
-	{
-		var flaggedFields = new List<string>();
-
-		var totalKills = new int?[]
-		{
-			ImpactHammerKills,
-			EnforcerKills,
-			BioRifleKills,
-			BioLauncherKills,
-			ShockBeamKills,
-			ShockCoreKills,
-			ShockComboKills,
-			LinkKills,
-			LinkBeamKills,
-			MinigunKills,
-			MinigunShardKills,
-			FlakShardKills,
-			FlakShellKills,
-			RocketKills,
-			SniperKills,
-			SniperHeadshotKills,
-			LightningRiflePrimaryKills,
-			LightningRifleSecondaryKills,
-			RedeemerKills,
-			InstagibKills,
-			TelefragKills,
-		}.Sum() ?? 0;
-
-		#region Quick Look Validations
-
-		// Since this is added after match, this property should be only 1
-		if (MatchesPlayed.HasValue && MatchesPlayed.Value > 1)
-		{
-			flaggedFields.Add(nameof(MatchesPlayed));
-		}
-		// Since this is added after match, this property should be only 1
-		if (MatchesQuit.HasValue && MatchesQuit.Value > 1)
-		{
-			flaggedFields.Add(nameof(MatchesQuit));
-		}
-		// You shouldn't have both Wins and Losses value available at the same time
-		if (MatchesPlayed.HasValue && MatchesQuit.HasValue && MatchesPlayed.Value > 0 && MatchesQuit.Value > 0)
-		{
-			flaggedFields.Add(nameof(MatchesPlayed));
-			flaggedFields.Add(nameof(MatchesQuit));
-		}
-		// Since this is added after match, this property should be only 1
-		if (Wins.HasValue && Wins.Value > 1)
-		{
-			flaggedFields.Add(nameof(Wins));
-		}
-		// Since this is added after match, this property should be only 1
-		if (Losses.HasValue && Losses.Value > 1)
-		{
-			flaggedFields.Add(nameof(Losses));
-		}
-		// You shouldn't have both Wins and Losses value available at the same time
-		if (Wins.HasValue && Losses.HasValue && Wins.Value > 0 && Losses.Value > 0)
-		{
-			flaggedFields.Add(nameof(Wins));
-			flaggedFields.Add(nameof(Losses));
-		}
-		// Maximum time for custom game is 60 minutes (1 minute is added just to be sure)
-		if (TimePlayed.HasValue && TimePlayed.Value > (60 * 60) + 60)
-		{
-			flaggedFields.Add(nameof(TimePlayed));
-		}
-		if (Kills.HasValue)
-		{
-			// Kills are reported if you manage to achieve 1 kill each 1.5 second
-			if (TimePlayed.HasValue && Kills.Value > (TimePlayed.Value / 1.5))
-			{
-				flaggedFields.Add(nameof(Kills));
-				flaggedFields.Add(nameof(TimePlayed));
-			}
-			// Kills are reported if they don't match the sum of individual weapon kills
-			if (Kills.Value != totalKills)
-			{
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Deaths are reported if you manage to achieve 1 death each 2 seconds
-		if (Deaths.HasValue && TimePlayed.HasValue && Deaths.Value > (TimePlayed.Value / 2))
-		{
-			flaggedFields.Add(nameof(Deaths));
-			flaggedFields.Add(nameof(TimePlayed));
-		}
-		// Suicides are reported if you manage to achieve 1 suicide each 2 seconds
-		if (Suicides.HasValue && TimePlayed.HasValue && Suicides.Value > (TimePlayed.Value / 2))
-		{
-			flaggedFields.Add(nameof(Suicides));
-			flaggedFields.Add(nameof(TimePlayed));
-		}
-
-		#endregion
-
-		#region Kill Achievements Validations
-
-		// Cannot have double kills without or more than actual kills                                                                   
-		if (MultiKillLevel0.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel0.Value * 2 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(MultiKillLevel0));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Cannot have multi kills without or more than actual kills
-		if (MultiKillLevel1.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel1.Value * 3 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(MultiKillLevel1));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Cannot have ultra kills without or more than actual kills
-		if (MultiKillLevel2.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && MultiKillLevel2.Value * 4 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(MultiKillLevel2));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Cannot have killing spree without or more than actual kills
-		if (SpreeKillLevel0.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel0.Value * 5 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(SpreeKillLevel0));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Cannot have rampages without or more than actual kills
-		if (SpreeKillLevel1.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel1.Value * 10 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(SpreeKillLevel1));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Cannot have dominatings without or more than actual kills
-		if (SpreeKillLevel2.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel2.Value * 15 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(SpreeKillLevel2));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-		// Cannot have unstoppables without or more than actual kills
-		if (SpreeKillLevel3.HasValue)
-		{
-			if (!Kills.HasValue || (Kills.HasValue && SpreeKillLevel3.Value * 20 > Kills.Value))
-			{
-				flaggedFields.Add(nameof(SpreeKillLevel3));
-				flaggedFields.Add(nameof(Kills));
-			}
-		}
-
-		#endregion
-
-		#region Power Up Achievements Validations
-
-		if (UDamageTime.HasValue)
-		{
-			// UDamage time cannot be longer than match time
-			if (TimePlayed.HasValue && UDamageTime.Value > TimePlayed.Value)
-			{
-				flaggedFields.Add(nameof(UDamageTime));
-				flaggedFields.Add(nameof(TimePlayed));
-			}
-		}
-		if (BerserkTime.HasValue)
-		{
-			// BerserkTime time cannot be longer than match time
-			if (TimePlayed.HasValue && BerserkTime.Value > TimePlayed.Value)
-			{
-				flaggedFields.Add(nameof(BerserkTime));
-				flaggedFields.Add(nameof(TimePlayed));
-			}
-		}
-		if (InvisibilityTime.HasValue)
-		{
-			// InvisibilityTime time cannot be longer than match time
-			if (TimePlayed.HasValue && InvisibilityTime.Value > TimePlayed.Value)
-			{
-				flaggedFields.Add(nameof(InvisibilityTime));
-				flaggedFields.Add(nameof(TimePlayed));
-			}
-		}
-
-		#endregion
-
-		#region Weapon Stats Validations
-
-		// Impact Hammer kills are reported if they are more than the actual kills
-		if (ImpactHammerKills.HasValue && (!Kills.HasValue || ImpactHammerKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(ImpactHammerKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Enforcer kills are reported if they are more than the actual kills
-		if (EnforcerKills.HasValue && (!Kills.HasValue || EnforcerKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(EnforcerKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Bio Rifle kills are reported if they are more than the actual kills
-		if (BioRifleKills.HasValue && (!Kills.HasValue || BioRifleKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(BioRifleKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Grenade Launcher kills are reported if they are more than the actual kills
-		if (BioLauncherKills.HasValue && (!Kills.HasValue || BioLauncherKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(BioLauncherKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Shock Beam kills are reported if they are more than the actual kills
-		if (ShockBeamKills.HasValue && (!Kills.HasValue || ShockBeamKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(ShockBeamKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Shock Core kills are reported if they are more than the actual kills
-		if (ShockCoreKills.HasValue && (!Kills.HasValue || ShockCoreKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(ShockCoreKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Shock Combo kills are reported if they are more than the actual kills
-		if (ShockComboKills.HasValue && (!Kills.HasValue || ShockComboKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(ShockComboKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Link kills are reported if they are more than the actual kills
-		if (LinkKills.HasValue && (!Kills.HasValue || LinkKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(LinkKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Link Beam kills are reported if they are more than the actual kills
-		if (LinkBeamKills.HasValue && (!Kills.HasValue || LinkBeamKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(LinkBeamKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Minigun kills are reported if they are more than the actual kills
-		if (MinigunKills.HasValue && (!Kills.HasValue || MinigunKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(MinigunKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Minigun Shard kills are reported if they are more than the actual kills
-		if (MinigunShardKills.HasValue && (!Kills.HasValue || MinigunShardKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(MinigunShardKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Flak Shard kills are reported if they are more than the actual kills
-		if (FlakShardKills.HasValue && (!Kills.HasValue || FlakShardKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(FlakShardKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Flak Shell kills are reported if they are more than the actual kills
-		if (FlakShellKills.HasValue && (!Kills.HasValue || FlakShellKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(FlakShellKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Rocket kills are reported if they are more than the actual kills
-		if (RocketKills.HasValue && (!Kills.HasValue || RocketKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(RocketKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Sniper kills are reported if they are more than the actual kills
-		if (SniperKills.HasValue && (!Kills.HasValue || SniperKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(SniperKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Sniper Headshot kills are reported if they are more than the actual kills
-		if (SniperHeadshotKills.HasValue && (!Kills.HasValue || SniperHeadshotKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(SniperHeadshotKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Lightning Rifle Primary kills are reported if they are more than the actual kills
-		if (LightningRiflePrimaryKills.HasValue && (!Kills.HasValue || LightningRiflePrimaryKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(LightningRiflePrimaryKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Lightning Rifle Secondary kills are reported if they are more than the actual kills
-		if (LightningRifleSecondaryKills.HasValue && (!Kills.HasValue || LightningRifleSecondaryKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(LightningRifleSecondaryKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Redeemer kills are reported if they are more than the actual kills
-		if (RedeemerKills.HasValue && (!Kills.HasValue || RedeemerKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(RedeemerKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Instagib kills are reported if they are more than the actual kills
-		if (InstagibKills.HasValue && (!Kills.HasValue || InstagibKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(InstagibKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-		// Telefrag kills are reported if they are more than the actual kills
-		if (TelefragKills.HasValue && (!Kills.HasValue || TelefragKills.Value > Kills.Value))
-		{
-			flaggedFields.Add(nameof(TelefragKills));
-			flaggedFields.Add(nameof(Kills));
-		}
-
-		#endregion
-
-		return flaggedFields;
-	}
-
 	#region Quick Look
 	[BsonIgnoreIfNull]
 	public int? SkillRating { get; set; }
@@ -1109,5 +778,177 @@ public class StatisticBase
 
 	[BsonIgnoreIfNull]
 	public int? TeamKills { get; set; }
+	#endregion
+
+	#region Validation
+	public List<string> Validate()
+	{
+		var flaggedFields = new List<string>();
+
+		var totalKills = new int?[]
+		{
+			ImpactHammerKills,
+			EnforcerKills,
+			BioRifleKills,
+			BioLauncherKills,
+			ShockBeamKills,
+			ShockCoreKills,
+			ShockComboKills,
+			LinkKills,
+			LinkBeamKills,
+			MinigunKills,
+			MinigunShardKills,
+			FlakShardKills,
+			FlakShellKills,
+			RocketKills,
+			SniperKills,
+			SniperHeadshotKills,
+			LightningRiflePrimaryKills,
+			LightningRifleSecondaryKills,
+			RedeemerKills,
+			InstagibKills,
+			TelefragKills,
+		}.Sum() ?? 0;
+
+		#region Quick Look Validations
+		// These statistics cannot be more than 1
+		ValidateMaxValueForStatistic(MatchesPlayed, 1, nameof(MatchesPlayed), flaggedFields);
+		ValidateMaxValueForStatistic(MatchesQuit, 1, nameof(MatchesQuit), flaggedFields);
+		ValidateMaxValueForStatistic(Wins, 1, nameof(Wins), flaggedFields);
+		ValidateMaxValueForStatistic(Losses, 1, nameof(Losses), flaggedFields);
+
+		// These statistics cannot exist at the same time
+		ValidateIfBothStatisticsExist(MatchesPlayed, MatchesQuit, nameof(MatchesPlayed), nameof(MatchesQuit), flaggedFields);
+		ValidateIfBothStatisticsExist(Wins, Losses, nameof(Wins), nameof(Losses), flaggedFields);
+
+		// Maximum time for custom game is 60 minutes (1 minute is added just to be sure)
+		if (TimePlayed.HasValue && TimePlayed.Value > (60 * 60) + 60)
+		{
+			flaggedFields.Add(nameof(TimePlayed));
+		}
+		if (Kills.HasValue)
+		{
+			// Kills are reported if you manage to achieve 1 kill each 1.5 second
+			ValidateStatisticsAgainstTimePlayed(Kills, 1.5, nameof(Kills), flaggedFields);
+
+			// Kills are reported if they don't match the sum of individual weapon kills
+			if (Kills.Value != totalKills)
+			{
+				flaggedFields.Add(nameof(Kills));
+			}
+		}
+
+		// Deaths/suicides are reported if you manage to achieve 1 each 2 seconds
+		ValidateStatisticsAgainstTimePlayed(Deaths, 2, nameof(Deaths), flaggedFields);
+		ValidateStatisticsAgainstTimePlayed(Suicides, 2, nameof(Suicides), flaggedFields);
+		#endregion
+
+		#region Kill Achievements Validations
+		// Cannot have double/multi/ultra kills without or more than actual kills
+		ValidateMultiAndSpreeKillStatistic(MultiKillLevel0, 2, nameof(MultiKillLevel0), flaggedFields);
+		ValidateMultiAndSpreeKillStatistic(MultiKillLevel1, 3, nameof(MultiKillLevel1), flaggedFields);
+		ValidateMultiAndSpreeKillStatistic(MultiKillLevel2, 4, nameof(MultiKillLevel2), flaggedFields);
+
+		// Cannot have killing spree/rampages/dominatings/unstoppables without or more than actual kills
+		ValidateMultiAndSpreeKillStatistic(SpreeKillLevel0, 5, nameof(SpreeKillLevel0), flaggedFields);
+		ValidateMultiAndSpreeKillStatistic(SpreeKillLevel1, 10, nameof(SpreeKillLevel1), flaggedFields);
+		ValidateMultiAndSpreeKillStatistic(SpreeKillLevel2, 15, nameof(SpreeKillLevel2), flaggedFields);
+		ValidateMultiAndSpreeKillStatistic(SpreeKillLevel3, 20, nameof(SpreeKillLevel3), flaggedFields);
+		#endregion
+
+		#region Power Up Achievements Validations
+		// UDamage/Berserk/Invisibility time cannot be longer than match time
+		ValidateTimeStatistic(UDamageTime, nameof(UDamageTime), flaggedFields);
+		ValidateTimeStatistic(BerserkTime, nameof(BerserkTime), flaggedFields);
+		ValidateTimeStatistic(InvisibilityTime, nameof(InvisibilityTime), flaggedFields);
+		#endregion
+
+		#region Weapon Stats Validations
+		// Per-weapon kills are reported if they are more than the actual kills or if actual kills are missing
+		ValidatePerWeaponKillStatistic(ImpactHammerKills, nameof(ImpactHammerKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(EnforcerKills, nameof(EnforcerKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(BioRifleKills, nameof(BioRifleKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(BioLauncherKills, nameof(BioLauncherKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(ShockBeamKills, nameof(ShockBeamKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(ShockCoreKills, nameof(ShockCoreKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(ShockComboKills, nameof(ShockComboKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(LinkKills, nameof(LinkKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(LinkBeamKills, nameof(LinkBeamKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(MinigunKills, nameof(MinigunKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(MinigunShardKills, nameof(MinigunShardKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(FlakShardKills, nameof(FlakShardKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(FlakShellKills, nameof(FlakShellKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(RocketKills, nameof(RocketKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(SniperKills, nameof(SniperKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(SniperHeadshotKills, nameof(SniperHeadshotKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(LightningRiflePrimaryKills, nameof(LightningRiflePrimaryKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(LightningRifleSecondaryKills, nameof(LightningRifleSecondaryKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(RedeemerKills, nameof(RedeemerKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(InstagibKills, nameof(InstagibKills), flaggedFields);
+		ValidatePerWeaponKillStatistic(TelefragKills, nameof(TelefragKills), flaggedFields);
+		#endregion
+
+		return flaggedFields;
+	}
+
+	private static void ValidateMaxValueForStatistic(int? value, int maxValue, string statisticName, List<string> flaggedFields)
+	{
+		if (value.HasValue && value.Value > maxValue)
+		{
+			flaggedFields.Add(statisticName);
+		}
+	}
+
+	private static void ValidateIfBothStatisticsExist(int? firstValue, int? secondValue, string firstStatistic, string secondStatistic, List<string> flaggedFields)
+	{
+		if (firstValue.HasValue && secondValue.HasValue && firstValue.Value > 0 && secondValue.Value > 0)
+		{
+			flaggedFields.Add(firstStatistic);
+			flaggedFields.Add(secondStatistic);
+		}
+	}
+
+	private void ValidateStatisticsAgainstTimePlayed(int? value, double maxValuePerSecond, string statisticName, List<string> flaggedFields)
+	{
+		if (value.HasValue && TimePlayed.HasValue && value.Value > (TimePlayed.Value / maxValuePerSecond))
+		{
+			flaggedFields.Add(statisticName);
+			flaggedFields.Add(nameof(TimePlayed));
+		}
+	}
+
+	private void ValidateMultiAndSpreeKillStatistic(int? value, int multiplier, string statisticName, List<string> flaggedFields)
+	{
+		if (value.HasValue)
+		{
+			if (!Kills.HasValue || (Kills.HasValue && value.Value * multiplier > Kills.Value))
+			{
+				flaggedFields.Add(statisticName);
+				flaggedFields.Add(nameof(Kills));
+			}
+		}
+	}
+
+	private void ValidateTimeStatistic(double? value, string statisticName, List<string> flaggedFields)
+	{
+		if (value.HasValue)
+		{
+			if (TimePlayed.HasValue && value.Value > TimePlayed.Value)
+			{
+				flaggedFields.Add(statisticName);
+				flaggedFields.Add(nameof(TimePlayed));
+			}
+		}
+	}
+
+	private void ValidatePerWeaponKillStatistic(int? value, string statisticName, List<string> flaggedFields)
+	{
+		if (value.HasValue && (!Kills.HasValue || value.Value > Kills.Value))
+		{
+			flaggedFields.Add(statisticName);
+			flaggedFields.Add(nameof(Kills));
+		}
+	}
+
 	#endregion
 }
