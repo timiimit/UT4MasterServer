@@ -22,6 +22,7 @@
   position: fixed;
   bottom: 0;
   padding: 10px;
+  z-index: 10;
 
   .container {
     display: flex;

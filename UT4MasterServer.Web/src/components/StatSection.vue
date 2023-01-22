@@ -1,5 +1,5 @@
 <template>
-    <h3>
+    <h3 class="text-center">
         {{ section.heading }}
     </h3>
     <div class="stat-section row">
