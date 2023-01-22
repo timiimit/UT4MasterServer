@@ -2,7 +2,7 @@
   <div class="navbar navbar-primary bg-light user-info">
     <div class="container">
       <div>
-        <label>Username: </label>{{ AccountStore.account?.displayName ?? SessionStore.username }}
+        <label><RouterLink to="/Profile/PlayerCard">Username:</RouterLink></label> {{ AccountStore.account?.displayName ?? SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">
@@ -32,9 +32,13 @@
     margin-left: 5px;
     padding: 3px 5px;
   }
+
+  a {
+    text-decoration: none;
+  }
 }
 </style>
-  
+
 <script setup lang="ts">
 import { shallowRef, onMounted } from 'vue';
 import AuthenticationService from '../services/authentication.service';
