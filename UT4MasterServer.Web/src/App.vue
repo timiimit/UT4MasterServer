@@ -1,6 +1,6 @@
 <template>
   <Header />
-  <div class="container">
+  <div class="container main-content">
     <router-view />
   </div>
   <Footer />
@@ -15,6 +15,6 @@
 <style lang="scss" src="./styles.scss" />
 
 <script setup lang="ts">
-import Header from './components/Header.vue';
-import Footer from './components/Footer.vue';
+  import Header from './components/Header.vue';
+  import Footer from './components/Footer.vue';
 </script>
