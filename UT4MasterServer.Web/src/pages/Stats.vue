@@ -18,7 +18,11 @@
     </div>
   </LoadingPanel>
   <LoadingPanel :status="statsStatus">
-    <StatSection :data="stats" :section="section" v-for="section in statSections" />
+    <template v-if="accountId">
+      <h5>Viewing stats for: {{ viewingAccount?.displayName }}</h5>
+      <StatSection :data="stats" :section="section" v-for="section in statSections" />
+    </template>
+    <h5 v-else class="text-center">Select a player to view stats</h5>
   </LoadingPanel>
 </template>
 
@@ -43,6 +47,7 @@ const accountId = shallowRef<string | undefined>(undefined);
 const statWindow = shallowRef(StatisticWindow.AllTime);
 const accounts = shallowRef<IAccount[]>([]);
 const stats = shallowRef<IStatisticData[]>([]);
+const viewingAccount = computed(() => accounts.value.find((a) => a.id === accountId.value));
 
 const statsService = new StatsService();
 const accountService = new AccountService();
@@ -373,8 +378,8 @@ function handleParameterChange() {
   loadStats();
 }
 
-function handleSelectAccount(account: IAccount) {
-  accountId.value = account.id;
+function handleSelectAccount(account?: IAccount) {
+  accountId.value = account?.id;
   handleParameterChange();
 }
 
