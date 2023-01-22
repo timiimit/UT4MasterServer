@@ -249,6 +249,10 @@ public sealed class StatisticsService
 		await UpdateAllTimeAccountStatisticsAsync(newStatistic);
 	}
 
+	/// <summary>
+	/// This method merges multiple statistics into one. It looks only for daily non-flagged statistics to merge that are at least 7 days old.
+	/// </summary>
+	/// <returns></returns>
 	public async Task MergeOldStatisticsAsync()
 	{
 		var dateBefore = DateTime.UtcNow.AddDays(-7).Date;
@@ -256,7 +260,8 @@ public sealed class StatisticsService
 		logger.LogInformation("Merging statistics older than: {Date}.", dateBefore);
 
 		var filter = Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
-					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateBefore);
+					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateBefore) &
+					 Builders<Statistic>.Filter.Exists(f => f.Flagged, false);
 
 		var statistics = await statisticsCollection.Find(filter).ToListAsync();
 
@@ -273,30 +278,67 @@ public sealed class StatisticsService
 			})
 			.ToList();
 
+		var accountIds = statisticsGrouped.Select(s => s.AccountId).ToArray();
+		var dates = statisticsGrouped.Select(s => s.CreatedAt).ToArray();
+		var alreadyMergedFilter = Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.DailyMerged) &
+								  Builders<Statistic>.Filter.In(f => f.AccountID, accountIds) &
+								  Builders<Statistic>.Filter.In(f => f.CreatedAt, dates);
+
+		// This will fetch previously merged records so that un-flagged records can be merged with them
+		var alreadyMergedStatistics = await statisticsCollection.Find(alreadyMergedFilter).ToListAsync();
+
 		var mergedStatistics = new List<Statistic>();
 		var modifiedStatisticIds = new List<string>();
-		var deletedStatisticIds = new List<string>();
+		var statisticIdsToDelete = new List<string>();
 
 		foreach (var statisticsGroup in statisticsGrouped)
 		{
+			// Statistics that have multiple records per day should be merged together or merged with already merged statistics
 			if (statisticsGroup.Count > 1)
 			{
-				var mergedStatistic = MergeStatistics(statisticsGroup.Statistics);
+				var statisticsToMerge = new List<Statistic>(statisticsGroup.Statistics);
+
+				if (alreadyMergedStatistics.FirstOrDefault(f => f.AccountID == statisticsGroup.AccountId &&
+																f.CreatedAt.Date == statisticsGroup.CreatedAt.Date) is { } alreadyMergedStatistic)
+				{
+					statisticsToMerge.Add(alreadyMergedStatistic);
+				}
+
+				var mergedStatistic = MergeStatistics(statisticsToMerge);
 				mergedStatistic.CreatedAt = mergedStatistic.CreatedAt.Date;
 				mergedStatistic.Window = StatisticWindow.DailyMerged;
 				mergedStatistics.Add(mergedStatistic);
 
-				var mergedStatisticsIds = statisticsGroup.Statistics.Select(s => s.ID).ToList();
+				var mergedStatisticsIds = statisticsToMerge.Select(s => s.ID).ToArray();
 
-				deletedStatisticIds.AddRange(mergedStatisticsIds);
+				statisticIdsToDelete.AddRange(mergedStatisticsIds);
 
 				logger.LogInformation("Merged the following statistics into one record: {StatisticIds}.", string.Join(",", mergedStatisticsIds));
 			}
+			// Statistics that have one record per day should be either modified or merged with already merged statistics
 			else
 			{
-				var modifiedStatisticId = statisticsGroup.Statistics.First().ID;
-				modifiedStatisticIds.Add(modifiedStatisticId);
-				logger.LogInformation("Changing the window for statistic: {StatisticId}.", modifiedStatisticId);
+				if (alreadyMergedStatistics.FirstOrDefault(f => f.AccountID == statisticsGroup.AccountId &&
+																f.CreatedAt.Date == statisticsGroup.CreatedAt.Date) is { } alreadyMergedStatistic)
+				{
+					var statisticsToMerge = new List<Statistic>(statisticsGroup.Statistics) { alreadyMergedStatistic };
+					var mergedStatistic = MergeStatistics(statisticsToMerge);
+					mergedStatistic.CreatedAt = mergedStatistic.CreatedAt.Date;
+					mergedStatistic.Window = StatisticWindow.DailyMerged;
+					mergedStatistics.Add(mergedStatistic);
+
+					var mergedStatisticsIds = statisticsToMerge.Select(s => s.ID).ToArray();
+
+					statisticIdsToDelete.AddRange(mergedStatisticsIds);
+
+					logger.LogInformation("Merged the following statistics into one record: {StatisticIds}.", string.Join(",", mergedStatisticsIds));
+				}
+				else
+				{
+					var modifiedStatisticId = statisticsGroup.Statistics.First().ID;
+					modifiedStatisticIds.Add(modifiedStatisticId);
+					logger.LogInformation("Modifying the window for statistic: {StatisticId}.", modifiedStatisticId);
+				}
 			}
 		}
 
@@ -305,9 +347,9 @@ public sealed class StatisticsService
 		{
 			await statisticsCollection.InsertManyAsync(mergedStatistics);
 
-			var deleteFilter = Builders<Statistic>.Filter.In(f => f.ID, deletedStatisticIds);
+			var deleteFilter = Builders<Statistic>.Filter.In(f => f.ID, statisticIdsToDelete);
 			await statisticsCollection.DeleteManyAsync(deleteFilter);
-			logger.LogInformation("Deleting the following statistics: {StatisticIds}.", string.Join(",", deletedStatisticIds));
+			logger.LogInformation("Deleting the following statistics: {StatisticIds}.", string.Join(",", statisticIdsToDelete));
 		}
 
 		// Modifying Window and removing Flagged property for statistics which are single per day
