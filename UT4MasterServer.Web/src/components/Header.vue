@@ -29,10 +29,12 @@
             <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
               @click.stop="showProfileDropdown = !showProfileDropdown">Profile</a>
             <div class="dropdown-menu" :class="{ 'show': showProfileDropdown }">
+              <HeaderLink text="Player Card" path="/Profile/PlayerCard" dropdown />
+              <div class="dropdown-divider" />
               <HeaderLink text="Change Username" path="/Profile/ChangeUsername" dropdown />
               <HeaderLink text="Change Password" path="/Profile/ChangePassword" dropdown />
               <HeaderLink text="Change Email" path="/Profile/ChangeEmail" dropdown />
-              <div class="dropdown-divider"></div>
+              <div class="dropdown-divider" />
               <button class="dropdown-item" @click="logOut">Log Out</button>
             </div>
           </li>
@@ -49,13 +51,17 @@
   justify-content: flex-end;
 
   .nav-link.router-link-active,
-  .navbar-nav .show>.nav-link {
+  .navbar-nav .show > .nav-link {
     color: var(--bs-navbar-active-color);
   }
 
   .nav-item.pull-right {
     margin-right: 0;
     margin-left: 1rem;
+  }
+
+  .router-link-active {
+    font-weight: 700;
   }
 }
 
@@ -71,7 +77,7 @@
   }
 }
 </style>
-  
+
 <script setup lang="ts">
 import { onMounted, onUnmounted, shallowRef } from 'vue';
 import HeaderLink from './HeaderLink.vue';
