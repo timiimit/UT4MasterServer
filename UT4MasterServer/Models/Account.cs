@@ -4,6 +4,17 @@ using UT4MasterServer.Other;
 namespace UT4MasterServer.Models;
 using System.Text.Json.Serialization;
 
+[Flags]
+public enum AccountFlags
+{
+	None = 0,
+	Admin = 1,
+	Moderator = 2,
+	Developer = 4,
+	ContentCreator = 8,
+	HubOwner = 16
+}
+
 [BsonIgnoreExtraElements]
 public class Account
 {
@@ -88,6 +99,9 @@ public class Account
 	[BsonIgnoreIfDefault] // default value is set in Program.cs
 	[BsonElement("XPLastMatchAt")]
 	public DateTime LastMatchAt { get; set; } = DateTime.UnixEpoch;
+
+	[BsonIgnoreIfDefault, BsonDefaultValue(AccountFlags.None)]
+	public AccountFlags Flags { get; set; } = AccountFlags.None;
 
 	[BsonIgnore]
 	public float Level

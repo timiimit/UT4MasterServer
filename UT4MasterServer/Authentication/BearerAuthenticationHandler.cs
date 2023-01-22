@@ -32,7 +32,6 @@ public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationS
 		if (session == null)
 		{
 			const string errMessage = "invalid token";
-			Logger.LogInformation(errMessage);
 			return AuthenticateResult.Fail(errMessage);
 		}
 

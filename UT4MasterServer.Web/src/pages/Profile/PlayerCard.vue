@@ -10,7 +10,7 @@
         <tbody>
           <tr class="table-primary">
             <th scope="row">
-              <img class="avatar" :src="`/assets/avatars/${playerCard?.Avatar ?? 'UT.Avatar.1'}.png`" />
+              <img class="avatar" :src="`/assets/avatars/${playerCard?.Avatar ?? 'UT.Avatar.0'}.png`" />
               {{ playerCard?.Username }}
             </th>
             <td>
