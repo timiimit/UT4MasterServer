@@ -43,7 +43,6 @@ export const ServerStore = {
                     };
                     return hub;
                 });
-            console.debug('Servers', _allServers.value);
             console.debug('Hubs', _hubs.value);
             _status.value = AsyncStatus.OK;
         }
