@@ -18,16 +18,17 @@
 
 <script lang="ts" setup>
 import { IGameHub } from '../types/game-server';
-import { onMounted, shallowRef } from 'vue';
+import { onMounted, shallowRef, computed } from 'vue';
 import Hub from '../components/Hub.vue';
 import HubListing from '../components/HubListing.vue';
 import { ServerStore } from '../stores/server-store';
 import LoadingPanel from '../components/LoadingPanel.vue';
 
-const selectedHub = shallowRef<IGameHub | undefined>(undefined);
+const selectedHubId = shallowRef<string | undefined>(undefined);
+const selectedHub = computed(() => ServerStore.hubs.find((h) => h.attributes.UT_SERVERINSTANCEGUID_s === selectedHubId.value));
 
 function viewHub(hub: IGameHub) {
-  selectedHub.value = hub;
+  selectedHubId.value = hub.attributes.UT_SERVERINSTANCEGUID_s;
 }
 
 onMounted(ServerStore.fetchGameServers);
