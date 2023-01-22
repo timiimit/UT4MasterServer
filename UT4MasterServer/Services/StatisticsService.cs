@@ -313,7 +313,7 @@ public sealed class StatisticsService
 
 				statisticIdsToDelete.AddRange(mergedStatisticsIds);
 
-				logger.LogInformation("Merged the following statistics into one record: {StatisticIds}.", string.Join(",", mergedStatisticsIds));
+				logger.LogInformation("Merged the following statistics into one record: {StatisticIds}.", string.Join(", ", mergedStatisticsIds));
 			}
 			// Statistics that have one record per day should be either modified or merged with already merged statistics
 			else
@@ -331,7 +331,7 @@ public sealed class StatisticsService
 
 					statisticIdsToDelete.AddRange(mergedStatisticsIds);
 
-					logger.LogInformation("Merged the following statistics into one record: {StatisticIds}.", string.Join(",", mergedStatisticsIds));
+					logger.LogInformation("Merged the following statistics into one record: {StatisticIds}.", string.Join(", ", mergedStatisticsIds));
 				}
 				else
 				{
@@ -349,7 +349,7 @@ public sealed class StatisticsService
 
 			var deleteFilter = Builders<Statistic>.Filter.In(f => f.ID, statisticIdsToDelete);
 			await statisticsCollection.DeleteManyAsync(deleteFilter);
-			logger.LogInformation("Deleting the following statistics: {StatisticIds}.", string.Join(",", statisticIdsToDelete));
+			logger.LogInformation("Deleting the following statistics: {StatisticIds}.", string.Join(", ", statisticIdsToDelete));
 		}
 
 		// Modifying Window and removing Flagged property for statistics which are single per day
