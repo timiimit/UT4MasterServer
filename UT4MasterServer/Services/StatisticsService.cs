@@ -13,6 +13,8 @@ public sealed class StatisticsService
 	private readonly ILogger<StatisticsService> logger;
 	private readonly IMongoCollection<Statistic> statisticsCollection;
 
+	private const int MinimumDaysForDeletingOldStatistics = 30;
+
 	public StatisticsService(
 		ILogger<StatisticsService> logger,
 		DatabaseContext dbContext)
@@ -410,7 +412,7 @@ public sealed class StatisticsService
 	/// </summary>
 	/// <param name="statisticWindow"></param>
 	/// <returns></returns>
-	public static List<StatisticDTO> MapStatisticBaseToStatisticDTO(StatisticBase statisticBase, StatisticWindow statisticWindow)
+	private static List<StatisticDTO> MapStatisticBaseToStatisticDTO(StatisticBase statisticBase, StatisticWindow statisticWindow)
 	{
 		var result = new List<StatisticDTO>();
 
@@ -607,6 +609,38 @@ public sealed class StatisticsService
 			.First();
 
 		return merged;
+	}
+
+	/// <summary>
+	/// This method will delete statistics that are older than X <paramref name="days"/>
+	/// </summary>
+	/// <param name="days">Number of days that should be kept for statistic records. It shouldn't be less than 30 since they are used for monthly statistics calculation.</param>
+	/// <param name="skipFlagged">When set to <see langword="false" /> it will also delete flagged statistics. Flagged statistics should be deleted only after they are inspected.</param>
+	/// <returns>Number of deleted statistic records</returns>
+	public async Task<long> DeleteOldStatisticsAsync(int days = 30, bool skipFlagged = true)
+	{
+		logger.LogInformation("Deleting statistics that are older than: {Days}, {Flagged}.", days, skipFlagged);
+
+		if (days < MinimumDaysForDeletingOldStatistics)
+		{
+			throw new ArgumentException($"You can delete only statistics that are at least {MinimumDaysForDeletingOldStatistics} days old.", nameof(days));
+		}
+
+		var removeBeforeDate = DateTime.UtcNow.Date.AddDays(-days);
+
+		var filter = Builders<Statistic>.Filter.Lt(f => f.CreatedAt, removeBeforeDate) &
+					 Builders<Statistic>.Filter.In(f => f.Window, new List<StatisticWindow>() { StatisticWindow.Daily });
+
+		if (skipFlagged)
+		{
+			filter &= Builders<Statistic>.Filter.Exists(f => f.Flagged, false);
+		}
+
+		var result = await statisticsCollection.DeleteManyAsync(filter);
+
+		logger.LogInformation("Deleted {Count} statistics successfully.", result.DeletedCount);
+
+		return result.DeletedCount;
 	}
 
 	#endregion
