@@ -42,7 +42,7 @@ public sealed class StatisticsService
 		}
 		var dateTo = DateTime.UtcNow.AddDays(1).Date;
 		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
-					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
+					 Builders<Statistic>.Filter.In(f => f.Window, new[] { StatisticWindow.Daily, StatisticWindow.DailyMerged }) &
 					 Builders<Statistic>.Filter.Gte(f => f.CreatedAt, dateFrom) &
 					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateTo);
 
