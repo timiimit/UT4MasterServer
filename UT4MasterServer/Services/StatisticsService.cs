@@ -509,8 +509,9 @@ public sealed class StatisticsService
 
 		var removeBeforeDate = DateTime.UtcNow.Date.AddDays(-days);
 
-		var filter = Builders<Statistic>.Filter.Lt(f => f.CreatedAt, removeBeforeDate);
-		
+		var filter = Builders<Statistic>.Filter.Lt(f => f.CreatedAt, removeBeforeDate) &
+					 Builders<Statistic>.Filter.In(f => f.Window, new List<StatisticWindow>() { StatisticWindow.Daily });
+
 		if (skipFlagged)
 		{
 			filter &= Builders<Statistic>.Filter.Exists(f => f.Flagged, false);
