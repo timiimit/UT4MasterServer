@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Build Server Docker Image
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ env:
   IMAGE_NAME: ut4masterserver
 
 jobs:
-  build:
+  build-server:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
