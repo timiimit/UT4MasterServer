@@ -64,7 +64,7 @@ const recaptchaValid = shallowRef(false);
 const formValid = computed(() => emailValid.value && username.value && passwordValid.value && recaptchaValid.value);
 const errorMessage = shallowRef('Error registering account. Please try again.');
 const submitAttempted = shallowRef(false);
-const recaptchaSiteKey = '6LeG-B8kAAAAAOavz8EOqkEP3utz5AmHcpi4sPw1';
+const recaptchaSiteKey = __RECAPTCHA_SITE_KEY;
 
 const accountService = new AccountService();
 
