@@ -37,6 +37,7 @@ public class TrustedGameServerService
 		var result = await collection.DeleteOneAsync(x => x.ID == id);
 		if (!result.IsAcknowledged)
 			return null;
+
 		return result.DeletedCount > 0;
 	}
 }

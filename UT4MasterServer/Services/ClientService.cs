@@ -21,6 +21,7 @@ public class ClientService
 		var result = await collection.ReplaceOneAsync(x => x.ID == client.ID, client, options);
 		if (!result.IsAcknowledged)
 			return null;
+
 		return result.ModifiedCount == 1;
 	}
 
