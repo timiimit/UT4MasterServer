@@ -126,9 +126,11 @@ public sealed class SessionController : JsonAPIController
 					return ErrorInvalidRequest("password");
 				}
 
-				account = await accountService.GetAccountAsync(request.Username, request.Password);
-				if (account != null)
+				account = await accountService.GetAccountUsernameOrEmailAsync(request.Username);
+				if (account != null && account.CheckPassword(request.Password, allowPasswordGrant))
+				{
 					session = await sessionService.CreateSessionAsync(account.ID, clientID, SessionCreationMethod.Password);
+				}
 
 				break;
 			}

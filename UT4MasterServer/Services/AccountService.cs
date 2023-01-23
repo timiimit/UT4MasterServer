@@ -47,7 +47,7 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<Account?> GetAccountAsync(string username, string password)
+	public async Task<Account?> GetAccountUsernameOrEmailAsync(string username)
 	{
 		// look for account just with username
 		var account = await GetAccountAsync(username);
@@ -108,20 +108,5 @@ public sealed class AccountService
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
 
-	private static string GetPasswordHash(EpicID accountID, string password)
-	{
-		// we combine both accountID and password to create a hash.
-		// this way NO ONE can tell which users have the same password.
-		string combined = accountID + password;
 
-		return GetPasswordHash(combined);
-	}
-
-	private static string GetPasswordHash(string password)
-	{
-		var bytes = Encoding.UTF8.GetBytes(password);
-		var hashedBytes = SHA512.HashData(bytes);
-		var passwordHash = Convert.ToHexString(hashedBytes).ToLower();
-		return passwordHash;
-	}
 }

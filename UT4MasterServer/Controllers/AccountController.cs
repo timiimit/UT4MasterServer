@@ -346,7 +346,7 @@ public sealed class AccountController : JsonAPIController
 			});
 		}
 
-		if (account.Password != currentPassword)
+		if (!account.CheckPassword(currentPassword, false))
 		{
 			return BadRequest(new ErrorResponse()
 			{
