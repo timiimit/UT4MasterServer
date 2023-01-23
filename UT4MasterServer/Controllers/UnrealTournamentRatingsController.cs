@@ -15,7 +15,7 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/game/v2/ratings")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentRatingController : JsonAPIController
+public sealed class UnrealTournamentRatingController : JsonAPIController
 {
 	private readonly AccountService accountService;
 

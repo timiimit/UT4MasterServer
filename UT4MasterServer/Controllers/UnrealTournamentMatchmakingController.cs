@@ -20,7 +20,7 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/matchmaking")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentMatchmakingController : JsonAPIController
+public sealed class UnrealTournamentMatchmakingController : JsonAPIController
 {
 	private readonly MatchmakingService matchmakingService;
 	private readonly TrustedGameServerService trustedGameServerService;

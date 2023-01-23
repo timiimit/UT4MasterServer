@@ -14,7 +14,7 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/stats")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentStatsController : JsonAPIController
+public sealed class UnrealTournamentStatsController : JsonAPIController
 {
 	private readonly StatisticsService statisticsService;
 	private readonly MatchmakingService matchmakingService;

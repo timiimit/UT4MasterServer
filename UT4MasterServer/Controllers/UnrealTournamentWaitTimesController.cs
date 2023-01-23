@@ -14,7 +14,7 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/game/v2/wait_times")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentWaitTimesController : JsonAPIController
+public sealed class UnrealTournamentWaitTimesController : JsonAPIController
 {
 	private readonly MatchmakingWaitTimeEstimateService service;
 

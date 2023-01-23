@@ -14,7 +14,7 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/game/v2/profile")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentProfileController : JsonAPIController
+public sealed class UnrealTournamentProfileController : JsonAPIController
 {
 	private static readonly List<(string item, int requiredLevel)> profileItems;
 

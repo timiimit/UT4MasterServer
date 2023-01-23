@@ -9,7 +9,7 @@ using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
-public class CustomAPIController : JsonAPIController
+public sealed class CustomAPIController : JsonAPIController
 {
 	private readonly IOptions<ApplicationSettings> configuration;
 	private readonly AccountService accountService;
