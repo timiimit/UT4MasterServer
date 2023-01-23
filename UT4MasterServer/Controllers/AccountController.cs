@@ -273,7 +273,10 @@ public sealed class AccountController : JsonAPIController
 		if (matchingAccount != null)
 		{
 			logger.LogInformation($"Change Username failed, already taken: {newUsername}");
-			return Conflict("Username already taken");
+			return Conflict(new ErrorResponse()
+			{
+				ErrorMessage = $"Username already taken"
+			});
 		}
 
 		var account = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -281,7 +284,7 @@ public sealed class AccountController : JsonAPIController
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
@@ -311,7 +314,7 @@ public sealed class AccountController : JsonAPIController
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
@@ -342,7 +345,7 @@ public sealed class AccountController : JsonAPIController
 		{
 			return NotFound(new ErrorResponse()
 			{
-				ErrorMessage = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
@@ -350,7 +353,7 @@ public sealed class AccountController : JsonAPIController
 		{
 			return BadRequest(new ErrorResponse()
 			{
-				ErrorMessage = $"Old password does not match"
+				ErrorMessage = $"Current Password is invalid"
 			});
 		}
 
