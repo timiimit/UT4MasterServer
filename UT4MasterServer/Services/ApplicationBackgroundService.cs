@@ -3,7 +3,7 @@ using UT4MasterServer.Settings;
 
 namespace UT4MasterServer.Services;
 
-public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
+public sealed class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 {
 	private readonly ILogger<ApplicationStartupService> logger;
 	private readonly StatisticsSettings statisticsSettings;
