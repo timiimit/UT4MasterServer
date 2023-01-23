@@ -107,6 +107,17 @@ public class CloudStorageController : JsonAPIController
 			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\"}}") };
 		}
 
+		if (isStatsFile)
+		{
+			// HACK: Fix game bug where stats.json is expected to always have nul character at the end
+			//       Bug at is at UnrealTournament\Source\UnrealTournament\Private\Slate\Panels\SUTStatsViewerPanel.cpp:415
+			var tmp = new byte[file.RawContent.Length + 1];
+			Array.Copy(file.RawContent, tmp, file.RawContent.Length);
+			tmp[tmp.Length - 1] = 0;
+
+			file.RawContent = tmp;
+		}
+
 		return new FileContentResult(file.RawContent, "application/octet-stream");
 	}
 
