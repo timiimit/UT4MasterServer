@@ -285,16 +285,8 @@ public sealed class AccountController : JsonAPIController
 			});
 		}
 
-		try
-		{
-			account.Username = newUsername;
-			await accountService.UpdateAccountAsync(account);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Username failed: {ex.Message}");
-			return StatusCode(500);
-		}
+		account.Username = newUsername;
+		await accountService.UpdateAccountAsync(account);
 
 		logger.LogInformation($"Updated username for {user.Session.AccountID} to: {newUsername}");
 
@@ -323,16 +315,8 @@ public sealed class AccountController : JsonAPIController
 			});
 		}
 
-		try
-		{
-			account.Email = newEmail;
-			await accountService.UpdateAccountAsync(account);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Email failed: {ex.Message}");
-			return StatusCode(500);
-		}
+		account.Email = newEmail;
+		await accountService.UpdateAccountAsync(account);
 
 		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
 
@@ -370,15 +354,7 @@ public sealed class AccountController : JsonAPIController
 			});
 		}
 
-		try
-		{
-			await accountService.UpdateAccountPasswordAsync(account, newPassword);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Email failed: {ex.Message}");
-			return StatusCode(500);
-		}
+		await accountService.UpdateAccountPasswordAsync(account, newPassword);
 
 		logger.LogInformation($"Updated password for {user.Session.AccountID}");
 
