@@ -1,6 +1,6 @@
 <template>
   <h1>Instructions for UT4 with UT4UU</h1>
-  <p>Use these instructions if you have the UT4UU plugin installed.</p>
+  <p>Use these instructions if you have the <a href="https://github.com/timiimit/UT4UU-Public/releases">UT4UU</a> plugin installed.</p>
   <ol>
     <li>Open the game</li>
     <li>Open console (~)</li>

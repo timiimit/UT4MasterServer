@@ -2,7 +2,7 @@
   <h1>Instructions for Stock UT4</h1>
   <p>
     Use these instructions to use the UT4 Master Server with a standard Windows installation of Unreal Tournament 4
-    without UT4UU installed.
+    without <a href="https://github.com/timiimit/UT4UU-Public/releases">UT4UU</a> installed.
   </p>
   <ol>
     <li>Go to <span class="code">{Your Windows User}\Documents\UnrealTournament\Saved\Config\WindowsNoEditor\</span> in
