@@ -98,7 +98,7 @@ public class CloudStorageController : JsonAPIController
 				}, StatusCodes.Status404NotFound);
 			}
 
-			// send a fake response in order to fix #102 (which is a game bug)
+			// Send a fake response in order to fix #109 (which is a game bug)
 			var playerName = "New Player";
 			var account = await accountService.GetAccountAsync(accountID);
 			if (account != null)
