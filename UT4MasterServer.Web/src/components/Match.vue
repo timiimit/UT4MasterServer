@@ -64,5 +64,5 @@ function getPlayerName(id: string) {
     const player = AccountStore.accounts?.find((a) => a.id === id);
     return player?.displayName;
 }
-
 </script>
+
