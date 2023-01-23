@@ -14,18 +14,21 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/stats")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentStatsController : JsonAPIController
+public sealed class UnrealTournamentStatsController : JsonAPIController
 {
 	private readonly StatisticsService statisticsService;
 	private readonly MatchmakingService matchmakingService;
+	private readonly TrustedGameServerService trustedGameServerService;
 
 	public UnrealTournamentStatsController(
 		ILogger<UnrealTournamentStatsController> logger,
 		StatisticsService statisticsService,
-		MatchmakingService matchmakingService) : base(logger)
+		MatchmakingService matchmakingService,
+		TrustedGameServerService trustedGameServerService) : base(logger)
 	{
 		this.statisticsService = statisticsService;
 		this.matchmakingService = matchmakingService;
+		this.trustedGameServerService = trustedGameServerService;
 	}
 
 	// Examples:
@@ -85,11 +88,20 @@ public class UnrealTournamentStatsController : JsonAPIController
 		{
 			bool isMultiplayerMatch = await matchmakingService.DoesSessionOwnGameServerWithPlayerAsync(user.Session.ID, accountId);
 
-#if DEBUG
-			// in debug we allow anyone to post stats for easier testing
-#else
+			// NOTE: In debug we allow anyone to post stats for easier testing.
+			//       Normally only trusted servers are allowed to post stats
+
+#if !DEBUG
 			if (!isMultiplayerMatch)
-				return Unauthorized(); // Only servers can post stats
+				return Unauthorized();
+#endif
+
+			var trusted = await trustedGameServerService.GetAsync(user.Session.ClientID);
+			bool isTrustedMatch = (int)(trusted?.TrustLevel ?? GameServerTrust.Untrusted) < 2;
+
+#if !DEBUG
+			if (!isTrustedMatch)
+				return Unauthorized();
 #endif
 		}
 

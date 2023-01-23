@@ -1,11 +1,11 @@
 <template>
-    <a :href="hub ? '#' : undefined" class="hub list-group-item list-group-item-action" :title="hub?.attributes.UT_SERVERNAME_s"
-        :class="{ 'active-hub': selectedHub?.id === hub?.id }">
+    <a :href="hub ? '#' : undefined" class="hub list-group-item list-group-item-action"
+        :title="hub?.attributes.UT_SERVERNAME_s" :class="{ 'active-hub': selectedHub?.id === hub?.id }">
         <template v-if="hub">
             <h5>{{ hub.attributes.UT_SERVERNAME_s }}</h5>
             <div class="flex-space-btw">
                 <div>{{ hub.matches.length }} Matches</div>
-                <div>{{ hub.totalPlayers }} Players</div>
+                <div>{{ totalPlayers }} Players</div>
             </div>
         </template>
         <h5 v-else>No hubs online</h5>
@@ -33,9 +33,9 @@
 
 <script setup lang="ts">
 import { IGameHub } from '../types/game-server';
-import { PropType } from 'vue';
+import { PropType, computed } from 'vue';
 
-defineProps({
+const props = defineProps({
     hub: {
         type: Object as PropType<IGameHub>,
         default: undefined
@@ -45,5 +45,9 @@ defineProps({
         default: undefined
     }
 });
+
+const playersInMatch = computed(() => props.hub?.matches?.reduce((a, b) => a + (b?.totalPlayers ?? 0), 0));
+
+const totalPlayers = computed(() => (props.hub?.totalPlayers ?? 0) + (playersInMatch.value ?? 0));
 
 </script>

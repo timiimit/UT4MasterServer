@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
@@ -14,7 +15,7 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/game/v2/ratings")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentRatingController : JsonAPIController
+public sealed class UnrealTournamentRatingController : JsonAPIController
 {
 	private readonly AccountService accountService;
 
@@ -64,121 +65,24 @@ public class UnrealTournamentRatingController : JsonAPIController
 
 		var league = new League();
 		// TODO: for now we just send default/empty values
-		return Json(league);
+		return Ok(league);
 	}
 
 	[HttpPost("team/elo/{ratingType}")]
-	public IActionResult JoinQuickplay(string ratingType, [FromBody] string body)
+	public IActionResult JoinQuickplay(string ratingType, [FromBody] RatingTeam body)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
+		// TODO: calculate proper rating for this team
 
-		// TODO: handle request
-		/*
-		INPUT body:
-
-		{
-			"members": [
-				{
-					"accountId": "64bf8c6d81004e88823d577abe157373",
-					"score": 0,
-					"isBot": false
-				}
-			],
-			"socialPartySize": 1
-		}
-
-		*/
-
-		// Response: {"rating":1500}
-
-		return Ok();
+		return Ok(new RatingResponse() { Rating = 1500 });
 	}
 
 	[HttpPost("team/match_result")]
-	public IActionResult MatchResult()
+	public IActionResult MatchResult([FromBody] RatingMatch body)
 	{
-
-		// TODO: handle request
-		// INPUT:
-		/*
-
-		{
-	"ratingType": "FlagRunSkillRating",
-	"matchInfo":
-	{
-		"sessionId": "8f06d9db71ca4dee8fc0663cbc953b02",
-		"redScore": 1,
-		"matchLengthSeconds": 526
-	},
-	"redTeam":
-	{
-		"members": [
-			{
-				"accountId": "Acolyte",
-				"score": 0,
-				"isBot": true
-			},
-			{
-				"accountId": "Judas",
-				"score": 0,
-				"isBot": true
-			},
-			{
-				"accountId": "0b0f09b400854b9b98932dd9e5abe7c5",
-				"score": 0,
-				"isBot": false
-			},
-			{
-				"accountId": "Thannis",
-				"score": 0,
-				"isBot": true
-			},
-			{
-				"accountId": "Skirge",
-				"score": 0,
-				"isBot": true
-			}
-		],
-		"socialPartySize": 1
-	},
-	"blueTeam":
-	{
-		"members": [
-			{
-				"accountId": "Trollface",
-				"score": 0,
-				"isBot": true
-			},
-			{
-				"accountId": "Leeb",
-				"score": 0,
-				"isBot": true
-			},
-			{
-				"accountId": "Gaargod",
-				"score": 0,
-				"isBot": true
-			},
-			{
-				"accountId": "Kragoth",
-				"score": 0,
-				"isBot": true
-			},
-			{
-				"accountId": "Garog",
-				"score": 0,
-				"isBot": true
-			}
-		],
-		"socialPartySize": 1
-	}
-}
-
-		*/
-
-
+		// TODO: update ELO rating
 
 		return NoContent(); // Response: correct response
 	}

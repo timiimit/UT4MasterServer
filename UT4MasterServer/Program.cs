@@ -9,6 +9,7 @@ using UT4MasterServer.Formatters;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
+using UT4MasterServer.Settings;
 
 namespace UT4MasterServer;
 
@@ -53,9 +54,8 @@ public static class Program
 			o.JsonSerializerOptions.Converters.Add(new DateTimeISOJsonConverter());
 		});
 
-		builder.Services.Configure<ApplicationSettings>(
-			builder.Configuration.GetSection("ApplicationSettings")
-		);
+		builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"));
+		builder.Services.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"));
 
 		builder.Services.Configure<ApplicationSettings>(x =>
 		{
@@ -94,7 +94,8 @@ public static class Program
 
 		// services whose instance is created once and are persistent
 		builder.Services
-			.AddSingleton<CodeService>();
+			.AddSingleton<CodeService>()
+			.AddSingleton<MatchmakingWaitTimeEstimateService>();
 
 		// hosted services
 		builder.Services

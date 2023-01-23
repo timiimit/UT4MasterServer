@@ -12,7 +12,7 @@ namespace UT4MasterServer.Controllers;
 [Route("persona/api/public")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class PersonaController : JsonAPIController
+public sealed class PersonaController : JsonAPIController
 {
 	private readonly AccountService accountService;
 

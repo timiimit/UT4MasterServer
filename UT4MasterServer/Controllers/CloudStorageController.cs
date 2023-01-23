@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using System.Text;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
@@ -11,17 +12,20 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/cloudstorage")]
 [AuthorizeBearer]
 [Produces("application/octet-stream")]
-public class CloudStorageController : JsonAPIController
+public sealed class CloudStorageController : JsonAPIController
 {
 	private readonly CloudStorageService cloudStorageService;
 	private readonly MatchmakingService matchmakingService;
+	private readonly AccountService accountService;
 
 	public CloudStorageController(ILogger<CloudStorageController> logger,
 		CloudStorageService cloudStorageService,
-		MatchmakingService matchmakingService) : base(logger)
+		MatchmakingService matchmakingService,
+		AccountService accountService) : base(logger)
 	{
 		this.cloudStorageService = cloudStorageService;
 		this.matchmakingService = matchmakingService;
+		this.accountService = accountService;
 	}
 
 	[HttpGet("user/{id}")]
@@ -75,18 +79,45 @@ public class CloudStorageController : JsonAPIController
 	{
 		// get the user file from cloudstorage - any user can see files from another user
 
-		var file = await cloudStorageService.GetFileAsync(EpicID.FromString(id), filename);
+		bool isStatsFile = filename == "stats.json";
+
+		var accountID = EpicID.FromString(id);
+		var file = await cloudStorageService.GetFileAsync(accountID, filename);
 		if (file == null)
 		{
-			return Json(new ErrorResponse()
+			if (!isStatsFile)
 			{
-				ErrorCode = "errors.com.epicgames.cloudstorage.file_not_found",
-				ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}",
-				MessageVars = new[] { filename, id },
-				NumericErrorCode = 12007,
-				OriginatingService = "utservice",
-				Intent = "prod10"
-			}, StatusCodes.Status404NotFound);
+				return Json(new ErrorResponse()
+				{
+					ErrorCode = "errors.com.epicgames.cloudstorage.file_not_found",
+					ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}",
+					MessageVars = new[] { filename, id },
+					NumericErrorCode = 12007,
+					OriginatingService = "utservice",
+					Intent = "prod10"
+				}, StatusCodes.Status404NotFound);
+			}
+
+			// Send a fake response in order to fix #109 (which is a game bug)
+			var playerName = "New Player";
+			var account = await accountService.GetAccountAsync(accountID);
+			if (account != null)
+			{
+				playerName = account.Username;
+			}
+
+			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\"}}") };
+		}
+
+		if (isStatsFile)
+		{
+			// HACK: Fix game bug where stats.json is expected to always have nul character at the end
+			//       Bug is at UnrealTournament\Source\UnrealTournament\Private\Slate\Panels\SUTStatsViewerPanel.cpp:415
+			var tmp = new byte[file.RawContent.Length + 1];
+			Array.Copy(file.RawContent, tmp, file.RawContent.Length);
+			tmp[tmp.Length - 1] = 0;
+
+			file.RawContent = tmp;
 		}
 
 		return new FileContentResult(file.RawContent, "application/octet-stream");

@@ -1,6 +1,6 @@
 ﻿namespace UT4MasterServer.Models;
 
-public class ApplicationSettings
+public sealed class ApplicationSettings
 {
 	public string DatabaseConnectionString { get; set; } = string.Empty;
 	public string DatabaseName { get; set; } = string.Empty;
@@ -30,5 +30,4 @@ public class ApplicationSettings
 	/// IP addresses of trusted proxy servers.
 	/// </summary>
 	public List<string> ProxyServers { get; set; } = new List<string>();
-
 }

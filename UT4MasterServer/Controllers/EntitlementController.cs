@@ -13,7 +13,7 @@ namespace UT4MasterServer.Controllers;
 [Route("entitlement/api/account/{id}/entitlements")]
 //[AuthorizeBearer]
 [Produces("application/json")]
-public class EntitlementController : JsonAPIController
+public sealed class EntitlementController : JsonAPIController
 {
 	private static readonly List<string> mapEntitlementIDs;
 	private static readonly List<string> cosmeticEntitlementIDs;

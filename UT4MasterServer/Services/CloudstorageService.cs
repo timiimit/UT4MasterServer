@@ -6,7 +6,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class CloudStorageService
+public sealed class CloudStorageService
 {
 	// some general information about cloudstorage files
 	//

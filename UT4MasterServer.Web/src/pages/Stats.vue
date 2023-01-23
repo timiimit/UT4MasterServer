@@ -18,7 +18,11 @@
     </div>
   </LoadingPanel>
   <LoadingPanel :status="statsStatus">
-    <StatSection :data="stats" :section="section" v-for="section in statSections" />
+    <template v-if="accountId">
+      <h5>Viewing stats for: {{ viewingAccount?.displayName }}</h5>
+      <StatSection :data="stats" :section="section" v-for="section in statSections" />
+    </template>
+    <h5 v-else class="text-center">Select a player to view stats</h5>
   </LoadingPanel>
 </template>
 
@@ -30,22 +34,23 @@ import { SessionStore } from '../stores/session-store';
 import StatsService from '../services/stats.service';
 import { StatisticWindow } from '../enums/statistic-window';
 import { IAccount } from '../types/account';
-import AccountService from '../services/account.service';
 import { Statistic } from '../enums/statistic';
 import { IStatisticSection } from '../types/statistic-config';
 import StatSection from '../components/StatSection.vue';
 import { IStatisticData } from '../types/statistic-data';
 import Autocomplete from '../components/Autocomplete.vue';
+import { AccountStore } from '../stores/account-store';
 
 const statsStatus = shallowRef(AsyncStatus.OK);
-const accountsStatus = shallowRef(AsyncStatus.OK);
-const accountId = shallowRef<string | undefined>(undefined);
 const statWindow = shallowRef(StatisticWindow.AllTime);
-const accounts = shallowRef<IAccount[]>([]);
 const stats = shallowRef<IStatisticData[]>([]);
 
+const accountsStatus = shallowRef(AsyncStatus.OK);
+const accountId = shallowRef<string | undefined>(undefined);
+const accounts = computed(() => AccountStore.accounts ?? []);
+const viewingAccount = computed(() => accounts.value.find((a) => a.id === accountId.value));
+
 const statsService = new StatsService();
-const accountService = new AccountService();
 
 const statWindowOptions = [
   { text: 'All Time', value: StatisticWindow.AllTime },
@@ -355,8 +360,11 @@ async function loadStats() {
 
 async function loadAccounts() {
   try {
+    if (AccountStore.accounts?.length) {
+      return;
+    }
     accountsStatus.value = AsyncStatus.BUSY;
-    accounts.value = await accountService.getAllAccounts();
+    await AccountStore.fetchAllAccounts();
     accountId.value = SessionStore.session?.account_id?.toString();
     accountsStatus.value = AsyncStatus.OK;
   }
@@ -373,8 +381,8 @@ function handleParameterChange() {
   loadStats();
 }
 
-function handleSelectAccount(account: IAccount) {
-  accountId.value = account.id;
+function handleSelectAccount(account?: IAccount) {
+  accountId.value = account?.id;
   handleParameterChange();
 }
 

@@ -4,7 +4,7 @@ using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Services
 {
-	public class ApplicationStartupService : IHostedService
+	public sealed class ApplicationStartupService : IHostedService
 	{
 		private readonly ILogger<ApplicationStartupService> logger;
 		private readonly StatisticsService statisticsService;

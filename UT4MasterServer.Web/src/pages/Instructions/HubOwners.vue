@@ -31,6 +31,7 @@
       </CodeBlock>
     </li>
     <li>Start the server as you normally would</li>
+    <li>If you were previously an owner of a trusted hub/server, remove whole <span class="code">[OnlineSubsystemMcp]</span> section from <span class="code">Engine.ini</span></li>
   </ol>
 </template>
 <script setup lang="ts">

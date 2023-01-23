@@ -13,7 +13,7 @@ namespace UT4MasterServer.Controllers;
 [Route("friends/api/public")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class FriendsController : JsonAPIController
+public sealed class FriendsController : JsonAPIController
 {
 	private readonly FriendService friendService;
 
