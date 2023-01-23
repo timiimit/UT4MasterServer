@@ -1,6 +1,6 @@
 <template>
   <LoadingPanel :status="status" :error="errorMessage">
-    <form @submit.prevent="register">
+    <form :class="{ 'was-validated': submitAttempted }" novalidate @submit.prevent="register">
       <fieldset>
         <legend>Register</legend>
         <div class="form-group row">
@@ -23,13 +23,19 @@
           <label for="password" class="col-sm-12 col-form-label">Password</label>
           <div class="col-sm-6">
             <input type="password" class="form-control" id="password" name="password" minlength="7" v-model="password"
-              placeholder="Password" autocomplete="current-password" />
+              placeholder="Password" autocomplete="current-password" v-valid="passwordValid" />
             <div class="invalid-feedback">Password must be at least 7 characters</div>
           </div>
         </div>
         <div class="form-group row">
+          <VueRecaptcha :sitekey="recaptchaSiteKey" :load-recaptcha-script="true" @verify="handleRecaptchaSuccess"
+            @error="handleRecaptchaError" />
+          <input type="text" class="visibly-hidden" v-valid="recaptchaValid" />
+          <div class="invalid-feedback">Recaptcha validation failed</div>
+        </div>
+        <div class="form-group row">
           <div class="col-sm-12">
-            <button type="submit" class="btn btn-primary" :disabled="!formValid">Register</button>
+            <button type="submit" class="btn btn-primary" :disabled="status === AsyncStatus.BUSY">Register</button>
           </div>
         </div>
       </fieldset>
@@ -45,19 +51,36 @@ import { validateEmail, validatePassword } from '../utils/validation';
 import CryptoJS from 'crypto-js';
 import { useRouter } from 'vue-router';
 import AccountService from '../services/account.service';
+import { valid as vValid } from '../directives/valid';
+import { VueRecaptcha } from 'vue-recaptcha';
 
 const username = shallowRef('');
 const password = shallowRef('');
 const email = shallowRef('');
 const status = shallowRef(AsyncStatus.OK);
-const formValid = computed(() => validateEmail(email.value) && username.value && validatePassword(password.value) && status.value != AsyncStatus.BUSY);
+const emailValid = computed(() => validateEmail(email.value));
+const passwordValid = computed(() => validatePassword(password.value));
+const recaptchaValid = shallowRef(false);
+const formValid = computed(() => emailValid.value && username.value && passwordValid.value && recaptchaValid.value);
 const errorMessage = shallowRef('Error registering account. Please try again.');
+const submitAttempted = shallowRef(false);
+const recaptchaSiteKey = '6LeG-B8kAAAAAOavz8EOqkEP3utz5AmHcpi4sPw1';
 
 const accountService = new AccountService();
 
 const router = useRouter();
 
+function handleRecaptchaSuccess() {
+  recaptchaValid.value = true;
+}
+
+function handleRecaptchaError() {
+  recaptchaValid.value = false;
+}
+
 async function register() {
+  submitAttempted.value = true;
+  if (!formValid.value) { return; }
   try {
     status.value = AsyncStatus.BUSY;
     const formData = {

@@ -70,7 +70,7 @@ const activeIndex = ref(-1);
 
 const filteredItems = computed(() =>
     props.items.filter((i) =>
-        ((props.searchKey ? i[props.searchKey] : i) as string).includes(searchText.value)
+        ((props.searchKey ? i[props.searchKey] : i) as string)?.toLocaleLowerCase().includes(searchText.value.toLocaleLowerCase())
     )
 );
 

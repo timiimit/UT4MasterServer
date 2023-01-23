@@ -42,3 +42,10 @@ body {
     overflow: hidden;
     white-space: nowrap;
 }
+
+.visibly-hidden {
+    position: absolute;
+    left: -10000px;
+    height: 0;
+    width: 0;
+}
