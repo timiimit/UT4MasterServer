@@ -6,7 +6,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class ClientService
+public sealed class ClientService
 {
 	private readonly IMongoCollection<Client> collection;
 

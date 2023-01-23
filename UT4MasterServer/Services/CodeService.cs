@@ -8,7 +8,7 @@ namespace UT4MasterServer.Services;
 /// <summary>
 /// Service capable of creating and retrieving codes used for authentication.
 /// </summary>
-public class CodeService
+public sealed class CodeService
 {
 	/// <summary>
 	/// if master dies, all codes disappear. They are meant for temporary use anyway.

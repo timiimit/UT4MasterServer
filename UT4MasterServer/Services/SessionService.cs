@@ -4,7 +4,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class SessionService
+public sealed class SessionService
 {
 	private readonly IMongoCollection<Session> sessionCollection;
 

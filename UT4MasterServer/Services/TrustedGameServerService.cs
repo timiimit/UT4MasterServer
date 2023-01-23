@@ -4,7 +4,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class TrustedGameServerService
+public sealed class TrustedGameServerService
 {
 	private readonly IMongoCollection<TrustedGameServer> collection;
 

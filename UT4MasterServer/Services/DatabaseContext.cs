@@ -4,7 +4,7 @@ using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Services;
 
-public class DatabaseContext
+public sealed class DatabaseContext
 {
 	private readonly MongoClient client;
 	public IMongoDatabase Database { get; private set; }

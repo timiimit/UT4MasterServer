@@ -7,7 +7,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class AccountService
+public sealed class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
 	private readonly bool allowPasswordGrant;

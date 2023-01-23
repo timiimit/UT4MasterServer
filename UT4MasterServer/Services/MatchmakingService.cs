@@ -6,7 +6,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class MatchmakingService
+public sealed class MatchmakingService
 {
 	private readonly ILogger<MatchmakingService> logger;
 	private readonly IMongoCollection<GameServer> serverCollection;

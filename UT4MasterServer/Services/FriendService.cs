@@ -4,7 +4,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class FriendService
+public sealed class FriendService
 {
 	private readonly IMongoCollection<FriendRequest> friendCollection;
 
