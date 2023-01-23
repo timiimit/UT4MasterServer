@@ -18,6 +18,8 @@
             </div>
           </li>
           <HeaderLink text="Servers" path="/Servers" />
+          <a href="https://discord.gg/2DaCWkK" class="nav-link">Discord</a>
+          <a href="https://github.com/timiimit/UT4MasterServer" class="nav-link">GitHub</a>
           <template v-if="!SessionStore.isAuthenticated">
             <HeaderLink text="Register" path="/Register" />
             <HeaderLink text="Log In" path="/Login" />
