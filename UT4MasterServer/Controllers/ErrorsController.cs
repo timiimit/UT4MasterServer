@@ -7,7 +7,7 @@ namespace UT4MasterServer.Controllers;
 
 [ApiController, ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/errors")]
-public class ErrorsController : ControllerBase
+public sealed class ErrorsController : ControllerBase
 {
 	private const string InternalServerError = "Internal server error occurred.";
 

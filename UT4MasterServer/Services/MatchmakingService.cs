@@ -6,7 +6,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Services;
 
-public class MatchmakingService
+public sealed class MatchmakingService
 {
 	private readonly ILogger<MatchmakingService> logger;
 	private readonly IMongoCollection<GameServer> serverCollection;
@@ -22,6 +22,14 @@ public class MatchmakingService
 	{
 		var options = new CountOptions() { Limit = 1 };
 		long count = await serverCollection.CountDocumentsAsync(x => x.SessionID == sessionID, options);
+
+		return count > 0;
+	}
+
+	public async Task<bool> DoesExistAsync(EpicID serverID)
+	{
+		var options = new CountOptions() { Limit = 1 };
+		long count = await serverCollection.CountDocumentsAsync(x => x.ID == serverID, options);
 
 		return count > 0;
 	}
@@ -62,41 +70,25 @@ public class MatchmakingService
 		// Build BsonDocument representing Find filter
 		var doc = new BsonDocument();
 
-		// include GameServers that have started
-		doc.Add(new BsonElement(nameof(GameServer.Started), true));
+		//// include GameServers that have started
+		//doc.Add(new BsonElement(nameof(GameServer.Started), true));
 
 		// exclude stale GameServers that haven't been removed from db yet
 		doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument("$gt", DateTime.UtcNow - StaleAfter)));
 
 		// include GameServers whose BuildUniqueId matches criteria
 		if (inputFilter.BuildUniqueId != null)
-			doc.Add(new BsonElement(nameof(GameServer.BuildUniqueID), inputFilter.BuildUniqueId));
-
-		if (inputFilter.OpenPlayersRequired != null)
 		{
-			// TODO: The following expression was not tested
-
-			// PublicPlayers.Count
-			var publicPlayerCount = new BsonDocument("$count", "$PublicPlayers");
-
-			// [ MaxPublicPlayers, PublicPlayers.Count ]
-			var subtractedValues = new BsonArray(new BsonValue[] { "$MaxPublicPlayers", publicPlayerCount });
-
-			// MaxPublicPlayers - PublicPlayers.Count
-			var subtraction = new BsonDocument("$subtract", subtractedValues);
-
-			// [ MaxPublicPlayers - PublicPlayers.Count, OpenPlayersRequired ]
-			var comparedValues = new BsonArray(new BsonValue[] { subtraction, inputFilter.OpenPlayersRequired });
-
-			// (MaxPublicPlayers - PublicPlayers.Count) >= OpenPlayersRequired
-			var comparison = new BsonDocument("$gte", comparedValues);
-
-			// create final expression
-			doc.Add(new BsonElement("$expr", comparison));
+			doc.Add(new BsonElement(nameof(GameServer.BuildUniqueID), inputFilter.BuildUniqueId));
 		}
 
 		foreach (var condition in inputFilter.Criteria)
 		{
+			// TODO: use skipped conditions to query dynamic value and sort results
+			//       (UTMatchmakingGather.cpp - search for SETTING_NEEDSSORT)
+			if (condition.Key == "NEEDS" || condition.Key == "NEEDSSORT")
+				continue;
+
 			string? comparisonKeyword = null;
 			switch (condition.Type)
 			{
@@ -107,8 +99,7 @@ public class MatchmakingService
 				case "GREATER_THAN": comparisonKeyword = "$gt"; break;
 				case "GREATER_THAN_OR_EQUAL": comparisonKeyword = "$gte"; break;
 				case "DISTANCE":
-					// TODO: Figure out what this should do. the only known occurance:
-					//       { "type": "DISTANCE", "key": "NEEDSSORT_i", "value": -2147483648 },
+					// TODO: Figure out what this should do (UTMatchmakingGather.cpp - search for SETTING_NEEDSSORT)
 
 					break;
 			}
@@ -147,7 +138,17 @@ public class MatchmakingService
 		await taskStaleRemoval;
 
 		var cursor = await serverCollection.FindAsync(filter, options);
-		return await cursor.ToListAsync();
+		var ret = await cursor.ToListAsync();
+
+		if (inputFilter.OpenPlayersRequired != null)
+		{
+			// TODO: include this condition in db query
+			ret.RemoveAll(x => x.MaxPublicPlayers - x.PublicPlayers.Count < inputFilter.OpenPlayersRequired);
+		}
+
+		// TODO: handle body.RequireDedicated and body.MaxCurrentPlayers
+
+		return ret;
 	}
 
 	public async Task<int> RemoveAllStaleAsync()

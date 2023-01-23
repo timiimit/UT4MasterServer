@@ -17,7 +17,7 @@ namespace UT4MasterServer.Controllers;
 [Route("account/api")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class AccountController : JsonAPIController
+public sealed class AccountController : JsonAPIController
 {
 	private static readonly Regex regexEmail;
 	private static readonly List<string> disallowedUsernameWords;

@@ -20,13 +20,12 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/matchmaking")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentMatchmakingController : JsonAPIController
+public sealed class UnrealTournamentMatchmakingController : JsonAPIController
 {
 	private readonly MatchmakingService matchmakingService;
 	private readonly TrustedGameServerService trustedGameServerService;
 
 	private readonly IOptions<ApplicationSettings> configuration;
-	private const int MAX_READ_SIZE = 1024 * 4;
 
 	public UnrealTournamentMatchmakingController(
 		ILogger<UnrealTournamentMatchmakingController> logger,
@@ -40,7 +39,7 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		this.trustedGameServerService = trustedGameServerService;
 	}
 
-	#region Endpoints for Game Servers
+#region Endpoints for Game Servers
 
 	[HttpPost("session")]
 	public async Task<IActionResult> CreateGameServer([FromBody] GameServer server)
@@ -76,6 +75,10 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 		{
 			trust = trusted.TrustLevel;
 		}
+
+#if DEBUG && true
+		trust = GameServerTrust.Epic;
+#endif
 
 		server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)trust);
 
@@ -218,44 +221,33 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	}
 
 	[HttpPost("session/{id}/players")]
-	public async Task<IActionResult> UpdateGameServerPlayers(string id)
+	public async Task<IActionResult> UpdateGameServerPlayers(string id, [FromBody] GameServer serverOnlyWithPlayers)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
-
-		var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-		var serverOnlyWithPlayers = JsonSerializer.Deserialize<GameServer>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
-
-		if (serverOnlyWithPlayers == null)
-			return NoContent();
 
 		var serverID = EpicID.FromString(id);
 
-		var old = await matchmakingService.GetAsync(serverID);
-		if (old == null)
+		var server = await matchmakingService.GetAsync(serverID);
+		if (server == null)
 			return NoContent();
 
-		if (old.OwningClientID != user.Session.ClientID)
+		if (server.OwningClientID != user.Session.ClientID)
 			Unauthorized();
 
-		old.PublicPlayers = serverOnlyWithPlayers.PublicPlayers;
-		old.PrivatePlayers = serverOnlyWithPlayers.PrivatePlayers;
+		server.PublicPlayers = serverOnlyWithPlayers.PublicPlayers;
+		server.PrivatePlayers = serverOnlyWithPlayers.PrivatePlayers;
 
-		await matchmakingService.UpdateAsync(old);
+		await matchmakingService.UpdateAsync(server);
 
-		return Json(old.ToJson(false));
+		return Json(server.ToJson(false));
 	}
 
 	[HttpDelete("session/{id}/players")]
-	public async Task<IActionResult> RemovePlayer(string id)
+	public async Task<IActionResult> RemovePlayer(string id, [FromBody] EpicID[] players)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
-
-		var options = new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter(), new GameServerAttributesJsonConverter() } };
-		var players = JsonSerializer.Deserialize<EpicID[]>(await Request.BodyReader.ReadAsStringAsync(MAX_READ_SIZE), options);
-		if (players == null)
-			return BadRequest();
 
 		var server = await matchmakingService.GetAsync(EpicID.FromString(id));
 		if (server == null)
@@ -335,14 +327,15 @@ public class UnrealTournamentMatchmakingController : JsonAPIController
 	}
 
 	[HttpPost("session/{id}/join")]
-	public IActionResult PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
+	public async Task<IActionResult> PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
 		EpicID eid = EpicID.FromString(id);
 
-		// TODO: Return UnknownSessionId(id);
+		if (!await matchmakingService.DoesExistAsync(eid))
+			return UnknownSessionId(id);
 
 		// TODO: we should verify that specific user has joined specific GameServer
 		//       instead of just relying on GameServer blindly believing that user

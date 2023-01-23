@@ -14,33 +14,34 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/game/v2/wait_times")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public class UnrealTournamentWaitTimesController : JsonAPIController
+public sealed class UnrealTournamentWaitTimesController : JsonAPIController
 {
+	private readonly MatchmakingWaitTimeEstimateService service;
 
-	public UnrealTournamentWaitTimesController(ILogger<UnrealTournamentWaitTimesController> logger) : base(logger)
+	public UnrealTournamentWaitTimesController(
+		ILogger<UnrealTournamentWaitTimesController> logger,
+		MatchmakingWaitTimeEstimateService service) : base(logger)
 	{
-
+		this.service = service;
 	}
 
-	[HttpPost("estimate")]
+	[HttpGet("estimate")]
 	public IActionResult QuickplayWaitEstimate()
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		// TODO: QuickplayWaitEstimate
-
-		// Response: [{"ratingType":"DMSkillRating","averageWaitTimeSecs":15.833333333333334,"numSamples":6},
-		// {"ratingType":"FlagRunSkillRating","averageWaitTimeSecs":15.0,"numSamples":7}]
-		return Ok();
+		return Ok(service.GetWaitTimes());
 	}
 
-	[HttpGet("report/{ratingType}/{unkownNumber}")]
-	public IActionResult QuickplayWaitReport()
+	[HttpGet("report/{ratingType}/{timeWaited}")]
+	public IActionResult QuickplayWaitReport(string ratingType, double timeWaited)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 			return Unauthorized();
 
-		return NotFound(null);
+		service.AddWaitTime(ratingType, timeWaited);
+
+		return NotFound();
 	}
 }

@@ -11,7 +11,7 @@ namespace UT4MasterServer.Controllers;
 [Route("ut/api/cloudstorage")]
 [AuthorizeBearer]
 [Produces("application/octet-stream")]
-public class CloudStorageController : JsonAPIController
+public sealed class CloudStorageController : JsonAPIController
 {
 	private readonly CloudStorageService cloudStorageService;
 	private readonly MatchmakingService matchmakingService;

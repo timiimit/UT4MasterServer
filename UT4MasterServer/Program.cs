@@ -94,7 +94,8 @@ public static class Program
 
 		// services whose instance is created once and are persistent
 		builder.Services
-			.AddSingleton<CodeService>();
+			.AddSingleton<CodeService>()
+			.AddSingleton<MatchmakingWaitTimeEstimateService>();
 
 		// hosted services
 		builder.Services
