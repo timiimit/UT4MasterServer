@@ -10,6 +10,7 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 	private readonly IServiceProvider services;
 
 	private Timer? tmrExpiredSessionDeletor;
+	private DateTime? lastDateDeleteOldStatisticsExecuted;
 	private DateTime? lastDateMergeOldStatisticsExecuted;
 
 	public ApplicationBackgroundCleanupService(
@@ -56,6 +57,7 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 			if (deleteCount > 0)
 				logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
 
+			await DeleteOldStatisticsAsync(scope);
 			await MergeOldStatisticsAsync(scope);
 		});
 	}
@@ -66,6 +68,23 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 	}
 
 	#region Jobs
+
+	/// <summary>
+	/// This job is executed each day, and it deletes statistics older than X days including the flagged ones
+	/// The days are specified in the appsettings
+	/// </summary>
+	private async Task DeleteOldStatisticsAsync(IServiceScope scope)
+	{
+		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(settings.DeleteOldStatisticsTimeZone));
+		if (currentTime.Hour == settings.DeleteOldStatisticsHour &&
+		   (!lastDateDeleteOldStatisticsExecuted.HasValue || lastDateDeleteOldStatisticsExecuted.Value.Date != currentTime.Date))
+		{
+			lastDateDeleteOldStatisticsExecuted = currentTime.Date;
+
+			var statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
+			await statisticsService.DeleteOldStatisticsAsync(settings.DeleteOldStatisticsBeforeDays, false);
+		}
+	}
 
 	/// <summary>
 	/// This job is executed each day, and it merges statistics older than 7 days into single record per day per account
