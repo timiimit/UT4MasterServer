@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Options;
-using UT4MasterServer.Models;
+using UT4MasterServer.Settings;
 
 namespace UT4MasterServer.Services;
 
 public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 {
 	private readonly ILogger<ApplicationStartupService> logger;
-	private readonly ApplicationSettings settings;
+	private readonly StatisticsSettings statisticsSettings;
 	private readonly IServiceProvider services;
 
 	private Timer? tmrExpiredSessionDeletor;
@@ -15,13 +15,12 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 
 	public ApplicationBackgroundCleanupService(
 		ILogger<ApplicationStartupService> logger,
-		IOptions<ApplicationSettings> settings,
-		IServiceProvider services
-		)
+		IOptions<StatisticsSettings> statisticsSettings,
+		IServiceProvider services)
 	{
 		this.logger = logger;
-		this.settings = settings.Value;
 		this.services = services;
+		this.statisticsSettings = statisticsSettings.Value;
 	}
 
 	public Task StartAsync(CancellationToken cancellationToken)
@@ -75,14 +74,14 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 	/// </summary>
 	private async Task DeleteOldStatisticsAsync(IServiceScope scope)
 	{
-		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(settings.DeleteOldStatisticsTimeZone));
-		if (currentTime.Hour == settings.DeleteOldStatisticsHour &&
+		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.DeleteOldStatisticsTimeZone));
+		if (currentTime.Hour == statisticsSettings.DeleteOldStatisticsHour &&
 		   (!lastDateDeleteOldStatisticsExecuted.HasValue || lastDateDeleteOldStatisticsExecuted.Value.Date != currentTime.Date))
 		{
 			lastDateDeleteOldStatisticsExecuted = currentTime.Date;
 
 			var statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
-			await statisticsService.DeleteOldStatisticsAsync(settings.DeleteOldStatisticsBeforeDays, false);
+			await statisticsService.DeleteOldStatisticsAsync(statisticsSettings.DeleteOldStatisticsBeforeDays, false);
 		}
 	}
 
@@ -91,8 +90,8 @@ public class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 	/// </summary>
 	private async Task MergeOldStatisticsAsync(IServiceScope scope)
 	{
-		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(settings.MergeOldStatisticsTimeZone));
-		if (currentTime.Hour == settings.MergeOldStatisticsHour &&
+		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.MergeOldStatisticsTimeZone));
+		if (currentTime.Hour == statisticsSettings.MergeOldStatisticsHour &&
 		   (!lastDateMergeOldStatisticsExecuted.HasValue || lastDateMergeOldStatisticsExecuted.Value.Date != currentTime.Date))
 		{
 			lastDateMergeOldStatisticsExecuted = currentTime.Date;
