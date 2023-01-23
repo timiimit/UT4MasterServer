@@ -15,6 +15,8 @@ services:
       - "5000:80"
     networks:
       - net
+    depends_on:
+      - mongo
   ut4masterserver-web:
     container_name: UT4MasterServer-Web
     image: ${DOCKER_REGISTRY-}ut4masterserver-web
@@ -57,6 +59,7 @@ services:
       - "8888:8081"
     networks:
       - net
+
 networks:
   net:
     driver: bridge
@@ -65,4 +68,3 @@ networks:
       config:
         - subnet: 172.20.0.0/16
     external: false
-    

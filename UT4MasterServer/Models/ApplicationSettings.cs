@@ -1,6 +1,6 @@
 ﻿namespace UT4MasterServer.Models;
 
-public class ApplicationSettings
+public sealed class ApplicationSettings
 {
 	public string DatabaseConnectionString { get; set; } = string.Empty;
 	public string DatabaseName { get; set; } = string.Empty;
@@ -31,4 +31,13 @@ public class ApplicationSettings
 	/// </summary>
 	public List<string> ProxyServers { get; set; } = new List<string>();
 
+	/// <summary>
+	/// Time zone in which merging old statistics is executed
+	/// </summary>
+	public string MergeOldStatisticsTimeZone { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Hour at which merging old statistics is executed
+	/// </summary>
+	public int MergeOldStatisticsHour { get; set; }
 }

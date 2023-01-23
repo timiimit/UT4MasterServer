@@ -1,6 +1,5 @@
-﻿FROM node:lts-alpine as build-stage      
+﻿FROM node:lts-alpine as build-stage
 
-RUN mkdir -p /app/
 WORKDIR /app/
 
 COPY package*.json /app/
@@ -10,7 +9,7 @@ RUN npm ci
 COPY ./ /app/
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged 
+FROM nginxinc/nginx-unprivileged
 
 COPY --from=build-stage /app/dist/ /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
