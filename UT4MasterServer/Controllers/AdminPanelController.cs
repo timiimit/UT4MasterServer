@@ -211,11 +211,7 @@ public sealed class AdminPanelController : ControllerBase
 	[NonAction]
 	private bool IsSpecialClientID(EpicID id)
 	{
-		if (id == ClientIdentification.Game.ID)
-			return true;
-		if (id == ClientIdentification.ServerInstance.ID)
-			return true;
-		if (id == ClientIdentification.Launcher.ID)
+		if (id == ClientIdentification.Game.ID || id == ClientIdentification.ServerInstance.ID || id == ClientIdentification.Launcher.ID)
 			return true;
 
 		return false;
