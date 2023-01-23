@@ -10,6 +10,7 @@ export interface IGameServerAttributes {
     MAPNAME_s: string;
     UT_MATCHSTATE_s: string;
     UT_MATCHDURATION_i: number;
+    [key: string]: number | string | boolean | undefined | null;
 }
 
 export interface IGameServer {
@@ -24,8 +25,8 @@ export interface IGameServer {
     maxPrivatePlayers: number;
     openPrivatePlayers: number;
     attributes: IGameServerAttributes;
-    publicPlayers: unknown[]; //EpicID, not sure it is useful in the front end
-    privatePlayers: unknown[];
+    publicPlayers: string[];
+    privatePlayers: string[];
     totalPlayers: number;
     allowJoinInProgress: boolean;
     shouldAdvertise: boolean;

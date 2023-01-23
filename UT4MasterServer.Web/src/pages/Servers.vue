@@ -10,7 +10,7 @@
         <!-- TODO: Should(?) also have Servers listed here in addition to Hubs, but I'm not yet sure how to differentiate -->
       </div>
       <div v-if="selectedHub" class="col-sm-6">
-        <HubListing :hub="selectedHub" />
+        <MatchList :hub="selectedHub" />
       </div>
     </div>
   </LoadingPanel>
@@ -20,9 +20,10 @@
 import { IGameHub } from '../types/game-server';
 import { onMounted, shallowRef, computed } from 'vue';
 import Hub from '../components/Hub.vue';
-import HubListing from '../components/HubListing.vue';
+import MatchList from '../components/MatchList.vue';
 import { ServerStore } from '../stores/server-store';
 import LoadingPanel from '../components/LoadingPanel.vue';
+import { AccountStore } from '../stores/account-store';
 
 const selectedHubId = shallowRef<string | undefined>(undefined);
 const selectedHub = computed(() => ServerStore.hubs.find((h) => h.attributes.UT_SERVERINSTANCEGUID_s === selectedHubId.value));
@@ -31,6 +32,21 @@ function viewHub(hub: IGameHub) {
   selectedHubId.value = hub.attributes.UT_SERVERINSTANCEGUID_s;
 }
 
-onMounted(ServerStore.fetchGameServers);
+async function loadAccounts() {
+  try {
+    if (AccountStore.accounts?.length) {
+      return;
+    }
+    await AccountStore.fetchAllAccounts();
+  }
+  catch (err: unknown) {
+    console.error(err);
+  }
+}
+
+onMounted(() => {
+  ServerStore.fetchGameServers();
+  loadAccounts();
+});
 </script>
 
