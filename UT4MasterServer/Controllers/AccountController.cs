@@ -340,7 +340,7 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[HttpPatch("update/password")]
-	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword, [FromForm] string username)
+	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
@@ -353,12 +353,20 @@ public sealed class AccountController : JsonAPIController
 			return ValidationProblem();
 		}
 
-		var account = await accountService.GetAccountAsync(username, currentPassword);
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"No account for ID: {user.Session.AccountID}"
+			});
+		}
+
+		if (account.Password != currentPassword)
+		{
+			return BadRequest(new ErrorResponse()
+			{
+				ErrorMessage = $"Old password does not match"
 			});
 		}
 
