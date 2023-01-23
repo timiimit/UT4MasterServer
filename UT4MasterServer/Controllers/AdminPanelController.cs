@@ -11,14 +11,21 @@ namespace UT4MasterServer.Controllers;
 public sealed class AdminPanelController : ControllerBase
 {
 	private readonly AccountService accountService;
+	private readonly ClientService clientService;
+	private readonly TrustedGameServerService trustedGameServerService;
 
-	public AdminPanelController(AccountService accountService)
+	public AdminPanelController(
+		AccountService accountService,
+		ClientService clientService,
+		TrustedGameServerService trustedGameServerService)
 	{
 		this.accountService = accountService;
+		this.clientService = clientService;
+		this.trustedGameServerService = trustedGameServerService;
 	}
 
 	[HttpGet("flags")]
-	public async Task<IActionResult> GetAllPossibleFlags(EpicID accountID)
+	public async Task<IActionResult> GetAllPossibleFlags()
 	{
 		await VerifyAdmin();
 
@@ -26,11 +33,11 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[HttpGet("flags/{accountID}")]
-	public async Task<IActionResult> GetAccountFlags(EpicID accountID)
+	public async Task<IActionResult> GetAccountFlags(string accountID)
 	{
 		await VerifyAdmin();
 
-		var account = await accountService.GetAccountAsync(accountID);
+		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
 			return NotFound();
 
@@ -51,7 +58,7 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[HttpPut("flags/{accountID}")]
-	public async Task<IActionResult> SetAccountFlags(EpicID accountID, [FromBody] string[] flagNames)
+	public async Task<IActionResult> SetAccountFlags(string accountID, [FromBody] string[] flagNames)
 	{
 		var admin = await VerifyAdmin();
 
@@ -74,22 +81,145 @@ public sealed class AdminPanelController : ControllerBase
 		if (flags.HasFlag(AccountFlags.Moderator) && (!admin.Account.Flags.HasFlag(AccountFlags.Moderator) && !admin.Account.Flags.HasFlag(AccountFlags.Admin)))
 			return Unauthorized();
 
-		var account = await accountService.GetAccountAsync(accountID);
+		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
 			return NotFound();
 
 		account.Flags = flags;
 
 		await accountService.UpdateAccountAsync(account);
-
 		return Ok();
 	}
 
 
+	[HttpPost("clients/new")]
+	public async Task<IActionResult> CreateClient()
+	{
+		await VerifyAdmin();
+
+		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString());
+		await clientService.UpdateAsync(client);
+
+		return Ok(client);
+	}
+
+	[HttpGet("clients")]
+	public async Task<IActionResult> GetAllClients()
+	{
+		await VerifyAdmin();
+
+		var clients = await clientService.ListAsync();
+		return Ok(clients);
+	}
+
+	[HttpGet("clients/{id}")]
+	public async Task<IActionResult> GetClient(string id)
+	{
+		await VerifyAdmin();
+
+		var client = await clientService.GetAsync(EpicID.FromString(id));
+		if (client == null)
+			return NotFound();
+
+		return Ok(client);
+	}
+
+	[HttpPatch("clients/{id}")]
+	public async Task<IActionResult> UpdateClient(string id, [FromBody] Client client)
+	{
+		await VerifyAdmin();
+
+		var eid = EpicID.FromString(id);
+
+		if (eid != client.ID)
+			return BadRequest();
+
+		if (IsSpecialClientID(eid))
+			return Unauthorized();
+
+		if (string.IsNullOrWhiteSpace(client.Name))
+			client.Name = null;
+
+		await clientService.UpdateAsync(client);
+		return Ok();
+	}
+
+	[HttpDelete("clients/{id}")]
+	public async Task<IActionResult> DeleteClient(string id)
+	{
+		await VerifyAdmin();
+
+		var eid = EpicID.FromString(id);
+
+		if (IsSpecialClientID(eid))
+			return Unauthorized();
+
+		var success = await clientService.RemoveAsync(eid);
+		if (success == null || success == false)
+			return BadRequest();
+
+		// in case this client is a trusted server remove it as well
+		await trustedGameServerService.RemoveAsync(eid);
+
+		return Ok();
+	}
+
+	[HttpGet("trusted_servers")]
+	public async Task<IActionResult> GetAllTrustedServers()
+	{
+		await VerifyAdmin();
+
+		var ret = await trustedGameServerService.ListAsync();
+		return Ok(ret);
+	}
+
+	[HttpGet("trusted_servers/{id}")]
+	public async Task<IActionResult> GetTrustedServer(string id)
+	{
+		await VerifyAdmin();
+
+		var ret = await trustedGameServerService.GetAsync(EpicID.FromString(id));
+		return Ok(ret);
+	}
+
+	[HttpPatch("trusted_servers/{id}")]
+	[HttpPost("trusted_servers/{id}")]
+	public async Task<IActionResult> UpdateTrustedServer(string id, [FromBody] TrustedGameServer server)
+	{
+		await VerifyAdmin();
+
+		var eid = EpicID.FromString(id);
+
+		if (eid != server.ID)
+			return BadRequest();
+
+		await trustedGameServerService.UpdateAsync(server);
+		return Ok();
+	}
+
+	[HttpDelete("trusted_servers/{id}")]
+	public async Task<IActionResult> DeleteTrustedServer(string id)
+	{
+		await VerifyAdmin();
+
+		var ret = await trustedGameServerService.RemoveAsync(EpicID.FromString(id));
+		return Ok(ret);
+	}
 
 
 
+	[NonAction]
+	private bool IsSpecialClientID(EpicID id)
+	{
+		if (id == ClientIdentification.Game.ID)
+			return true;
+		if (id == ClientIdentification.ServerInstance.ID)
+			return true;
+		if (id == ClientIdentification.Launcher.ID)
+			return true;
 
+		return false;
+	}
 
 	[NonAction]
 	private async Task<(Session Session, Account Account)> VerifyAdmin()
