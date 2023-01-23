@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace UT4MasterServer.Models.Requests;
 
-public sealed class WaitTimeEsitmate
+public sealed class WaitTimeEstimateResponse
 {
 	[JsonPropertyName("ratingType")]
 	public string RatingType { get; set; }
@@ -13,7 +13,7 @@ public sealed class WaitTimeEsitmate
 	[JsonPropertyName("numSamples")]
 	public int SampleCount { get; set; }
 
-	public WaitTimeEsitmate(string ratingType, double seconds, int sampleCount)
+	public WaitTimeEstimateResponse(string ratingType, double seconds, int sampleCount)
 	{
 		RatingType = ratingType;
 		WaitTimeSeconds = seconds;

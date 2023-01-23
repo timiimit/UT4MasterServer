@@ -78,7 +78,9 @@ public class MatchmakingService
 
 		// include GameServers whose BuildUniqueId matches criteria
 		if (inputFilter.BuildUniqueId != null)
+		{
 			doc.Add(new BsonElement(nameof(GameServer.BuildUniqueID), inputFilter.BuildUniqueId));
+		}
 
 		foreach (var condition in inputFilter.Criteria)
 		{

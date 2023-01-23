@@ -2,7 +2,7 @@ using UT4MasterServer.Models.Requests;
 
 namespace UT4MasterServer.Services;
 
-public class MatchmakingWaitTimeEstimateService
+public sealed class MatchmakingWaitTimeEstimateService
 {
 	private Dictionary<string, List<(DateTime DeleteTime, double WaitTime)>> estimates;
 	private static readonly TimeSpan RelevantReportTimeDuration = TimeSpan.FromMinutes(1);
@@ -15,22 +15,24 @@ public class MatchmakingWaitTimeEstimateService
 	public void AddWaitTime(string mode, double seconds)
 	{
 		if (!estimates.ContainsKey(mode))
+		{
 			estimates.Add(mode, new List<(DateTime, double)>());
+		}
 		estimates[mode].Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
 	}
 
-	public List<WaitTimeEsitmate> GetWaitTimes()
+	public List<WaitTimeEstimateResponse> GetWaitTimes()
 	{
 		Clean();
 
-		List<WaitTimeEsitmate> waitTimes = new List<WaitTimeEsitmate>();
+		List<WaitTimeEstimateResponse> waitTimes = new List<WaitTimeEstimateResponse>();
 		foreach (var estimate in estimates)
 		{
 			if (estimate.Value.Count <= 0)
 				continue;
 
 			var estimatedModeWait = estimate.Value.Average(x => x.WaitTime);
-			waitTimes.Add(new WaitTimeEsitmate(estimate.Key, estimatedModeWait, estimate.Value.Count));
+			waitTimes.Add(new WaitTimeEstimateResponse(estimate.Key, estimatedModeWait, estimate.Value.Count));
 		}
 
 		return waitTimes;
