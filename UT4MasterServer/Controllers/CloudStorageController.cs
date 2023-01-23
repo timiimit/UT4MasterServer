@@ -102,7 +102,9 @@ public class CloudStorageController : JsonAPIController
 			var playerName = "New Player";
 			var account = await accountService.GetAccountAsync(accountID);
 			if (account != null)
+			{
 				playerName = account.Username;
+			}
 
 			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\"}}") };
 		}
