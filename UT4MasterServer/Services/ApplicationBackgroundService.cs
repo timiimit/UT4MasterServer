@@ -1,26 +1,26 @@
 using Microsoft.Extensions.Options;
-using UT4MasterServer.Models;
+using UT4MasterServer.Settings;
 
 namespace UT4MasterServer.Services;
 
 public sealed class ApplicationBackgroundCleanupService : IHostedService, IDisposable
 {
 	private readonly ILogger<ApplicationStartupService> logger;
-	private readonly ApplicationSettings settings;
+	private readonly StatisticsSettings statisticsSettings;
 	private readonly IServiceProvider services;
 
 	private Timer? tmrExpiredSessionDeletor;
+	private DateTime? lastDateDeleteOldStatisticsExecuted;
 	private DateTime? lastDateMergeOldStatisticsExecuted;
 
 	public ApplicationBackgroundCleanupService(
 		ILogger<ApplicationStartupService> logger,
-		IOptions<ApplicationSettings> settings,
-		IServiceProvider services
-		)
+		IOptions<StatisticsSettings> statisticsSettings,
+		IServiceProvider services)
 	{
 		this.logger = logger;
-		this.settings = settings.Value;
 		this.services = services;
+		this.statisticsSettings = statisticsSettings.Value;
 	}
 
 	public Task StartAsync(CancellationToken cancellationToken)
@@ -56,6 +56,7 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 			if (deleteCount > 0)
 				logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
 
+			await DeleteOldStatisticsAsync(scope);
 			await MergeOldStatisticsAsync(scope);
 		});
 	}
@@ -68,12 +69,29 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 	#region Jobs
 
 	/// <summary>
+	/// This job is executed each day, and it deletes statistics older than X days including the flagged ones
+	/// The days are specified in the appsettings
+	/// </summary>
+	private async Task DeleteOldStatisticsAsync(IServiceScope scope)
+	{
+		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.DeleteOldStatisticsTimeZone));
+		if (currentTime.Hour == statisticsSettings.DeleteOldStatisticsHour &&
+		   (!lastDateDeleteOldStatisticsExecuted.HasValue || lastDateDeleteOldStatisticsExecuted.Value.Date != currentTime.Date))
+		{
+			lastDateDeleteOldStatisticsExecuted = currentTime.Date;
+
+			var statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
+			await statisticsService.DeleteOldStatisticsAsync(statisticsSettings.DeleteOldStatisticsBeforeDays, false);
+		}
+	}
+
+	/// <summary>
 	/// This job is executed each day, and it merges statistics older than 7 days into single record per day per account
 	/// </summary>
 	private async Task MergeOldStatisticsAsync(IServiceScope scope)
 	{
-		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(settings.MergeOldStatisticsTimeZone));
-		if (currentTime.Hour == settings.MergeOldStatisticsHour &&
+		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.MergeOldStatisticsTimeZone));
+		if (currentTime.Hour == statisticsSettings.MergeOldStatisticsHour &&
 		   (!lastDateMergeOldStatisticsExecuted.HasValue || lastDateMergeOldStatisticsExecuted.Value.Date != currentTime.Date))
 		{
 			lastDateMergeOldStatisticsExecuted = currentTime.Date;

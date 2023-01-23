@@ -30,14 +30,4 @@ public sealed class ApplicationSettings
 	/// IP addresses of trusted proxy servers.
 	/// </summary>
 	public List<string> ProxyServers { get; set; } = new List<string>();
-
-	/// <summary>
-	/// Time zone in which merging old statistics is executed
-	/// </summary>
-	public string MergeOldStatisticsTimeZone { get; set; } = string.Empty;
-
-	/// <summary>
-	/// Hour at which merging old statistics is executed
-	/// </summary>
-	public int MergeOldStatisticsHour { get; set; }
 }
