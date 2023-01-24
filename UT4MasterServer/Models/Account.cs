@@ -3,6 +3,7 @@ using UT4MasterServer.Other;
 
 namespace UT4MasterServer.Models;
 using System.Text.Json.Serialization;
+using UT4MasterServer.Helpers;
 
 [Flags]
 public enum AccountFlags
@@ -148,6 +149,29 @@ public class Account
 
 	[BsonIgnore]
 	public int LevelStockLimited => Math.Min(50, (int)Level);
+
+
+	public bool CheckPassword(string password, bool allowPasswordGrant)
+	{
+		// now verify that password is correct
+		if (Password != PasswordHelper.GetPasswordHash(ID, password))
+		{
+			if (!allowPasswordGrant)
+				return false;
+
+			// when user uses the website, password is never transmitted to us, only it's hash.
+			// when user logs into the game via the stock in-game login window, password IS transmitted to us.
+			// here we try to handle the latter, the less secure way of password transmission
+
+			// put password into the form as it would be in, if it were transmitted from our website
+			password = PasswordHelper.GetPasswordHash(password);
+
+			// hash the password with account id
+			if (Password != PasswordHelper.GetPasswordHash(ID, password))
+				return false;
+		}
+		return true;
+	}
 
 	public override string ToString()
 	{

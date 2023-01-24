@@ -31,7 +31,7 @@ public sealed class ErrorsController : ControllerBase
 			logger.LogError(InternalServerError);
 			return StatusCode(statusCode, message);
 		}
-
+		
 		switch (exception)
 		{
 			case InvalidEpicIDException invalidEpicIDException:
@@ -46,6 +46,17 @@ public sealed class ErrorsController : ControllerBase
 
 				logger.LogError(exception, "Tried using {ID} as EpicID.", invalidEpicIDException.ID);
 				return StatusCode(400, err);
+			}
+
+			case UnauthorizedAccessException unauthorizedAccessException:
+			{
+				logger.LogWarning(exception, "Attempt to access resource without required authorization");
+				return StatusCode(401, new ErrorResponse()
+				{
+					ErrorCode = "com.epicgames.errors.unauthorized",
+					ErrorMessage = unauthorizedAccessException.Message,
+					NumericErrorCode = 401
+				});
 			}
 		}
 

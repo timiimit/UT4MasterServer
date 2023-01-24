@@ -2,6 +2,8 @@
 
 This is a reimplementation of EpicGames servers, just enough to be able to serve as a master server for Unreal Tournament pre-alpha. There is still lots to do. Anyone is welcome to help out. Reach us on [Discord Server](https://discord.gg/2DaCWkK).
 
+If you want to play, go to https://ut4.timiimit.com/
+
 ## Contribution
 
 There is not much documentation on how to get started. I will create issues that need resolving as time goes on, but there are also a bunch of `// TODO` comments which tell what is still missing.
