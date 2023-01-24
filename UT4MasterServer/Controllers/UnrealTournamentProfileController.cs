@@ -56,11 +56,12 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 	}
 
 	private readonly AccountService accountService;
+	private readonly MatchmakingService matchmakingService;
 
-	public UnrealTournamentProfileController(ILogger<SessionController> logger, AccountService accountService) : base(logger)
+	public UnrealTournamentProfileController(ILogger<SessionController> logger, AccountService accountService, MatchmakingService matchmakingService) : base(logger)
 	{
 		this.accountService = accountService;
-
+		this.matchmakingService = matchmakingService;
 	}
 
 	[HttpPost("{id}/{clientKind}/QueryProfile")]
@@ -261,12 +262,22 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 		bool isRequestSentFromClient = clientKind.ToLower() == "client";
 		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
-		if (!isRequestSentFromServer)
-			return BadRequest();
+		if (isRequestSentFromServer && user.Session.AccountID.IsEmpty)
+		{
+			// it is "okay" to let any server handle anyone's XP since we have a limit on how much xp/h one can earn
+		}
+		else if (isRequestSentFromClient && user.Session.AccountID == eid)
+		{
+			// it is "okay" to let client modify his own XP since we have a limit on how much xp/h one can earn
+		}
+		else
+		{
+			return Unauthorized();
+		}
 
 		var acc = await accountService.GetAccountAsync(eid);
 		if (acc == null)
-			return BadRequest();
+			return NotFound();
 
 
 		const double maxXPPerHour = 500.0;
