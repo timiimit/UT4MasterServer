@@ -44,7 +44,7 @@ public sealed class ErrorsController : ControllerBase
 					NumericErrorCode = invalidEpicIDException.NumericErrorCode
 				};
 
-				logger.LogError(exception, "Tried using {ID} as EpicID", invalidEpicIDException.ID);
+				logger.LogError(exception, "Tried using {ID} as EpicID.", invalidEpicIDException.ID);
 				return StatusCode(400, err);
 			}
 		}
