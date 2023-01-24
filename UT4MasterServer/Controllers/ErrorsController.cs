@@ -40,6 +40,13 @@ public sealed class ErrorsController : ControllerBase
 						MessageVars = new string[] { invalidEpicIDException.ID },
 						NumericErrorCode = invalidEpicIDException.NumericErrorCode
 					});
+				case UnauthorizedAccessException unauthorizedAccessException:
+					return StatusCode(401, new ErrorResponse()
+					{
+						ErrorCode = "com.epicgames.errors.unauthorized",
+						ErrorMessage = unauthorizedAccessException.Message,
+						NumericErrorCode = 401
+					});
 			}
 		}
 
