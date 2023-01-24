@@ -56,11 +56,12 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 	}
 
 	private readonly AccountService accountService;
+	private readonly MatchmakingService matchmakingService;
 
-	public UnrealTournamentProfileController(ILogger<SessionController> logger, AccountService accountService) : base(logger)
+	public UnrealTournamentProfileController(ILogger<SessionController> logger, AccountService accountService, MatchmakingService matchmakingService) : base(logger)
 	{
 		this.accountService = accountService;
-
+		this.matchmakingService = matchmakingService;
 	}
 
 	[HttpPost("{id}/{clientKind}/QueryProfile")]
@@ -261,24 +262,42 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 		bool isRequestSentFromClient = clientKind.ToLower() == "client";
 		bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
-		if (!isRequestSentFromServer)
-			return BadRequest();
+		if (isRequestSentFromServer && user.Session.AccountID.IsEmpty)
+		{
+			// it is "okay" to let any server handle anyone's XP since we have a limit on how much xp/h one can earn
+		}
+		else if (isRequestSentFromClient && user.Session.AccountID == eid)
+		{
+			// it is "okay" to let client modify his own XP since we have a limit on how much xp/h one can earn
+		}
+		else
+		{
+			return Unauthorized();
+		}
 
 		var acc = await accountService.GetAccountAsync(eid);
 		if (acc == null)
-			return BadRequest();
+			return NotFound();
 
 
 		const double maxXPPerHour = 500.0;
 		var hoursSinceLastMatch = (DateTime.UtcNow - acc.LastMatchAt).TotalHours;
 
-		var maxEarnableXP = maxXPPerHour * hoursSinceLastMatch;
-		if (body.XPAmount > maxEarnableXP)
-			body.XPAmount = (int)maxEarnableXP;
-
 		// this is just some hard limit on max xp allowed per request/match
 		if (body.XPAmount > 300)
+		{
+			logger.LogWarning("{User} supposedly earned {XP} XP in a single match.", acc.ToString(), body.XPAmount);
 			body.XPAmount = 300;
+		}
+
+		var maxEarnableXP = maxXPPerHour * hoursSinceLastMatch;
+		if (body.XPAmount > maxEarnableXP)
+		{
+			logger.LogWarning("{User} supposedly earned {XP} XP in {Hours} hours. Limiting to {AdjustedXP} XP which is max allowed XP within this timespan.",
+				acc.ToString(), body.XPAmount, hoursSinceLastMatch, maxEarnableXP);
+			body.XPAmount = (int)maxEarnableXP;
+		}
+
 
 
 		var prevXP = acc.XP;
@@ -374,6 +393,8 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 
 		account.GoldStars = body.NewGoldStars;
 		account.BlueStars = body.NewBlueStars;
+
+		await accountService.UpdateAccountAsync(account);
 
 		// TODO: send out a proper response which is similar to QueryProfile
 

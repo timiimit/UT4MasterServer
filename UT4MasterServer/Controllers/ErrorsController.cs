@@ -26,30 +26,41 @@ public sealed class ErrorsController : ControllerBase
 		var exceptionHandlerFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
 		var exception = exceptionHandlerFeature?.Error;
 
-		logger.LogError(exception, InternalServerError);
-
-		if (exception is not null)
+		if (exception is null)
 		{
-			switch (exception)
+			logger.LogError(InternalServerError);
+			return StatusCode(statusCode, message);
+		}
+		
+		switch (exception)
+		{
+			case InvalidEpicIDException invalidEpicIDException:
 			{
-				case InvalidEpicIDException invalidEpicIDException:
-					return StatusCode(400, new ErrorResponse()
-					{
-						ErrorCode = invalidEpicIDException.ErrorCode,
-						ErrorMessage = invalidEpicIDException.Message,
-						MessageVars = new string[] { invalidEpicIDException.ID },
-						NumericErrorCode = invalidEpicIDException.NumericErrorCode
-					});
-				case UnauthorizedAccessException unauthorizedAccessException:
-					return StatusCode(401, new ErrorResponse()
-					{
-						ErrorCode = "com.epicgames.errors.unauthorized",
-						ErrorMessage = unauthorizedAccessException.Message,
-						NumericErrorCode = 401
-					});
+				var err = new ErrorResponse()
+				{
+					ErrorCode = invalidEpicIDException.ErrorCode,
+					ErrorMessage = invalidEpicIDException.Message,
+					MessageVars = new string[] { invalidEpicIDException.ID },
+					NumericErrorCode = invalidEpicIDException.NumericErrorCode
+				};
+
+				logger.LogError(exception, "Tried using {ID} as EpicID.", invalidEpicIDException.ID);
+				return StatusCode(400, err);
+			}
+
+			case UnauthorizedAccessException unauthorizedAccessException:
+			{
+				logger.LogWarning(exception, "Attempt to access resource without required authorization");
+				return StatusCode(401, new ErrorResponse()
+				{
+					ErrorCode = "com.epicgames.errors.unauthorized",
+					ErrorMessage = unauthorizedAccessException.Message,
+					NumericErrorCode = 401
+				});
 			}
 		}
 
+		logger.LogError(exception, InternalServerError);
 		return StatusCode(statusCode, message);
 	}
 }
