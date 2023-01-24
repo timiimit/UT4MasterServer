@@ -711,7 +711,7 @@ public class StatisticBase
 	public int? FlagAssists { get; set; }
 
 	[BsonIgnoreIfNull]
-	public int? FlagHeldDeny { get; set; }
+	public double? FlagHeldDeny { get; set; }
 
 	[BsonIgnoreIfNull]
 	public double? FlagHeldDenyTime { get; set; }
