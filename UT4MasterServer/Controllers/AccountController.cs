@@ -35,10 +35,12 @@ public sealed class AccountController : JsonAPIController
 
 
 	private readonly AccountService accountService;
+	private readonly IConfiguration configuration;
 
-	public AccountController(ILogger<AccountController> logger, AccountService accountService) : base(logger)
+	public AccountController(ILogger<AccountController> logger, AccountService accountService, IConfiguration configuration) : base(logger)
 	{
 		this.accountService = accountService;
+		this.configuration = configuration;
 	}
 
 	#region ACCOUNT LISTING API
@@ -214,8 +216,23 @@ public sealed class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password)
+	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
 	{
+		var reCaptchaSecret = this.configuration.GetValue<String>("ReCaptcha:SecretKey");
+		var httpClient = new HttpClient();
+		var httpResponse = httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}").Result;
+		if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
+		{
+			return Conflict("Recaptcha validation failed");
+		}
+
+		var jsonResponse = httpResponse.Content.ReadAsStringAsync().Result;
+		dynamic jsonData = JObject.Parse(jsonResponse);
+		if (jsonData.success != true.ToString().ToLower())
+		{
+			return Conflict("Recaptcha validation failed");
+		}
+
 		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{

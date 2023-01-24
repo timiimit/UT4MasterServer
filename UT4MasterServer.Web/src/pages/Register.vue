@@ -65,12 +65,14 @@ const formValid = computed(() => emailValid.value && username.value && passwordV
 const errorMessage = shallowRef('Error registering account. Please try again.');
 const submitAttempted = shallowRef(false);
 const recaptchaSiteKey = __RECAPTCHA_SITE_KEY;
+const recaptchaToken = shallowRef<string | undefined>(undefined);
 
 const accountService = new AccountService();
 
 const router = useRouter();
 
-function handleRecaptchaSuccess() {
+function handleRecaptchaSuccess(token: string) {
+  recaptchaToken.value = token
   recaptchaValid.value = true;
 }
 
@@ -87,6 +89,7 @@ async function register() {
       email: email.value,
       username: username.value,
       password: CryptoJS.SHA512(password.value).toString(),
+      recaptchaToken: recaptchaToken.value
     };
     await accountService.register(formData);
     status.value = AsyncStatus.OK;
