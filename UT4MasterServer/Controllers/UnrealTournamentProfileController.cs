@@ -283,13 +283,21 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 		const double maxXPPerHour = 500.0;
 		var hoursSinceLastMatch = (DateTime.UtcNow - acc.LastMatchAt).TotalHours;
 
-		var maxEarnableXP = maxXPPerHour * hoursSinceLastMatch;
-		if (body.XPAmount > maxEarnableXP)
-			body.XPAmount = (int)maxEarnableXP;
-
 		// this is just some hard limit on max xp allowed per request/match
 		if (body.XPAmount > 300)
+		{
+			logger.LogWarning("{User} supposedly earned {XP} XP in a single match.", acc.ToString(), body.XPAmount);
 			body.XPAmount = 300;
+		}
+
+		var maxEarnableXP = maxXPPerHour * hoursSinceLastMatch;
+		if (body.XPAmount > maxEarnableXP)
+		{
+			logger.LogWarning("{User} supposedly earned {XP} XP in {Hours} hours. Limiting to {AdjustedXP} XP which is max allowed XP within this timespan.",
+				acc.ToString(), body.XPAmount, hoursSinceLastMatch, maxEarnableXP);
+			body.XPAmount = (int)maxEarnableXP;
+		}
+
 
 
 		var prevXP = acc.XP;
