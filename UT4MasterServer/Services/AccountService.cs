@@ -87,6 +87,5 @@ public sealed class AccountService
 	{
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
-
-
 }
+
