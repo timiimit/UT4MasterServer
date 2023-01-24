@@ -386,6 +386,8 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 		account.GoldStars = body.NewGoldStars;
 		account.BlueStars = body.NewBlueStars;
 
+		await accountService.UpdateAccountAsync(account);
+
 		// TODO: send out a proper response which is similar to QueryProfile
 
 		return Ok();
