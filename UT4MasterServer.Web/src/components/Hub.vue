@@ -3,6 +3,7 @@
         :title="hub?.attributes.UT_SERVERNAME_s" :class="{ 'active-hub': selectedHub?.id === hub?.id }">
         <template v-if="hub">
             <h5>{{ hub.attributes.UT_SERVERNAME_s }}</h5>
+            <div>IP: <span class="hub-ip">{{ hub.serverAddress }}</span></div>
             <div class="flex-space-btw">
                 <div>{{ hub.matches.length }} Matches</div>
                 <div>{{ totalPlayers }} Players</div>
@@ -27,6 +28,10 @@
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+    }
+
+    span.hub-ip {
+        user-select: all;
     }
 }
 </style>
