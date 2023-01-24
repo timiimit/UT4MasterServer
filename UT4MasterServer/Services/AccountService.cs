@@ -4,18 +4,17 @@ using UT4MasterServer.Models;
 using System.Text;
 using System.Security.Cryptography;
 using UT4MasterServer.Other;
+using UT4MasterServer.Helpers;
 
 namespace UT4MasterServer.Services;
 
 public sealed class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
-	private readonly bool allowPasswordGrant;
 
 	public AccountService(DatabaseContext dbContext, IOptions<ApplicationSettings> settings)
 	{
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
-		allowPasswordGrant = settings.Value.AllowPasswordGrantType;
 	}
 
 	public async Task CreateAccountAsync(string username, string email, string password)
@@ -24,7 +23,7 @@ public sealed class AccountService
 		newAccount.ID = EpicID.GenerateNew();
 		newAccount.Username = username;
 		newAccount.Email = email;
-		newAccount.Password = GetPasswordHash(newAccount.ID, password);
+		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
 	}
@@ -47,32 +46,13 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<Account?> GetAccountAsync(string username, string password)
+	public async Task<Account?> GetAccountUsernameOrEmailAsync(string username)
 	{
-		// look for account just with username
 		var account = await GetAccountAsync(username);
 		if (account == null)
 		{
 			account = await GetAccountByEmailAsync(username);
 			if (account == null)
-				return null;
-		}
-
-		// now verify that password is correct
-		if (account.Password != GetPasswordHash(account.ID, password))
-		{
-			if (!allowPasswordGrant)
-				return null;
-
-			// when user uses the website, password is never transmitted to us, only it's hash.
-			// when user logs into the game via the stock in-game login window, password IS transmitted to us.
-			// here we try to handle the latter, the less secure way of password transmission
-
-			// put password into the form as it would be in, if it were transmitted from our website
-			password = GetPasswordHash(password);
-
-			// hash the password with account id
-			if (account.Password != GetPasswordHash(account.ID, password))
 				return null;
 		}
 
@@ -99,7 +79,7 @@ public sealed class AccountService
 
 	public async Task UpdateAccountPasswordAsync(Account updatedAccount, string password)
 	{
-		updatedAccount.Password = GetPasswordHash(updatedAccount.ID, password);
+		updatedAccount.Password = PasswordHelper.GetPasswordHash(updatedAccount.ID, password);
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 
@@ -107,21 +87,5 @@ public sealed class AccountService
 	{
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
-
-	private static string GetPasswordHash(EpicID accountID, string password)
-	{
-		// we combine both accountID and password to create a hash.
-		// this way NO ONE can tell which users have the same password.
-		string combined = accountID + password;
-
-		return GetPasswordHash(combined);
-	}
-
-	private static string GetPasswordHash(string password)
-	{
-		var bytes = Encoding.UTF8.GetBytes(password);
-		var hashedBytes = SHA512.HashData(bytes);
-		var passwordHash = Convert.ToHexString(hashedBytes).ToLower();
-		return passwordHash;
-	}
 }
+

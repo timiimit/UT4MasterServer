@@ -273,7 +273,10 @@ public sealed class AccountController : JsonAPIController
 		if (matchingAccount != null)
 		{
 			logger.LogInformation($"Change Username failed, already taken: {newUsername}");
-			return Conflict("Username already taken");
+			return Conflict(new ErrorResponse()
+			{
+				ErrorMessage = $"Username already taken"
+			});
 		}
 
 		var account = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -281,20 +284,12 @@ public sealed class AccountController : JsonAPIController
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
-		try
-		{
-			account.Username = newUsername;
-			await accountService.UpdateAccountAsync(account);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Username failed: {ex.Message}");
-			return StatusCode(500);
-		}
+		account.Username = newUsername;
+		await accountService.UpdateAccountAsync(account);
 
 		logger.LogInformation($"Updated username for {user.Session.AccountID} to: {newUsername}");
 
@@ -319,20 +314,12 @@ public sealed class AccountController : JsonAPIController
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
-		try
-		{
-			account.Email = newEmail;
-			await accountService.UpdateAccountAsync(account);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Email failed: {ex.Message}");
-			return StatusCode(500);
-		}
+		account.Email = newEmail;
+		await accountService.UpdateAccountAsync(account);
 
 		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
 
@@ -340,7 +327,7 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[HttpPatch("update/password")]
-	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword, [FromForm] string username)
+	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
@@ -353,24 +340,24 @@ public sealed class AccountController : JsonAPIController
 			return ValidationProblem();
 		}
 
-		var account = await accountService.GetAccountAsync(username, currentPassword);
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
-		try
+		if (!account.CheckPassword(currentPassword, false))
 		{
-			await accountService.UpdateAccountPasswordAsync(account, newPassword);
+			return BadRequest(new ErrorResponse()
+			{
+				ErrorMessage = $"Current Password is invalid"
+			});
 		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Email failed: {ex.Message}");
-			return StatusCode(500);
-		}
+
+		await accountService.UpdateAccountPasswordAsync(account, newPassword);
 
 		logger.LogInformation($"Updated password for {user.Session.AccountID}");
 
