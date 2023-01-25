@@ -10,6 +10,7 @@ namespace UT4MasterServer.Controllers;
 public sealed class ErrorsController : ControllerBase
 {
 	private const string InternalServerError = "Internal server error occurred.";
+	private const string UnauthorizedError = "Attempt to access resource without required authorization.";
 
 	private readonly ILogger<ErrorsController> logger;
 
@@ -50,11 +51,11 @@ public sealed class ErrorsController : ControllerBase
 
 			case UnauthorizedAccessException unauthorizedAccessException:
 			{
-				logger.LogWarning(exception, "Attempt to access resource without required authorization");
+				logger.LogWarning(exception, UnauthorizedError);
 				return StatusCode(401, new ErrorResponse()
 				{
 					ErrorCode = "com.epicgames.errors.unauthorized",
-					ErrorMessage = unauthorizedAccessException.Message,
+					ErrorMessage = string.IsNullOrWhiteSpace(unauthorizedAccessException.Message) ? UnauthorizedError : unauthorizedAccessException.Message,
 					NumericErrorCode = 401
 				});
 			}
