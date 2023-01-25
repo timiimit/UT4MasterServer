@@ -227,7 +227,7 @@ public sealed class AccountController : JsonAPIController
 		}
 
 		var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
-		JObject jsonData = JObject.Parse(jsonResponse);
+		var jsonData = JObject.Parse(jsonResponse);
 		if (jsonData["success"]?.ToObject<bool>() != true)
 		{
 			return Conflict("Recaptcha validation failed");
