@@ -218,17 +218,17 @@ public sealed class AccountController : JsonAPIController
 	[AllowAnonymous]
 	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
 	{
-		var reCaptchaSecret = this.configuration.GetValue<String>("ReCaptcha:SecretKey");
+		var reCaptchaSecret = configuration.GetValue<string>("ReCaptcha:SecretKey");
 		var httpClient = new HttpClient();
-		var httpResponse = httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}").Result;
+		var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
 		if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
 		{
 			return Conflict("Recaptcha validation failed");
 		}
 
-		var jsonResponse = httpResponse.Content.ReadAsStringAsync().Result;
-		dynamic jsonData = JObject.Parse(jsonResponse);
-		if (jsonData.success != true.ToString().ToLower())
+		var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+		JObject jsonData = JObject.Parse(jsonResponse);
+		if (jsonData["success"]?.ToObject<bool>() != true)
 		{
 			return Conflict("Recaptcha validation failed");
 		}
