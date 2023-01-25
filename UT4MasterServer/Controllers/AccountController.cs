@@ -250,6 +250,7 @@ public sealed class AccountController : JsonAPIController
 			return Conflict("You have entered an invalid username");
 		}
 
+		email = email.ToLower();
 		account = await accountService.GetAccountByEmailAsync(email);
 		if (account != null)
 		{
@@ -325,6 +326,7 @@ public sealed class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
+		newEmail = newEmail.ToLower();
 		if (!ValidateEmail(newEmail))
 		{
 			return ValidationProblem();
