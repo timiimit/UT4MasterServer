@@ -25,7 +25,7 @@ public sealed class CodeService
 	{
 		return await Task.Run(() =>
 		{
-			lock (codes) // make sure codes are thread-safe
+			lock (codes) // Make sure codes are thread-safe
 			{
 				// Each user can only have a single code of some kind.
 				// Remove it if one such code already exists.
@@ -43,7 +43,7 @@ public sealed class CodeService
 	{
 		return await Task.Run(() =>
 		{
-			lock (codes) // make sure codes are thread-safe
+			lock (codes) // Make sure codes are thread-safe
 			{
 				int i = codes.FindIndex(x => x.Token.Value == code && x.Kind == kind);
 				if (i == -1)
@@ -52,6 +52,17 @@ public sealed class CodeService
 				var ret = codes[i];
 				codes.RemoveAt(i);
 				return ret;
+			}
+		});
+	}
+
+	public async Task<int> RemoveAllExpiredCodesAsync()
+	{
+		return await Task.Run(() =>
+		{
+			lock (codes) // Make sure codes are thread-safe
+			{
+				return codes.RemoveAll(x => x.Token.HasExpired);
 			}
 		});
 	}
