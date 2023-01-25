@@ -1,7 +1,5 @@
 {	
-	"ActiveRankedPlaylists": [
-		2
-	],
+	"ActiveRankedPlaylists": [ ],
 	
 	"RankedEloRange":50,
 	"RankedMinEloRangeBeforeHosting":250,

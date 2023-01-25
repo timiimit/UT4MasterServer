@@ -51,6 +51,11 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 			if (deleteCount > 0)
 				logger.LogInformation("Background task deleted {DeleteCount} expired sessions.", deleteCount);
 
+			var codeService = scope.ServiceProvider.GetRequiredService<CodeService>();
+			deleteCount = await codeService.RemoveAllExpiredCodesAsync();
+			if (deleteCount > 0)
+				logger.LogInformation("Background task deleted {DeleteCount} expired codes.", deleteCount);
+
 			var matchmakingService = scope.ServiceProvider.GetRequiredService<MatchmakingService>();
 			deleteCount = await matchmakingService.RemoveAllStaleAsync();
 			if (deleteCount > 0)
