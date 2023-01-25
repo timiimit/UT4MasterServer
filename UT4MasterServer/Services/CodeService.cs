@@ -27,6 +27,11 @@ public sealed class CodeService
 		{
 			lock (codes) // make sure codes are thread-safe
 			{
+				// Each user can only have a single code of some kind.
+				// Remove it if one such code already exists.
+				codes.RemoveAll(x => x.AccountID == accountID && x.CreatingClientID == clientID && x.Kind == kind);
+
+				// Create new code
 				var ret = new Code(accountID, clientID, Token.Generate(TimeSpan.FromMinutes(5)), kind);
 				codes.Add(ret);
 				return ret;
