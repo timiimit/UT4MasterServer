@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using UT4MasterServer.Authentication;
@@ -7,6 +8,7 @@ using UT4MasterServer.Helpers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
+using UT4MasterServer.Settings;
 
 namespace UT4MasterServer.Controllers;
 
@@ -36,13 +38,13 @@ public sealed class AccountController : JsonAPIController
 
 	private readonly SessionService sessionService;
 	private readonly AccountService accountService;
-	private readonly IConfiguration configuration;
+	private readonly IOptions<ReCaptchaSettings> reCaptchaSettings;
 
-	public AccountController(ILogger<AccountController> logger, AccountService accountService, SessionService sessionService, IConfiguration configuration) : base(logger)
+	public AccountController(ILogger<AccountController> logger, AccountService accountService, SessionService sessionService, IOptions<ReCaptchaSettings> reCaptchaSettings) : base(logger)
 	{
 		this.accountService = accountService;
 		this.sessionService = sessionService;
-		this.configuration = configuration;
+		this.reCaptchaSettings = reCaptchaSettings;
 	}
 
 	#region ACCOUNT LISTING API
@@ -220,17 +222,17 @@ public sealed class AccountController : JsonAPIController
 	[AllowAnonymous]
 	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
 	{
-		var reCaptchaSecret = this.configuration.GetValue<String>("ReCaptcha:SecretKey");
+		var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
 		var httpClient = new HttpClient();
-		var httpResponse = httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}").Result;
+		var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
 		if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
 		{
 			return Conflict("Recaptcha validation failed");
 		}
 
-		var jsonResponse = httpResponse.Content.ReadAsStringAsync().Result;
-		dynamic jsonData = JObject.Parse(jsonResponse);
-		if (jsonData.success != true.ToString().ToLower())
+		var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+		var jsonData = JObject.Parse(jsonResponse);
+		if (jsonData["success"]?.ToObject<bool>() != true)
 		{
 			return Conflict("Recaptcha validation failed");
 		}

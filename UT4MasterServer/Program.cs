@@ -54,8 +54,11 @@ public static class Program
 			o.JsonSerializerOptions.Converters.Add(new DateTimeISOJsonConverter());
 		});
 
-		builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"));
-		builder.Services.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"));
+		// load settings objects
+		builder.Services
+			.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"))
+			.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"))
+			.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptchaSettings"));
 
 		builder.Services.Configure<ApplicationSettings>(x =>
 		{
