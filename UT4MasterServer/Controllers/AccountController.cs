@@ -34,12 +34,14 @@ public sealed class AccountController : JsonAPIController
 	}
 
 
+	private readonly SessionService sessionService;
 	private readonly AccountService accountService;
 	private readonly IConfiguration configuration;
 
-	public AccountController(ILogger<AccountController> logger, AccountService accountService, IConfiguration configuration) : base(logger)
+	public AccountController(ILogger<AccountController> logger, AccountService accountService, SessionService sessionService, IConfiguration configuration) : base(logger)
 	{
 		this.accountService = accountService;
+		this.sessionService = sessionService;
 		this.configuration = configuration;
 	}
 
@@ -348,13 +350,21 @@ public sealed class AccountController : JsonAPIController
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
-			return Unauthorized();
+			throw new UnauthorizedAccessException();
 		}
 
-		// passwords should already be hashed, but check it's length just in case
+		if (user.Session.ClientID != ClientIdentification.Launcher.ID)
+		{
+			throw new UnauthorizedAccessException("Password can only be changed from the website");
+		}
+
+		// passwords should already be hashed, but check its length just in case
 		if (!ValidatePassword(newPassword))
 		{
-			return ValidationProblem();
+			return BadRequest(new ErrorResponse()
+			{
+				ErrorMessage = $"newPassword is not a SHA512 hash"
+			});
 		}
 
 		var account = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -375,6 +385,10 @@ public sealed class AccountController : JsonAPIController
 		}
 
 		await accountService.UpdateAccountPasswordAsync(account, newPassword);
+
+		// logout user to make sure they remember they changed password by being forced to log in again,
+		// as well as prevent anyone else from using this account after successful password change.
+		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
 
 		logger.LogInformation($"Updated password for {user.Session.AccountID}");
 
