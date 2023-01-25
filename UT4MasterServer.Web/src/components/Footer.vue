@@ -74,6 +74,7 @@ function handleVisibilityChange() {
 }
 
 onMounted(() => {
+  poll();
   startPolling();
   window.onfocus = startPolling;
   window.onblur = stopPolling;

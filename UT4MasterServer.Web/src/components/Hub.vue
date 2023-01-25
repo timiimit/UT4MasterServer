@@ -6,7 +6,7 @@
             <div>IP: <span class="hub-ip">{{ hub.serverAddress }}</span></div>
             <div class="flex-space-btw">
                 <div>{{ hub.matches.length }} Matches</div>
-                <div>{{ totalPlayers }} Players</div>
+                <div>{{ hub.totalPlayers }} Players</div>
             </div>
         </template>
         <h5 v-else>No hubs online</h5>
@@ -38,9 +38,9 @@
 
 <script setup lang="ts">
 import { IGameHub } from '../types/game-server';
-import { PropType, computed } from 'vue';
+import { PropType } from 'vue';
 
-const props = defineProps({
+defineProps({
     hub: {
         type: Object as PropType<IGameHub>,
         default: undefined
@@ -50,9 +50,4 @@ const props = defineProps({
         default: undefined
     }
 });
-
-const playersInMatch = computed(() => props.hub?.matches?.reduce((a, b) => a + (b?.totalPlayers ?? 0), 0));
-
-const totalPlayers = computed(() => (props.hub?.totalPlayers ?? 0) + (playersInMatch.value ?? 0));
-
 </script>
