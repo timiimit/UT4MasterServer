@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev-open": "vite --host 0.0.0.0 --open",
     "build": "vite build",
     "build-dev": "vite build --mode development"
   },
@@ -13,7 +14,8 @@
     "@types/vue-router": "^2.0.0",
     "crypto-js": "^4.1.1",
     "sass": "^1.57.1",
-    "vue": "^3.2.45"
+    "vue": "^3.2.45",
+    "vue-recaptcha": "^2.0.3"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",

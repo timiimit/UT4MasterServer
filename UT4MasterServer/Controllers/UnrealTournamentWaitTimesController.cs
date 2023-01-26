@@ -42,6 +42,6 @@ public sealed class UnrealTournamentWaitTimesController : JsonAPIController
 
 		service.AddWaitTime(ratingType, timeWaited);
 
-		return NotFound();
+		return NoContent();
 	}
 }

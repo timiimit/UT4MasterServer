@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using UT4MasterServer.Authentication;
@@ -7,6 +8,7 @@ using UT4MasterServer.Helpers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
+using UT4MasterServer.Settings;
 
 namespace UT4MasterServer.Controllers;
 
@@ -34,11 +36,15 @@ public sealed class AccountController : JsonAPIController
 	}
 
 
+	private readonly SessionService sessionService;
 	private readonly AccountService accountService;
+	private readonly IOptions<ReCaptchaSettings> reCaptchaSettings;
 
-	public AccountController(ILogger<AccountController> logger, AccountService accountService) : base(logger)
+	public AccountController(ILogger<AccountController> logger, AccountService accountService, SessionService sessionService, IOptions<ReCaptchaSettings> reCaptchaSettings) : base(logger)
 	{
 		this.accountService = accountService;
+		this.sessionService = sessionService;
+		this.reCaptchaSettings = reCaptchaSettings;
 	}
 
 	#region ACCOUNT LISTING API
@@ -214,8 +220,23 @@ public sealed class AccountController : JsonAPIController
 
 	[HttpPost("create/account")]
 	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password)
+	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
 	{
+		var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
+		var httpClient = new HttpClient();
+		var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
+		if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
+		{
+			return Conflict("Recaptcha validation failed");
+		}
+
+		var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+		var jsonData = JObject.Parse(jsonResponse);
+		if (jsonData["success"]?.ToObject<bool>() != true)
+		{
+			return Conflict("Recaptcha validation failed");
+		}
+
 		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
@@ -273,7 +294,10 @@ public sealed class AccountController : JsonAPIController
 		if (matchingAccount != null)
 		{
 			logger.LogInformation($"Change Username failed, already taken: {newUsername}");
-			return Conflict("Username already taken");
+			return Conflict(new ErrorResponse()
+			{
+				ErrorMessage = $"Username already taken"
+			});
 		}
 
 		var account = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -281,20 +305,12 @@ public sealed class AccountController : JsonAPIController
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
-		try
-		{
-			account.Username = newUsername;
-			await accountService.UpdateAccountAsync(account);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Username failed: {ex.Message}");
-			return StatusCode(500);
-		}
+		account.Username = newUsername;
+		await accountService.UpdateAccountAsync(account);
 
 		logger.LogInformation($"Updated username for {user.Session.AccountID} to: {newUsername}");
 
@@ -319,20 +335,12 @@ public sealed class AccountController : JsonAPIController
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
-		try
-		{
-			account.Email = newEmail;
-			await accountService.UpdateAccountAsync(account);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Email failed: {ex.Message}");
-			return StatusCode(500);
-		}
+		account.Email = newEmail;
+		await accountService.UpdateAccountAsync(account);
 
 		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
 
@@ -340,37 +348,49 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[HttpPatch("update/password")]
-	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword, [FromForm] string username)
+	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
-			return Unauthorized();
+			throw new UnauthorizedAccessException();
 		}
 
-		// passwords should already be hashed, but check it's length just in case
+		if (user.Session.ClientID != ClientIdentification.Launcher.ID)
+		{
+			throw new UnauthorizedAccessException("Password can only be changed from the website");
+		}
+
+		// passwords should already be hashed, but check its length just in case
 		if (!ValidatePassword(newPassword))
 		{
-			return ValidationProblem();
+			return BadRequest(new ErrorResponse()
+			{
+				ErrorMessage = $"newPassword is not a SHA512 hash"
+			});
 		}
 
-		var account = await accountService.GetAccountAsync(username, currentPassword);
+		var account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
 		{
 			return NotFound(new ErrorResponse()
 			{
-				Error = $"No account for ID: {user.Session.AccountID}"
+				ErrorMessage = $"Failed to retrieve your account"
 			});
 		}
 
-		try
+		if (!account.CheckPassword(currentPassword, false))
 		{
-			await accountService.UpdateAccountPasswordAsync(account, newPassword);
+			return BadRequest(new ErrorResponse()
+			{
+				ErrorMessage = $"Current Password is invalid"
+			});
 		}
-		catch (Exception ex)
-		{
-			logger.LogError($"Change Email failed: {ex.Message}");
-			return StatusCode(500);
-		}
+
+		await accountService.UpdateAccountPasswordAsync(account, newPassword);
+
+		// logout user to make sure they remember they changed password by being forced to log in again,
+		// as well as prevent anyone else from using this account after successful password change.
+		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
 
 		logger.LogInformation($"Updated password for {user.Session.AccountID}");
 

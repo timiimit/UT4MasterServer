@@ -76,7 +76,6 @@ async function handleSubmit() {
   try {
     status.value = AsyncStatus.BUSY;
     const request: IChangePasswordRequest = {
-      username: AccountStore.account?.displayName,
       currentPassword: CryptoJS.SHA512(currentPassword.value).toString(),
       newPassword: CryptoJS.SHA512(newPassword.value).toString()
     };

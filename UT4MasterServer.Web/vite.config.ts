@@ -7,7 +7,8 @@ export default defineConfig(({ command, mode }) => {
   const viteConfig = {
     define: {
       __BACKEND_URL: JSON.stringify(viteEnv.VITE_API_URL),
-      __WEB_BASIC_AUTH: JSON.stringify(viteEnv.VITE_BASIC_AUTH)
+      __WEB_BASIC_AUTH: JSON.stringify(viteEnv.VITE_BASIC_AUTH),
+      __RECAPTCHA_SITE_KEY: JSON.stringify(viteEnv.VITE_RECAPTCHA_SITE_KEY)
     },
     plugins: [
       vue()
