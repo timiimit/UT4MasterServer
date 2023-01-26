@@ -320,7 +320,7 @@ public sealed class AdminPanelController : ControllerBase
 		// remove all associated data
 		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, accountID, EpicID.Empty);
 		await codeService.RemoveCodesByAccountAsync(accountID);
-		await cloudStorageService.RemoveFilesAsync(accountID);
+		await cloudStorageService.RemoveFilesByAccountAsync(accountID);
 		await statisticsService.RemoveStatisticsByAccountAsync(accountID);
 
 		return Ok();
