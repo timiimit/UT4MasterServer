@@ -88,7 +88,6 @@ public sealed class CloudStorageService
 
 	public async Task<List<CloudFile>> ListFilesAsync(EpicID accountID)
 	{
-		// TODO: make sure that CloudFile.RawContent remains empty after db retrieval
 		FindOptions<CloudFile> options = new FindOptions<CloudFile>()
 		{
 			Projection = Builders<CloudFile>.Projection.Exclude(x => x.RawContent)
