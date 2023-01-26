@@ -21,21 +21,6 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public sealed class AccountController : JsonAPIController
 {
-	private static readonly Regex regexEmail;
-	private static readonly List<string> disallowedUsernameWords;
-
-	static AccountController()
-	{
-		regexEmail = new Regex(@"^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
-		disallowedUsernameWords = new List<string>
-		{
-			"cock", "dick", "penis", "vagina", "tits", "pussy", "boner",
-			"shit", "fuck", "bitch", "slut", "sex", "cum",
-			"nigger", "hitler", "nazi"
-		};
-	}
-
-
 	private readonly SessionService sessionService;
 	private readonly AccountService accountService;
 	private readonly IOptions<ReCaptchaSettings> reCaptchaSettings;
@@ -244,7 +229,7 @@ public sealed class AccountController : JsonAPIController
 			return Conflict("Username already exists");
 		}
 
-		if (!ValidateUsername(username))
+		if (!ValidationHelper.ValidateUsername(username))
 		{
 			logger.LogInformation($"Entered an invalid username: {username}");
 			return Conflict("You have entered an invalid username");
@@ -257,13 +242,13 @@ public sealed class AccountController : JsonAPIController
 			return Conflict("Email already exists");
 		}
 
-		if (!ValidateEmail(email))
+		if (!ValidationHelper.ValidateEmail(email))
 		{
 			logger.LogInformation($"Entered an invalid email format: {email}");
 			return Conflict("You have entered an invalid email address");
 		}
 
-		if (!ValidatePassword(password))
+		if (!ValidationHelper.ValidatePassword(password))
 		{
 			logger.LogInformation($"Entered password was in invalid format");
 			return Conflict("Unexpected password format");
@@ -285,7 +270,7 @@ public sealed class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		if (!ValidateUsername(newUsername))
+		if (!ValidationHelper.ValidateUsername(newUsername))
 		{
 			return ValidationProblem();
 		}
@@ -325,7 +310,7 @@ public sealed class AccountController : JsonAPIController
 			return Unauthorized();
 		}
 
-		if (!ValidateEmail(newEmail))
+		if (!ValidationHelper.ValidateEmail(newEmail))
 		{
 			return ValidationProblem();
 		}
@@ -361,7 +346,7 @@ public sealed class AccountController : JsonAPIController
 		}
 
 		// passwords should already be hashed, but check its length just in case
-		if (!ValidatePassword(newPassword))
+		if (!ValidationHelper.ValidatePassword(newPassword))
 		{
 			return BadRequest(new ErrorResponse()
 			{
@@ -398,48 +383,4 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	#endregion
-
-	[NonAction]
-	private static bool ValidateEmail(string email)
-	{
-		if (email.Length < 6 || email.Length > 64)
-			return false;
-
-		return regexEmail.IsMatch(email);
-	}
-
-	[NonAction]
-	private static bool ValidateUsername(string username)
-	{
-		if (username.Length < 3 || username.Length > 32)
-			return false;
-
-		username = username.ToLower();
-
-		// try to prevent impersonation of authority
-		if (username == "admin" || username == "administrator" || username == "system")
-			return false;
-
-		// there's no way to prevent people from getting highly creative.
-		// we just try some minimal filtering for now...
-		foreach (var word in disallowedUsernameWords)
-		{
-			if (username.Contains(word))
-				return false;
-		}
-		return true;
-	}
-
-	[NonAction]
-	private static bool ValidatePassword(string password)
-	{
-		// we are expecting password to be SHA512 hash (64 bytes) in hex string form (128 chars)
-		if (password.Length != 128)
-			return false;
-
-		if (!password.IsHexString())
-			return false;
-
-		return true;
-	}
 }
