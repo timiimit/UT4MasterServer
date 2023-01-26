@@ -15,7 +15,9 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly ILogger<AdminPanelController> logger;
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
+	private readonly CodeService codeService;
 	private readonly CloudStorageService cloudStorageService;
+	private readonly StatisticsService statisticsService;
 	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
 
@@ -23,14 +25,18 @@ public sealed class AdminPanelController : ControllerBase
 		ILogger<AdminPanelController> logger,
 		AccountService accountService,
 		SessionService sessionService,
+		CodeService codeService,
 		CloudStorageService cloudStorageService,
+		StatisticsService statisticsService,
 		ClientService clientService,
 		TrustedGameServerService trustedGameServerService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
 		this.sessionService = sessionService;
+		this.codeService = codeService;
 		this.cloudStorageService = cloudStorageService;
+		this.statisticsService = statisticsService;
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
 	}
@@ -285,6 +291,40 @@ public sealed class AdminPanelController : ControllerBase
 		return new FileContentResult(file.RawContent, "application/octet-stream");
 	}
 
+	[HttpDelete("account/{id}")]
+	public async Task<IActionResult> DeleteAccountInfo(string id, [FromBody] bool? forceCheckBroken)
+	{
+		var admin = await VerifyAdmin();
+
+		var accountID = EpicID.FromString(id);
+		var account = await accountService.GetAccountAsync(accountID);
+		if (account is null)
+		{
+			if (forceCheckBroken != true)
+			{
+				return NotFound(new ErrorResponse() { ErrorMessage = "Account not found" });
+			}
+		}
+		else
+		{
+			if (admin.Account.Flags.HasFlag(AccountFlags.Admin) && account.Flags.HasFlag(AccountFlags.Admin))
+				throw new UnauthorizedAccessException("Cannot delete account of other admin");
+
+			if (admin.Account.Flags.HasFlag(AccountFlags.Moderator) &&
+				(account.Flags.HasFlag(AccountFlags.Admin) || account.Flags.HasFlag(AccountFlags.Moderator)))
+				throw new UnauthorizedAccessException("Cannot delete account of other admin or moderator");
+
+			await accountService.RemoveAccountAsync(account.ID);
+		}
+
+		// remove all associated data
+		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, accountID, EpicID.Empty);
+		await codeService.RemoveCodesByAccountAsync(accountID);
+		await cloudStorageService.RemoveFilesAsync(accountID);
+		await statisticsService.RemoveStatisticsByAccountAsync(accountID);
+
+		return Ok();
+	}
 
 
 	[NonAction]
