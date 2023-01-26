@@ -102,6 +102,15 @@ public sealed class CloudStorageService
 		await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
 	}
 
+	public async Task<int?> RemoveFilesByAccountAsync(EpicID accountID)
+	{
+		var result = await cloudStorageCollection.DeleteManyAsync(GetFilter(accountID));
+		if (!result.IsAcknowledged)
+			return null;
+
+		return (int)result.DeletedCount;
+	}
+
 
 
 	private static bool IsCommonUserFileFilename(string filename)
