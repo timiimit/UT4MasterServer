@@ -1,25 +1,33 @@
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Helpers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
+[ApiController]
 [Route("admin")]
 [AuthorizeBearer]
 public sealed class AdminPanelController : ControllerBase
 {
+	private readonly ILogger<AdminPanelController> logger;
 	private readonly AccountService accountService;
+	private readonly SessionService sessionService;
 	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
 
 	public AdminPanelController(
+		ILogger<AdminPanelController> logger,
 		AccountService accountService,
+		SessionService sessionService,
 		ClientService clientService,
 		TrustedGameServerService trustedGameServerService)
 	{
+		this.logger = logger;
 		this.accountService = accountService;
+		this.sessionService = sessionService;
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
 	}
@@ -204,6 +212,46 @@ public sealed class AdminPanelController : ControllerBase
 
 		var ret = await trustedGameServerService.RemoveAsync(EpicID.FromString(id));
 		return Ok(ret);
+	}
+
+	[HttpPatch("change_password/{id}")]
+	public async Task<IActionResult> ChangePassword(string id, [FromBody] string newPassword, [FromBody] bool? iAmSure)
+	{
+		await VerifyAdmin();
+
+		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
+		if (account is null)
+			return NotFound(new ErrorResponse() { ErrorMessage = $"Failed to find account {id}" });
+
+		if (account.Flags.HasFlag(AccountFlags.Moderator) || account.Flags.HasFlag(AccountFlags.Admin))
+			throw new UnauthorizedAccessException("Cannot change password of other admins or moderators");
+
+		// passwords should already be hashed, but check its length just in case
+		if (!ValidationHelper.ValidatePassword(newPassword))
+		{
+			return BadRequest(new ErrorResponse()
+			{
+				ErrorMessage = $"newPassword is not a SHA512 hash"
+			});
+		}
+
+		if (iAmSure != true)
+		{
+			return BadRequest(new ErrorResponse()
+			{
+				ErrorMessage = $"'areYouSure' was not 'true'"
+			});
+		}
+
+		await accountService.UpdateAccountPasswordAsync(account, newPassword);
+
+		// logout user to make sure they remember they changed password by being forced to log in again,
+		// as well as prevent anyone else from using this account after successful password change.
+		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, account.ID, EpicID.Empty);
+
+		logger.LogInformation("Updated password for {AccountID}", account.ID);
+
+		return Ok();
 	}
 
 
