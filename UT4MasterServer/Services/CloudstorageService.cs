@@ -23,15 +23,29 @@ public sealed class CloudStorageService
 		cloudStorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
 	}
 
-	public async Task UpdateSystemfiles()
+	public async Task EnsureSystemfilesExistAsync()
 	{
+		// get a list of already stored system files
+		var stored = await ListFilesAsync(EpicID.Empty);
+
+		// get a list of default system files
 		var files = Directory.EnumerateFiles("CloudstorageSystemfiles");
+
+		// ensure that all default files exist in db
 		foreach (var file in files)
 		{
+			// get just the filename part of file path
 			var filename = Path.GetFileName(file);
 			if (filename == null)
 				continue;
 
+			if (stored.Where(x => x.Filename == filename).Any())
+			{
+				// file already in db
+				continue;
+			}
+
+			// file is not in db, save it
 			using var stream = File.OpenRead(file);
 			var reader = PipeReader.Create(stream);
 			await UpdateFileAsync(EpicID.Empty, filename, reader);
