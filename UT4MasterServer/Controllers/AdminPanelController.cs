@@ -15,6 +15,7 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly ILogger<AdminPanelController> logger;
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
+	private readonly CloudStorageService cloudStorageService;
 	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
 
@@ -22,12 +23,14 @@ public sealed class AdminPanelController : ControllerBase
 		ILogger<AdminPanelController> logger,
 		AccountService accountService,
 		SessionService sessionService,
+		CloudStorageService cloudStorageService,
 		ClientService clientService,
 		TrustedGameServerService trustedGameServerService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
 		this.sessionService = sessionService;
+		this.cloudStorageService = cloudStorageService;
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
 	}
@@ -252,6 +255,34 @@ public sealed class AdminPanelController : ControllerBase
 		logger.LogInformation("Updated password for {AccountID}", account.ID);
 
 		return Ok();
+	}
+
+	[HttpGet("mcp_files")]
+	public async Task<IActionResult> GetMCPFiles()
+	{
+		await VerifyAdmin();
+		return Ok(await cloudStorageService.ListFilesAsync(EpicID.Empty));
+	}
+
+	[HttpPost("mcp_files/{filename}")]
+	[HttpPatch("mcp_files/{filename}")]
+	public async Task<IActionResult> UpdateMCPFile(string filename)
+	{
+		await VerifyAdmin();
+		await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, HttpContext.Request.BodyReader);
+		return Ok();
+	}
+
+	[HttpGet("mcp_files/{filename}")]
+	public async Task<IActionResult> GetMCPFile(string filename)
+	{
+		await VerifyAdmin();
+
+		var file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
+		if (file is null)
+			return NotFound(new ErrorResponse() { ErrorMessage = "File not found" });
+
+		return new FileContentResult(file.RawContent, "application/octet-stream");
 	}
 
 
