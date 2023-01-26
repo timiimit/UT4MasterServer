@@ -23,7 +23,7 @@ public sealed class StatisticsService
 		statisticsCollection = dbContext.Database.GetCollection<Statistic>("statistics");
 	}
 
-	public async Task CreateIndexes()
+	public async Task CreateIndexesAsync()
 	{
 		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
 			{

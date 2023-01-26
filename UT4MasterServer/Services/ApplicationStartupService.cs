@@ -25,7 +25,7 @@ namespace UT4MasterServer.Services
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Configuring MongoDB indexes.");
-			await statisticsService.CreateIndexes();
+			await statisticsService.CreateIndexesAsync();
 
 			logger.LogInformation("Initializing MongoDB CloudStorage.");
 			await cloudStorageService.EnsureSystemfilesExistAsync();
