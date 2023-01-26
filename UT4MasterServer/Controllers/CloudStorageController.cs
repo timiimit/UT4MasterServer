@@ -33,20 +33,6 @@ public sealed class CloudStorageController : JsonAPIController
 	{
 		// list all files this user has in storage - any user can see files from another user
 
-		/* [
-		{"uniqueFilename":"user_progression_1",
-		"filename":"user_progression_1",
-		"hash":"32a17bdf348e653a5cc7f94c3afb404301502d43",
-		"hash256":"7dcfaac101dbba0337e1b51bf3c088e591742d5f1c299f10cc0c9da01eab5fe8",
-		"length":21,
-		"contentType":"text/plain",
-		"uploaded":"2020-05-24T07:10:43.198Z",
-		"storageType":"S3",
-		"accountId":"64bf8c6d81004e88823d577abe157373"
-		},
-		]
-		*/
-
 		var eid = EpicID.FromString(id);
 
 		var files = await cloudStorageService.ListFilesAsync(eid);
