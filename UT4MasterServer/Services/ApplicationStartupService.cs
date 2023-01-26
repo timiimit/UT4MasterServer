@@ -31,21 +31,7 @@ namespace UT4MasterServer.Services
 			await cloudStorageService.EnsureSystemfilesExistAsync();
 
 			logger.LogInformation("Initializing MongoDB Clients.");
-			await clientService.UpdateAsync(new Client(
-				ClientIdentification.Launcher.ID,
-				ClientIdentification.Launcher.Secret,
-				nameof(ClientIdentification.Launcher) + " (our website)"
-			));
-			await clientService.UpdateAsync(new Client(
-				ClientIdentification.Game.ID,
-				ClientIdentification.Game.Secret,
-				nameof(ClientIdentification.Game)
-			));
-			await clientService.UpdateAsync(new Client(
-				ClientIdentification.ServerInstance.ID,
-				ClientIdentification.ServerInstance.Secret,
-				nameof(ClientIdentification.ServerInstance)
-			));
+			await clientService.UpdateDefaultClientsAsync();
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
