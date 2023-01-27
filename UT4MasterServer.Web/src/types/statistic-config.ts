@@ -1,4 +1,4 @@
-import { Statistic } from "../enums/statistic";
+import { Statistic } from "@/enums/statistic";
 
 export interface IStatisticCard {
     heading: string;

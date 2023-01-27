@@ -41,11 +41,11 @@
 </style>
 
 <script setup lang="ts">
-import { IStatisticCard } from '../types/statistic-config';
-import { IStatisticData } from '../types/statistic-data';
+import { IStatisticCard } from '@/types/statistic-config';
+import { IStatisticData } from '@/types/statistic-data';
 import { PropType } from 'vue';
-import { Statistic } from '../enums/statistic';
-import { StatisticDisplay } from '../enums/statistic-display';
+import { Statistic } from '@/enums/statistic';
+import { StatisticDisplay } from '@/enums/statistic-display';
 
 const props = defineProps({
     card: {
@@ -58,7 +58,7 @@ const props = defineProps({
     }
 });
 
-const imgIconUrl = new URL(`../assets/weapons/${props.card.headingIcon}`, import.meta.url).href;
+const imgIconUrl = new URL(`@/assets/weapons/${props.card.headingIcon}`, import.meta.url).href;
 
 function getAccuracy(): string {
     const shots = props.card.stats.find((s) => s.includes('Shots'));

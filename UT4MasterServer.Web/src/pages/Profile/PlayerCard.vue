@@ -66,10 +66,10 @@ img.avatar {
 </style>
 
 <script lang="ts" setup>
-import { SessionStore } from '../../stores/session-store';
+import { SessionStore } from '@/stores/session-store';
 import { onMounted, shallowRef } from 'vue';
-import CustomService from '../../services/custom.service';
-import { IPlayerCard } from '../../types/player-card';
+import CustomService from '@/services/custom.service';
+import { IPlayerCard } from '@/types/player-card';
 
 const customService = new CustomService();
 

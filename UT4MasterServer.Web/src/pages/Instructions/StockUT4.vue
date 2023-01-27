@@ -49,5 +49,5 @@
   <p>To switch back to official Epic's servers, remove all lines that you added to <span class="code">Engine.ini</span> file (added lines may have moved).</p>
 </template>
 <script setup lang="ts">
-import CodeBlock from '../../components/CodeBlock.vue';
+import CodeBlock from '@/components/CodeBlock.vue';
 </script>

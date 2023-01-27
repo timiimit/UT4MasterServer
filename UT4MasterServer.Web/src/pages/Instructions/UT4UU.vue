@@ -21,5 +21,5 @@
   <p>To switch back to official Epic's servers, clear text box in <span style="font-style:italic">Master Server Domain</span> section.</p>
 </template>
 <script setup lang="ts">
-import CodeBlock from '../../components/CodeBlock.vue';
+import CodeBlock from '@/components/CodeBlock.vue';
 </script>

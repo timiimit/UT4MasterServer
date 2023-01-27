@@ -1,6 +1,7 @@
 
 import { defineConfig, UserConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import path from 'path';
 
 export default defineConfig(({ command, mode }) => {
   const viteEnv = loadEnv(mode, process.cwd());
@@ -12,7 +13,12 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       vue()
-    ]
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
   } as UserConfig;
 
   if (command === 'serve') {

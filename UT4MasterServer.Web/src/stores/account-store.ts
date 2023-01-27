@@ -1,8 +1,9 @@
-import { TypedStorage } from "../utils/typed-storage";
+import { TypedStorage } from "@/utils/typed-storage";
 import { ref } from "vue";
-import { IAccount } from "../types/account";
-import AccountService from "../services/account.service";
+import { IAccount } from "@/types/account";
+import AccountService from "@/services/account.service";
 import { SessionStore } from "./session-store";
+import { AccountFlag } from "@/enums/account-flag";
 
 const _account = ref<IAccount | null>(TypedStorage.getItem<IAccount>('account'));
 const _accounts = ref<IAccount[] | null>(TypedStorage.getItem<IAccount[]>('accounts'));
@@ -22,6 +23,9 @@ export const AccountStore = {
     set accounts(accounts: IAccount[] | null) {
         _accounts.value = accounts;
         TypedStorage.setItem<IAccount[]>('accounts', accounts);
+    },
+    get isAdmin() {
+        return _account.value?.flags?.includes(AccountFlag.Admin);
     },
     async fetchUserAccount() {
         try {

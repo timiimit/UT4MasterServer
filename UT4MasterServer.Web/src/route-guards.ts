@@ -19,3 +19,10 @@ export async function privateGuard(to: RouteLocationNormalized) {
     return { path: '/Login' };
   }
 }
+
+export async function adminGuard(to: RouteLocationNormalized) {
+  if (AccountStore.account === null) {
+    await  AccountStore.fetchUserAccount();
+  }
+  return AccountStore.isAdmin;
+}

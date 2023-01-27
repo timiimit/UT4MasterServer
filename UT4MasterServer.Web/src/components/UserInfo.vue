@@ -41,11 +41,11 @@
 
 <script setup lang="ts">
 import { shallowRef, onMounted } from 'vue';
-import AuthenticationService from '../services/authentication.service';
-import { AsyncStatus } from '../types/async-status';
+import AuthenticationService from '@/services/authentication.service';
+import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from './LoadingPanel.vue';
-import { AccountStore } from '../stores/account-store';
-import { SessionStore } from '../stores/session-store';
+import { AccountStore } from '@/stores/account-store';
+import { SessionStore } from '@/stores/session-store';
 import CopyButton from './CopyButton.vue';
 
 const service = new AuthenticationService();

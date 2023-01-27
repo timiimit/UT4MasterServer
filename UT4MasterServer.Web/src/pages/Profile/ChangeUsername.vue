@@ -29,13 +29,13 @@
 </template>
 
 <script setup lang="ts">
-import { IChangeUsernameRequest } from '../../types/change-username-request';
+import { IChangeUsernameRequest } from '@/types/change-username-request';
 import { shallowRef, computed, onMounted } from 'vue';
-import AccountService from '../../services/account.service';
+import AccountService from '@/services/account.service';
 import { useRouter } from 'vue-router';
-import { AsyncStatus } from '../../types/async-status';
-import LoadingPanel from '../../components/LoadingPanel.vue';
-import { AccountStore } from '../../stores/account-store';
+import { AsyncStatus } from '@/types/async-status';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AccountStore } from '@/stores/account-store';
 
 const accountService = new AccountService();
 const router = useRouter();

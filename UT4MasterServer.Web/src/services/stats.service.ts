@@ -1,5 +1,5 @@
 import { IStatisticData } from 'src/types/statistic-data';
-import { StatisticWindow } from '../enums/statistic-window';
+import { StatisticWindow } from '@/enums/statistic-window';
 import HttpService from './http.service';
 
 export default class StatsService extends HttpService {

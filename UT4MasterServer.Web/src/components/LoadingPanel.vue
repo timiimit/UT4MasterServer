@@ -41,13 +41,23 @@
 </style>
   
 <script setup lang="ts">
-import { PropType, ref, watch, onUnmounted } from 'vue';
-import { AsyncStatus } from '../types/async-status';
+import { PropType, ref, watch, onUnmounted, onMounted } from 'vue';
+import { AsyncStatus } from '@/types/async-status';
 
 const props = defineProps({
   status: Number as PropType<AsyncStatus>,
-  error: String
-})
+  error: String,
+  onLoad: {
+    type: Function,
+    default: undefined
+  },
+  autoLoad: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const emit = defineEmits(['load']);
 
 const asyncStatus = ref(props.status);
 
@@ -58,6 +68,12 @@ const destroyWatch = watch(() => props.status, () => {
 function dismissError() {
   asyncStatus.value = AsyncStatus.OK;
 }
+
+onMounted(() => {
+  if (props.autoLoad) {
+    emit('load');
+  }
+});
 
 onUnmounted(destroyWatch);
 </script>

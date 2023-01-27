@@ -97,6 +97,21 @@ public sealed class AccountController : JsonAPIController
 		obj.Add("cabinedMode", false);
 		obj.Add("hasHashedEmail", false);
 
+		var flags = new List<string>();
+
+		var flagNamesAll = Enum.GetNames<AccountFlags>();
+		var flagValuesAll = Enum.GetValues<AccountFlags>();
+
+		for (int i = 0; i < flagNamesAll.Length; i++)
+		{
+			if (account.Flags.HasFlag(flagValuesAll[i]))
+			{
+				flags.Add(flagNamesAll[i]);
+			}
+		}
+		var flagsArray = new JArray(flags);
+		obj.Add("flags", flagsArray);
+
 		return Json(obj.ToString(Newtonsoft.Json.Formatting.None));
 	}
 

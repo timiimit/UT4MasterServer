@@ -43,9 +43,9 @@ div {
 </style>
 
 <script setup lang="ts">
-import { IGameServer } from '../types/game-server';
+import { IGameServer } from '@/types/game-server';
 import { PropType, shallowRef } from 'vue';
-import { AccountStore } from '../stores/account-store';
+import { AccountStore } from '@/stores/account-store';
 
 defineProps({
     match: {

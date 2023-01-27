@@ -1,8 +1,8 @@
-import { IAccount } from '../types/account';
-import { IChangeEmailRequest } from '../types/change-email-request';
-import { IChangePasswordRequest } from '../types/change-password-request';
-import { IChangeUsernameRequest } from '../types/change-username-request';
-import { IRegisterRequest } from '../types/register-request';
+import { IAccount } from '@/types/account';
+import { IChangeEmailRequest } from '@/types/change-email-request';
+import { IChangePasswordRequest } from '@/types/change-password-request';
+import { IChangeUsernameRequest } from '@/types/change-username-request';
+import { IRegisterRequest } from '@/types/register-request';
 import HttpService from './http.service';
 
 export default class AccountService extends HttpService {

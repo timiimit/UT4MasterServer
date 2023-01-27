@@ -3,7 +3,7 @@ import {
   createWebHistory,
   RouteRecordRaw
 } from 'vue-router';
-import { privateGuard, publicGuard } from './route-guards';
+import { adminGuard, privateGuard, publicGuard } from './route-guards';
 
 export const routes: RouteRecordRaw[] = [
   // Secure Pages
@@ -57,6 +57,27 @@ export const routes: RouteRecordRaw[] = [
         beforeEnter: privateGuard
       }
     ]
+  },
+  // Admin Pages
+  {
+    path: `/Admin`,
+    children: [
+      {
+        path: `Accounts`,
+        component: async () =>
+          import(
+            './pages/Admin/Accounts/Accounts.vue'
+          )
+      },
+      {
+        path: `TrustedServers`,
+        component: async () =>
+          import(
+            './pages/Admin/TrustedServers.vue'
+          )
+      }
+    ],
+    beforeEnter: adminGuard
   },
   // Public Pages
   {

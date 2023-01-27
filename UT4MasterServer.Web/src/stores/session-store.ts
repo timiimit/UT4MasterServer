@@ -1,5 +1,5 @@
-import { TypedStorage } from "../utils/typed-storage";
-import { ISession } from "../types/session";
+import { TypedStorage } from "@/utils/typed-storage";
+import { ISession } from "@/types/session";
 import { ref } from "vue";
 
 const _session = ref<ISession | null>(TypedStorage.getItem<ISession>('session'));

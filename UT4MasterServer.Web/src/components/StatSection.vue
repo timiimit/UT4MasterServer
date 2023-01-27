@@ -16,8 +16,8 @@
 </style>
 
 <script setup lang="ts">
-import { IStatisticSection } from '../types/statistic-config';
-import { IStatisticData } from '../types/statistic-data';
+import { IStatisticSection } from '@/types/statistic-config';
+import { IStatisticData } from '@/types/statistic-data';
 import { PropType } from 'vue';
 import StatCard from './StatCard.vue';
 

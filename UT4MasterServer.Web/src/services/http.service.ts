@@ -1,4 +1,4 @@
-import { SessionStore } from "../stores/session-store";
+import { SessionStore } from "@/stores/session-store";
 import AuthenticationService from "./authentication.service";
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -19,13 +19,14 @@ export default class HttpService {
         return form;
     }
 
-    async send<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, method: HttpMethod = 'GET'): Promise<K> {
+    async send<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, method: HttpMethod = 'GET', form = true): Promise<K> {
         const fetchOptions: RequestInit = { method };
         if (options?.body) {
-            fetchOptions.body = this.formEncode(options.body);
+            fetchOptions.body = form ? this.formEncode(options.body) : JSON.stringify(options.body);
         }
 
-        const headers: HeadersInit = { 'Content-Type': 'application/x-www-form-urlencoded' };
+        const headers: HeadersInit = { 'Content-Type': form ? 'application/x-www-form-urlencoded' : 'application/json' };
+
 
         if (SessionStore.token) {
             headers.Authorization = `bearer ${SessionStore.token}`;
@@ -59,16 +60,16 @@ export default class HttpService {
         return this.send<K>(url, options, 'GET');
     }
 
-    async post<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>) {
-        return this.send<K, T>(url, options, 'POST');
+    async post<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, form = true) {
+        return this.send<K, T>(url, options, 'POST', form);
     }
 
-    async put<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>) {
-        return this.send<K, T>(url, options, 'PUT');
+    async put<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, form = true) {
+        return this.send<K, T>(url, options, 'PUT', form);
     }
 
-    async patch<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>) {
-        return this.send<K, T>(url, options, 'PATCH');
+    async patch<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, form = true) {
+        return this.send<K, T>(url, options, 'PATCH', form);
     }
 
     async delete<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>) {

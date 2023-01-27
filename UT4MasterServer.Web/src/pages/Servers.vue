@@ -17,13 +17,13 @@
 </template>
 
 <script lang="ts" setup>
-import { IGameHub } from '../types/game-server';
+import { IGameHub } from '@/types/game-server';
 import { onMounted, shallowRef, computed } from 'vue';
-import Hub from '../components/Hub.vue';
-import MatchList from '../components/MatchList.vue';
-import { ServerStore } from '../stores/server-store';
-import LoadingPanel from '../components/LoadingPanel.vue';
-import { AccountStore } from '../stores/account-store';
+import Hub from '@/components/Hub.vue';
+import MatchList from '@/components/MatchList.vue';
+import { ServerStore } from '@/stores/server-store';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AccountStore } from '@/stores/account-store';
 
 const selectedHubId = shallowRef<string | undefined>(undefined);
 const selectedHub = computed(() => ServerStore.hubs.find((h) => h.attributes.UT_SERVERINSTANCEGUID_s === selectedHubId.value));

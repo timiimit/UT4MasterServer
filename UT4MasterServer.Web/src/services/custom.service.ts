@@ -1,4 +1,4 @@
-import { IPlayerCard } from '../types/player-card';
+import { IPlayerCard } from '@/types/player-card';
 import HttpService from './http.service';
 
 export default class CustomService extends HttpService {

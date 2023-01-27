@@ -1,11 +1,11 @@
-import { SessionStore as SessionStore } from '../stores/session-store';
-import { ILoginRequest } from '../types/login-request';
+import { SessionStore as SessionStore } from '@/stores/session-store';
+import { ILoginRequest } from '@/types/login-request';
 import HttpService from './http.service';
-import { ISession, IVerifySession } from '../types/session';
-import { GrantType } from '../enums/grant-type';
-import { IRefreshSessionRequest } from '../types/refresh-session-request';
-import { IAuthCodeResponse } from '../types/auth-code-response';
-import { AccountStore } from '../stores/account-store';
+import { ISession, IVerifySession } from '@/types/session';
+import { GrantType } from '@/enums/grant-type';
+import { IRefreshSessionRequest } from '@/types/refresh-session-request';
+import { IAuthCodeResponse } from '@/types/auth-code-response';
+import { AccountStore } from '@/stores/account-store';
 
 export default class AuthenticationService extends HttpService {
     private baseUrl = `${__BACKEND_URL}/account/api/oauth`;

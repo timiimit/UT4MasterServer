@@ -25,7 +25,7 @@ div {
 </style>
 
 <script setup lang="ts">
-import { IGameHub } from '../types/game-server';
+import { IGameHub } from '@/types/game-server';
 import { PropType } from 'vue';
 import Match from './Match.vue';
 

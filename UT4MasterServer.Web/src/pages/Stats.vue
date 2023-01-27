@@ -27,19 +27,19 @@
 </template>
 
 <script setup lang="ts">
-import LoadingPanel from '../components/LoadingPanel.vue';
-import { AsyncStatus } from '../types/async-status';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AsyncStatus } from '@/types/async-status';
 import { shallowRef, onMounted, computed } from 'vue';
-import { SessionStore } from '../stores/session-store';
-import StatsService from '../services/stats.service';
-import { StatisticWindow } from '../enums/statistic-window';
-import { IAccount } from '../types/account';
-import { Statistic } from '../enums/statistic';
-import { IStatisticSection } from '../types/statistic-config';
-import StatSection from '../components/StatSection.vue';
-import { IStatisticData } from '../types/statistic-data';
-import Autocomplete from '../components/Autocomplete.vue';
-import { AccountStore } from '../stores/account-store';
+import { SessionStore } from '@/stores/session-store';
+import StatsService from '@/services/stats.service';
+import { StatisticWindow } from '@/enums/statistic-window';
+import { IAccount } from '@/types/account';
+import { Statistic } from '@/enums/statistic';
+import { IStatisticSection } from '@/types/statistic-config';
+import StatSection from '@/components/StatSection.vue';
+import { IStatisticData } from '@/types/statistic-data';
+import Autocomplete from '@/components/Autocomplete.vue';
+import { AccountStore } from '@/stores/account-store';
 
 const statsStatus = shallowRef(AsyncStatus.OK);
 const statWindow = shallowRef(StatisticWindow.AllTime);

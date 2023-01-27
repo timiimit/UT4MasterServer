@@ -44,14 +44,14 @@
 </template>
 
 <script setup lang="ts">
-import LoadingPanel from '../components/LoadingPanel.vue';
-import { AsyncStatus } from '../types/async-status';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AsyncStatus } from '@/types/async-status';
 import { computed, shallowRef } from 'vue';
-import { validateEmail, validatePassword } from '../utils/validation';
+import { validateEmail, validatePassword } from '@/utils/validation';
 import CryptoJS from 'crypto-js';
 import { useRouter } from 'vue-router';
-import AccountService from '../services/account.service';
-import { valid as vValid } from '../directives/valid';
+import AccountService from '@/services/account.service';
+import { valid as vValid } from '@/directives/valid';
 import { VueRecaptcha } from 'vue-recaptcha';
 
 const username = shallowRef('');
