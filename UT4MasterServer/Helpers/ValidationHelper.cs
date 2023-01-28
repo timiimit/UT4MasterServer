@@ -20,7 +20,6 @@ public static class ValidationHelper
 		};
 	}
 
-
 	public static bool ValidateEmail(string email)
 	{
 		if (email.Length < 6 || email.Length > 64)
