@@ -147,29 +147,6 @@ public sealed class AccountController : JsonAPIController
 		return Json(arr);
 	}
 
-	[HttpGet("public/accounts")]
-	public async Task<IActionResult> GetAllAccounts()
-	{
-		if (User.Identity is not EpicUserIdentity authenticatedUser)
-			return Unauthorized();
-
-		var accounts = await accountService.GetAllAccountsAsync();
-		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for all accounts");
-
-		// create json response
-		var arr = new JArray();
-		// TODO: Limit to 1000 for now, just to not allow unlimited access to the accounts collection. Should be replaced with paging or a search function at some point.
-		foreach (var account in accounts.Take(1000))
-		{
-			var obj = new JObject();
-			obj.Add("id", account.ID.ToString());
-			obj.Add("displayName", account.Username);
-			arr.Add(obj);
-		}
-
-		return Json(arr);
-	}
-
 	#endregion
 
 	#region UNIMPORTANT API

@@ -40,15 +40,15 @@
 </template>
 
 <script setup lang="ts">
-import LoadingPanel from '../components/LoadingPanel.vue';
-import { AsyncStatus } from '../types/async-status';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AsyncStatus } from '@/types/async-status';
 import { computed, shallowRef } from 'vue';
 import CryptoJS from 'crypto-js';
-import AuthenticationService from '../services/authentication.service';
-import { SessionStore } from '../stores/session-store';
+import AuthenticationService from '@/services/authentication.service';
+import { SessionStore } from '@/stores/session-store';
 import { useRouter } from 'vue-router';
-import { GrantType } from '../enums/grant-type';
-import { validatePassword } from '../utils/validation';
+import { GrantType } from '@/enums/grant-type';
+import { validatePassword } from '@/utils/validation';
 
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');

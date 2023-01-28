@@ -27,6 +27,14 @@
           <template v-else>
             <HeaderLink text="Stats" path="/Stats" />
           </template>
+          <li class="nav-item dropdown pull-right" v-if="AccountStore.isAdmin">
+            <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
+              @click.stop="showAdminDropdown = !showAdminDropdown">Admin</a>
+            <div class="dropdown-menu" :class="{ 'show': showAdminDropdown }">
+              <HeaderLink text="Accounts" path="/Admin/Accounts" dropdown />
+              <HeaderLink text="Trusted Servers" path="/Admin/TrustedServers" dropdown />
+            </div>
+          </li>
           <li class="nav-item dropdown pull-right" v-if="SessionStore.isAuthenticated">
             <a class="nav-link dropdown-toggle" href="#" role="button" aria-haspopup="true" aria-expanded="false"
               @click.stop="showProfileDropdown = !showProfileDropdown">Profile</a>
@@ -53,13 +61,12 @@
   justify-content: flex-end;
 
   .nav-link.router-link-active,
-  .navbar-nav .show > .nav-link {
+  .navbar-nav .show>.nav-link {
     color: var(--bs-navbar-active-color);
   }
 
   .nav-item.pull-right {
     margin-right: 0;
-    margin-left: 1rem;
   }
 
   .router-link-active {
@@ -85,12 +92,14 @@ import { onMounted, onUnmounted, shallowRef } from 'vue';
 import HeaderLink from './HeaderLink.vue';
 import { useRouter } from 'vue-router';
 import UserInfo from './UserInfo.vue';
-import AuthenticationService from '../services/authentication.service';
-import { SessionStore } from '../stores/session-store';
+import AuthenticationService from '@/services/authentication.service';
+import { SessionStore } from '@/stores/session-store';
+import { AccountStore } from '@/stores/account-store';
 
 const router = useRouter();
 const showProfileDropdown = shallowRef(false);
 const showInstructionsDropdown = shallowRef(false);
+const showAdminDropdown = shallowRef(false);
 const authenticationService = new AuthenticationService();
 const menuExpanded = shallowRef(false);
 
@@ -102,6 +111,7 @@ async function logOut() {
 function closeNav() {
   showProfileDropdown.value = false;
   showInstructionsDropdown.value = false;
+  showAdminDropdown.value = false;
 }
 
 onMounted(() => {

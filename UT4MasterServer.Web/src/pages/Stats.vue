@@ -19,7 +19,7 @@
   </LoadingPanel>
   <LoadingPanel :status="statsStatus">
     <template v-if="accountId">
-      <h5>Viewing stats for: {{ viewingAccount?.displayName }}</h5>
+      <h5>Viewing stats for: {{ viewingAccount?.Username }}</h5>
       <StatSection :data="stats" :section="section" v-for="section in statSections" />
     </template>
     <h5 v-else class="text-center">Select a player to view stats</h5>
@@ -27,19 +27,19 @@
 </template>
 
 <script setup lang="ts">
-import LoadingPanel from '../components/LoadingPanel.vue';
-import { AsyncStatus } from '../types/async-status';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AsyncStatus } from '@/types/async-status';
 import { shallowRef, onMounted, computed } from 'vue';
-import { SessionStore } from '../stores/session-store';
-import StatsService from '../services/stats.service';
-import { StatisticWindow } from '../enums/statistic-window';
-import { IAccount } from '../types/account';
-import { Statistic } from '../enums/statistic';
-import { IStatisticSection } from '../types/statistic-config';
-import StatSection from '../components/StatSection.vue';
-import { IStatisticData } from '../types/statistic-data';
-import Autocomplete from '../components/Autocomplete.vue';
-import { AccountStore } from '../stores/account-store';
+import { SessionStore } from '@/stores/session-store';
+import StatsService from '@/services/stats.service';
+import { StatisticWindow } from '@/enums/statistic-window';
+import { IAccount } from '@/types/account';
+import { Statistic } from '@/enums/statistic';
+import { IStatisticSection } from '@/types/statistic-config';
+import StatSection from '@/components/StatSection.vue';
+import { IStatisticData } from '@/types/statistic-data';
+import Autocomplete from '@/components/Autocomplete.vue';
+import { AccountStore } from '@/stores/account-store';
 
 const statsStatus = shallowRef(AsyncStatus.OK);
 const statWindow = shallowRef(StatisticWindow.AllTime);
@@ -48,7 +48,7 @@ const stats = shallowRef<IStatisticData[]>([]);
 const accountsStatus = shallowRef(AsyncStatus.OK);
 const accountId = shallowRef<string | undefined>(undefined);
 const accounts = computed(() => AccountStore.accounts ?? []);
-const viewingAccount = computed(() => accounts.value.find((a) => a.id === accountId.value));
+const viewingAccount = computed(() => accounts.value.find((a) => a.ID === accountId.value));
 
 const statsService = new StatsService();
 
@@ -382,7 +382,7 @@ function handleParameterChange() {
 }
 
 function handleSelectAccount(account?: IAccount) {
-  accountId.value = account?.id;
+  accountId.value = account?.ID;
   handleParameterChange();
 }
 

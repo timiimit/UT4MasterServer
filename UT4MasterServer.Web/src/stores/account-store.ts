@@ -1,8 +1,9 @@
-import { TypedStorage } from "../utils/typed-storage";
+import { TypedStorage } from "@/utils/typed-storage";
 import { ref } from "vue";
-import { IAccount } from "../types/account";
-import AccountService from "../services/account.service";
+import { IAccount } from "@/types/account";
+import AccountService from "@/services/account.service";
 import { SessionStore } from "./session-store";
+import { AccountFlag } from "@/enums/account-flag";
 
 const _account = ref<IAccount | null>(TypedStorage.getItem<IAccount>('account'));
 const _accounts = ref<IAccount[] | null>(TypedStorage.getItem<IAccount[]>('accounts'));
@@ -23,6 +24,9 @@ export const AccountStore = {
         _accounts.value = accounts;
         TypedStorage.setItem<IAccount[]>('accounts', accounts);
     },
+    get isAdmin() {
+        return _account.value?.Roles?.includes(AccountFlag.Admin);
+    },
     async fetchUserAccount() {
         try {
             _account.value = SessionStore.session?.account_id ? await _accountService.getAccount(SessionStore.session.account_id) : null;
@@ -34,6 +38,7 @@ export const AccountStore = {
     async fetchAllAccounts() {
         try {
             _accounts.value = await _accountService.getAllAccounts();
+            console.debug('accounts', _accounts.value);
         }
         catch (err: unknown) {
             console.error('Error fetching all accounts:', err);

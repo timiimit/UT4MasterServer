@@ -43,9 +43,9 @@ div {
 </style>
 
 <script setup lang="ts">
-import { IGameServer } from '../types/game-server';
+import { IGameServer } from '@/types/game-server';
 import { PropType, shallowRef } from 'vue';
-import { AccountStore } from '../stores/account-store';
+import { AccountStore } from '@/stores/account-store';
 
 defineProps({
     match: {
@@ -61,8 +61,8 @@ function toggleShowPlayers() {
 }
 
 function getPlayerName(id: string) {
-    const player = AccountStore.accounts?.find((a) => a.id === id);
-    return player?.displayName;
+    const player = AccountStore.accounts?.find((a) => a.ID === id);
+    return player?.Username;
 }
 </script>
 

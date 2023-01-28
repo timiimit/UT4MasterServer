@@ -1,7 +1,7 @@
 import { ref } from "vue";
-import { IGameHub, IGameServer } from "../types/game-server";
-import ServerService from "../services/server.service";
-import { AsyncStatus } from "../types/async-status";
+import { IGameHub, IGameServer } from "@/types/game-server";
+import ServerService from "@/services/server.service";
+import { AsyncStatus } from "@/types/async-status";
 
 const _allServers = ref<IGameServer[]>([]);
 const _hubs = ref<IGameHub[]>([]);
@@ -43,7 +43,6 @@ export const ServerStore = {
                     };
                     return hub;
                 });
-            console.debug('Hubs', _hubs.value);
             _status.value = AsyncStatus.OK;
         }
         catch (err: unknown) {

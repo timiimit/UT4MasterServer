@@ -2,7 +2,7 @@
   <div class="navbar navbar-primary bg-light user-info">
     <div class="container">
       <div>
-        <label><RouterLink to="/Profile/PlayerCard">Username:</RouterLink></label> {{ AccountStore.account?.displayName ?? SessionStore.username }}
+        <label><RouterLink to="/Profile/PlayerCard">Username:</RouterLink></label> {{ AccountStore.account?.Username ?? SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">
@@ -41,11 +41,11 @@
 
 <script setup lang="ts">
 import { shallowRef, onMounted } from 'vue';
-import AuthenticationService from '../services/authentication.service';
-import { AsyncStatus } from '../types/async-status';
+import AuthenticationService from '@/services/authentication.service';
+import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from './LoadingPanel.vue';
-import { AccountStore } from '../stores/account-store';
-import { SessionStore } from '../stores/session-store';
+import { AccountStore } from '@/stores/account-store';
+import { SessionStore } from '@/stores/session-store';
 import CopyButton from './CopyButton.vue';
 
 const service = new AuthenticationService();

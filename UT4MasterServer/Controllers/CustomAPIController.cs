@@ -65,17 +65,4 @@ public sealed class CustomAPIController : JsonAPIController
 	{
 		return Redirect($"https://{configuration.Value.WebsiteDomain}/Login");
 	}
-
-	[HttpGet("api/playerCard/{id}")]
-	public async Task<IActionResult> GetPlayerCard(string id)
-	{
-		// Epic doesn't require any authentication to serve player card, there is nothing sensitive here
-		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
-		if (account == null)
-		{
-			return NotFound();
-		}
-
-		return Json(account);
-	}
 }

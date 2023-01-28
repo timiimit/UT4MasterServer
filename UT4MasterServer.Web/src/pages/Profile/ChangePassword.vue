@@ -40,16 +40,16 @@
 </template>
 
 <script setup lang="ts">
-import { IChangePasswordRequest } from '../../types/change-password-request';
+import { IChangePasswordRequest } from '@/types/change-password-request';
 import { shallowRef, computed } from 'vue';
-import { valid as vValid } from '../../directives/valid';
+import { valid as vValid } from '@/directives/valid';
 import CryptoJS from 'crypto-js';
-import AccountService from '../../services/account.service';
-import { AsyncStatus } from '../../types/async-status';
+import AccountService from '@/services/account.service';
+import { AsyncStatus } from '@/types/async-status';
 import { useRouter } from 'vue-router';
-import LoadingPanel from '../../components/LoadingPanel.vue';
-import { AccountStore } from '../../stores/account-store';
-import { validatePassword } from '../../utils/validation';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AccountStore } from '@/stores/account-store';
+import { validatePassword } from '@/utils/validation';
 
 const accountService = new AccountService();
 const router = useRouter();
@@ -70,7 +70,7 @@ const errorMessage = shallowRef('Error changing email. Please try again.');
 
 async function handleSubmit() {
   submitAttempted.value = true;
-  if (!formValid.value || !AccountStore.account?.displayName) {
+  if (!formValid.value || !AccountStore.account?.ID) {
     return;
   }
   try {
