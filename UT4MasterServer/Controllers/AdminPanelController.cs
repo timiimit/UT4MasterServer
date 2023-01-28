@@ -230,10 +230,14 @@ public sealed class AdminPanelController : ControllerBase
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
 		if (account is null)
+		{
 			return NotFound(new ErrorResponse() { ErrorMessage = $"Failed to find account {id}" });
+		}
 
 		if (account.Flags.HasFlag(AccountFlags.Moderator) || account.Flags.HasFlag(AccountFlags.Admin))
+		{
 			throw new UnauthorizedAccessException("Cannot change password of other admins or moderators");
+		}
 
 		// passwords should already be hashed, but check its length just in case
 		if (!ValidationHelper.ValidatePassword(newPassword))
@@ -286,7 +290,9 @@ public sealed class AdminPanelController : ControllerBase
 
 		var file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
 		if (file is null)
+		{
 			return NotFound(new ErrorResponse() { ErrorMessage = "File not found" });
+		}
 
 		return new FileContentResult(file.RawContent, "application/octet-stream");
 	}
@@ -308,11 +314,15 @@ public sealed class AdminPanelController : ControllerBase
 		else
 		{
 			if (admin.Account.Flags.HasFlag(AccountFlags.Admin) && account.Flags.HasFlag(AccountFlags.Admin))
+			{
 				throw new UnauthorizedAccessException("Cannot delete account of other admin");
+			}
 
 			if (admin.Account.Flags.HasFlag(AccountFlags.Moderator) &&
 				(account.Flags.HasFlag(AccountFlags.Admin) || account.Flags.HasFlag(AccountFlags.Moderator)))
+			{
 				throw new UnauthorizedAccessException("Cannot delete account of other admin or moderator");
+			}
 
 			await accountService.RemoveAccountAsync(account.ID);
 		}
@@ -331,7 +341,9 @@ public sealed class AdminPanelController : ControllerBase
 	private bool IsSpecialClientID(EpicID id)
 	{
 		if (id == ClientIdentification.Game.ID || id == ClientIdentification.ServerInstance.ID || id == ClientIdentification.Launcher.ID)
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -340,14 +352,20 @@ public sealed class AdminPanelController : ControllerBase
 	private async Task<(Session Session, Account Account)> VerifyAdmin()
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			throw new UnauthorizedAccessException("User not logged in");
+		}
 
 		var account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
+		{
 			throw new UnauthorizedAccessException("User not found");
+		}
 
 		if (!account.Flags.HasFlag(AccountFlags.Admin) && !account.Flags.HasFlag(AccountFlags.Moderator))
+		{
 			throw new UnauthorizedAccessException("User has insufficient privileges");
+		}
 
 		return (user.Session, account);
 	}
