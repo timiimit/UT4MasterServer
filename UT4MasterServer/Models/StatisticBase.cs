@@ -768,13 +768,13 @@ public class StatisticBase
 	public int? FlagGrabs { get; set; }
 
 	[BsonIgnoreIfNull]
-	public int? AttackerScore { get; set; }
+	public double? AttackerScore { get; set; }
 
 	[BsonIgnoreIfNull]
-	public int? DefenderScore { get; set; }
+	public double? DefenderScore { get; set; }
 
 	[BsonIgnoreIfNull]
-	public int? SupporterScore { get; set; }
+	public double? SupporterScore { get; set; }
 
 	[BsonIgnoreIfNull]
 	public int? TeamKills { get; set; }
