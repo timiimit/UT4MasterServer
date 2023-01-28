@@ -23,7 +23,7 @@ public sealed class CloudStorageService
 		cloudStorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
 	}
 
-	public async Task EnsureSystemfilesExistAsync()
+	public async Task EnsureSystemFilesExistAsync()
 	{
 		// get a list of already stored system files
 		var stored = await ListFilesAsync(EpicID.Empty);

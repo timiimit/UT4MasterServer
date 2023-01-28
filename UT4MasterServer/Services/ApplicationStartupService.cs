@@ -28,7 +28,7 @@ namespace UT4MasterServer.Services
 			await statisticsService.CreateIndexesAsync();
 
 			logger.LogInformation("Initializing MongoDB CloudStorage.");
-			await cloudStorageService.EnsureSystemfilesExistAsync();
+			await cloudStorageService.EnsureSystemFilesExistAsync();
 
 			logger.LogInformation("Initializing MongoDB Clients.");
 			await clientService.UpdateDefaultClientsAsync();
