@@ -171,9 +171,24 @@ public sealed class MatchmakingService
 		return -1;
 	}
 
+	[Obsolete("SessionID can change without our knowledge while the match is going on. Consider using DoesClientOwnGameServerWithPlayerAsync instead.")]
 	public async Task<bool> DoesSessionOwnGameServerWithPlayerAsync(EpicID sessionID, EpicID accountID)
 	{
 		var filterSession = Builders<GameServer>.Filter.Eq(x => x.SessionID, sessionID);
+		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
+		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
+		var options = new CountOptions()
+		{
+			Limit = 1
+		};
+
+		var result = await serverCollection.CountDocumentsAsync(filterSession & (filterPrivatePlayers | filterPublicPlayers), options);
+		return result > 0;
+	}
+
+	public async Task<bool> DoesClientOwnGameServerWithPlayerAsync(EpicID clientID, EpicID accountID)
+	{
+		var filterSession = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
 		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
 		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
 		var options = new CountOptions()

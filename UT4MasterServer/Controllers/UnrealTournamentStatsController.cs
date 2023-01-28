@@ -86,7 +86,7 @@ public sealed class UnrealTournamentStatsController : JsonAPIController
 
 		if (user.Session.AccountID != accountId)
 		{
-			bool isMultiplayerMatch = await matchmakingService.DoesSessionOwnGameServerWithPlayerAsync(user.Session.ID, accountId);
+			bool isMultiplayerMatch = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountId);
 
 			// NOTE: In debug we allow anyone to post stats for easier testing.
 			//       Normally only trusted servers are allowed to post stats

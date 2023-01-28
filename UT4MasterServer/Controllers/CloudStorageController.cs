@@ -135,15 +135,12 @@ public sealed class CloudStorageController : JsonAPIController
 		{
 			// cannot modify other's files
 
-			var isServerWithPlayer = await matchmakingService.DoesSessionOwnGameServerWithPlayerAsync(user.Session.ID, accountID);
-
-			// unless you are a game server with this player
-			if (!isServerWithPlayer)
+			// unless you are a game server with this player and are modifying this player's stats file
+			var isServerWithPlayer = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountID);
+			if (!isServerWithPlayer || filename != "stats.json")
+			{
 				return Unauthorized();
-
-			// and are modifying this player's stats file
-			if (filename != "stats.json")
-				return Unauthorized();
+			}
 		}
 
 		await cloudStorageService.UpdateFileAsync(accountID, filename, Request.BodyReader);
