@@ -97,21 +97,6 @@ public sealed class AccountController : JsonAPIController
 		obj.Add("cabinedMode", false);
 		obj.Add("hasHashedEmail", false);
 
-		var flags = new List<string>();
-
-		var flagNamesAll = Enum.GetNames<AccountFlags>();
-		var flagValuesAll = Enum.GetValues<AccountFlags>();
-
-		for (int i = 0; i < flagNamesAll.Length; i++)
-		{
-			if (account.Flags.HasFlag(flagValuesAll[i]))
-			{
-				flags.Add(flagNamesAll[i]);
-			}
-		}
-		var flagsArray = new JArray(flags);
-		obj.Add("flags", flagsArray);
-
 		return Json(obj.ToString(Newtonsoft.Json.Formatting.None));
 	}
 
@@ -156,29 +141,6 @@ public sealed class AccountController : JsonAPIController
 			}
 
 			obj.Add("externalAuths", new JObject());
-			arr.Add(obj);
-		}
-
-		return Json(arr);
-	}
-
-	[HttpGet("public/accounts")]
-	public async Task<IActionResult> GetAllAccounts()
-	{
-		if (User.Identity is not EpicUserIdentity authenticatedUser)
-			return Unauthorized();
-
-		var accounts = await accountService.GetAllAccountsAsync();
-		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for all accounts");
-
-		// create json response
-		var arr = new JArray();
-		// TODO: Limit to 1000 for now, just to not allow unlimited access to the accounts collection. Should be replaced with paging or a search function at some point.
-		foreach (var account in accounts.Take(1000))
-		{
-			var obj = new JObject();
-			obj.Add("id", account.ID.ToString());
-			obj.Add("displayName", account.Username);
 			arr.Add(obj);
 		}
 

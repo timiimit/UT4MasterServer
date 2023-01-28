@@ -61,8 +61,8 @@ function toggleShowPlayers() {
 }
 
 function getPlayerName(id: string) {
-    const player = AccountStore.accounts?.find((a) => a.id === id);
-    return player?.displayName;
+    const player = AccountStore.accounts?.find((a) => a.ID === id);
+    return player?.Username;
 }
 </script>
 

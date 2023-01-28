@@ -7,6 +7,7 @@ import HttpService from './http.service';
 
 export default class AccountService extends HttpService {
     private baseUrl = `${__BACKEND_URL}/account/api`;
+    private personaBaseUrl = `${__BACKEND_URL}/persona/api`;
 
     async register(request: IRegisterRequest) {
         return await this.post<unknown, IRegisterRequest>(`${this.baseUrl}/create/account`, { body: request });
@@ -25,10 +26,10 @@ export default class AccountService extends HttpService {
     }
 
     async getAccount(id: string) {
-        return await this.get<IAccount>(`${this.baseUrl}/public/account/${id}`);
+        return await this.get<IAccount>(`${this.personaBaseUrl}/account/${id}`);
     }
 
     async getAllAccounts() {
-        return await this.get<IAccount[]>(`${this.baseUrl}/public/accounts`);
+        return await this.get<IAccount[]>(`${this.personaBaseUrl}/accounts`);
     }
 }

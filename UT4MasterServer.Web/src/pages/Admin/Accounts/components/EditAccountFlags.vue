@@ -52,7 +52,7 @@ async function handleSubmit() {
   submitAttempted.value = true;
   try {
     status.value = AsyncStatus.BUSY;
-    await adminService.setFlagsForAccount(props.account.id, flags.value);
+    await adminService.setFlagsForAccount(props.account.ID, flags.value);
     status.value = AsyncStatus.OK;
   }
   catch (err: unknown) {
@@ -64,7 +64,7 @@ async function handleSubmit() {
 async function loadData() {
   try {
     status.value = AsyncStatus.BUSY;
-    const [allPossibleFlags, accountFlags] = await Promise.all([adminService.getAccountFlagOptions(), adminService.getFlagsForAccount(props.account.id)]);
+    const [allPossibleFlags, accountFlags] = await Promise.all([adminService.getAccountFlagOptions(), adminService.getFlagsForAccount(props.account.ID)]);
     flags.value = accountFlags;
     allFlags.value = allPossibleFlags;
     status.value = AsyncStatus.OK;

@@ -19,7 +19,7 @@
                     <!-- TODO: add paging -->
                     <template v-for="account in filteredAccounts.slice(0, 50)" :key="objectHash(account)">
                         <tr :class="{'table-light': account.editing }">
-                            <td>{{ account.displayName }}</td>
+                            <td>{{ account.Username }}</td>
                             <td width="10%">
                                 <button class="btn btn-sm btn-smaller btn-primary edit-button"
                                     @click="account.editing = !account.editing">{{
@@ -62,7 +62,7 @@ const accounts = ref<IGridAccount[]>([]);
 const status = shallowRef(AsyncStatus.OK);
 const filterText = shallowRef('');
 
-const filteredAccounts = computed(() => accounts.value.filter((a) => a.displayName.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())));
+const filteredAccounts = computed(() => accounts.value.filter((a) => a.Username.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())));
 
 async function loadAccounts() {
     try {

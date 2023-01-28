@@ -10,12 +10,12 @@
         <tbody>
           <tr class="table-primary">
             <th scope="row">
-              <img class="avatar" :src="`/assets/avatars/${playerCard?.Avatar ?? 'UT.Avatar.0'}.png`" />
-              {{ playerCard?.Username }}
+              <img class="avatar" :src="`/assets/avatars/${AccountStore.account?.Avatar ?? 'UT.Avatar.0'}.png`" />
+              {{ AccountStore.account?.Username }}
             </th>
             <td>
-              <img class="flag" :src="`/assets/flags/${playerCard?.CountryFlag ?? 'Unreal'}.png`" />
-              {{ playerCard?.CountryFlag }}
+              <img class="flag" :src="`/assets/flags/${AccountStore.account?.CountryFlag ?? 'Unreal'}.png`" />
+              {{ AccountStore.account?.CountryFlag }}
             </td>
           </tr>
           <tr class="table-primary">
@@ -23,17 +23,17 @@
               Level (Experience)
             </th>
             <td>
-              {{ playerCard?.Level }} ({{ playerCard?.XP }})
+              {{ AccountStore.account?.Level }} ({{ AccountStore.account?.XP }})
             </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">Challenge Stars</th>
-            <td>{{ playerCard?.BlueStars }}<span class="blue star">★</span>{{ playerCard?.GoldStars }}<span
+            <td>{{ AccountStore.account?.BlueStars }}<span class="blue star">★</span>{{ AccountStore.account?.GoldStars }}<span
                 class="gold star">★</span></td>
           </tr>
           <tr class="table-primary">
             <th scope="row">ID</th>
-            <td>{{ playerCard?.ID }}</td>
+            <td>{{ AccountStore.account?.ID }}</td>
           </tr>
         </tbody>
       </table>
@@ -66,21 +66,5 @@ img.avatar {
 </style>
 
 <script lang="ts" setup>
-import { SessionStore } from '@/stores/session-store';
-import { onMounted, shallowRef } from 'vue';
-import CustomService from '@/services/custom.service';
-import { IPlayerCard } from '@/types/player-card';
-
-const customService = new CustomService();
-
-const playerCard = shallowRef<IPlayerCard | undefined>(undefined);
-
-async function fetchProfile() {
-  if (SessionStore.session) {
-    playerCard.value = await customService.getPlayerCard(SessionStore.session.account_id);
-  }
-}
-
-onMounted(fetchProfile);
-
+import { AccountStore } from '@/stores/account-store';
 </script>

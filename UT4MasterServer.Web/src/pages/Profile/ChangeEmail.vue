@@ -42,7 +42,7 @@ const accountService = new AccountService();
 const router = useRouter();
 
 const status = shallowRef(AsyncStatus.OK);
-const currentEmail = shallowRef(AccountStore.account?.email);
+const currentEmail = shallowRef(AccountStore.account?.Email);
 const newEmail = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 

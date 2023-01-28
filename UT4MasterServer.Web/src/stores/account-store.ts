@@ -25,7 +25,7 @@ export const AccountStore = {
         TypedStorage.setItem<IAccount[]>('accounts', accounts);
     },
     get isAdmin() {
-        return _account.value?.flags?.includes(AccountFlag.Admin);
+        return _account.value?.Roles?.includes(AccountFlag.Admin);
     },
     async fetchUserAccount() {
         try {
@@ -38,6 +38,7 @@ export const AccountStore = {
     async fetchAllAccounts() {
         try {
             _accounts.value = await _accountService.getAllAccounts();
+            console.debug('accounts', _accounts.value);
         }
         catch (err: unknown) {
             console.error('Error fetching all accounts:', err);

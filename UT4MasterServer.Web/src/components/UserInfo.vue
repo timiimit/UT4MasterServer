@@ -2,7 +2,7 @@
   <div class="navbar navbar-primary bg-light user-info">
     <div class="container">
       <div>
-        <label><RouterLink to="/Profile/PlayerCard">Username:</RouterLink></label> {{ AccountStore.account?.displayName ?? SessionStore.username }}
+        <label><RouterLink to="/Profile/PlayerCard">Username:</RouterLink></label> {{ AccountStore.account?.Username ?? SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">

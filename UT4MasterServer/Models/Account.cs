@@ -150,6 +150,24 @@ public class Account
 	[BsonIgnore]
 	public int LevelStockLimited => Math.Min(50, (int)Level);
 
+	[BsonIgnore]
+	public string[]? Roles
+	{
+		get
+		{
+			var flags = new List<string>();
+			var flagNamesAll = Enum.GetNames<AccountFlags>();
+			var flagValuesAll = Enum.GetValues<AccountFlags>();
+			for (int i = 0; i < flagNamesAll.Length; i++)
+			{
+				if (Flags.HasFlag(flagValuesAll[i]))
+				{
+					flags.Add(flagNamesAll[i]);
+				}
+			}
+			return flags.ToArray();
+		}
+	}
 
 	public bool CheckPassword(string password, bool allowPasswordGrant)
 	{
