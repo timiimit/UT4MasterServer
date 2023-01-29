@@ -75,8 +75,8 @@ public sealed class PersonaController : JsonAPIController
 		foreach (var account in accounts.Take(1000))
 		{
 			var obj = new JObject();
-			obj.Add("id", account.ID.ToString());
-			obj.Add("displayName", account.Username);
+			obj.Add("ID", account.ID.ToString());
+			obj.Add("Username", account.Username);
 			arr.Add(obj);
 		}
 
