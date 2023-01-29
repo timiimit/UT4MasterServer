@@ -6,16 +6,6 @@ public class StatisticBase
 {
 	public readonly static List<string> StatisticProperties = new()
 	{
-		"skillrating",
-		"tdmskillrating",
-		"ctfskillrating",
-		"dmskillrating",
-		"showdownskillrating",
-		"flagrunskillrating",
-		"rankedduelskillrating",
-		"rankedctfskillrating",
-		"rankedshowdownskillrating",
-		"rankedflagrunskillrating",
 		"matchesplayed",
 		"matchesquit",
 		"timeplayed",
@@ -163,16 +153,6 @@ public class StatisticBase
 
 	public StatisticBase(StatisticBase statisticBase)
 	{
-		SkillRating = statisticBase.SkillRating;
-		TDMSkillRating = statisticBase.TDMSkillRating;
-		CTFSkillRating = statisticBase.CTFSkillRating;
-		DMSkillRating = statisticBase.DMSkillRating;
-		ShowdownSkillRating = statisticBase.ShowdownSkillRating;
-		FlagRunSkillRating = statisticBase.FlagRunSkillRating;
-		RankedDuelSkillRating = statisticBase.RankedDuelSkillRating;
-		RankedCTFSkillRating = statisticBase.RankedCTFSkillRating;
-		RankedShowdownSkillRating = statisticBase.RankedShowdownSkillRating;
-		RankedFlagRunSkillRating = statisticBase.RankedFlagRunSkillRating;
 		MatchesPlayed = statisticBase.MatchesPlayed;
 		MatchesQuit = statisticBase.MatchesQuit;
 		TimePlayed = statisticBase.TimePlayed;
@@ -317,36 +297,6 @@ public class StatisticBase
 	}
 
 	#region Quick Look
-	[BsonIgnoreIfNull]
-	public int? SkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? TDMSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? CTFSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? DMSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? ShowdownSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? FlagRunSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? RankedDuelSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? RankedCTFSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? RankedShowdownSkillRating { get; set; }
-
-	[BsonIgnoreIfNull]
-	public int? RankedFlagRunSkillRating { get; set; }
-
 	[BsonIgnoreIfNull]
 	public int? MatchesPlayed { get; set; }
 
