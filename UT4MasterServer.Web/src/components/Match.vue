@@ -30,6 +30,7 @@ div {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    max-width: 80vw;
 }
 
 .alert {

@@ -1,10 +1,11 @@
 <template>
     <div class="hub list-group-item list-group-item-action" :class="{ 'active-hub': showMatches }"
         @click="showMatches = !showMatches">
-        <h5 :title="hub?.attributes.UT_SERVERNAME_s">{{ hub.attributes.UT_SERVERNAME_s }}</h5>
-        <div>
-            IP: {{ hub.serverAddress }}
-            <CopyButton :subject="hub.serverAddress" />
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="server-name" :title="hub.attributes.UT_SERVERNAME_s">{{ hub.attributes.UT_SERVERNAME_s }}</div>
+            <div class="text-info" title="Trusted Hub">
+                <FontAwesomeIcon v-if="trustedHub" icon="fa-solid fa-certificate" />
+            </div>
         </div>
         <div class="d-flex justify-content-between">
             <div>{{ hub.matches.length }} Matches</div>
@@ -25,25 +26,21 @@
         background-color: var(--bs-list-group-action-hover-bg);
     }
 
-    h5,
-    div {
-        text-transform: none;
+    .server-name {
+        font-size: 1.1rem;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
-    }
-
-    span.hub-ip {
-        user-select: all;
+        max-width: 80vw;
     }
 }
 </style>
 
 <script setup lang="ts">
 import { IGameHub } from '@/types/game-server';
-import { PropType, shallowRef } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { PropType, shallowRef, computed } from 'vue';
 import MatchList from './MatchList.vue';
-import CopyButton from '@/components/CopyButton.vue';
 
 const props = defineProps({
     hub: {
@@ -53,5 +50,7 @@ const props = defineProps({
 });
 
 const showMatches = shallowRef(false);
+
+const trustedHub = computed(() => props.hub.attributes.UT_SERVERTRUSTLEVEL_i && props.hub.attributes.UT_SERVERTRUSTLEVEL_i < 2);
 
 </script>

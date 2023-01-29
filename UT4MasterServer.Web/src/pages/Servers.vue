@@ -47,7 +47,7 @@ import { SessionStore } from '@/stores/session-store';
 
 const filterText = shallowRef('');
 const hideEmpty = shallowRef(true);
-const sortedHubs = computed(() => orderBy(ServerStore.hubs, 'totalPlayers', 'desc'));
+const sortedHubs = computed(() => orderBy(ServerStore.hubs, ['attributes.UT_SERVERTRUSTLEVEL_i', 'totalPlayers'], ['asc', 'desc']));
 const emptyHubs = computed(() => sortedHubs.value.filter((h) => !(h.totalPlayers === 0 && hideEmpty.value)));
 const filteredHubs = computed(() => emptyHubs.value.filter((h) => h.attributes.UT_SERVERNAME_s.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())));
 
