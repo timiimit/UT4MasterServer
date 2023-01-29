@@ -1,19 +1,19 @@
 <template>
-    <button class="copy-button btn btn-primary btn-sm" :class="classes" @click="copy">
-        {{ copied ? 'Copied' : 'Copy' }}
+    <button class="copy-button btn btn-icon" :class="classes" @click.stop="copy" :title="copied ? 'Copied to clipboard' : title">
+        <FontAwesomeIcon v-if="!copied" icon="fa-regular fa-copy" />
+        <FontAwesomeIcon v-else icon="fa-solid fa-check" />
     </button>
 </template>
 
 <style lang="scss" scoped>
-    button.copy-button {
-        min-width: 50px;
-        transition: background-color color 0.5s ease-in-out;
-    }
+button.copy-button {
+    transition: background-color color 0.5s ease-in-out;
+}
 </style>
 
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue';
-
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps({
     subject: {
@@ -23,6 +23,10 @@ const props = defineProps({
     customClass: {
         type: String,
         default: ''
+    },
+    title: {
+        type: String,
+        default: 'Copy'
     }
 });
 
@@ -30,7 +34,7 @@ const copied = shallowRef(false);
 
 const classes = computed(() => ({
     [props.customClass]: true,
-    'btn-success': copied.value
+    'text-success': copied.value
 }));
 
 function copy() {

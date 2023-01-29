@@ -1,10 +1,5 @@
 <template>
-    <div class="list-group">
-        <a class="list-group-item list-group-item-action active">
-            Matches: {{ hub.attributes.UT_SERVERNAME_s }}
-            <!-- Commenting this out for now because MOTD contains some weird proprietary markup -->
-            <!-- <div class="server-message">{{ hub.attributes.UT_SERVERMOTD_s }}</div> -->
-        </a>
+    <div class="list-group pt-2">
         <Match :match="match" v-for="match in hub.matches" />
         <a v-if="!hub.matches.length" class="list-group-item list-group-item-action">
             <div class="match">
