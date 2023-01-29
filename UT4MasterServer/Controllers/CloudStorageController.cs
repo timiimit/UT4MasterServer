@@ -100,13 +100,15 @@ public sealed class CloudStorageController : JsonAPIController
 
 			// Send a fake response in order to fix #109 (which is a game bug)
 			var playerName = "New Player";
+			var playerID = EpicID.Empty;
 			var account = await accountService.GetAccountAsync(accountID);
 			if (account != null)
 			{
 				playerName = account.Username;
+				playerID = account.ID;
 			}
 
-			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\"}}") };
+			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",StatsID:\"{playerID}\",Version:0}}") };
 		}
 
 		if (isStatsFile)
@@ -133,15 +135,12 @@ public sealed class CloudStorageController : JsonAPIController
 		{
 			// cannot modify other's files
 
-			var isServerWithPlayer = await matchmakingService.DoesSessionOwnGameServerWithPlayerAsync(user.Session.ID, accountID);
-
-			// unless you are a game server with this player
-			if (!isServerWithPlayer)
+			// unless you are a game server with this player and are modifying this player's stats file
+			var isServerWithPlayer = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountID);
+			if (!isServerWithPlayer || filename != "stats.json")
+			{
 				return Unauthorized();
-
-			// and are modifying this player's stats file
-			if (filename != "stats.json")
-				return Unauthorized();
+			}
 		}
 
 		await cloudStorageService.UpdateFileAsync(accountID, filename, Request.BodyReader);

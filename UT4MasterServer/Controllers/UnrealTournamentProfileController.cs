@@ -86,7 +86,7 @@ public sealed class UnrealTournamentProfileController : JsonAPIController
 			rvn = 1;
 
 		// game sends empty json object as body
-		if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0" || jsonBody != JObject.Parse("{}"))
+		if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0" || !JToken.DeepEquals(jsonBody, JObject.Parse("{}")))
 		{
 			logger.LogWarning($"QueryProfile received unexpected data! k:\"{clientKind}\" p:\"{profileId}\" rvn:\"{rvn}\" body:\"{body}\"");
 		}
