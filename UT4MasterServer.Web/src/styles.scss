@@ -28,13 +28,15 @@ body {
     position: relative;
 }
 
-.btn.btn-smaller {
-    padding: 2px 4px;
-}
+.btn {
+    &.btn-smaller {
+        padding: 2px 4px;
+    }
 
-.flex-space-btw {
-    display: flex;
-    justify-content: space-between;
+    &.btn-icon {
+        padding: 0;
+        font-size: 1rem;
+    }
 }
 
 .list-group-item {

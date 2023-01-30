@@ -2,7 +2,9 @@
   <div class="navbar navbar-primary bg-light user-info">
     <div class="container">
       <div>
-        <label><RouterLink to="/Profile/PlayerCard">Username:</RouterLink></label> {{ AccountStore.account?.Username ?? SessionStore.username }}
+        <label>
+          <RouterLink to="/Profile/PlayerCard">Username:</RouterLink>
+        </label> {{ AccountStore.account?.Username ?? SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">
@@ -63,10 +65,10 @@ async function getAuthCode() {
   }
 }
 
-function copyAuthCode() {
-  if (authCode.value) {
-    navigator.clipboard.writeText(authCode.value);
+onMounted(() => {
+  if (AccountStore.account === null) {
+    AccountStore.fetchUserAccount();
   }
-}
+})
 
 </script>

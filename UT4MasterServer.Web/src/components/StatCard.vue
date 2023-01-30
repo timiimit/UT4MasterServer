@@ -46,6 +46,7 @@ import { IStatisticData } from '@/types/statistic-data';
 import { PropType } from 'vue';
 import { Statistic } from '@/enums/statistic';
 import { StatisticDisplay } from '@/enums/statistic-display';
+import { toHoursMinutesSeconds } from '@/utils/utilities';
 
 const props = defineProps({
     card: {
@@ -97,24 +98,4 @@ function getStatValueDisplay(stat: Statistic): string {
 
     return `${value}`;
 }
-
-function toHoursMinutesSeconds(rawtime: number) {
-    var hours = Math.floor(rawtime / 3600);
-    var minutes = Math.floor((rawtime - (hours * 3600)) / 60);
-    var seconds = rawtime - hours * 3600 - minutes * 60;
-    var hoursString = `${hours}`;
-    var minutesString = `${minutes}`;
-    var secondsString = `${seconds}`;
-    if (hours < 10) {
-        hoursString = "0" + hours;
-    }
-    if (minutes < 10) {
-        minutesString = "0" + minutes;
-    }
-    if (seconds < 10) {
-        secondsString = "0" + seconds;
-    }
-    return `${hoursString}:${minutesString}:${secondsString}`;
-}
-
 </script>
