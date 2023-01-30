@@ -77,6 +77,9 @@ public sealed class PersonaController : JsonAPIController
 			var obj = new JObject();
 			obj.Add("ID", account.ID.ToString());
 			obj.Add("Username", account.Username);
+			var roles = new JArray();
+			roles.Add(account.Roles);
+			obj.Add("Roles", roles);
 			arr.Add(obj);
 		}
 

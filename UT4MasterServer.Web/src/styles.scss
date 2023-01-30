@@ -36,6 +36,10 @@ body {
     &.btn-icon {
         padding: 0;
         font-size: 1rem;
+
+        &.btn-lg {
+            font-size: 1.25rem;
+        }
     }
 }
 

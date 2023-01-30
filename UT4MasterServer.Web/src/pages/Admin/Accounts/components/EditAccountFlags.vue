@@ -36,7 +36,9 @@ const props = defineProps({
     type: Object as PropType<IAccount>,
     required: true
   }
-})
+});
+
+const emit = defineEmits(['updated']);
 
 const adminService = new AdminService();
 
@@ -54,6 +56,7 @@ async function handleSubmit() {
     status.value = AsyncStatus.BUSY;
     await adminService.setFlagsForAccount(props.account.ID, flags.value);
     status.value = AsyncStatus.OK;
+    emit('updated');
   }
   catch (err: unknown) {
     status.value = AsyncStatus.ERROR;

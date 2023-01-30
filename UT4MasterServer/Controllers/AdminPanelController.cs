@@ -85,9 +85,9 @@ public sealed class AdminPanelController : ControllerBase
 
 		AccountFlags flags = AccountFlags.None;
 
-		for (int i = 0; i < flagNames.Length; i++)
+		for (int i = 0; i < flagNamesAll.Length; i++)
 		{
-			if (flagNamesAll.Contains(flagNames[i]))
+			if (flagNames.Contains(flagNamesAll[i]))
 			{
 				flags |= flagValuesAll[i];
 			}
@@ -111,11 +111,11 @@ public sealed class AdminPanelController : ControllerBase
 
 
 	[HttpPost("clients/new")]
-	public async Task<IActionResult> CreateClient()
+	public async Task<IActionResult> CreateClient([FromBody]string name)
 	{
 		await VerifyAdmin();
 
-		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString());
+		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString(), name);
 		await clientService.UpdateAsync(client);
 
 		return Ok(client);
@@ -200,8 +200,17 @@ public sealed class AdminPanelController : ControllerBase
 		return Ok(ret);
 	}
 
+	[HttpPost("trusted_servers")]
+	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer server)
+	{
+		await VerifyAdmin();
+		// TODO: validate server.ID is valid Client ID and not already in use and owner ID is a valid Account ID and has HubOwner flag
+
+		await trustedGameServerService.UpdateAsync(server);
+		return Ok();
+	}
+
 	[HttpPatch("trusted_servers/{id}")]
-	[HttpPost("trusted_servers/{id}")]
 	public async Task<IActionResult> UpdateTrustedServer(string id, [FromBody] TrustedGameServer server)
 	{
 		await VerifyAdmin();
