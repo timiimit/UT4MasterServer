@@ -93,11 +93,11 @@ public sealed class AdminPanelController : ControllerBase
 
 
 	[HttpPost("clients/new")]
-	public async Task<IActionResult> CreateClient()
+	public async Task<IActionResult> CreateClient([FromBody]string name)
 	{
 		await VerifyAdmin();
 
-		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString());
+		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString(), name);
 		await clientService.UpdateAsync(client);
 
 		return Ok(client);
@@ -182,8 +182,19 @@ public sealed class AdminPanelController : ControllerBase
 		return Ok(ret);
 	}
 
+	[HttpPost("trusted_servers")]
+	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer server)
+	{
+		await VerifyAdmin();
+
+		server.OwnerID = EpicID.GenerateNew();
+		// TODO: validate server.ID is valid Client ID and not already in use
+
+		await trustedGameServerService.UpdateAsync(server);
+		return Ok();
+	}
+
 	[HttpPatch("trusted_servers/{id}")]
-	[HttpPost("trusted_servers/{id}")]
 	public async Task<IActionResult> UpdateTrustedServer(string id, [FromBody] TrustedGameServer server)
 	{
 		await VerifyAdmin();

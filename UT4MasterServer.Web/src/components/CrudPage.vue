@@ -12,7 +12,9 @@
                 </div>
                 <div class="action-buttons">
                     <slot name="action-buttons" />
-                    <button v-if="$slots.add" class="btn btn-sm btn-primary" @click="adding = true;">Add</button>
+                    <button v-if="$slots.add" class="btn btn-lg btn-icon" @click="adding = true;" title="Add">
+                        <FontAwesomeIcon icon="fa-solid fa-plus" />
+                    </button>
                 </div>
             </div>
             <slot />
@@ -39,6 +41,7 @@
 </style>
 
 <script lang="ts" setup>
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { shallowRef } from 'vue';
 
 
