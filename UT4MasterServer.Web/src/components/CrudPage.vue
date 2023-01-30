@@ -7,7 +7,7 @@
         </div>
         <div v-else>
             <div class="header">
-                <div class="filters">
+                <div class="filters d-flex justify-content-between align-items-center">
                     <slot name="filters" />
                 </div>
                 <div class="action-buttons">
@@ -29,6 +29,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    .filters {
+        flex-grow: 1;
+
+        :deep(>div) {
+            flex-basis: 30%;
+        }
+    }
 
     .action-buttons {
         justify-content: flex-end;

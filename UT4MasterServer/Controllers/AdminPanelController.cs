@@ -204,9 +204,7 @@ public sealed class AdminPanelController : ControllerBase
 	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer server)
 	{
 		await VerifyAdmin();
-
-		server.OwnerID = EpicID.GenerateNew();
-		// TODO: validate server.ID is valid Client ID and not already in use
+		// TODO: validate server.ID is valid Client ID and not already in use and owner ID is a valid Account ID and has HubOwner flag
 
 		await trustedGameServerService.UpdateAsync(server);
 		return Ok();

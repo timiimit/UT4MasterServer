@@ -5,14 +5,16 @@
                 @added="loadTrustedServers(); p.cancel();" />
         </template>
         <template #filters>
-            <input type="text" class="form-control" placeholder="Search..." v-model="filterText" />
+            <div>
+                <input type="text" class="form-control" placeholder="Filter by Client Name..." v-model="filterText" />
+            </div>
         </template>
         <LoadingPanel :status="status" @load="loadTrustedServers" auto-load>
             <table class="table">
                 <thead>
                     <tr>
                         <th>Client Name</th>
-                        <th>Owner ID</th>
+                        <th>Owner</th>
                         <th>Trust Level</th>
                         <th />
                     </tr>
@@ -22,7 +24,7 @@
                         :key="objectHash(trustedServer)">
                         <tr :class="{ 'table-light': trustedServer.editing }">
                             <td>{{ trustedServer.client?.name }}</td>
-                            <td>{{ trustedServer.ownerID }}</td>
+                            <td>{{ trustedServer.owner?.Username }}</td>
                             <td>{{ GameServerTrust[trustedServer.trustLevel] }}</td>
                             <td class="actions">
                                 <button class="btn btn-icon" @click="trustedServer.editing = !trustedServer.editing">
@@ -53,7 +55,7 @@
     </CrudPage>
 </template>
 
-<style lang="scss" >
+<style lang="scss" scoped>
 td.actions {
     width: 6rem;
 
@@ -78,10 +80,13 @@ import { IClient } from '../Clients/types/client';
 import EditTrustedServer from './components/EditTrustedServer.vue';
 import { GameServerTrust } from '@/enums/game-server-trust';
 import { usePaging } from '@/hooks/use-paging.hook';
+import { IAccount } from '@/types/account';
+import { AccountStore } from '@/stores/account-store';
 
 interface IGridTrustedServer extends ITrustedGameServer {
     editing?: boolean;
     client?: IClient;
+    owner?: IAccount;
 }
 
 const adminService = new AdminService();
@@ -96,11 +101,12 @@ const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 async function loadTrustedServers() {
     try {
         status.value = AsyncStatus.BUSY;
-        const [clients, servers] = await Promise.all([adminService.getClients(), adminService.getTrustedServers()]);
+        const [clients, servers, accounts] = await Promise.all([adminService.getClients(), adminService.getTrustedServers(), AccountStore.fetchAllAccounts()]);
         allClients.value = clients;
         trustedServers.value = servers.map((s) => ({
             ...s,
-            client: clients.find((c) => c.id === s.id)
+            client: clients.find((c) => c.id === s.id),
+            owner: accounts?.find((a) => a.ID === s.ownerID)
         }));
         status.value = AsyncStatus.OK;
     } catch (err: unknown) {

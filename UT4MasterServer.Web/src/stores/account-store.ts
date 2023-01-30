@@ -38,7 +38,7 @@ export const AccountStore = {
     async fetchAllAccounts() {
         try {
             _accounts.value = await _accountService.getAllAccounts();
-            console.debug('accounts', _accounts.value);
+            return _accounts.value;
         }
         catch (err: unknown) {
             console.error('Error fetching all accounts:', err);

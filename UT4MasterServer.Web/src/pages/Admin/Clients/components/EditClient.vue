@@ -13,8 +13,8 @@
                 <div class="form-group row">
                     <label for="name" class="col-sm-12 col-form-label">Secret</label>
                     <div class="col-sm-6">
-                        <input type="text" class="form-control" id="secret" name="secret" v-model="secret" required minlength="32" maxlength="32" />
-                        <div class="invalid-feedback">Secret must be 32 characters</div>
+                        <input type="text" class="form-control" id="secret" name="secret" v-model="secret" required minlength="20"  />
+                        <div class="invalid-feedback">Secret must be at least 20 characters</div>
                     </div>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
@@ -49,7 +49,7 @@ const status = shallowRef(AsyncStatus.OK);
 const name = shallowRef(props.client.name);
 const secret = shallowRef(props.client.secret);
 const submitAttempted = shallowRef(false);
-const formValid = computed(() => name.value.length && secret.value.length === 32);
+const formValid = computed(() => name.value.length && secret.value.length >= 20);
 const errorMessage = shallowRef('Error updating client. Please try again.');
 
 async function handleSubmit() {

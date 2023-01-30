@@ -4,7 +4,9 @@
             <AddClient :all-clients="clients" @cancel="p.cancel" @added="loadClients(); p.cancel();" />
         </template>
         <template #filters>
-            <input type="text" class="form-control" placeholder="Search..." v-model="filterText" />
+            <div>
+                <input type="text" class="form-control" placeholder="Filter by Name..." v-model="filterText" />
+            </div>
         </template>
         <LoadingPanel :status="status" @load="loadClients" auto-load>
             <table class="table">
@@ -75,7 +77,7 @@ interface IGridClient extends IClient {
 const adminService = new AdminService();
 const clients = ref<IGridClient[]>([]);
 const status = shallowRef(AsyncStatus.OK);
-const filterText  = shallowRef('');
+const filterText = shallowRef('');
 const filteredClients = computed(() => clients.value.filter((c) => c.name.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())));
 
 const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();

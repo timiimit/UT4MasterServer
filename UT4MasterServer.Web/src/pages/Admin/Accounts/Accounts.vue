@@ -1,7 +1,13 @@
 <template>
     <CrudPage title="Accounts">
         <template #filters>
-            <input type="text" class="form-control" placeholder="Search..." v-model="filterText" />
+            <div>
+                <input type="text" class="form-control" placeholder="Filter by Username..." v-model="filterText" />
+            </div>
+            <div>
+                <Multiselect placeholder="Filter by Roles..." v-model="filterRoles" :options="flagOptions"
+                    mode="tags" />
+            </div>
         </template>
         <LoadingPanel :status="status" @load="loadAccounts" auto-load>
             <table class="table">
@@ -15,8 +21,8 @@
                 <tbody>
                     <template v-for="account in filteredAccounts.slice(pageStart, pageEnd)" :key="objectHash(account)">
                         <tr :class="{ 'table-light': account.editing }">
-                            <td>{{ account.Username }}</td>
-                            <td>{{  account.Roles?.join(', ') }}</td>
+                            <td class="username">{{ account.Username }}</td>
+                            <td>{{ account.Roles?.join(', ') }}</td>
                             <td class="actions">
                                 <button class="btn btn-icon" @click="account.editing = !account.editing">
                                     <FontAwesomeIcon icon="fa-regular fa-pen-to-square" />
@@ -40,6 +46,10 @@
 </template>
 
 <style lang="scss" scoped>
+td.username {
+    width: 30%;
+}
+
 td.actions {
     width: 6rem;
 
@@ -64,6 +74,7 @@ import { AccountStore } from '@/stores/account-store';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { AccountFlag } from '@/enums/account-flag';
 import AdminService from '@/services/admin-service';
+import Multiselect from '@vueform/multiselect';
 
 interface IGridAccount extends IAccount {
     editing?: boolean;
@@ -74,15 +85,23 @@ const adminService = new AdminService();
 const accounts = ref<IGridAccount[]>([]);
 const status = shallowRef(AsyncStatus.OK);
 const filterText = shallowRef('');
+const filterRoles = shallowRef<AccountFlag[]>([]);
+
+const allFlags = shallowRef<string[]>([]);
+const flagOptions = computed(() => allFlags.value.map((f) => ({ label: f, value: f })));
 
 const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 
-const filteredAccounts = computed(() => accounts.value.filter((a) => a.Username.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())));
+const usernameFiltered = computed(() => accounts.value.filter((a) => a.Username.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())));
+
+const filteredAccounts = computed(() => usernameFiltered.value.filter((a) => filterRoles.value.length === 0 || a.Roles?.some((r) => filterRoles.value.includes(r))));
 
 async function loadAccounts() {
     try {
         status.value = AsyncStatus.BUSY;
-        accounts.value = await accountService.getAllAccounts();
+        const [allPossibleFlags, allAccounts] = await Promise.all([adminService.getAccountFlagOptions(), accountService.getAllAccounts()]);
+        allFlags.value = allPossibleFlags;
+        accounts.value = allAccounts;
         status.value = AsyncStatus.OK;
     } catch (err: unknown) {
         status.value = AsyncStatus.ERROR;

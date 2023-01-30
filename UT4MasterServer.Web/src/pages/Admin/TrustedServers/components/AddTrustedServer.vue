@@ -6,12 +6,23 @@
                 <div class="form-group row">
                     <label for="name" class="col-sm-12 col-form-label">Client</label>
                     <div class="col-sm-6">
-                        <select class="form-select" v-model="clientId" required>
+                        <select class="form-select" v-model="clientId" name="clientId" required>
                             <option :value="option.id" v-for="option in clientOptions">
                                 {{ option.name }}
                             </option>
                         </select>
                         <div class="invalid-feedback">Client is required</div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="name" class="col-sm-12 col-form-label">Owner</label>
+                    <div class="col-sm-6">
+                        <select class="form-select" v-model="ownerId" name="ownerId" required>
+                            <option :value="option.value" v-for="option in ownerOptions">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">Owner is required</div>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -35,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, computed, PropType } from 'vue';
+import { shallowRef, computed, PropType, onMounted } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import AdminService from '@/services/admin-service';
@@ -43,6 +54,8 @@ import { useClientOptions } from '../../Clients/hooks/use-client-options.hook';
 import { IClient } from '../../Clients/types/client';
 import { ITrustedGameServer } from '../types/trusted-game-server';
 import { GameServerTrust } from '@/enums/game-server-trust';
+import { AccountStore } from '@/stores/account-store';
+import { AccountFlag } from '@/enums/account-flag';
 
 const props = defineProps({
     clients: {
@@ -63,12 +76,18 @@ const adminService = new AdminService();
 
 const status = shallowRef(AsyncStatus.OK);
 const clientId = shallowRef('');
+const ownerId = shallowRef('');
 const trustLevel = shallowRef(GameServerTrust.Untrusted);
 const submitAttempted = shallowRef(false);
-const formValid = computed(() => clientId.value.length);
+const formValid = computed(() => clientId.value.length && ownerId.value.length);
 const errorMessage = shallowRef('Error adding trusted server. Please try again.');
 
 const clientOptions = getClientOptionsForTrustedServer(props.clients, props.servers);
+const ownerOptions = computed(() => {
+    const hubOwners = AccountStore.accounts?.filter((a) => a.Roles?.includes(AccountFlag.HubOwner));
+    return hubOwners?.map((a) => ({ text: a.Username, value: a.ID }));
+
+});
 const trustLevelOptions = [
     { text: 'Epic', value: GameServerTrust.Epic },
     { text: 'Trusted', value: GameServerTrust.Trusted },
@@ -82,6 +101,7 @@ async function handleSubmit() {
         status.value = AsyncStatus.BUSY;
         const trustedServer: Partial<ITrustedGameServer> = {
             id: clientId.value,
+            ownerID: ownerId.value,
             trustLevel: trustLevel.value
         };
         console.debug('create', trustedServer);
@@ -95,5 +115,20 @@ async function handleSubmit() {
     }
 }
 
-</script>
+async function loadAccounts() {
+    if (AccountStore.accounts?.length) {
+        return;
+    }
+    try {
+        status.value = AsyncStatus.BUSY;
+        await AccountStore.fetchAllAccounts();
+        status.value = AsyncStatus.OK;
+    }
+    catch (err: unknown) {
+        status.value = AsyncStatus.ERROR;
+        errorMessage.value = 'Error loading accounts.';
+    }
+}
 
+onMounted(loadAccounts);
+</script>

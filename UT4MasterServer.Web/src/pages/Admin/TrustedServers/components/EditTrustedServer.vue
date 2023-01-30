@@ -14,6 +14,17 @@
                     </div>
                 </div>
                 <div class="form-group row">
+                    <label for="name" class="col-sm-12 col-form-label">Owner</label>
+                    <div class="col-sm-6">
+                        <select class="form-select" v-model="ownerId" name="ownerId" required>
+                            <option :value="option.value" v-for="option in ownerOptions">
+                                {{ option.text }}
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">Owner is required</div>
+                    </div>
+                </div>
+                <div class="form-group row">
                     <label for="name" class="col-sm-12 col-form-label">Trust Level</label>
                     <div class="col-sm-6">
                         <select class="form-select" v-model="trustLevel" required>
@@ -41,12 +52,14 @@
 </style>
 
 <script setup lang="ts">
-import { shallowRef, computed, PropType } from 'vue';
+import { shallowRef, computed, PropType, onMounted } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import AdminService from '@/services/admin-service';
 import { IGridTrustedServer, ITrustedGameServer } from '../types/trusted-game-server';
 import { GameServerTrust } from '@/enums/game-server-trust';
+import { AccountStore } from '@/stores/account-store';
+import { AccountFlag } from '@/enums/account-flag';
 
 const props = defineProps({
     server: {
@@ -61,12 +74,18 @@ const adminService = new AdminService();
 
 const status = shallowRef(AsyncStatus.OK);
 const clientId = shallowRef(props.server.id);
+const ownerId = shallowRef(props.server.ownerID);
 const trustLevel = shallowRef(props.server.trustLevel);
 const submitAttempted = shallowRef(false);
 const formValid = computed(() => clientId.value.length);
 const errorMessage = shallowRef('Error updating trusted server. Please try again.');
 
 const clientOptions = [props.server.client!];
+const ownerOptions = computed(() => {
+    const hubOwners = AccountStore.accounts?.filter((a) => a.Roles?.includes(AccountFlag.HubOwner));
+    return hubOwners?.map((a) => ({ text: a.Username, value: a.ID }));
+
+});
 const trustLevelOptions = [
     { text: 'Epic', value: GameServerTrust.Epic },
     { text: 'Trusted', value: GameServerTrust.Trusted },
@@ -80,6 +99,7 @@ async function handleSubmit() {
         status.value = AsyncStatus.BUSY;
         const trustedServer: ITrustedGameServer = {
             ...props.server,
+            ownerID: ownerId.value,
             trustLevel: trustLevel.value
         };
         await adminService.updateTrustedServer(props.server.id, trustedServer);
@@ -91,4 +111,20 @@ async function handleSubmit() {
         errorMessage.value = (err as Error)?.message;
     }
 }
+async function loadAccounts() {
+    if (AccountStore.accounts?.length) {
+        return;
+    }
+    try {
+        status.value = AsyncStatus.BUSY;
+        await AccountStore.fetchAllAccounts();
+        status.value = AsyncStatus.OK;
+    }
+    catch (err: unknown) {
+        status.value = AsyncStatus.ERROR;
+        errorMessage.value = 'Error loading accounts.';
+    }
+}
+
+onMounted(loadAccounts);
 </script>
