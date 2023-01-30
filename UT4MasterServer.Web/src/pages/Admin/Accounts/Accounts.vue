@@ -8,6 +8,7 @@
                 <thead>
                     <tr>
                         <th>Username</th>
+                        <th>Roles</th>
                         <th />
                     </tr>
                 </thead>
@@ -15,6 +16,7 @@
                     <template v-for="account in filteredAccounts.slice(pageStart, pageEnd)" :key="objectHash(account)">
                         <tr :class="{ 'table-light': account.editing }">
                             <td>{{ account.Username }}</td>
+                            <td>{{  account.Roles?.join(', ') }}</td>
                             <td class="actions">
                                 <button class="btn btn-icon" @click="account.editing = !account.editing">
                                     <FontAwesomeIcon icon="fa-regular fa-pen-to-square" />
@@ -86,7 +88,7 @@ async function loadAccounts() {
 }
 
 function canDelete(account: IGridAccount) {
-    return AccountStore.account?.ID !== account.ID;
+    return AccountStore.account?.ID !== account.ID && !account.Roles?.includes('Admin');
 }
 
 async function handleDelete(account: IGridAccount) {
