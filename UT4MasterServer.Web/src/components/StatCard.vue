@@ -59,7 +59,7 @@ const props = defineProps({
     }
 });
 
-const imgIconUrl = new URL(`@/assets/weapons/${props.card.headingIcon}`, import.meta.url).href;
+const imgIconUrl = new URL(`../assets/weapons/${props.card.headingIcon}`, import.meta.url).href;
 
 function getAccuracy(): string {
     const shots = props.card.stats.find((s) => s.includes('Shots'));
