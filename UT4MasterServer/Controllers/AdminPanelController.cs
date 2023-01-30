@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Helpers;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
@@ -224,7 +225,7 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[HttpPatch("change_password/{id}")]
-	public async Task<IActionResult> ChangePassword(string id, [FromBody] string newPassword, [FromBody] bool? iAmSure)
+	public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminPanelChangePasswordRequest body)
 	{
 		await VerifyAdmin();
 
@@ -240,7 +241,7 @@ public sealed class AdminPanelController : ControllerBase
 		}
 
 		// passwords should already be hashed, but check its length just in case
-		if (!ValidationHelper.ValidatePassword(newPassword))
+		if (!ValidationHelper.ValidatePassword(body.NewPassword))
 		{
 			return BadRequest(new ErrorResponse()
 			{
@@ -248,15 +249,15 @@ public sealed class AdminPanelController : ControllerBase
 			});
 		}
 
-		if (iAmSure != true)
+		if (body.IAmSure != true)
 		{
 			return BadRequest(new ErrorResponse()
 			{
-				ErrorMessage = $"'areYouSure' was not 'true'"
+				ErrorMessage = $"'iAmSure' was not 'true'"
 			});
 		}
 
-		await accountService.UpdateAccountPasswordAsync(account, newPassword);
+		await accountService.UpdateAccountPasswordAsync(account, body.NewPassword);
 
 		// logout user to make sure they remember they changed password by being forced to log in again,
 		// as well as prevent anyone else from using this account after successful password change.
