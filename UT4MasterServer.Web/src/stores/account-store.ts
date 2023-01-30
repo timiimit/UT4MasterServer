@@ -8,6 +8,7 @@ import { AccountFlag } from "@/enums/account-flag";
 const _account = ref<IAccount | null>(TypedStorage.getItem<IAccount>('account'));
 const _accounts = ref<IAccount[] | null>(TypedStorage.getItem<IAccount[]>('accounts'));
 const _accountService = new AccountService();
+const _adminRoles = [AccountFlag.Admin, AccountFlag.Moderator];
 
 export const AccountStore = {
     get account() {
@@ -25,7 +26,7 @@ export const AccountStore = {
         TypedStorage.setItem<IAccount[]>('accounts', accounts);
     },
     get isAdmin() {
-        return _account.value?.Roles?.includes(AccountFlag.Admin);
+        return _account.value?.Roles?.some((r) => _adminRoles.includes(r));
     },
     async fetchUserAccount() {
         try {

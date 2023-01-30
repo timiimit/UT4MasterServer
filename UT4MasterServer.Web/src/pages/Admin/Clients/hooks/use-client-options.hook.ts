@@ -2,10 +2,11 @@ import { ITrustedGameServer } from "../../TrustedServers/types/trusted-game-serv
 import { IClient } from "../types/client";
 
 export function useClientOptions() {
-    const reservedNames = ['Launcher (our website)', 'Game', 'ServerInstance'];
+    // These are hardcoded in ClientIdentification.cs, we could add an endpoint to retrieve them to avoid the duplcated hardcoding at some point, but I don't think these are likely to ever change.
+    const reservedIds = ['34a02cf8f4414e29b15921876da36f9a', '1252412dc7704a9690f6ea4611bc81ee', '6ff43e743edc4d1dbac3594877b4bed9'];
 
     function isReservedClient(client: IClient) {
-        return reservedNames.includes(client.name);
+        return reservedIds.includes(client.id);
     }
 
     function isValidName(name: string, allClients: IClient[]) {

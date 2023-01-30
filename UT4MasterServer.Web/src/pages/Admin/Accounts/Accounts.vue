@@ -110,7 +110,12 @@ async function loadAccounts() {
 }
 
 function canDelete(account: IGridAccount) {
-    return AccountStore.account?.ID !== account.ID && !account.Roles?.includes(AccountFlag.Admin);
+    const accountIsUser = AccountStore.account?.ID === account.ID;
+    const accountIsAdmin = account.Roles?.includes(AccountFlag.Admin);
+    const accountIsModerator = account.Roles?.includes(AccountFlag.Moderator);
+    const userIsModerator = AccountStore.account?.Roles?.includes(AccountFlag.Moderator);
+
+    return !accountIsUser && !accountIsAdmin && !(userIsModerator && (accountIsAdmin || accountIsModerator));
 }
 
 async function handleDelete(account: IGridAccount) {
