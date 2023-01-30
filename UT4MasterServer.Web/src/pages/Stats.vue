@@ -4,7 +4,7 @@
     <div class="form-group row">
       <div class="col-sm-6">
         <label for="accountId" class="col-sm-6 col-form-label">Account</label>
-        <Autocomplete :value="accountId" :items="accounts" item-key="id" search-key="displayName"
+        <Autocomplete :value="accountId" :items="accounts" item-key="ID" search-key="Username"
           @select="handleSelectAccount" />
       </div>
       <div class="col-sm-6">
