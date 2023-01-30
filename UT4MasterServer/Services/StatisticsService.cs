@@ -23,7 +23,7 @@ public sealed class StatisticsService
 		statisticsCollection = dbContext.Database.GetCollection<Statistic>("statistics");
 	}
 
-	public async Task CreateIndexes()
+	public async Task CreateIndexesAsync()
 	{
 		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
 			{
@@ -591,6 +591,8 @@ public sealed class StatisticsService
 		return merged;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// This method will delete statistics that are older than X <paramref name="days"/>
 	/// </summary>
@@ -623,5 +625,12 @@ public sealed class StatisticsService
 		return result.DeletedCount;
 	}
 
-	#endregion
+	public async Task<long?> RemoveStatisticsByAccountAsync(EpicID accountID)
+	{
+		var result = await statisticsCollection.DeleteManyAsync(x => x.AccountID == accountID);
+		if (!result.IsAcknowledged)
+			return null;
+
+		return result.DeletedCount;
+	}
 }

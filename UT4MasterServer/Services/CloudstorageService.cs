@@ -23,15 +23,29 @@ public sealed class CloudStorageService
 		cloudStorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
 	}
 
-	public async Task UpdateSystemfiles()
+	public async Task EnsureSystemFilesExistAsync()
 	{
+		// get a list of already stored system files
+		var stored = await ListFilesAsync(EpicID.Empty);
+
+		// get a list of default system files
 		var files = Directory.EnumerateFiles("CloudstorageSystemfiles");
+
+		// ensure that all default files exist in db
 		foreach (var file in files)
 		{
+			// get just the filename part of file path
 			var filename = Path.GetFileName(file);
 			if (filename == null)
 				continue;
 
+			if (stored.Where(x => x.Filename == filename).Any())
+			{
+				// file already in db
+				continue;
+			}
+
+			// file is not in db, save it
 			using var stream = File.OpenRead(file);
 			var reader = PipeReader.Create(stream);
 			await UpdateFileAsync(EpicID.Empty, filename, reader);
@@ -74,7 +88,6 @@ public sealed class CloudStorageService
 
 	public async Task<List<CloudFile>> ListFilesAsync(EpicID accountID)
 	{
-		// TODO: make sure that CloudFile.RawContent remains empty after db retrieval
 		FindOptions<CloudFile> options = new FindOptions<CloudFile>()
 		{
 			Projection = Builders<CloudFile>.Projection.Exclude(x => x.RawContent)
@@ -86,6 +99,15 @@ public sealed class CloudStorageService
 	public async Task DeleteFileAsync(EpicID accountID, string filename)
 	{
 		await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
+	}
+
+	public async Task<int?> RemoveFilesByAccountAsync(EpicID accountID)
+	{
+		var result = await cloudStorageCollection.DeleteManyAsync(GetFilter(accountID));
+		if (!result.IsAcknowledged)
+			return null;
+
+		return (int)result.DeletedCount;
 	}
 
 

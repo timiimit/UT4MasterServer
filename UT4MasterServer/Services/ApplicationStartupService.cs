@@ -25,27 +25,13 @@ namespace UT4MasterServer.Services
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Configuring MongoDB indexes.");
-			await statisticsService.CreateIndexes();
+			await statisticsService.CreateIndexesAsync();
 
 			logger.LogInformation("Initializing MongoDB CloudStorage.");
-			await cloudStorageService.UpdateSystemfiles();
+			await cloudStorageService.EnsureSystemFilesExistAsync();
 
 			logger.LogInformation("Initializing MongoDB Clients.");
-			await clientService.UpdateAsync(new Client(
-				ClientIdentification.Launcher.ID,
-				ClientIdentification.Launcher.Secret,
-				nameof(ClientIdentification.Launcher) + " (our website)"
-			));
-			await clientService.UpdateAsync(new Client(
-				ClientIdentification.Game.ID,
-				ClientIdentification.Game.Secret,
-				nameof(ClientIdentification.Game)
-			));
-			await clientService.UpdateAsync(new Client(
-				ClientIdentification.ServerInstance.ID,
-				ClientIdentification.ServerInstance.Secret,
-				nameof(ClientIdentification.ServerInstance)
-			));
+			await clientService.UpdateDefaultClientsAsync();
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
