@@ -26,6 +26,7 @@ export default class HttpService {
         }
 
         const headers: HeadersInit = { 'Content-Type': form ? 'application/x-www-form-urlencoded' : 'application/json' };
+        headers['SameSite'] = 'Strict';
 
 
         if (SessionStore.token) {
@@ -72,7 +73,7 @@ export default class HttpService {
         return this.send<K, T>(url, options, 'PATCH', form);
     }
 
-    async delete<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>) {
-        return this.send<K, T>(url, options, 'DELETE');
+    async delete<K = unknown, T = unknown>(url: string, options?: HttpRequestOptions<T>, form = true) {
+        return this.send<K, T>(url, options, 'DELETE', form);
     }
 }

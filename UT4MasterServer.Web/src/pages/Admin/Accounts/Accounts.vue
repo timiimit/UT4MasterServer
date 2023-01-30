@@ -27,8 +27,8 @@
                             </td>
                         </tr>
                         <tr v-if="account.editing" class="edit-row table-light">
-                            <td colspan="2">
-                                <EditAccount :account="account" />
+                            <td colspan="3">
+                                <EditAccount :account="account" @updated="handleUpdated(account)" />
                             </td>
                         </tr>
                     </template>
@@ -62,12 +62,15 @@ import { usePaging } from '@/hooks/use-paging.hook';
 import Paging from '@/components/Paging.vue';
 import { AccountStore } from '@/stores/account-store';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { AccountFlag } from '@/enums/account-flag';
+import AdminService from '@/services/admin-service';
 
 interface IGridAccount extends IAccount {
     editing?: boolean;
 }
 
 const accountService = new AccountService();
+const adminService = new AdminService();
 const accounts = ref<IGridAccount[]>([]);
 const status = shallowRef(AsyncStatus.OK);
 const filterText = shallowRef('');
@@ -88,7 +91,7 @@ async function loadAccounts() {
 }
 
 function canDelete(account: IGridAccount) {
-    return AccountStore.account?.ID !== account.ID && !account.Roles?.includes('Admin');
+    return AccountStore.account?.ID !== account.ID && !account.Roles?.includes(AccountFlag.Admin);
 }
 
 async function handleDelete(account: IGridAccount) {
@@ -97,9 +100,8 @@ async function handleDelete(account: IGridAccount) {
     if (confirmDelete) {
         try {
             status.value = AsyncStatus.BUSY;
-            // TODO: api endpoint for delete account
-            //await adminService.deleteAccount(account.id);
-            //loadAccounts();
+            await adminService.deleteAccount(account.ID);
+            loadAccounts();
             status.value = AsyncStatus.OK;
         } catch (err: unknown) {
             status.value = AsyncStatus.ERROR;
@@ -108,5 +110,9 @@ async function handleDelete(account: IGridAccount) {
     }
 }
 
+function handleUpdated(account: IGridAccount) {
+    account.editing = false;
+    loadAccounts();
+}
 
 </script>

@@ -1,3 +1,4 @@
+import { IAdminChangePasswordRequest } from '@/pages/Admin/Accounts/types/admin-change-password-request';
 import { IClient } from '@/pages/Admin/Clients/types/client';
 import { ITrustedGameServer } from '@/pages/Admin/TrustedServers/types/trusted-game-server';
 import HttpService from './http.service';
@@ -16,6 +17,14 @@ export default class AdminService extends HttpService {
 
     async setFlagsForAccount(id: string, flags: string[]) {
         return await this.put<string[]>(`${this.baseUrl}/flags/${id}`, { body: flags }, false);
+    }
+
+    async deleteAccount(id: string) {
+        return await this.delete(`${this.baseUrl}/account/${id}`, { body: true }, false);
+    }
+
+    async changePassword(id: string, request: IAdminChangePasswordRequest) {
+        return await this.patch(`${this.baseUrl}/change_password/${id}`, { body: request }, false);
     }
 
     // Trusted Servers

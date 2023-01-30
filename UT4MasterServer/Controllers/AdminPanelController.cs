@@ -85,9 +85,9 @@ public sealed class AdminPanelController : ControllerBase
 
 		AccountFlags flags = AccountFlags.None;
 
-		for (int i = 0; i < flagNames.Length; i++)
+		for (int i = 0; i < flagNamesAll.Length; i++)
 		{
-			if (flagNamesAll.Contains(flagNames[i]))
+			if (flagNames.Contains(flagNamesAll[i]))
 			{
 				flags |= flagValuesAll[i];
 			}
