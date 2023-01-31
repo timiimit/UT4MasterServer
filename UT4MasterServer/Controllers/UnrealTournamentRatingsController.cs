@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Requests;
-using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -17,11 +16,11 @@ namespace UT4MasterServer.Controllers;
 [Produces("application/json")]
 public sealed class UnrealTournamentRatingController : JsonAPIController
 {
-	private readonly AccountService accountService;
+	private readonly RatingsService ratingsService;
 
-	public UnrealTournamentRatingController(ILogger<SessionController> logger, AccountService accountService) : base(logger)
+	public UnrealTournamentRatingController(ILogger<SessionController> logger, RatingsService ratingsService) : base(logger)
 	{
-		this.accountService = accountService;
+		this.ratingsService = ratingsService;
 	}
 
 	[HttpPost("account/{id}/mmrbulk")]
@@ -80,10 +79,38 @@ public sealed class UnrealTournamentRatingController : JsonAPIController
 	}
 
 	[HttpPost("team/match_result")]
-	public IActionResult MatchResult([FromBody] RatingMatch body)
+	public async Task<IActionResult> MatchResult([FromBody] RatingMatch ratingMatch)
 	{
-		// TODO: update ELO rating
+		switch (ratingMatch.RatingType)
+		{
+			case "SkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.SkillRating);
+				break;
 
-		return NoContent(); // Response: correct response
+			case "TDMSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.TDMSkillRating);
+				break;
+
+			case "CTFSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.CTFSkillRating);
+				break;
+
+			case "ShowdownSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.ShowdownSkillRating);
+				break;
+
+			case "FlagRunSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.FlagRunSkillRating);
+				break;
+
+			case "DMSkillRating":
+				await ratingsService.UpdateDeathmatchRatingsAsync(ratingMatch);
+				break;
+
+			default:
+				return BadRequest("Unknown rating type.");
+		}
+
+		return NoContent();
 	}
 }
