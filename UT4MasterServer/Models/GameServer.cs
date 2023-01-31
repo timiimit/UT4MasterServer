@@ -123,6 +123,8 @@ public class GameServer
 	[BsonElement("OwningClientID")]
 	public EpicID OwningClientID { get; set; } = EpicID.Empty;
 
+	[BsonElement("LastKnownMatchStartTime")]
+	public DateTime LastKnownMatchStartTime { get; set; } = DateTime.UtcNow;
 
 #if DEBUG
 	[BsonElement("SessionAccessToken")]
@@ -276,9 +278,6 @@ public class GameServer
 
 	public void Update(GameServer update)
 	{
-		SessionID = update.SessionID;
-		OwningClientID = update.OwningClientID;
-
 		MaxPublicPlayers = update.MaxPublicPlayers;
 		MaxPrivatePlayers = update.MaxPrivatePlayers;
 		//OpenPublicPlayers = update.OpenPublicPlayers;
@@ -297,10 +296,28 @@ public class GameServer
 		AllowJoinViaPresenceFriendsOnly = update.AllowJoinViaPresenceFriendsOnly;
 		BuildUniqueID = update.BuildUniqueID;
 		LastUpdated = DateTime.UtcNow;
+
+		// Update custom properties
+		SessionID = update.SessionID;
+		OwningClientID = update.OwningClientID;
+
+		var matchDuration = (int?)update.Attributes.Get("UT_MATCHDURATION_i");
+		if (matchDuration is not null)
+		{
+			LastKnownMatchStartTime = DateTime.UtcNow - TimeSpan.FromSeconds(matchDuration.Value);
+		}
 	}
 
 	public JObject ToJson(bool isResponseToClient)
 	{
+		// Do some preprocessing on attributes
+		var attrs = Attributes.ToJObject();
+		if (attrs["UT_MATCHSTATE_s"]?.ToObject<string?>() == "InProgress" && attrs.ContainsKey("UT_MATCHDURATION_i"))
+		{
+			attrs["UT_MATCHDURATION_i"] = (int)(DateTime.UtcNow - LastKnownMatchStartTime).TotalSeconds;
+		}
+
+
 		// build json
 		var obj = new JObject();
 
@@ -308,6 +325,8 @@ public class GameServer
 #if DEBUG
 		obj.Add("UT4MS__SESSION_ID__DEBUG_ONLY_VALUE", SessionID.ToString());
 		obj.Add("UT4MS__SESSION_TOKEN__DEBUG_ONLY_VALUE", SessionAccessToken);
+		obj.Add("UT4MS__OWNING_CLIENT_ID__DEBUG_ONLY_VALUE", OwningClientID.ToString());
+		obj.Add("UT4MS__LAST_KNOWN_MATCH_START_TIME__DEBUG_ONLY_VALUE", LastKnownMatchStartTime.ToStringISO());
 #endif
 		obj.Add("ownerId", OwnerID.ToString().ToUpper());
 		obj.Add("ownerName", OwnerName);
@@ -318,7 +337,7 @@ public class GameServer
 		obj.Add("openPublicPlayers", MaxPublicPlayers - PublicPlayers.Count);
 		obj.Add("maxPrivatePlayers", MaxPrivatePlayers);
 		obj.Add("openPrivatePlayers", MaxPrivatePlayers - PrivatePlayers.Count);
-		obj.Add("attributes", Attributes.ToJObject());
+		obj.Add("attributes", attrs);
 		JArray arr = new JArray();
 		foreach (var player in PublicPlayers)
 		{

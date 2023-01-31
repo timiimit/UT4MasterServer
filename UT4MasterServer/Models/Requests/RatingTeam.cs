@@ -26,9 +26,6 @@ public sealed class RatingMatchInfo
 	[JsonPropertyName("redScore")]
 	public int RedScore { get; set; } = default;
 
-	//[JsonPropertyName("blueScore")]
-	//public int? BlueScore { get; set; } = default;
-
 	[JsonPropertyName("matchLengthSeconds")]
 	public int MatchLength { get; set; } = default;
 }
@@ -38,7 +35,7 @@ public sealed class RatingTeam
 	public sealed class Member
 	{
 		[JsonPropertyName("accountId")]
-		public EpicID AccountID { get; set; } = EpicID.Empty;
+		public string AccountID { get; set; } = string.Empty;
 
 		[JsonPropertyName("score")]
 		public int Score { get; set; } = 0;

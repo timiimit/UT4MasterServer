@@ -32,6 +32,7 @@
               @click.stop="showAdminDropdown = !showAdminDropdown">Admin</a>
             <div class="dropdown-menu" :class="{ 'show': showAdminDropdown }">
               <HeaderLink text="Accounts" path="/Admin/Accounts" dropdown />
+              <HeaderLink text="Clients" path="/Admin/Clients" dropdown />
               <HeaderLink text="Trusted Servers" path="/Admin/TrustedServers" dropdown />
             </div>
           </li>

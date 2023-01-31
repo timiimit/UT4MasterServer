@@ -67,17 +67,26 @@ export const routes: RouteRecordRaw[] = [
         component: async () =>
           import(
             './pages/Admin/Accounts/Accounts.vue'
-          )
+          ),
+          beforeEnter: adminGuard
+      },
+      {
+        path: `Clients`,
+        component: async () =>
+          import(
+            './pages/Admin/Clients/Clients.vue'
+          ),
+        beforeEnter: adminGuard
       },
       {
         path: `TrustedServers`,
         component: async () =>
           import(
-            './pages/Admin/TrustedServers.vue'
-          )
+            './pages/Admin/TrustedServers/TrustedServers.vue'
+          ),
+        beforeEnter: adminGuard
       }
-    ],
-    beforeEnter: adminGuard
+    ]
   },
   // Public Pages
   {

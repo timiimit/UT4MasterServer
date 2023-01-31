@@ -1,20 +1,24 @@
 <template>
-    <a :href="hub ? '#' : undefined" class="hub list-group-item list-group-item-action"
-        :title="hub?.attributes.UT_SERVERNAME_s" :class="{ 'active-hub': selectedHub?.id === hub?.id }">
-        <template v-if="hub">
-            <h5>{{ hub.attributes.UT_SERVERNAME_s }}</h5>
-            <div>IP: <span class="hub-ip">{{ hub.serverAddress }}</span></div>
-            <div class="flex-space-btw">
-                <div>{{ hub.matches.length }} Matches</div>
-                <div>{{ hub.totalPlayers }} Players</div>
+    <div class="hub list-group-item list-group-item-action" :class="{ 'active-hub': showMatches }"
+        @click="showMatches = !showMatches">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="server-name" :title="hub.attributes.UT_SERVERNAME_s">{{ hub.attributes.UT_SERVERNAME_s }}</div>
+            <div class="text-info" title="Trusted Hub">
+                <FontAwesomeIcon v-if="trustedHub" icon="fa-solid fa-certificate" />
             </div>
-        </template>
-        <h5 v-else>No hubs online</h5>
-    </a>
+        </div>
+        <div class="d-flex justify-content-between">
+            <div>{{ hub.matches.length }} Matches</div>
+            <div>{{ hub.totalPlayers }} Players</div>
+        </div>
+        <MatchList v-if="showMatches" :hub="hub" />
+    </div>
 </template>
 
 <style lang="scss" scoped>
 .hub {
+    cursor: pointer;
+
     &.active-hub {
         z-index: 1;
         color: var(--bs-list-group-action-hover-color);
@@ -22,32 +26,31 @@
         background-color: var(--bs-list-group-action-hover-bg);
     }
 
-    h5,
-    div {
-        text-transform: none;
+    .server-name {
+        font-size: 1.1rem;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
-    }
-
-    span.hub-ip {
-        user-select: all;
+        max-width: 80vw;
     }
 }
 </style>
 
 <script setup lang="ts">
 import { IGameHub } from '@/types/game-server';
-import { PropType } from 'vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { PropType, shallowRef, computed } from 'vue';
+import MatchList from './MatchList.vue';
 
-defineProps({
+const props = defineProps({
     hub: {
         type: Object as PropType<IGameHub>,
-        default: undefined
-    },
-    selectedHub: {
-        type: Object as PropType<IGameHub>,
-        default: undefined
+        required: true
     }
 });
+
+const showMatches = shallowRef(false);
+
+const trustedHub = computed(() => props.hub.attributes.UT_SERVERTRUSTLEVEL_i && props.hub.attributes.UT_SERVERTRUSTLEVEL_i < 2);
+
 </script>

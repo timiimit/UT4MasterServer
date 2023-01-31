@@ -23,7 +23,7 @@ public sealed class StatisticsService
 		statisticsCollection = dbContext.Database.GetCollection<Statistic>("statistics");
 	}
 
-	public async Task CreateIndexes()
+	public async Task CreateIndexesAsync()
 	{
 		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
 			{
@@ -54,16 +54,6 @@ public sealed class StatisticsService
 			.Group(k => k.AccountID,
 				   g => new StatisticBase
 				   {
-					   SkillRating = g.Sum(s => s.SkillRating),
-					   TDMSkillRating = g.Sum(s => s.TDMSkillRating),
-					   CTFSkillRating = g.Sum(s => s.CTFSkillRating),
-					   DMSkillRating = g.Sum(s => s.DMSkillRating),
-					   ShowdownSkillRating = g.Sum(s => s.ShowdownSkillRating),
-					   FlagRunSkillRating = g.Sum(s => s.FlagRunSkillRating),
-					   RankedDuelSkillRating = g.Sum(s => s.RankedDuelSkillRating),
-					   RankedCTFSkillRating = g.Sum(s => s.RankedCTFSkillRating),
-					   RankedShowdownSkillRating = g.Sum(s => s.RankedShowdownSkillRating),
-					   RankedFlagRunSkillRating = g.Sum(s => s.RankedFlagRunSkillRating),
 					   MatchesPlayed = g.Sum(s => s.MatchesPlayed),
 					   MatchesQuit = g.Sum(s => s.MatchesQuit),
 					   TimePlayed = g.Sum(s => s.TimePlayed),
@@ -454,16 +444,6 @@ public sealed class StatisticsService
 				AccountID = s.Key,
 				CreatedAt = s.First().CreatedAt,
 				Window = s.First().Window,
-				SkillRating = s.Any(a => a.SkillRating.HasValue) ? s.Sum(sm => sm.SkillRating) : null,
-				TDMSkillRating = s.Any(a => a.TDMSkillRating.HasValue) ? s.Sum(sm => sm.TDMSkillRating) : null,
-				CTFSkillRating = s.Any(a => a.CTFSkillRating.HasValue) ? s.Sum(sm => sm.CTFSkillRating) : null,
-				DMSkillRating = s.Any(a => a.DMSkillRating.HasValue) ? s.Sum(sm => sm.DMSkillRating) : null,
-				ShowdownSkillRating = s.Any(a => a.ShowdownSkillRating.HasValue) ? s.Sum(sm => sm.ShowdownSkillRating) : null,
-				FlagRunSkillRating = s.Any(a => a.FlagRunSkillRating.HasValue) ? s.Sum(sm => sm.FlagRunSkillRating) : null,
-				RankedDuelSkillRating = s.Any(a => a.RankedDuelSkillRating.HasValue) ? s.Sum(sm => sm.RankedDuelSkillRating) : null,
-				RankedCTFSkillRating = s.Any(a => a.RankedCTFSkillRating.HasValue) ? s.Sum(sm => sm.RankedCTFSkillRating) : null,
-				RankedShowdownSkillRating = s.Any(a => a.RankedShowdownSkillRating.HasValue) ? s.Sum(sm => sm.RankedShowdownSkillRating) : null,
-				RankedFlagRunSkillRating = s.Any(a => a.RankedFlagRunSkillRating.HasValue) ? s.Sum(sm => sm.RankedFlagRunSkillRating) : null,
 				MatchesPlayed = s.Any(a => a.MatchesPlayed.HasValue) ? s.Sum(sm => sm.MatchesPlayed) : null,
 				MatchesQuit = s.Any(a => a.MatchesQuit.HasValue) ? s.Sum(sm => sm.MatchesQuit) : null,
 				TimePlayed = s.Any(a => a.TimePlayed.HasValue) ? s.Sum(sm => sm.TimePlayed) : null,
@@ -611,6 +591,8 @@ public sealed class StatisticsService
 		return merged;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// This method will delete statistics that are older than X <paramref name="days"/>
 	/// </summary>
@@ -643,5 +625,12 @@ public sealed class StatisticsService
 		return result.DeletedCount;
 	}
 
-	#endregion
+	public async Task<long?> RemoveStatisticsByAccountAsync(EpicID accountID)
+	{
+		var result = await statisticsCollection.DeleteManyAsync(x => x.AccountID == accountID);
+		if (!result.IsAcknowledged)
+			return null;
+
+		return result.DeletedCount;
+	}
 }

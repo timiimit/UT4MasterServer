@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using MongoDB.Driver;
 using System.Net.Sockets;
+using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 using UT4MasterServer.Other;
 
@@ -13,6 +14,25 @@ public sealed class ClientService
 	public ClientService(DatabaseContext dbContext)
 	{
 		collection = dbContext.Database.GetCollection<Client>("clients");
+	}
+
+	public async Task UpdateDefaultClientsAsync()
+	{
+		await UpdateAsync(new Client(
+			ClientIdentification.Launcher.ID,
+			ClientIdentification.Launcher.Secret,
+			nameof(ClientIdentification.Launcher) + " (our website)"
+		));
+		await UpdateAsync(new Client(
+			ClientIdentification.Game.ID,
+			ClientIdentification.Game.Secret,
+			nameof(ClientIdentification.Game)
+		));
+		await UpdateAsync(new Client(
+			ClientIdentification.ServerInstance.ID,
+			ClientIdentification.ServerInstance.Secret,
+			nameof(ClientIdentification.ServerInstance)
+		));
 	}
 
 	public async Task<bool?> UpdateAsync(Client client)

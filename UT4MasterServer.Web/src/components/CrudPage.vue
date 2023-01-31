@@ -7,12 +7,14 @@
         </div>
         <div v-else>
             <div class="header">
-                <div class="filters">
+                <div class="filters d-flex justify-content-between align-items-center">
                     <slot name="filters" />
                 </div>
                 <div class="action-buttons">
                     <slot name="action-buttons" />
-                    <button v-if="$slots.add" class="btn btn-sm btn-primary" @click="adding = true;">Add</button>
+                    <button v-if="$slots.add" class="btn btn-lg btn-icon" @click="adding = true;" title="Add">
+                        <FontAwesomeIcon icon="fa-solid fa-plus" />
+                    </button>
                 </div>
             </div>
             <slot />
@@ -28,6 +30,14 @@
     justify-content: space-between;
     align-items: center;
 
+    .filters {
+        flex-grow: 1;
+
+        :deep(>div) {
+            flex-basis: 30%;
+        }
+    }
+
     .action-buttons {
         justify-content: flex-end;
 
@@ -39,6 +49,7 @@
 </style>
 
 <script lang="ts" setup>
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { shallowRef } from 'vue';
 
 

@@ -73,8 +73,16 @@ public sealed class MatchmakingService
 		//// include GameServers that have started
 		//doc.Add(new BsonElement(nameof(GameServer.Started), true));
 
-		// exclude stale GameServers that haven't been removed from db yet
-		doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument("$gt", DateTime.UtcNow - StaleAfter)));
+		if (DateTime.UtcNow - Program.StartupTime > StaleAfter)
+		{
+			// exclude stale GameServers that haven't been removed from db yet
+			doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument("$gt", DateTime.UtcNow - StaleAfter)));
+		}
+		else
+		{
+			// master server just started running. we don't know the status of servers.
+			// assume everyone in db is still live and serve them to clients.
+		}
 
 		// include GameServers whose BuildUniqueId matches criteria
 		if (inputFilter.BuildUniqueId != null)
@@ -171,9 +179,24 @@ public sealed class MatchmakingService
 		return -1;
 	}
 
+	[Obsolete("SessionID can change without our knowledge while the match is going on. Consider using DoesClientOwnGameServerWithPlayerAsync instead.")]
 	public async Task<bool> DoesSessionOwnGameServerWithPlayerAsync(EpicID sessionID, EpicID accountID)
 	{
 		var filterSession = Builders<GameServer>.Filter.Eq(x => x.SessionID, sessionID);
+		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
+		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
+		var options = new CountOptions()
+		{
+			Limit = 1
+		};
+
+		var result = await serverCollection.CountDocumentsAsync(filterSession & (filterPrivatePlayers | filterPublicPlayers), options);
+		return result > 0;
+	}
+
+	public async Task<bool> DoesClientOwnGameServerWithPlayerAsync(EpicID clientID, EpicID accountID)
+	{
+		var filterSession = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
 		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
 		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
 		var options = new CountOptions()
