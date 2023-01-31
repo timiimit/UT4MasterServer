@@ -93,7 +93,8 @@ public static class Program
 			.AddScoped<CloudStorageService>()
 			.AddScoped<TrustedGameServerService>()
 			.AddScoped<MatchmakingService>()
-			.AddScoped<StatisticsService>();
+			.AddScoped<StatisticsService>()
+			.AddScoped<RatingsService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
