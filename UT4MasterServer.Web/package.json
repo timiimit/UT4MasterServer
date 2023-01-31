@@ -36,7 +36,6 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-vue": "^9.9.0",
-    "husky": "^8.0.3",
     "prettier": "^2.8.3",
     "pretty-quick": "^3.1.3",
     "typescript": "^4.9.3",
@@ -75,10 +74,5 @@
     "trailingComma": "es5",
     "semi": true,
     "singleQuote": true
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npx pretty-quick --staged && npm run lint"
-    }
   }
 }
