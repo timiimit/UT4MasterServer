@@ -1,6 +1,10 @@
 <template>
   <LoadingPanel :status="status" :error="errorMessage">
-    <form :class="{ 'was-validated': submitAttempted }" @submit.prevent="handleSubmit" novalidate>
+    <form
+      :class="{ 'was-validated': submitAttempted }"
+      novalidate
+      @submit.prevent="handleSubmit"
+    >
       <fieldset>
         <legend>Account Flags</legend>
         <div class="form-group row">
@@ -15,13 +19,8 @@
         </div>
       </fieldset>
     </form>
-
   </LoadingPanel>
 </template>
-
-<style src="@vueform/multiselect/themes/default.css">
-
-</style>
 
 <script setup lang="ts">
 import { shallowRef, computed, onMounted, PropType } from 'vue';
@@ -34,8 +33,8 @@ import Multiselect from '@vueform/multiselect';
 const props = defineProps({
   account: {
     type: Object as PropType<IAccount>,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const emit = defineEmits(['updated']);
@@ -46,9 +45,13 @@ const status = shallowRef(AsyncStatus.OK);
 const flags = shallowRef<string[]>([]);
 const allFlags = shallowRef<string[]>([]);
 const submitAttempted = shallowRef(false);
-const errorMessage = shallowRef('Error updating account flags. Please try again.');
+const errorMessage = shallowRef(
+  'Error updating account flags. Please try again.'
+);
 
-const flagOptions = computed(() => allFlags.value.map((f) => ({ label: f, value: f })));
+const flagOptions = computed(() =>
+  allFlags.value.map((f) => ({ label: f, value: f }))
+);
 
 async function handleSubmit() {
   submitAttempted.value = true;
@@ -57,8 +60,7 @@ async function handleSubmit() {
     await adminService.setFlagsForAccount(props.account.ID, flags.value);
     status.value = AsyncStatus.OK;
     emit('updated');
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;
   }
@@ -67,12 +69,14 @@ async function handleSubmit() {
 async function loadData() {
   try {
     status.value = AsyncStatus.BUSY;
-    const [allPossibleFlags, accountFlags] = await Promise.all([adminService.getAccountFlagOptions(), adminService.getFlagsForAccount(props.account.ID)]);
+    const [allPossibleFlags, accountFlags] = await Promise.all([
+      adminService.getAccountFlagOptions(),
+      adminService.getFlagsForAccount(props.account.ID),
+    ]);
     flags.value = accountFlags;
     allFlags.value = allPossibleFlags;
     status.value = AsyncStatus.OK;
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     console.error('Error loading account flag data', err);
     status.value = AsyncStatus.ERROR;
   }
@@ -81,3 +85,4 @@ async function loadData() {
 onMounted(loadData);
 </script>
 
+<style src="@vueform/multiselect/themes/default.css"></style>

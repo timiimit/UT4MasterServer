@@ -4,13 +4,28 @@
     <div class="form-group row">
       <div class="col-sm-6">
         <label for="accountId" class="col-sm-6 col-form-label">Account</label>
-        <Autocomplete :value="accountId" :items="accounts" item-key="ID" search-key="Username"
-          @select="handleSelectAccount" />
+        <Autocomplete
+          :value="accountId"
+          :items="accounts"
+          item-key="ID"
+          search-key="Username"
+          @select="handleSelectAccount"
+        />
       </div>
       <div class="col-sm-6">
-        <label for="statWindow" class="col-sm-6 col-form-label">Timeframe</label>
-        <select class="form-select" v-model="statWindow" @change="handleParameterChange">
-          <option :value="window.value" v-for="window in statWindowOptions">
+        <label for="statWindow" class="col-sm-6 col-form-label"
+          >Timeframe</label
+        >
+        <select
+          v-model="statWindow"
+          class="form-select"
+          @change="handleParameterChange"
+        >
+          <option
+            v-for="window in statWindowOptions"
+            :key="window.value"
+            :value="window.value"
+          >
             {{ window.text }}
           </option>
         </select>
@@ -20,7 +35,12 @@
   <LoadingPanel :status="statsStatus">
     <template v-if="accountId">
       <h5>Viewing stats for: {{ viewingAccount?.Username }}</h5>
-      <StatSection :data="stats" :section="section" v-for="section in statSections" />
+      <StatSection
+        v-for="section in statSections"
+        :key="section.heading"
+        :data="stats"
+        :section="section"
+      />
     </template>
     <h5 v-else class="text-center">Select a player to view stats</h5>
   </LoadingPanel>
@@ -48,7 +68,9 @@ const stats = shallowRef<IStatisticData[]>([]);
 const accountsStatus = shallowRef(AsyncStatus.OK);
 const accountId = shallowRef<string | undefined>(undefined);
 const accounts = computed(() => AccountStore.accounts ?? []);
-const viewingAccount = computed(() => accounts.value.find((a) => a.ID === accountId.value));
+const viewingAccount = computed(() =>
+  accounts.value.find((a) => a.ID === accountId.value)
+);
 
 const statsService = new StatsService();
 
@@ -56,7 +78,7 @@ const statWindowOptions = [
   { text: 'All Time', value: StatisticWindow.AllTime },
   { text: 'Daily', value: StatisticWindow.Daily },
   { text: 'Weekly', value: StatisticWindow.Weekly },
-  { text: 'Monthly', value: StatisticWindow.Monthly }
+  { text: 'Monthly', value: StatisticWindow.Monthly },
 ];
 
 const statSections: IStatisticSection[] = [
@@ -78,8 +100,8 @@ const statSections: IStatisticSection[] = [
           Statistic.Losses,
           Statistic.Kills,
           Statistic.Deaths,
-          Statistic.Suicides
-        ]
+          Statistic.Suicides,
+        ],
       },
       {
         heading: 'Kill Achievements',
@@ -97,8 +119,8 @@ const statSections: IStatisticSection[] = [
           Statistic.AmazingCombos,
           Statistic.AirRox,
           Statistic.FlakShreds,
-          Statistic.AirSnot
-        ]
+          Statistic.AirSnot,
+        ],
       },
       {
         heading: 'Power Up Achievements',
@@ -114,10 +136,10 @@ const statSections: IStatisticSection[] = [
           Statistic.ArmorVestCount,
           Statistic.ArmorPadsCount,
           Statistic.HelmetCount,
-          Statistic.KegCount
-        ]
-      }
-    ]
+          Statistic.KegCount,
+        ],
+      },
+    ],
   },
   {
     heading: 'Weapon Stats',
@@ -125,10 +147,7 @@ const statSections: IStatisticSection[] = [
       {
         heading: 'Impact Hammer',
         headingIcon: 'ih.png',
-        stats: [
-          Statistic.ImpactHammerKills,
-          Statistic.ImpactHammerDeaths
-        ]
+        stats: [Statistic.ImpactHammerKills, Statistic.ImpactHammerDeaths],
       },
       {
         heading: 'Enforcer',
@@ -138,8 +157,8 @@ const statSections: IStatisticSection[] = [
           Statistic.EnforcerDeaths,
           Statistic.EnforcerShots,
           Statistic.EnforcerHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Bio Rifle',
@@ -149,8 +168,8 @@ const statSections: IStatisticSection[] = [
           Statistic.BioRifleDeaths,
           Statistic.BioRifleShots,
           Statistic.BioRifleHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Grenade Launcher',
@@ -160,8 +179,8 @@ const statSections: IStatisticSection[] = [
           Statistic.BioLauncherDeaths,
           Statistic.BioLauncherShots,
           Statistic.BioLauncherHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Shock Rifle',
@@ -175,8 +194,8 @@ const statSections: IStatisticSection[] = [
           Statistic.ShockComboDeaths,
           Statistic.ShockRifleShots,
           Statistic.ShockRifleHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Link Gun',
@@ -188,8 +207,8 @@ const statSections: IStatisticSection[] = [
           Statistic.LinkBeamDeaths,
           Statistic.LinkShots,
           Statistic.LinkHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Minigun',
@@ -201,8 +220,8 @@ const statSections: IStatisticSection[] = [
           Statistic.MinigunShardDeaths,
           Statistic.MinigunShots,
           Statistic.MinigunHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Flak Cannon',
@@ -214,8 +233,8 @@ const statSections: IStatisticSection[] = [
           Statistic.FlakShellDeaths,
           Statistic.FlakShots,
           Statistic.FlakHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Rocket Launcher',
@@ -225,8 +244,8 @@ const statSections: IStatisticSection[] = [
           Statistic.RocketDeaths,
           Statistic.RocketShots,
           Statistic.RocketHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Sniper',
@@ -238,8 +257,8 @@ const statSections: IStatisticSection[] = [
           Statistic.SniperHeadshotDeaths,
           Statistic.SniperShots,
           Statistic.SniperHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Lightning Rifle',
@@ -251,8 +270,8 @@ const statSections: IStatisticSection[] = [
           Statistic.LightningRifleSecondaryDeaths,
           Statistic.LightningRifleShots,
           Statistic.LightningRifleHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Redeemer',
@@ -262,8 +281,8 @@ const statSections: IStatisticSection[] = [
           Statistic.RedeemerDeaths,
           Statistic.RedeemerShots,
           Statistic.RedeemerHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Instagib',
@@ -273,18 +292,15 @@ const statSections: IStatisticSection[] = [
           Statistic.InstagibDeaths,
           Statistic.InstagibShots,
           Statistic.InstagibHits,
-          Statistic.Accuracy
-        ]
+          Statistic.Accuracy,
+        ],
       },
       {
         heading: 'Translocator',
         headingIcon: 'xloc.png',
-        stats: [
-          Statistic.TelefragKills,
-          Statistic.TelefragDeaths
-        ]
-      }
-    ]
+        stats: [Statistic.TelefragKills, Statistic.TelefragDeaths],
+      },
+    ],
   },
   {
     heading: 'Miscellaneous',
@@ -306,8 +322,8 @@ const statSections: IStatisticSection[] = [
           Statistic.NumImpactJumps,
           Statistic.NumRocketJumps,
           Statistic.SlideDist,
-          Statistic.WallRunDist
-        ]
+          Statistic.WallRunDist,
+        ],
       },
       {
         heading: 'Capture the Flag',
@@ -336,10 +352,10 @@ const statSections: IStatisticSection[] = [
           Statistic.FlagGrabs,
           Statistic.AttackerScore,
           Statistic.DefenderScore,
-          Statistic.SupporterScore
-        ]
-      }
-    ]
+          Statistic.SupporterScore,
+        ],
+      },
+    ],
   },
 ];
 
@@ -349,10 +365,12 @@ async function loadStats() {
   }
   try {
     statsStatus.value = AsyncStatus.BUSY;
-    stats.value = await statsService.getStats(accountId.value, statWindow.value);
+    stats.value = await statsService.getStats(
+      accountId.value,
+      statWindow.value
+    );
     statsStatus.value = AsyncStatus.OK;
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     statsStatus.value = AsyncStatus.ERROR;
     console.error(err);
   }
@@ -367,8 +385,7 @@ async function loadAccounts() {
     await AccountStore.fetchAllAccounts();
     accountId.value = SessionStore.session?.account_id?.toString();
     accountsStatus.value = AsyncStatus.OK;
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     accountsStatus.value = AsyncStatus.ERROR;
     console.error(err);
   }
@@ -390,5 +407,4 @@ onMounted(async () => {
   await loadAccounts();
   loadStats();
 });
-
 </script>

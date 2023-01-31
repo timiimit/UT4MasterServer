@@ -1,4 +1,3 @@
-
 import { defineConfig, UserConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
@@ -9,11 +8,9 @@ export default defineConfig(({ command, mode }) => {
     define: {
       __BACKEND_URL: JSON.stringify(viteEnv.VITE_API_URL),
       __WEB_BASIC_AUTH: JSON.stringify(viteEnv.VITE_BASIC_AUTH),
-      __RECAPTCHA_SITE_KEY: JSON.stringify(viteEnv.VITE_RECAPTCHA_SITE_KEY)
+      __RECAPTCHA_SITE_KEY: JSON.stringify(viteEnv.VITE_RECAPTCHA_SITE_KEY),
     },
-    plugins: [
-      vue()
-    ],
+    plugins: [vue()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
@@ -23,7 +20,7 @@ export default defineConfig(({ command, mode }) => {
 
   if (command === 'serve') {
     viteConfig.server = {
-      port: 8080
+      port: 8080,
     };
   } else {
     viteConfig.base = '/';
