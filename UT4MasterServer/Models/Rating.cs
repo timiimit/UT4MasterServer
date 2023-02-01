@@ -11,37 +11,37 @@ public sealed class Rating
 
 	public EpicID AccountID { get; set; } = default!;
 
-	[BsonDefaultValue(1500), BsonIgnoreIfDefault]
+	[BsonDefaultValue(1_500_000), BsonIgnoreIfDefault]
 	public int SkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
     public int SkillRatingGamesPlayed { get; set; }
 
-	[BsonDefaultValue(1500), BsonIgnoreIfDefault]
+	[BsonDefaultValue(1_500_000), BsonIgnoreIfDefault]
 	public int TDMSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
 	public int TDMSkillRatingGamesPlayed { get; set; }
 
-	[BsonDefaultValue(1500), BsonIgnoreIfDefault]
+	[BsonDefaultValue(1_500_000), BsonIgnoreIfDefault]
 	public int DMSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
     public int DMSkillRatingGamesPlayed { get; set; }
 
-	[BsonDefaultValue(1500), BsonIgnoreIfDefault]
+	[BsonDefaultValue(1_500_000), BsonIgnoreIfDefault]
 	public int CTFSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
     public int CTFSkillRatingGamesPlayed { get; set; }
 
-	[BsonDefaultValue(1500), BsonIgnoreIfDefault]
+	[BsonDefaultValue(1_500_000), BsonIgnoreIfDefault]
 	public int ShowdownSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
     public int ShowdownSkillRatingGamesPlayed { get; set; }
 
-	[BsonDefaultValue(1500), BsonIgnoreIfDefault]
+	[BsonDefaultValue(1_500_000), BsonIgnoreIfDefault]
 	public int FlagRunSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
