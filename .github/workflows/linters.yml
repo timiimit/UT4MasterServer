@@ -1,0 +1,33 @@
+name: Check Frontend Linters
+
+on:
+  pull_request:
+    paths:
+      - "UT4MasterServer.Web/**"
+      - ".github/workflows/linters.yml"
+      # ignored pathss
+      - "!*.md"
+  push:
+    paths:
+      - "UT4MasterServer.Web/**"
+      - ".github/workflows/linters.yml"
+      # ignored paths
+      - "!*.md"
+
+env:
+  WEB_DIR: UT4MasterServer.Web
+
+jobs:
+  linters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - run: npm install --ignore-scripts
+        working-directory: ${{ env.WEB_DIR }}
+      - run: npm run lint
+        working-directory: ${{ env.WEB_DIR }}
+      - run: npm run format-check
+        working-directory: ${{ env.WEB_DIR }}
