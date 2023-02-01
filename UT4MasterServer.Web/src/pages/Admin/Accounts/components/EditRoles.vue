@@ -6,15 +6,27 @@
       @submit.prevent="handleSubmit"
     >
       <fieldset>
-        <legend>Account Flags</legend>
+        <legend>Account Roles</legend>
         <div class="form-group row">
           <div class="col-sm-6">
-            <Multiselect v-model="flags" :options="flagOptions" mode="tags" />
+            <RoleMultiSelect
+              v-model="roles"
+              :exclude-role-options="excludeRoles"
+            />
+            <div class="invalid-feedback" :class="{ show: disableForm }">
+              You do not have permission to change this account's roles
+            </div>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-sm-12">
-            <button type="submit" class="btn btn-primary">Update Flags</button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="disableForm"
+            >
+              Update Roles
+            </button>
           </div>
         </div>
       </fieldset>
@@ -25,16 +37,18 @@
 <style src="@vueform/multiselect/themes/default.css"></style>
 
 <script setup lang="ts">
-import { shallowRef, computed, onMounted, PropType } from 'vue';
+import { shallowRef, PropType } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import { IAccount } from '@/types/account';
+import { IAccountWithRoles } from '@/types/account';
 import AdminService from '@/services/admin-service';
-import Multiselect from '@vueform/multiselect';
+import RoleMultiSelect from './RoleMultiSelect.vue';
+import { Role } from '@/enums/role';
+import { AccountStore } from '@/stores/account-store';
 
 const props = defineProps({
   account: {
-    type: Object as PropType<IAccount>,
+    type: Object as PropType<IAccountWithRoles>,
     required: true
   }
 });
@@ -44,22 +58,27 @@ const emit = defineEmits(['updated']);
 const adminService = new AdminService();
 
 const status = shallowRef(AsyncStatus.OK);
-const flags = shallowRef<string[]>([]);
-const allFlags = shallowRef<string[]>([]);
+const roles = shallowRef<Role[]>(props.account.roles);
 const submitAttempted = shallowRef(false);
 const errorMessage = shallowRef(
-  'Error updating account flags. Please try again.'
+  'Error updating account roles. Please try again.'
 );
 
-const flagOptions = computed(() =>
-  allFlags.value.map((f) => ({ label: f, value: f }))
-);
+// Don't allow moderator to give admin role to anyone
+const userIsAdmin = AccountStore.account?.roles?.includes(Role.Admin);
+const excludeRoles = userIsAdmin ? [] : [Role.Admin];
+// Don't allow moderator to edit admin's roles at all
+const accountIsAdmin = props.account?.roles?.includes(Role.Admin);
+const disableForm = accountIsAdmin && !userIsAdmin;
 
 async function handleSubmit() {
   submitAttempted.value = true;
+  if (disableForm) {
+    return;
+  }
   try {
     status.value = AsyncStatus.BUSY;
-    await adminService.setFlagsForAccount(props.account.id, flags.value);
+    await adminService.setRolesForAccount(props.account.id, roles.value);
     status.value = AsyncStatus.OK;
     emit('updated');
   } catch (err: unknown) {
@@ -67,22 +86,4 @@ async function handleSubmit() {
     errorMessage.value = (err as Error)?.message;
   }
 }
-
-async function loadData() {
-  try {
-    status.value = AsyncStatus.BUSY;
-    const [allPossibleFlags, accountFlags] = await Promise.all([
-      adminService.getRoleOptions(),
-      adminService.getFlagsForAccount(props.account.id)
-    ]);
-    flags.value = accountFlags;
-    allFlags.value = allPossibleFlags;
-    status.value = AsyncStatus.OK;
-  } catch (err: unknown) {
-    console.error('Error loading account flag data', err);
-    status.value = AsyncStatus.ERROR;
-  }
-}
-
-onMounted(loadData);
 </script>

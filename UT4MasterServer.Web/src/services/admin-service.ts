@@ -1,3 +1,4 @@
+import { Role } from '@/enums/role';
 import { IAdminChangePasswordRequest } from '@/pages/Admin/Accounts/types/admin-change-password-request';
 import { IClient } from '@/pages/Admin/Clients/types/client';
 import { ITrustedGameServer } from '@/pages/Admin/TrustedServers/types/trusted-game-server';
@@ -8,17 +9,17 @@ export default class AdminService extends HttpService {
 
   // Account
   async getRoleOptions() {
-    return await this.get<string[]>(`${this.baseUrl}/flags`);
+    return await this.get<Role[]>(`${this.baseUrl}/flags`);
   }
 
-  async getFlagsForAccount(id: string) {
-    return await this.get<string[]>(`${this.baseUrl}/flags/${id}`);
+  async getRolesForAccount(id: string) {
+    return await this.get<Role[]>(`${this.baseUrl}/flags/${id}`);
   }
 
-  async setFlagsForAccount(id: string, flags: string[]) {
+  async setRolesForAccount(id: string, roles: Role[]) {
     return await this.put<string[]>(
       `${this.baseUrl}/flags/${id}`,
-      { body: flags },
+      { body: roles },
       false
     );
   }

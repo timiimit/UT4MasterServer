@@ -13,7 +13,7 @@
               <img
                 class="avatar"
                 :src="`/assets/avatars/${
-                  AccountStore.account?.Avatar ?? 'UT.Avatar.0'
+                  AccountStore.account?.avatar ?? 'UT.Avatar.0'
                 }.png`"
               />
               {{ AccountStore.account?.username }}
@@ -22,24 +22,24 @@
               <img
                 class="flag"
                 :src="`/assets/flags/${
-                  AccountStore.account?.CountryFlag ?? 'Unreal'
+                  AccountStore.account?.countryFlag ?? 'Unreal'
                 }.png`"
               />
-              {{ AccountStore.account?.CountryFlag }}
+              {{ AccountStore.account?.countryFlag }}
             </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">Level (Experience)</th>
             <td>
-              {{ AccountStore.account?.Level }} ({{ AccountStore.account?.XP }})
+              {{ AccountStore.account?.level }} ({{ AccountStore.account?.xp }})
             </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">Challenge Stars</th>
             <td>
-              {{ AccountStore.account?.BlueStars
+              {{ AccountStore.account?.blueStars
               }}<span class="blue star">★</span
-              >{{ AccountStore.account?.GoldStars
+              >{{ AccountStore.account?.goldStars
               }}<span class="gold star">★</span>
             </td>
           </tr>

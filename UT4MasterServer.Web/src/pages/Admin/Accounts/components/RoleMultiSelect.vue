@@ -17,6 +17,10 @@ const props = defineProps({
   modelValue: {
     type: Array as PropType<Role[]>,
     required: true
+  },
+  excludeRoleOptions: {
+    type: Array as PropType<Role[]>,
+    default: () => []
   }
 });
 const emit = defineEmits(['update:modelValue']);
@@ -25,7 +29,7 @@ const adminService = new AdminService();
 
 const filterRoles = shallowRef<Role[]>(props.modelValue);
 
-const allRoles = shallowRef<string[]>([]);
+const allRoles = shallowRef<Role[]>([]);
 const roleOptions = computed(() =>
   allRoles.value.map((r) => ({ label: r, value: r }))
 );
@@ -33,7 +37,9 @@ const roleOptions = computed(() =>
 async function loadRoles() {
   try {
     allRoles.value = await adminService.getRoleOptions();
-    allRoles.value = allRoles.value.filter((r) => r !== Role.None);
+    allRoles.value = allRoles.value
+      .filter((r) => r !== Role.None)
+      .filter((r) => !props.excludeRoleOptions.includes(r));
   } catch (err: unknown) {
     console.error('Error loading roles', err);
   }

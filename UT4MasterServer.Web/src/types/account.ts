@@ -10,8 +10,7 @@ export interface IAccountWithRoles extends IAccount {
 }
 
 export interface IAccountExtended extends IAccountWithRoles {
-  id: string;
-  username: string;
+  email: string;
   createdAt: string;
   lastLoginAt: string;
   countryFlag: string;

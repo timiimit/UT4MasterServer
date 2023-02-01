@@ -65,7 +65,6 @@ public class Account
 	public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
 
 	[BsonElement("Email")]
-	[JsonIgnore]
 	public string Email { get; set; } = string.Empty;
 
 	[BsonIgnoreIfDefault] // default value is set in Program.cs

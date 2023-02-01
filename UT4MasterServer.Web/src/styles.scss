@@ -55,3 +55,9 @@ body {
   height: 0;
   width: 0;
 }
+
+.invalid-feedback {
+  &.show {
+    display: block;
+  }
+}

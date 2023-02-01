@@ -9,7 +9,6 @@ namespace UT4MasterServer.Controllers;
 
 /// <summary>
 /// persona-public-service-prod06.ol.epicgames.com
-/// 
 /// </summary>
 [ApiController]
 [Route("persona/api")]
