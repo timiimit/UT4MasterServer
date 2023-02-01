@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Requests;
+using UT4MasterServer.Other;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -24,43 +26,42 @@ public sealed class UnrealTournamentRatingController : JsonAPIController
 	}
 
 	[HttpPost("account/{id}/mmrbulk")]
-	public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
+	public async Task<IActionResult> MmrBulk(string id, [FromBody] MMRBulk ratings)
 	{
 		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		for (int i = 0; i < ratings.RatingTypes.Count; i++)
 		{
-			ratings.Ratings.Add(1500);
-			ratings.NumGamesPlayed.Add(0);
+			return Unauthorized();
 		}
 
-		return Json(ratings);
+		var accountId = EpicID.FromString(id);
+
+		var result = await ratingsService.GetRatingsAsync(accountId, ratings);
+
+		return Json(result);
 	}
 
 	[HttpGet("account/{id}/mmr/{ratingType}")]
-	public IActionResult Mmr(string id, string ratingType)
+	public async Task<IActionResult> Mmr(string id, string ratingType)
 	{
 		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-
-		// TODO: return only one type of rating
-
-		// proper response: {"rating":1844,"numGamesPlayed":182}
-		JObject obj = new JObject()
 		{
-			{ "rating", 1500 },
-			{ "numGamesPlayed", 0 }
-		};
+			return Unauthorized();
+		}
 
-		return Json(obj);
+		var accountId = EpicID.FromString(id);
+
+		var result = await ratingsService.GetRatingAsync(accountId, ratingType);
+
+		return Json(result);
 	}
 
 	[HttpGet("account/{id}/league/{leagueName}")]
 	public IActionResult LeagueRating(string id, string leagueName)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
 		var league = new League();
 		// TODO: for now we just send default/empty values
@@ -71,7 +72,9 @@ public sealed class UnrealTournamentRatingController : JsonAPIController
 	public IActionResult JoinQuickplay(string ratingType, [FromBody] RatingTeam body)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
 		// TODO: calculate proper rating for this team
 
