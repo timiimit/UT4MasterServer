@@ -50,6 +50,12 @@
   </LoadingPanel>
 </template>
 
+<style lang="scss" scoped>
+#searchContainer {
+  margin-bottom: 1rem;
+}
+</style>
+
 <script lang="ts" setup>
 import { onMounted, computed, shallowRef } from 'vue';
 import Hub from '@/components/Hub.vue';
@@ -86,9 +92,3 @@ onMounted(() => {
   }
 });
 </script>
-
-<style lang="scss" scoped>
-#searchContainer {
-  margin-bottom: 1rem;
-}
-</style>
