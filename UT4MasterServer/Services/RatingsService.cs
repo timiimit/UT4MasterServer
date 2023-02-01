@@ -29,37 +29,37 @@ public sealed class RatingsService
 			{
 				case "SkillRating":
 					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.SkillRating / 1000);
+					result.Ratings.Add(ratings.SkillRating / Rating.Precision);
 					result.NumGamesPlayed.Add(ratings.SkillRatingGamesPlayed);
 					break;
 
 				case "TDMSkillRating":
 					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.TDMSkillRating / 1000);
+					result.Ratings.Add(ratings.TDMSkillRating / Rating.Precision);
 					result.NumGamesPlayed.Add(ratings.TDMSkillRatingGamesPlayed);
 					break;
 
 				case "CTFSkillRating":
 					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.CTFSkillRating / 1000);
+					result.Ratings.Add(ratings.CTFSkillRating / Rating.Precision);
 					result.NumGamesPlayed.Add(ratings.CTFSkillRatingGamesPlayed);
 					break;
 
 				case "ShowdownSkillRating":
 					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.ShowdownSkillRating / 1000);
+					result.Ratings.Add(ratings.ShowdownSkillRating / Rating.Precision);
 					result.NumGamesPlayed.Add(ratings.ShowdownSkillRatingGamesPlayed);
 					break;
 
 				case "FlagRunSkillRating":
 					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.FlagRunSkillRating / 1000);
+					result.Ratings.Add(ratings.FlagRunSkillRating / Rating.Precision);
 					result.NumGamesPlayed.Add(ratings.FlagRunSkillRatingGamesPlayed);
 					break;
 
 				case "DMSkillRating":
 					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.DMSkillRating / 1000);
+					result.Ratings.Add(ratings.DMSkillRating / Rating.Precision);
 					result.NumGamesPlayed.Add(ratings.DMSkillRatingGamesPlayed);
 					break;
 			}
@@ -80,7 +80,7 @@ public sealed class RatingsService
 			case "SkillRating":
 				result = new JObject
 				{
-					{ "rating", ratings.SkillRating / 1000 },
+					{ "rating", ratings.SkillRating / Rating.Precision },
 					{ "numGamesPlayed", ratings.SkillRatingGamesPlayed }
 				};
 				break;
@@ -88,7 +88,7 @@ public sealed class RatingsService
 			case "TDMSkillRating":
 				result = new JObject
 				{
-					{ "rating", ratings.TDMSkillRating / 1000 },
+					{ "rating", ratings.TDMSkillRating / Rating.Precision },
 					{ "numGamesPlayed", ratings.TDMSkillRatingGamesPlayed }
 				};
 				break;
@@ -96,7 +96,7 @@ public sealed class RatingsService
 			case "CTFSkillRating":
 				result = new JObject
 				{
-					{ "rating", ratings.CTFSkillRating / 1000 },
+					{ "rating", ratings.CTFSkillRating / Rating.Precision },
 					{ "numGamesPlayed", ratings.CTFSkillRatingGamesPlayed }
 				};
 				break;
@@ -104,7 +104,7 @@ public sealed class RatingsService
 			case "ShowdownSkillRating":
 				result = new JObject
 				{
-					{ "rating", ratings.ShowdownSkillRating / 1000 },
+					{ "rating", ratings.ShowdownSkillRating / Rating.Precision },
 					{ "numGamesPlayed", ratings.ShowdownSkillRatingGamesPlayed }
 				};
 				break;
@@ -112,7 +112,7 @@ public sealed class RatingsService
 			case "FlagRunSkillRating":
 				result = new JObject
 				{
-					{ "rating", ratings.FlagRunSkillRating / 1000 },
+					{ "rating", ratings.FlagRunSkillRating / Rating.Precision },
 					{ "numGamesPlayed", ratings.FlagRunSkillRatingGamesPlayed }
 				};
 				break;
@@ -120,7 +120,7 @@ public sealed class RatingsService
 			case "DMSkillRating":
 				result = new JObject
 				{
-					{ "rating", ratings.DMSkillRating / 1000 },
+					{ "rating", ratings.DMSkillRating / Rating.Precision },
 					{ "numGamesPlayed", ratings.DMSkillRatingGamesPlayed }
 				};
 				break;
@@ -176,7 +176,7 @@ public sealed class RatingsService
 			redTeamCurrentRatings[i] = playersCurrentRatings
 				.Where(w => w.AccountID == redTeamAccountIds[i])
 				.Select(propertySelector)
-				.FirstOrDefault(1_500_000) / 1000.0;
+				.FirstOrDefault(Rating.DefaultRating * Rating.Precision) / Rating.Precision;
 		}
 
 		for (int i = 0; i < blueTeamPlayersCount; i++)
@@ -184,7 +184,7 @@ public sealed class RatingsService
 			blueTeamCurrentRatings[i] = playersCurrentRatings
 				.Where(w => w.AccountID == blueTeamAccountIds[i])
 				.Select(propertySelector)
-				.FirstOrDefault(1_500_000) / 1000.0;
+				.FirstOrDefault(Rating.DefaultRating * Rating.Precision) / Rating.Precision;
 		}
 
 		double[] redTeamExpectedScores = EloTeamsCalculationService.GetExpectedScores(redTeamCurrentRatings, blueTeamCurrentRatings);
@@ -202,7 +202,7 @@ public sealed class RatingsService
 		{
 			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, redTeamAccountIds[i]);
 			var updateDefinition = Builders<Rating>.Update
-				.Set(setFieldDefinition, (int)(redTeamNewRatings[i] * 1000))
+				.Set(setFieldDefinition, (int)(redTeamNewRatings[i] * Rating.Precision))
 				.Inc(incFieldDefinition, 1);
 			bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 		}
@@ -211,7 +211,7 @@ public sealed class RatingsService
 		{
 			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, blueTeamAccountIds[i]);
 			var updateDefinition = Builders<Rating>.Update
-				.Set(setFieldDefinition, (int)(blueTeamNewRatings[i] * 1000))
+				.Set(setFieldDefinition, (int)(blueTeamNewRatings[i] * Rating.Precision))
 				.Inc(incFieldDefinition, 1);
 			bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 		}
@@ -237,7 +237,7 @@ public sealed class RatingsService
 
 		for (int i = 0; i < playersCount; i++)
 		{
-			currentRatings[i] = playersCurrentRatings.FirstOrDefault(f => f.AccountID == playersAccountIds[i])?.DMSkillRating / 1000.0 ?? 1500.0;
+			currentRatings[i] = playersCurrentRatings.FirstOrDefault(f => f.AccountID == playersAccountIds[i])?.DMSkillRating / Rating.Precision ?? Rating.DefaultRating;
 		}
 
 		double[] expectedScores = EloDeathmatchCalculationService.GetExpectedScores(currentRatings);
@@ -250,7 +250,7 @@ public sealed class RatingsService
 		{
 			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, playersAccountIds[i]);
 			var updateDefinition = Builders<Rating>.Update
-				.Set(s => s.DMSkillRating, (int)(newRatings[i] * 1000))
+				.Set(s => s.DMSkillRating, (int)(newRatings[i] * Rating.Precision))
 				.Inc(i => i.DMSkillRatingGamesPlayed, 1);
 			bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 		}
