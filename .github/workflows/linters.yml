@@ -5,7 +5,7 @@ on:
     paths:
       - "UT4MasterServer.Web/**"
       - ".github/workflows/linters.yml"
-      # ignored pathss
+      # ignored paths
       - "!*.md"
   push:
     paths:
