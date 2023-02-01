@@ -34,7 +34,7 @@ export default class HttpService {
     const headers: HeadersInit = {
       'Content-Type': form
         ? 'application/x-www-form-urlencoded'
-        : 'application/json',
+        : 'application/json'
     };
     headers['SameSite'] = 'Strict';
 

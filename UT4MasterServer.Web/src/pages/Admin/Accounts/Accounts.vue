@@ -141,7 +141,7 @@ async function loadAccounts() {
     status.value = AsyncStatus.BUSY;
     const [allPossibleFlags, allAccounts] = await Promise.all([
       adminService.getAccountFlagOptions(),
-      accountService.getAllAccounts(),
+      accountService.getAllAccounts()
     ]);
     allFlags.value = allPossibleFlags;
     accounts.value = allAccounts;

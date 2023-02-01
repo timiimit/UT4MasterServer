@@ -49,8 +49,8 @@ import { valid as vValid } from '@/directives/valid';
 const props = defineProps({
   allClients: {
     type: Array as PropType<IClient[]>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const emit = defineEmits(['added', 'cancel']);

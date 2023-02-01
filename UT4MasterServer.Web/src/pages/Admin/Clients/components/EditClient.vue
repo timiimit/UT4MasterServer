@@ -64,8 +64,8 @@ import AdminService from '@/services/admin-service';
 const props = defineProps({
   client: {
     type: Object as PropType<IClient>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const emit = defineEmits(['updated', 'cancel']);
@@ -91,7 +91,7 @@ async function handleSubmit() {
     const updatedClient = {
       ...props.client,
       name: name.value,
-      secret: secret.value,
+      secret: secret.value
     };
     await adminService.updateClient(props.client.id, updatedClient);
     status.value = AsyncStatus.OK;

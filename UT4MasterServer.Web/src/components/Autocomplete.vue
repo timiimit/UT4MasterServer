@@ -68,20 +68,20 @@ const props = defineProps({
   items: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type: Array as PropType<any[]>,
-    default: () => [],
+    default: () => []
   },
   itemKey: {
     type: String,
-    required: true,
+    required: true
   },
   searchKey: {
     type: String,
-    required: true,
+    required: true
   },
   value: {
     type: String,
-    default: undefined,
-  },
+    default: undefined
+  }
 });
 
 const emit = defineEmits(['select']);

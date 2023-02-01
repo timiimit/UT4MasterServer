@@ -29,11 +29,11 @@ import StatCard from './StatCard.vue';
 defineProps({
   section: {
     type: Object as PropType<IStatisticSection>,
-    required: true,
+    required: true
   },
   data: {
     type: Array as PropType<IStatisticData[]>,
-    default: () => [],
-  },
+    default: () => []
+  }
 });
 </script>

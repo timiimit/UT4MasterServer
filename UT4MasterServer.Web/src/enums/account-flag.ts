@@ -4,5 +4,5 @@ export enum AccountFlag {
   Moderator = 'Moderator',
   Developer = 'Developer',
   ContentCreator = 'ContentCreator',
-  HubOwner = 'HubOwner',
+  HubOwner = 'HubOwner'
 }

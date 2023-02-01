@@ -35,8 +35,8 @@ import Multiselect from '@vueform/multiselect';
 const props = defineProps({
   account: {
     type: Object as PropType<IAccount>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const emit = defineEmits(['updated']);
@@ -73,7 +73,7 @@ async function loadData() {
     status.value = AsyncStatus.BUSY;
     const [allPossibleFlags, accountFlags] = await Promise.all([
       adminService.getAccountFlagOptions(),
-      adminService.getFlagsForAccount(props.account.ID),
+      adminService.getFlagsForAccount(props.account.ID)
     ]);
     flags.value = accountFlags;
     allFlags.value = allPossibleFlags;

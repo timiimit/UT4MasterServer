@@ -13,6 +13,6 @@ export function usePaging(pageSize = 10) {
     pageSize,
     pageStart,
     pageEnd,
-    handlePagingUpdate,
+    handlePagingUpdate
   };
 }

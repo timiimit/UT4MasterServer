@@ -5,5 +5,5 @@ export const TypedStorage = {
   },
   setItem<T>(key: string, value: T | null) {
     localStorage.setItem(key, JSON.stringify(value));
-  },
+  }
 };

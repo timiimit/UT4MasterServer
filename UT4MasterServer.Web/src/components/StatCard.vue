@@ -51,12 +51,12 @@ import { toHoursMinutesSeconds } from '@/utils/utilities';
 const props = defineProps({
   card: {
     type: Object as PropType<IStatisticCard>,
-    required: true,
+    required: true
   },
   data: {
     type: Array as PropType<IStatisticData[]>,
-    default: () => [],
-  },
+    default: () => []
+  }
 });
 
 const imgIconUrl = new URL(

@@ -27,12 +27,12 @@ import { PropType, shallowRef, computed, watch, onMounted } from 'vue';
 const props = defineProps({
   items: {
     type: Array as PropType<unknown[]>,
-    required: true,
+    required: true
   },
   pageSize: {
     type: Number,
-    default: 10,
-  },
+    default: 10
+  }
 });
 
 const emit = defineEmits(['update']);

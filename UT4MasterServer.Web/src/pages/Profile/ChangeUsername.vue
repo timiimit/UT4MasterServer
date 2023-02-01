@@ -79,7 +79,7 @@ async function handleSubmit() {
   try {
     status.value = AsyncStatus.BUSY;
     const request: IChangeUsernameRequest = {
-      newUsername: newUsername.value,
+      newUsername: newUsername.value
     };
     await accountService.changeUsername(request);
     status.value = AsyncStatus.OK;

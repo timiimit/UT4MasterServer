@@ -17,8 +17,8 @@ export default class AuthenticationService extends HttpService {
         {
           body: request,
           headers: {
-            Authorization: `${__WEB_BASIC_AUTH}`,
-          },
+            Authorization: `${__WEB_BASIC_AUTH}`
+          }
         }
       );
       SessionStore.session = session;
@@ -44,11 +44,11 @@ export default class AuthenticationService extends HttpService {
         {
           body: {
             refresh_token: SessionStore.session.refresh_token,
-            grant_type: GrantType.RefreshToken,
+            grant_type: GrantType.RefreshToken
           },
           headers: {
-            Authorization: `${__WEB_BASIC_AUTH}`,
-          },
+            Authorization: `${__WEB_BASIC_AUTH}`
+          }
         }
       );
       SessionStore.session = session;
@@ -74,7 +74,7 @@ export default class AuthenticationService extends HttpService {
         access_token: verifySession.token,
         account_id: verifySession.account_id,
         displayName: verifySession.display_name,
-        expires_at: verifySession.expires_at,
+        expires_at: verifySession.expires_at
       };
       SessionStore.session = session;
     } catch (err: unknown) {

@@ -93,7 +93,7 @@ import LoadingPanel from '@/components/LoadingPanel.vue';
 import AdminService from '@/services/admin-service';
 import {
   IGridTrustedServer,
-  ITrustedGameServer,
+  ITrustedGameServer
 } from '../types/trusted-game-server';
 import { GameServerTrust } from '@/enums/game-server-trust';
 import { AccountStore } from '@/stores/account-store';
@@ -102,8 +102,8 @@ import { AccountFlag } from '@/enums/account-flag';
 const props = defineProps({
   server: {
     type: Object as PropType<IGridTrustedServer>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const emit = defineEmits(['updated', 'cancel']);
@@ -130,7 +130,7 @@ const ownerOptions = computed(() => {
 const trustLevelOptions = [
   { text: 'Epic', value: GameServerTrust.Epic },
   { text: 'Trusted', value: GameServerTrust.Trusted },
-  { text: 'Untrusted', value: GameServerTrust.Untrusted },
+  { text: 'Untrusted', value: GameServerTrust.Untrusted }
 ];
 
 async function handleSubmit() {
@@ -143,7 +143,7 @@ async function handleSubmit() {
     const trustedServer: ITrustedGameServer = {
       ...props.server,
       ownerID: ownerId.value,
-      trustLevel: trustLevel.value,
+      trustLevel: trustLevel.value
     };
     await adminService.updateTrustedServer(props.server.id, trustedServer);
     status.value = AsyncStatus.OK;

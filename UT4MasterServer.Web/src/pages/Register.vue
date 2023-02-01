@@ -142,7 +142,7 @@ async function register() {
       email: email.value,
       username: username.value,
       password: CryptoJS.SHA512(password.value).toString(),
-      recaptchaToken: recaptchaToken.value,
+      recaptchaToken: recaptchaToken.value
     };
     await accountService.register(formData);
     status.value = AsyncStatus.OK;

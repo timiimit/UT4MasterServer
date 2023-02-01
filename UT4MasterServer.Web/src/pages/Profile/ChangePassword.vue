@@ -136,7 +136,7 @@ async function handleSubmit() {
     status.value = AsyncStatus.BUSY;
     const request: IChangePasswordRequest = {
       currentPassword: CryptoJS.SHA512(currentPassword.value).toString(),
-      newPassword: CryptoJS.SHA512(newPassword.value).toString(),
+      newPassword: CryptoJS.SHA512(newPassword.value).toString()
     };
     await accountService.changePassword(request);
     status.value = AsyncStatus.OK;

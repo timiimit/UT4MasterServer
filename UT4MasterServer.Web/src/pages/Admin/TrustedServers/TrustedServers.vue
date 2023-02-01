@@ -141,7 +141,7 @@ async function loadTrustedServers() {
     const [clients, servers, accounts] = await Promise.all([
       adminService.getClients(),
       adminService.getTrustedServers(),
-      AccountStore.fetchAllAccounts(),
+      AccountStore.fetchAllAccounts()
     ]);
     allClients.value = clients;
     trustedServers.value = [];
@@ -152,7 +152,7 @@ async function loadTrustedServers() {
         const server = {
           ...s,
           client,
-          owner,
+          owner
         };
         trustedServers.value.push(server);
       }

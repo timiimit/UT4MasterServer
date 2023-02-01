@@ -28,5 +28,5 @@ export const SessionStore = {
   set session(session: ISession | null) {
     _session.value = session;
     TypedStorage.setItem<ISession>('session', session);
-  },
+  }
 };

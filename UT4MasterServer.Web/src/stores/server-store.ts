@@ -43,7 +43,7 @@ export const ServerStore = {
           totalPlayers: matches.reduce(
             (accumulator, m) => accumulator + m.attributes.UT_PLAYERONLINE_i,
             0
-          ),
+          )
         };
         return hub;
       });
@@ -52,5 +52,5 @@ export const ServerStore = {
       console.error('Error fetching servers:', err);
       _status.value = AsyncStatus.ERROR;
     }
-  },
+  }
 };

@@ -171,5 +171,5 @@ export const StatisticDisplay: Record<Statistic, string> = {
   [Statistic.AttackerScore]: 'Attacker Score',
   [Statistic.DefenderScore]: 'Defender Score',
   [Statistic.SupporterScore]: 'Supporter Score',
-  [Statistic.TeamKills]: 'Team Kills',
+  [Statistic.TeamKills]: 'Team Kills'
 };

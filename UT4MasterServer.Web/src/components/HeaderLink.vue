@@ -3,7 +3,7 @@
     :class="{
       'nav-link': !dropdown,
       'dropdown-item': dropdown,
-      active: active,
+      active: active
     }"
     :to="path"
     >{{ text }}</RouterLink
@@ -17,16 +17,16 @@ import { useRoute } from 'vue-router';
 const props = defineProps({
   text: {
     type: String,
-    required: true,
+    required: true
   },
   path: {
     type: String,
-    required: true,
+    required: true
   },
   dropdown: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 });
 
 const route = useRoute();

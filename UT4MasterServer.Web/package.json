@@ -8,6 +8,7 @@
     "dev-open": "vite --host 0.0.0.0 --open",
     "build": "vite build",
     "build-dev": "vite build --mode development",
+    "format": "prettier . -w",
     "lint": "eslint . --ext .ts,.vue",
     "lint-fix": "eslint . --ext .ts,.vue --fix",
     "prepare": "cd .. && husky install client/.husky"
@@ -84,7 +85,7 @@
     }
   },
   "prettier": {
-    "trailingComma": "es5",
+    "trailingComma": "none",
     "semi": true,
     "singleQuote": true
   }

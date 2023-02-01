@@ -105,7 +105,7 @@ async function logIn() {
     const formData = {
       username: username.value,
       password: CryptoJS.SHA512(password.value).toString(),
-      grant_type: GrantType.Password,
+      grant_type: GrantType.Password
     };
     SessionStore.saveUsername = saveUsername.value;
     await authenticationService.passwordLogin(formData);

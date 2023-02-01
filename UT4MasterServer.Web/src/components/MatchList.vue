@@ -30,7 +30,7 @@ import Match from './Match.vue';
 defineProps({
   hub: {
     type: Object as PropType<IGameHub>,
-    required: true,
-  },
+    required: true
+  }
 });
 </script>

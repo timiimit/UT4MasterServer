@@ -49,20 +49,20 @@ import { AsyncStatus } from '@/types/async-status';
 const props = defineProps({
   status: {
     type: Number as PropType<AsyncStatus>,
-    default: AsyncStatus.OK,
+    default: AsyncStatus.OK
   },
   error: {
     type: String,
-    default: 'An error occurred. Please try again.',
+    default: 'An error occurred. Please try again.'
   },
   onLoad: {
     type: Function,
-    default: undefined,
+    default: undefined
   },
   autoLoad: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 });
 
 const emit = defineEmits(['load']);

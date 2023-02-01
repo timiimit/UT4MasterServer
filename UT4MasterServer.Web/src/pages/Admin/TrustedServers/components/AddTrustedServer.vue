@@ -94,12 +94,12 @@ import { AccountFlag } from '@/enums/account-flag';
 const props = defineProps({
   clients: {
     type: Array as PropType<IClient[]>,
-    required: true,
+    required: true
   },
   servers: {
     type: Array as PropType<ITrustedGameServer[]>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const emit = defineEmits(['added', 'cancel']);
@@ -131,7 +131,7 @@ const ownerOptions = computed(() => {
 const trustLevelOptions = [
   { text: 'Epic', value: GameServerTrust.Epic },
   { text: 'Trusted', value: GameServerTrust.Trusted },
-  { text: 'Untrusted', value: GameServerTrust.Untrusted },
+  { text: 'Untrusted', value: GameServerTrust.Untrusted }
 ];
 
 async function handleSubmit() {
@@ -144,7 +144,7 @@ async function handleSubmit() {
     const trustedServer: Partial<ITrustedGameServer> = {
       id: clientId.value,
       ownerID: ownerId.value,
-      trustLevel: trustLevel.value,
+      trustLevel: trustLevel.value
     };
     console.debug('create', trustedServer);
     await adminService.createTrustedServer(trustedServer);

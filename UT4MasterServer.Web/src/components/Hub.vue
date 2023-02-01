@@ -50,8 +50,8 @@ import MatchList from './MatchList.vue';
 const props = defineProps({
   hub: {
     type: Object as PropType<IGameHub>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const showMatches = shallowRef(false);

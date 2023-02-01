@@ -49,5 +49,5 @@ export const AccountStore = {
       console.error('Error fetching all accounts:', err);
     }
     return [];
-  },
+  }
 };

@@ -12,5 +12,5 @@ export const valid: Directive = {
     binding: DirectiveBinding<boolean>
   ): void => {
     element.setCustomValidity(binding.value ? '' : 'invalid');
-  },
+  }
 };

@@ -60,8 +60,8 @@ import { shallowRef } from 'vue';
 defineProps({
   title: {
     type: String,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const adding = shallowRef(false);

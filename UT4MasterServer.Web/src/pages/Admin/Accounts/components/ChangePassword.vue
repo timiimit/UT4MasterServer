@@ -62,8 +62,8 @@ import CryptoJS from 'crypto-js';
 const props = defineProps({
   account: {
     type: Object as PropType<IAccount>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 const emit = defineEmits(['updated']);
@@ -84,7 +84,7 @@ async function handleSubmit() {
     status.value = AsyncStatus.BUSY;
     const request = {
       newPassword: CryptoJS.SHA512(newPassword.value).toString(),
-      iAmSure: iAmSure.value,
+      iAmSure: iAmSure.value
     };
     await adminService.changePassword(props.account.ID, request);
     status.value = AsyncStatus.OK;

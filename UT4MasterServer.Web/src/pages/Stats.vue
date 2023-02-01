@@ -78,7 +78,7 @@ const statWindowOptions = [
   { text: 'All Time', value: StatisticWindow.AllTime },
   { text: 'Daily', value: StatisticWindow.Daily },
   { text: 'Weekly', value: StatisticWindow.Weekly },
-  { text: 'Monthly', value: StatisticWindow.Monthly },
+  { text: 'Monthly', value: StatisticWindow.Monthly }
 ];
 
 const statSections: IStatisticSection[] = [
@@ -100,8 +100,8 @@ const statSections: IStatisticSection[] = [
           Statistic.Losses,
           Statistic.Kills,
           Statistic.Deaths,
-          Statistic.Suicides,
-        ],
+          Statistic.Suicides
+        ]
       },
       {
         heading: 'Kill Achievements',
@@ -119,8 +119,8 @@ const statSections: IStatisticSection[] = [
           Statistic.AmazingCombos,
           Statistic.AirRox,
           Statistic.FlakShreds,
-          Statistic.AirSnot,
-        ],
+          Statistic.AirSnot
+        ]
       },
       {
         heading: 'Power Up Achievements',
@@ -136,10 +136,10 @@ const statSections: IStatisticSection[] = [
           Statistic.ArmorVestCount,
           Statistic.ArmorPadsCount,
           Statistic.HelmetCount,
-          Statistic.KegCount,
-        ],
-      },
-    ],
+          Statistic.KegCount
+        ]
+      }
+    ]
   },
   {
     heading: 'Weapon Stats',
@@ -147,7 +147,7 @@ const statSections: IStatisticSection[] = [
       {
         heading: 'Impact Hammer',
         headingIcon: 'ih.png',
-        stats: [Statistic.ImpactHammerKills, Statistic.ImpactHammerDeaths],
+        stats: [Statistic.ImpactHammerKills, Statistic.ImpactHammerDeaths]
       },
       {
         heading: 'Enforcer',
@@ -157,8 +157,8 @@ const statSections: IStatisticSection[] = [
           Statistic.EnforcerDeaths,
           Statistic.EnforcerShots,
           Statistic.EnforcerHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Bio Rifle',
@@ -168,8 +168,8 @@ const statSections: IStatisticSection[] = [
           Statistic.BioRifleDeaths,
           Statistic.BioRifleShots,
           Statistic.BioRifleHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Grenade Launcher',
@@ -179,8 +179,8 @@ const statSections: IStatisticSection[] = [
           Statistic.BioLauncherDeaths,
           Statistic.BioLauncherShots,
           Statistic.BioLauncherHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Shock Rifle',
@@ -194,8 +194,8 @@ const statSections: IStatisticSection[] = [
           Statistic.ShockComboDeaths,
           Statistic.ShockRifleShots,
           Statistic.ShockRifleHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Link Gun',
@@ -207,8 +207,8 @@ const statSections: IStatisticSection[] = [
           Statistic.LinkBeamDeaths,
           Statistic.LinkShots,
           Statistic.LinkHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Minigun',
@@ -220,8 +220,8 @@ const statSections: IStatisticSection[] = [
           Statistic.MinigunShardDeaths,
           Statistic.MinigunShots,
           Statistic.MinigunHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Flak Cannon',
@@ -233,8 +233,8 @@ const statSections: IStatisticSection[] = [
           Statistic.FlakShellDeaths,
           Statistic.FlakShots,
           Statistic.FlakHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Rocket Launcher',
@@ -244,8 +244,8 @@ const statSections: IStatisticSection[] = [
           Statistic.RocketDeaths,
           Statistic.RocketShots,
           Statistic.RocketHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Sniper',
@@ -257,8 +257,8 @@ const statSections: IStatisticSection[] = [
           Statistic.SniperHeadshotDeaths,
           Statistic.SniperShots,
           Statistic.SniperHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Lightning Rifle',
@@ -270,8 +270,8 @@ const statSections: IStatisticSection[] = [
           Statistic.LightningRifleSecondaryDeaths,
           Statistic.LightningRifleShots,
           Statistic.LightningRifleHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Redeemer',
@@ -281,8 +281,8 @@ const statSections: IStatisticSection[] = [
           Statistic.RedeemerDeaths,
           Statistic.RedeemerShots,
           Statistic.RedeemerHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Instagib',
@@ -292,15 +292,15 @@ const statSections: IStatisticSection[] = [
           Statistic.InstagibDeaths,
           Statistic.InstagibShots,
           Statistic.InstagibHits,
-          Statistic.Accuracy,
-        ],
+          Statistic.Accuracy
+        ]
       },
       {
         heading: 'Translocator',
         headingIcon: 'xloc.png',
-        stats: [Statistic.TelefragKills, Statistic.TelefragDeaths],
-      },
-    ],
+        stats: [Statistic.TelefragKills, Statistic.TelefragDeaths]
+      }
+    ]
   },
   {
     heading: 'Miscellaneous',
@@ -322,8 +322,8 @@ const statSections: IStatisticSection[] = [
           Statistic.NumImpactJumps,
           Statistic.NumRocketJumps,
           Statistic.SlideDist,
-          Statistic.WallRunDist,
-        ],
+          Statistic.WallRunDist
+        ]
       },
       {
         heading: 'Capture the Flag',
@@ -352,11 +352,11 @@ const statSections: IStatisticSection[] = [
           Statistic.FlagGrabs,
           Statistic.AttackerScore,
           Statistic.DefenderScore,
-          Statistic.SupporterScore,
-        ],
-      },
-    ],
-  },
+          Statistic.SupporterScore
+        ]
+      }
+    ]
+  }
 ];
 
 async function loadStats() {

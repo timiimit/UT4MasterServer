@@ -81,7 +81,7 @@ async function handleSubmit() {
   try {
     status.value = AsyncStatus.BUSY;
     const request: IChangeEmailRequest = {
-      newEmail: newEmail.value,
+      newEmail: newEmail.value
     };
     await accountService.changeEmail(request);
     status.value = AsyncStatus.OK;

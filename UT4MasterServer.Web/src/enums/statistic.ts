@@ -169,5 +169,5 @@ export enum Statistic {
   'AttackerScore' = 'AttackerScore',
   'DefenderScore' = 'DefenderScore',
   'SupporterScore' = 'SupporterScore',
-  'TeamKills' = 'TeamKills',
+  'TeamKills' = 'TeamKills'
 }

@@ -6,7 +6,7 @@ export function useClientOptions() {
   const reservedIds = [
     '34a02cf8f4414e29b15921876da36f9a',
     '1252412dc7704a9690f6ea4611bc81ee',
-    '6ff43e743edc4d1dbac3594877b4bed9',
+    '6ff43e743edc4d1dbac3594877b4bed9'
   ];
 
   function isReservedClient(client: IClient) {
@@ -29,6 +29,6 @@ export function useClientOptions() {
   return {
     isReservedClient,
     isValidName,
-    getClientOptionsForTrustedServer,
+    getClientOptionsForTrustedServer
   };
 }

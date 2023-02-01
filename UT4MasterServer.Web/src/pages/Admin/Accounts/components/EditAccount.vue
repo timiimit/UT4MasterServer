@@ -13,8 +13,8 @@ import EditAccountFlags from './EditAccountFlags.vue';
 defineProps({
   account: {
     type: Object as PropType<IAccount>,
-    required: true,
-  },
+    required: true
+  }
 });
 
 defineEmits(['updated']);

@@ -23,23 +23,23 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 const props = defineProps({
   subject: {
     type: String,
-    required: true,
+    required: true
   },
   customClass: {
     type: String,
-    default: '',
+    default: ''
   },
   title: {
     type: String,
-    default: 'Copy',
-  },
+    default: 'Copy'
+  }
 });
 
 const copied = shallowRef(false);
 
 const classes = computed(() => ({
   [props.customClass]: true,
-  'text-success': copied.value,
+  'text-success': copied.value
 }));
 
 function copy() {
