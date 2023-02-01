@@ -1,4 +1,4 @@
-  <!-- 
+<!-- 
     Rough replacement for the playerCard UI, e.g.
   https://www.epicgames.com/unrealtournament/en-US/playerCard?playerId=0b0f09b400854b9b98932dd9e5abe7c5
   -->
@@ -10,26 +10,38 @@
         <tbody>
           <tr class="table-primary">
             <th scope="row">
-              <img class="avatar" :src="`/assets/avatars/${AccountStore.account?.Avatar ?? 'UT.Avatar.0'}.png`" />
+              <img
+                class="avatar"
+                :src="`/assets/avatars/${
+                  AccountStore.account?.Avatar ?? 'UT.Avatar.0'
+                }.png`"
+              />
               {{ AccountStore.account?.Username }}
             </th>
             <td>
-              <img class="flag" :src="`/assets/flags/${AccountStore.account?.CountryFlag ?? 'Unreal'}.png`" />
+              <img
+                class="flag"
+                :src="`/assets/flags/${
+                  AccountStore.account?.CountryFlag ?? 'Unreal'
+                }.png`"
+              />
               {{ AccountStore.account?.CountryFlag }}
             </td>
           </tr>
           <tr class="table-primary">
-            <th scope="row">
-              Level (Experience)
-            </th>
+            <th scope="row">Level (Experience)</th>
             <td>
               {{ AccountStore.account?.Level }} ({{ AccountStore.account?.XP }})
             </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">Challenge Stars</th>
-            <td>{{ AccountStore.account?.BlueStars }}<span class="blue star">★</span>{{ AccountStore.account?.GoldStars }}<span
-                class="gold star">★</span></td>
+            <td>
+              {{ AccountStore.account?.BlueStars
+              }}<span class="blue star">★</span
+              >{{ AccountStore.account?.GoldStars
+              }}<span class="gold star">★</span>
+            </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">ID</th>

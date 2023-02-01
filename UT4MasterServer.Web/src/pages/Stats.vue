@@ -4,13 +4,28 @@
     <div class="form-group row">
       <div class="col-sm-6">
         <label for="accountId" class="col-sm-6 col-form-label">Account</label>
-        <Autocomplete :value="accountId" :items="accounts" item-key="ID" search-key="Username"
-          @select="handleSelectAccount" />
+        <Autocomplete
+          :value="accountId"
+          :items="accounts"
+          item-key="ID"
+          search-key="Username"
+          @select="handleSelectAccount"
+        />
       </div>
       <div class="col-sm-6">
-        <label for="statWindow" class="col-sm-6 col-form-label">Timeframe</label>
-        <select class="form-select" v-model="statWindow" @change="handleParameterChange">
-          <option :value="window.value" v-for="window in statWindowOptions">
+        <label for="statWindow" class="col-sm-6 col-form-label"
+          >Timeframe</label
+        >
+        <select
+          v-model="statWindow"
+          class="form-select"
+          @change="handleParameterChange"
+        >
+          <option
+            v-for="window in statWindowOptions"
+            :key="window.value"
+            :value="window.value"
+          >
             {{ window.text }}
           </option>
         </select>
@@ -20,7 +35,12 @@
   <LoadingPanel :status="statsStatus">
     <template v-if="accountId">
       <h5>Viewing stats for: {{ viewingAccount?.Username }}</h5>
-      <StatSection :data="stats" :section="section" v-for="section in statSections" />
+      <StatSection
+        v-for="section in statSections"
+        :key="section.heading"
+        :data="stats"
+        :section="section"
+      />
     </template>
     <h5 v-else class="text-center">Select a player to view stats</h5>
   </LoadingPanel>
@@ -48,7 +68,9 @@ const stats = shallowRef<IStatisticData[]>([]);
 const accountsStatus = shallowRef(AsyncStatus.OK);
 const accountId = shallowRef<string | undefined>(undefined);
 const accounts = computed(() => AccountStore.accounts ?? []);
-const viewingAccount = computed(() => accounts.value.find((a) => a.ID === accountId.value));
+const viewingAccount = computed(() =>
+  accounts.value.find((a) => a.ID === accountId.value)
+);
 
 const statsService = new StatsService();
 
@@ -125,10 +147,7 @@ const statSections: IStatisticSection[] = [
       {
         heading: 'Impact Hammer',
         headingIcon: 'ih.png',
-        stats: [
-          Statistic.ImpactHammerKills,
-          Statistic.ImpactHammerDeaths
-        ]
+        stats: [Statistic.ImpactHammerKills, Statistic.ImpactHammerDeaths]
       },
       {
         heading: 'Enforcer',
@@ -279,10 +298,7 @@ const statSections: IStatisticSection[] = [
       {
         heading: 'Translocator',
         headingIcon: 'xloc.png',
-        stats: [
-          Statistic.TelefragKills,
-          Statistic.TelefragDeaths
-        ]
+        stats: [Statistic.TelefragKills, Statistic.TelefragDeaths]
       }
     ]
   },
@@ -340,7 +356,7 @@ const statSections: IStatisticSection[] = [
         ]
       }
     ]
-  },
+  }
 ];
 
 async function loadStats() {
@@ -349,10 +365,12 @@ async function loadStats() {
   }
   try {
     statsStatus.value = AsyncStatus.BUSY;
-    stats.value = await statsService.getStats(accountId.value, statWindow.value);
+    stats.value = await statsService.getStats(
+      accountId.value,
+      statWindow.value
+    );
     statsStatus.value = AsyncStatus.OK;
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     statsStatus.value = AsyncStatus.ERROR;
     console.error(err);
   }
@@ -367,8 +385,7 @@ async function loadAccounts() {
     await AccountStore.fetchAllAccounts();
     accountId.value = SessionStore.session?.account_id?.toString();
     accountsStatus.value = AsyncStatus.OK;
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     accountsStatus.value = AsyncStatus.ERROR;
     console.error(err);
   }
@@ -390,5 +407,4 @@ onMounted(async () => {
   await loadAccounts();
   loadStats();
 });
-
 </script>

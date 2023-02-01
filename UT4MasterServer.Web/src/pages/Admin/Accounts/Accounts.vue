@@ -1,61 +1,87 @@
 <template>
-    <CrudPage title="Accounts">
-        <template #filters>
-            <div>
-                <input type="text" class="form-control" placeholder="Filter by Username..." v-model="filterText" />
-            </div>
-            <div>
-                <Multiselect placeholder="Filter by Roles..." v-model="filterRoles" :options="flagOptions"
-                    mode="tags" />
-            </div>
-        </template>
-        <LoadingPanel :status="status" @load="loadAccounts" auto-load>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Roles</th>
-                        <th />
-                    </tr>
-                </thead>
-                <tbody>
-                    <template v-for="account in filteredAccounts.slice(pageStart, pageEnd)" :key="objectHash(account)">
-                        <tr :class="{ 'table-light': account.editing }">
-                            <td class="username">{{ account.Username }}</td>
-                            <td>{{ account.Roles?.join(', ') }}</td>
-                            <td class="actions">
-                                <button class="btn btn-icon" @click="account.editing = !account.editing">
-                                    <FontAwesomeIcon icon="fa-regular fa-pen-to-square" />
-                                </button>
-                                <button v-if="canDelete(account)" class="btn btn-icon" @click="handleDelete(account)">
-                                    <FontAwesomeIcon icon="fa-solid fa-trash-can" />
-                                </button>
-                            </td>
-                        </tr>
-                        <tr v-if="account.editing" class="edit-row table-light">
-                            <td colspan="3">
-                                <EditAccount :account="account" @updated="handleUpdated(account)" />
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-            <Paging :items="filteredAccounts" :page-size="pageSize" @update="handlePagingUpdate" />
-        </LoadingPanel>
-    </CrudPage>
+  <CrudPage title="Accounts">
+    <template #filters>
+      <div>
+        <input
+          v-model="filterText"
+          type="text"
+          class="form-control"
+          placeholder="Filter by Username..."
+        />
+      </div>
+      <div>
+        <Multiselect
+          v-model="filterRoles"
+          placeholder="Filter by Roles..."
+          :options="flagOptions"
+          mode="tags"
+        />
+      </div>
+    </template>
+    <LoadingPanel :status="status" auto-load @load="loadAccounts">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Roles</th>
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          <template
+            v-for="account in filteredAccounts.slice(pageStart, pageEnd)"
+            :key="objectHash(account)"
+          >
+            <tr :class="{ 'table-light': account.editing }">
+              <td class="username">{{ account.Username }}</td>
+              <td>{{ account.Roles?.join(', ') }}</td>
+              <td class="actions">
+                <button
+                  class="btn btn-icon"
+                  @click="account.editing = !account.editing"
+                >
+                  <FontAwesomeIcon icon="fa-regular fa-pen-to-square" />
+                </button>
+                <button
+                  v-if="canDelete(account)"
+                  class="btn btn-icon"
+                  @click="handleDelete(account)"
+                >
+                  <FontAwesomeIcon icon="fa-solid fa-trash-can" />
+                </button>
+              </td>
+            </tr>
+            <tr v-if="account.editing" class="edit-row table-light">
+              <td colspan="3">
+                <EditAccount
+                  :account="account"
+                  @updated="handleUpdated(account)"
+                />
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <Paging
+        :items="filteredAccounts"
+        :page-size="pageSize"
+        @update="handlePagingUpdate"
+      />
+    </LoadingPanel>
+  </CrudPage>
 </template>
 
 <style lang="scss" scoped>
 td.username {
-    width: 30%;
+  width: 30%;
 }
 
 td.actions {
-    width: 6rem;
+  width: 6rem;
 
-    button:not(:last-child) {
-        margin-right: 1rem;
-    }
+  button:not(:last-child) {
+    margin-right: 1rem;
+  }
 }
 </style>
 
@@ -77,7 +103,7 @@ import AdminService from '@/services/admin-service';
 import Multiselect from '@vueform/multiselect';
 
 interface IGridAccount extends IAccount {
-    editing?: boolean;
+  editing?: boolean;
 }
 
 const accountService = new AccountService();
@@ -88,55 +114,79 @@ const filterText = shallowRef('');
 const filterRoles = shallowRef<AccountFlag[]>([]);
 
 const allFlags = shallowRef<string[]>([]);
-const flagOptions = computed(() => allFlags.value.map((f) => ({ label: f, value: f })));
+const flagOptions = computed(() =>
+  allFlags.value.map((f) => ({ label: f, value: f }))
+);
 
 const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 
-const usernameFiltered = computed(() => accounts.value.filter((a) => a.Username.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())));
+const usernameFiltered = computed(() =>
+  accounts.value.filter((a) =>
+    a.Username.toLocaleLowerCase().includes(
+      filterText.value.toLocaleLowerCase()
+    )
+  )
+);
 
-const filteredAccounts = computed(() => usernameFiltered.value.filter((a) => filterRoles.value.length === 0 || a.Roles?.some((r) => filterRoles.value.includes(r))));
+const filteredAccounts = computed(() =>
+  usernameFiltered.value.filter(
+    (a) =>
+      filterRoles.value.length === 0 ||
+      a.Roles?.some((r) => filterRoles.value.includes(r))
+  )
+);
 
 async function loadAccounts() {
-    try {
-        status.value = AsyncStatus.BUSY;
-        const [allPossibleFlags, allAccounts] = await Promise.all([adminService.getAccountFlagOptions(), accountService.getAllAccounts()]);
-        allFlags.value = allPossibleFlags;
-        accounts.value = allAccounts;
-        status.value = AsyncStatus.OK;
-    } catch (err: unknown) {
-        status.value = AsyncStatus.ERROR;
-        console.error('Error loading accounts', err);
-    }
+  try {
+    status.value = AsyncStatus.BUSY;
+    const [allPossibleFlags, allAccounts] = await Promise.all([
+      adminService.getAccountFlagOptions(),
+      accountService.getAllAccounts()
+    ]);
+    allFlags.value = allPossibleFlags;
+    accounts.value = allAccounts;
+    status.value = AsyncStatus.OK;
+  } catch (err: unknown) {
+    status.value = AsyncStatus.ERROR;
+    console.error('Error loading accounts', err);
+  }
 }
 
 function canDelete(account: IGridAccount) {
-    const accountIsUser = AccountStore.account?.ID === account.ID;
-    const accountIsAdmin = account.Roles?.includes(AccountFlag.Admin);
-    const accountIsModerator = account.Roles?.includes(AccountFlag.Moderator);
-    const userIsModerator = AccountStore.account?.Roles?.includes(AccountFlag.Moderator);
+  const accountIsUser = AccountStore.account?.ID === account.ID;
+  const accountIsAdmin = account.Roles?.includes(AccountFlag.Admin);
+  const accountIsModerator = account.Roles?.includes(AccountFlag.Moderator);
+  const userIsModerator = AccountStore.account?.Roles?.includes(
+    AccountFlag.Moderator
+  );
 
-    return !accountIsUser && !accountIsAdmin && !(userIsModerator && (accountIsAdmin || accountIsModerator));
+  return (
+    !accountIsUser &&
+    !accountIsAdmin &&
+    !(userIsModerator && (accountIsAdmin || accountIsModerator))
+  );
 }
 
 async function handleDelete(account: IGridAccount) {
-    // TODO: something less hideous than browser confirm dialog
-    const confirmDelete = confirm(`Are you sure you want to delete account ${account.Username}?`);
-    if (confirmDelete) {
-        try {
-            status.value = AsyncStatus.BUSY;
-            await adminService.deleteAccount(account.ID);
-            loadAccounts();
-            status.value = AsyncStatus.OK;
-        } catch (err: unknown) {
-            status.value = AsyncStatus.ERROR;
-            console.error('Error deleting account', err);
-        }
+  // TODO: something less hideous than browser confirm dialog
+  const confirmDelete = confirm(
+    `Are you sure you want to delete account ${account.Username}?`
+  );
+  if (confirmDelete) {
+    try {
+      status.value = AsyncStatus.BUSY;
+      await adminService.deleteAccount(account.ID);
+      loadAccounts();
+      status.value = AsyncStatus.OK;
+    } catch (err: unknown) {
+      status.value = AsyncStatus.ERROR;
+      console.error('Error deleting account', err);
     }
+  }
 }
 
 function handleUpdated(account: IGridAccount) {
-    account.editing = false;
-    loadAccounts();
+  account.editing = false;
+  loadAccounts();
 }
-
 </script>

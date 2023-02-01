@@ -1,26 +1,50 @@
 <template>
   <LoadingPanel :status="status" :error="errorMessage">
-    <form :class="{ 'was-validated': submitAttempted }" @submit.prevent="handleSubmit" novalidate>
+    <form
+      :class="{ 'was-validated': submitAttempted }"
+      novalidate
+      @submit.prevent="handleSubmit"
+    >
       <fieldset>
         <legend>Change Username</legend>
         <div class="form-group row">
-          <label for="currentUsername" class="col-sm-12 col-form-label">Current Username</label>
+          <label for="currentUsername" class="col-sm-12 col-form-label"
+            >Current Username</label
+          >
           <div class="col-sm-6">
-            <input type="text" class="form-control" id="currentUsername" name="currentUsername"
-              v-model="currentUsername" readonly disabled />
+            <input
+              id="currentUsername"
+              v-model="currentUsername"
+              type="text"
+              class="form-control"
+              name="currentUsername"
+              readonly
+              disabled
+            />
           </div>
         </div>
         <div class="form-group row">
-          <label for="newUsername" class="col-sm-12 col-form-label">New Username</label>
+          <label for="newUsername" class="col-sm-12 col-form-label"
+            >New Username</label
+          >
           <div class="col-sm-6">
-            <input type="text" class="form-control" id="newUsername" name="newUsername" placeholder="New Username"
-              v-model="newUsername" required />
+            <input
+              id="newUsername"
+              v-model="newUsername"
+              type="text"
+              class="form-control"
+              name="newUsername"
+              placeholder="New Username"
+              required
+            />
             <div class="invalid-feedback">New Username is required</div>
           </div>
         </div>
         <div class="form-group row">
           <div class="col-sm-12">
-            <button type="submit" class="btn btn-primary">Change Username</button>
+            <button type="submit" class="btn btn-primary">
+              Change Username
+            </button>
           </div>
         </div>
       </fieldset>
@@ -49,7 +73,9 @@ const errorMessage = shallowRef('Error changing username. Please try again.');
 
 async function handleSubmit() {
   submitAttempted.value = true;
-  if (!formValid.value) { return; }
+  if (!formValid.value) {
+    return;
+  }
   try {
     status.value = AsyncStatus.BUSY;
     const request: IChangeUsernameRequest = {
@@ -59,8 +85,7 @@ async function handleSubmit() {
     status.value = AsyncStatus.OK;
     AccountStore.fetchUserAccount();
     router.push('/Profile');
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;
   }
@@ -71,4 +96,3 @@ onMounted(async () => {
   AccountStore.fetchUserAccount();
 });
 </script>
-

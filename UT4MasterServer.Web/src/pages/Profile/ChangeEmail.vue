@@ -1,21 +1,45 @@
 <template>
   <LoadingPanel :status="status" :error="errorMessage">
-    <form :class="{ 'was-validated': submitAttempted }" @submit.prevent="handleSubmit" novalidate>
+    <form
+      :class="{ 'was-validated': submitAttempted }"
+      novalidate
+      @submit.prevent="handleSubmit"
+    >
       <fieldset>
         <legend>Change Email</legend>
         <div class="form-group row">
-          <label for="currentEmail" class="col-sm-12 col-form-label">Current Email</label>
+          <label for="currentEmail" class="col-sm-12 col-form-label"
+            >Current Email</label
+          >
           <div class="col-sm-6">
-            <input type="email" class="form-control" id="currentEmail" name="currentEmail" v-model="currentEmail"
-              readonly disabled />
+            <input
+              id="currentEmail"
+              v-model="currentEmail"
+              type="email"
+              class="form-control"
+              name="currentEmail"
+              readonly
+              disabled
+            />
           </div>
         </div>
         <div class="form-group row">
-          <label for="newEmail" class="col-sm-12 col-form-label">New Email</label>
+          <label for="newEmail" class="col-sm-12 col-form-label"
+            >New Email</label
+          >
           <div class="col-sm-6">
-            <input type="email" placeholder="player@example.com" class="form-control" id="newEmail" name="newEmail"
-              v-model="newEmail" required />
-            <div class="invalid-feedback">A valid email address is required</div>
+            <input
+              id="newEmail"
+              v-model="newEmail"
+              type="email"
+              placeholder="player@example.com"
+              class="form-control"
+              name="newEmail"
+              required
+            />
+            <div class="invalid-feedback">
+              A valid email address is required
+            </div>
           </div>
         </div>
         <div class="form-group row">
@@ -25,7 +49,6 @@
         </div>
       </fieldset>
     </form>
-
   </LoadingPanel>
 </template>
 
@@ -51,7 +74,9 @@ const errorMessage = shallowRef('Error changing email. Please try again.');
 
 async function handleSubmit() {
   submitAttempted.value = true;
-  if (!formValid.value) { return; }
+  if (!formValid.value) {
+    return;
+  }
 
   try {
     status.value = AsyncStatus.BUSY;
@@ -62,8 +87,7 @@ async function handleSubmit() {
     status.value = AsyncStatus.OK;
     AccountStore.fetchUserAccount();
     router.push('/Profile');
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;
   }
@@ -74,4 +98,3 @@ onMounted(async () => {
   AccountStore.fetchUserAccount();
 });
 </script>
-

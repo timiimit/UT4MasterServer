@@ -4,14 +4,25 @@
       <div>
         <label>
           <RouterLink to="/Profile/PlayerCard">Username:</RouterLink>
-        </label> {{ AccountStore.account?.Username ?? SessionStore.username }}
+        </label>
+        {{ AccountStore.account?.Username ?? SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">
           <label>Auth Code: </label>
           <span v-if="authCode">{{ authCode }}</span>
-          <button type="button" class="btn btn-sm btn-primary" @click="getAuthCode">Get Code</button>
-          <CopyButton v-if="authCode" :subject="authCode" custom-class="btn-secondary" />
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            @click="getAuthCode"
+          >
+            Get Code
+          </button>
+          <CopyButton
+            v-if="authCode"
+            :subject="authCode"
+            custom-class="btn-secondary"
+          />
         </LoadingPanel>
       </div>
     </div>
@@ -59,8 +70,7 @@ async function getAuthCode() {
     status.value = AsyncStatus.BUSY;
     authCode.value = await service.getAuthCode();
     status.value = AsyncStatus.OK;
-  }
-  catch (err: unknown) {
+  } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
   }
 }
@@ -69,6 +79,5 @@ onMounted(() => {
   if (AccountStore.account === null) {
     AccountStore.fetchUserAccount();
   }
-})
-
+});
 </script>

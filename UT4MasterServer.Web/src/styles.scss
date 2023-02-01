@@ -1,57 +1,57 @@
 body {
-    background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .main-content {
-    margin-bottom: 65px;
+  margin-bottom: 65px;
 }
 
 .form-group {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .flex-v-center {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .code {
-    font-family: monospace;
-    background-color: rgba(0, 0, 0, 0.05);
-    padding: 2px 4px;
-    margin: -2px -4px;
+  font-family: monospace;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px 4px;
+  margin: -2px -4px;
 }
 
 .codeblock {
-    margin: 10px 0;
-    padding: 10px;
-    position: relative;
+  margin: 10px 0;
+  padding: 10px;
+  position: relative;
 }
 
 .btn {
-    &.btn-smaller {
-        padding: 2px 4px;
-    }
+  &.btn-smaller {
+    padding: 2px 4px;
+  }
 
-    &.btn-icon {
-        padding: 0;
-        font-size: 1rem;
+  &.btn-icon {
+    padding: 0;
+    font-size: 1rem;
 
-        &.btn-lg {
-            font-size: 1.25rem;
-        }
+    &.btn-lg {
+      font-size: 1.25rem;
     }
+  }
 }
 
 .list-group-item {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .visibly-hidden {
-    position: absolute;
-    left: -10000px;
-    height: 0;
-    width: 0;
+  position: absolute;
+  left: -10000px;
+  height: 0;
+  width: 0;
 }
