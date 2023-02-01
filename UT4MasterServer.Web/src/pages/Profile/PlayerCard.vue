@@ -16,7 +16,7 @@
                   AccountStore.account?.Avatar ?? 'UT.Avatar.0'
                 }.png`"
               />
-              {{ AccountStore.account?.Username }}
+              {{ AccountStore.account?.username }}
             </th>
             <td>
               <img
@@ -45,7 +45,7 @@
           </tr>
           <tr class="table-primary">
             <th scope="row">ID</th>
-            <td>{{ AccountStore.account?.ID }}</td>
+            <td>{{ AccountStore.account?.id }}</td>
           </tr>
         </tbody>
       </table>

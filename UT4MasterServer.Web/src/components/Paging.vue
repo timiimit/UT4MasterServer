@@ -1,8 +1,8 @@
 <template>
   <div v-if="pages > 1" class="paging d-flex justify-content-between">
     <div class="showing-items">
-      Showing items {{ start + 1 }} -
-      {{ end < items.length ? end : items.length }} of {{ items.length }}
+      Showing items {{ start + 1 }} - {{ end < itemCount ? end : itemCount }} of
+      {{ itemCount }}
     </div>
     <div class="page-buttons">
       <button
@@ -22,12 +22,12 @@
 
 <script lang="ts" setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { PropType, shallowRef, computed, watch, onMounted } from 'vue';
+import { shallowRef, computed, watch, onMounted } from 'vue';
 
 const props = defineProps({
-  items: {
-    type: Array as PropType<unknown[]>,
-    required: true
+  itemCount: {
+    type: Number,
+    default: 0
   },
   pageSize: {
     type: Number,
@@ -37,7 +37,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update']);
 
-const pages = computed(() => Math.ceil(props.items.length / props.pageSize));
+const pages = computed(() => Math.ceil(props.itemCount / props.pageSize));
 const start = computed(() => currentPage.value * props.pageSize);
 const end = computed(() => currentPage.value * props.pageSize + props.pageSize);
 const hasNext = computed(() => currentPage.value < pages.value - 1);
@@ -65,7 +65,7 @@ function nextPage() {
 }
 
 watch(
-  () => props.items.length,
+  () => props.itemCount,
   () => {
     emitUpdate();
   }

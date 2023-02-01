@@ -59,7 +59,7 @@ async function handleSubmit() {
   submitAttempted.value = true;
   try {
     status.value = AsyncStatus.BUSY;
-    await adminService.setFlagsForAccount(props.account.ID, flags.value);
+    await adminService.setFlagsForAccount(props.account.id, flags.value);
     status.value = AsyncStatus.OK;
     emit('updated');
   } catch (err: unknown) {
@@ -72,8 +72,8 @@ async function loadData() {
   try {
     status.value = AsyncStatus.BUSY;
     const [allPossibleFlags, accountFlags] = await Promise.all([
-      adminService.getAccountFlagOptions(),
-      adminService.getFlagsForAccount(props.account.ID)
+      adminService.getRoleOptions(),
+      adminService.getFlagsForAccount(props.account.id)
     ]);
     flags.value = accountFlags;
     allFlags.value = allPossibleFlags;

@@ -1,4 +1,4 @@
-export enum AccountFlag {
+export enum Role {
   None = 'None',
   Admin = 'Admin',
   Moderator = 'Moderator',

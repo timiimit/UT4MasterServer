@@ -1,8 +1,10 @@
-import { IAccount } from '@/types/account';
+import { Role } from '@/enums/role';
+import { IAccount, IAccountExtended } from '@/types/account';
 import { IChangeEmailRequest } from '@/types/change-email-request';
 import { IChangePasswordRequest } from '@/types/change-password-request';
 import { IChangeUsernameRequest } from '@/types/change-username-request';
 import { IRegisterRequest } from '@/types/register-request';
+import { ISearchAccountsResponse } from '@/types/search-accounts-response';
 import HttpService from './http.service';
 
 export default class AccountService extends HttpService {
@@ -38,10 +40,30 @@ export default class AccountService extends HttpService {
   }
 
   async getAccount(id: string) {
-    return await this.get<IAccount>(`${this.personaBaseUrl}/account/${id}`);
+    return await this.get<IAccountExtended>(
+      `${this.personaBaseUrl}/account/${id}`
+    );
   }
 
-  async getAllAccounts() {
-    return await this.get<IAccount[]>(`${this.personaBaseUrl}/accounts`);
+  async searchAccounts<T extends IAccount = IAccount>(
+    query = '',
+    skip = 0,
+    take = 10,
+    includeRoles = false,
+    roles: Role[] | null = null
+  ) {
+    return await this.post<ISearchAccountsResponse<T>>(
+      `${this.personaBaseUrl}/accounts/search`,
+      { body: { query, skip, take, includeRoles, roles } },
+      false
+    );
+  }
+
+  async getAccountsByIds(ids: string[]) {
+    return await this.post<IAccount[]>(
+      `${this.personaBaseUrl}/accounts`,
+      { body: ids },
+      false
+    );
   }
 }

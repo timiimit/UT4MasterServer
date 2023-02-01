@@ -7,7 +7,7 @@ export default class AdminService extends HttpService {
   private baseUrl = `${__BACKEND_URL}/admin`;
 
   // Account
-  async getAccountFlagOptions() {
+  async getRoleOptions() {
     return await this.get<string[]>(`${this.baseUrl}/flags`);
   }
 

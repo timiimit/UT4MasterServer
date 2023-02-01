@@ -129,7 +129,7 @@ const errorMessage = shallowRef('Error changing email. Please try again.');
 
 async function handleSubmit() {
   submitAttempted.value = true;
-  if (!formValid.value || !AccountStore.account?.ID) {
+  if (!formValid.value || !AccountStore.account?.id) {
     return;
   }
   try {

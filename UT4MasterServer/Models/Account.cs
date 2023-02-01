@@ -158,7 +158,7 @@ public class Account
 			var flags = new List<string>();
 			var flagNamesAll = Enum.GetNames<AccountFlags>();
 			var flagValuesAll = Enum.GetValues<AccountFlags>();
-			for (int i = 0; i < flagNamesAll.Length; i++)
+			for (int i = 1; i < flagNamesAll.Length; i++)
 			{
 				if (Flags.HasFlag(flagValuesAll[i]))
 				{

@@ -46,6 +46,12 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
+	public async Task<IEnumerable<Account>> SearchAccountsAsync(string query)
+	{
+		var cursor = await accountCollection.FindAsync(account => account.Username.ToLower().Contains(query.ToLower()));
+		return await cursor.ToListAsync();
+	}
+
 	public async Task<Account?> GetAccountUsernameOrEmailAsync(string username)
 	{
 		var account = await GetAccountAsync(username);
@@ -59,13 +65,13 @@ public sealed class AccountService
 		return account;
 	}
 
-	public async Task<List<Account>> GetAccountsAsync(List<EpicID> ids)
+	public async Task<IEnumerable<Account>> GetAccountsAsync(IEnumerable<EpicID> ids)
 	{
 		var result = await accountCollection.FindAsync(account => ids.Contains(account.ID));
 		return await result.ToListAsync();
 	}
 
-	public async Task<List<Account>> GetAllAccountsAsync()
+	public async Task<IEnumerable<Account>> GetAllAccountsAsync()
 	{
 		var result = await accountCollection.FindAsync(account => true);
 		return await result.ToListAsync();

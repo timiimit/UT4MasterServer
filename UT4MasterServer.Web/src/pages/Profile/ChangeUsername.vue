@@ -65,7 +65,7 @@ const accountService = new AccountService();
 const router = useRouter();
 
 const status = shallowRef(AsyncStatus.OK);
-const currentUsername = shallowRef(AccountStore.account?.Username);
+const currentUsername = shallowRef(AccountStore.account?.username);
 const newUsername = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 const formValid = computed(() => newUsername.value?.length);
