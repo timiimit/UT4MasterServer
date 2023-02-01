@@ -10,6 +10,12 @@
   </button>
 </template>
 
+<style lang="scss" scoped>
+button.copy-button {
+  transition: background-color color 0.5s ease-in-out;
+}
+</style>
+
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -45,9 +51,3 @@ function copy() {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-button.copy-button {
-  transition: background-color color 0.5s ease-in-out;
-}
-</style>

@@ -27,24 +27,6 @@
   </transition>
 </template>
 
-<script lang="ts" setup>
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { shallowRef } from 'vue';
-
-defineProps({
-  title: {
-    type: String,
-    required: true,
-  },
-});
-
-const adding = shallowRef(false);
-
-function cancelAdd() {
-  adding.value = false;
-}
-</script>
-
 <style lang="scss" scoped>
 .header {
   width: 100%;
@@ -70,3 +52,21 @@ function cancelAdd() {
   }
 }
 </style>
+
+<script lang="ts" setup>
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { shallowRef } from 'vue';
+
+defineProps({
+  title: {
+    type: String,
+    required: true,
+  },
+});
+
+const adding = shallowRef(false);
+
+function cancelAdd() {
+  adding.value = false;
+}
+</script>

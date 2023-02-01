@@ -39,12 +39,35 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+.autocomplete-container {
+  position: relative;
+
+  .autocomplete-menu {
+    width: 100%;
+    max-height: 50vh;
+    overflow: auto;
+
+    .autocomplete-menu-item {
+      cursor: pointer;
+    }
+  }
+
+  button.clear-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { ref, PropType, computed, watch, onMounted } from 'vue';
 
 const props = defineProps({
   items: {
-    type: Array as PropType<Record<string, string>[]>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    type: Array as PropType<any[]>,
     default: () => [],
   },
   itemKey: {
@@ -68,7 +91,7 @@ const menuOpen = ref(false);
 const activeIndex = ref(-1);
 
 const filteredItems = computed(() =>
-  props.items.filter((i: Record<string, unknown>) =>
+  props.items.filter((i) =>
     ((props.searchKey ? i[props.searchKey] : i) as string)
       ?.toLocaleLowerCase()
       .includes(searchText.value.toLocaleLowerCase())
@@ -85,7 +108,7 @@ function handleBlur(event: FocusEvent) {
   }
 }
 
-function handleSelect(item?: Record<string, unknown>) {
+function handleSelect(item?: unknown) {
   emit('select', item);
   menuOpen.value = false;
 }
@@ -127,7 +150,8 @@ function valueChanged() {
   if (props.value) {
     const match = props.items.find((i) => i[props.itemKey] === props.value);
     if (match) {
-      searchText.value = match[props.searchKey];
+      const matchText = match[props.searchKey];
+      if (matchText !== undefined) searchText.value = matchText.toString();
     }
   }
 }
@@ -135,25 +159,3 @@ function valueChanged() {
 watch(() => props.value, valueChanged);
 onMounted(valueChanged);
 </script>
-
-<style lang="scss" scoped>
-.autocomplete-container {
-  position: relative;
-
-  .autocomplete-menu {
-    width: 100%;
-    max-height: 50vh;
-    overflow: auto;
-
-    .autocomplete-menu-item {
-      cursor: pointer;
-    }
-  }
-
-  button.clear-button {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-  }
-}
-</style>

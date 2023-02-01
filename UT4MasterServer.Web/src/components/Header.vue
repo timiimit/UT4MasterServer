@@ -123,6 +123,38 @@
   <UserInfo v-if="SessionStore.isAuthenticated" />
 </template>
 
+<style lang="scss" scoped>
+.navbar-nav {
+  width: 100%;
+  justify-content: flex-end;
+
+  .nav-link.router-link-active,
+  .navbar-nav .show > .nav-link {
+    color: var(--bs-navbar-active-color);
+  }
+
+  .nav-item.pull-right {
+    margin-right: 0;
+  }
+
+  .router-link-active {
+    font-weight: 700;
+  }
+}
+
+.user-info {
+  padding: 10px 0;
+  text-transform: none;
+  font-size: 1rem;
+
+  label {
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    margin-right: 5px;
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { onMounted, onUnmounted, shallowRef } from 'vue';
 import HeaderLink from './HeaderLink.vue';
@@ -160,35 +192,3 @@ onUnmounted(() => {
   document.removeEventListener('click', closeNav);
 });
 </script>
-
-<style lang="scss" scoped>
-.navbar-nav {
-  width: 100%;
-  justify-content: flex-end;
-
-  .nav-link.router-link-active,
-  .navbar-nav .show > .nav-link {
-    color: var(--bs-navbar-active-color);
-  }
-
-  .nav-item.pull-right {
-    margin-right: 0;
-  }
-
-  .router-link-active {
-    font-weight: 700;
-  }
-}
-
-.user-info {
-  padding: 10px 0;
-  text-transform: none;
-  font-size: 1rem;
-
-  label {
-    text-transform: uppercase;
-    font-size: 0.6rem;
-    margin-right: 5px;
-  }
-}
-</style>

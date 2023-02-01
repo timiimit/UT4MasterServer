@@ -53,10 +53,6 @@
   </div>
 </template>
 
-<script lang="ts" setup>
-import { AccountStore } from '@/stores/account-store';
-</script>
-
 <style lang="scss" scoped>
 .table td {
   vertical-align: middle;
@@ -80,3 +76,7 @@ img.avatar {
   }
 }
 </style>
+
+<script lang="ts" setup>
+import { AccountStore } from '@/stores/account-store';
+</script>

@@ -79,6 +79,13 @@
   </LoadingPanel>
 </template>
 
+<style lang="scss" scoped>
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>
+
 <script setup lang="ts">
 import { shallowRef, computed, PropType, onMounted } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
@@ -162,10 +169,3 @@ async function loadAccounts() {
 
 onMounted(loadAccounts);
 </script>
-
-<style lang="scss" scoped>
-.form-select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>

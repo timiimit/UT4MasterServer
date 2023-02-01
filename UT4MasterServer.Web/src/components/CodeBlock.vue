@@ -11,13 +11,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
-import CopyButton from './CopyButton.vue';
-
-const code = ref<HTMLElement | undefined>(undefined);
-</script>
-
 <style lang="scss" scoped>
 .copy-button {
   position: absolute;
@@ -25,3 +18,10 @@ const code = ref<HTMLElement | undefined>(undefined);
   right: 10px;
 }
 </style>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import CopyButton from './CopyButton.vue';
+
+const code = ref<HTMLElement | undefined>(undefined);
+</script>

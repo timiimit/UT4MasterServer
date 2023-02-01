@@ -20,6 +20,27 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+.hub {
+  cursor: pointer;
+
+  &.active-hub {
+    z-index: 1;
+    color: var(--bs-list-group-action-hover-color);
+    text-decoration: none;
+    background-color: var(--bs-list-group-action-hover-bg);
+  }
+
+  .server-name {
+    font-size: 1.1rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 80vw;
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { IGameHub } from '@/types/game-server';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -41,24 +62,3 @@ const trustedHub = computed(
     props.hub.attributes.UT_SERVERTRUSTLEVEL_i < 2
 );
 </script>
-
-<style lang="scss" scoped>
-.hub {
-  cursor: pointer;
-
-  &.active-hub {
-    z-index: 1;
-    color: var(--bs-list-group-action-hover-color);
-    text-decoration: none;
-    background-color: var(--bs-list-group-action-hover-bg);
-  }
-
-  .server-name {
-    font-size: 1.1rem;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 80vw;
-  }
-}
-</style>

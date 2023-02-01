@@ -22,6 +22,8 @@
   </LoadingPanel>
 </template>
 
+<style src="@vueform/multiselect/themes/default.css"></style>
+
 <script setup lang="ts">
 import { shallowRef, computed, onMounted, PropType } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
@@ -84,5 +86,3 @@ async function loadData() {
 
 onMounted(loadData);
 </script>
-
-<style src="@vueform/multiselect/themes/default.css"></style>

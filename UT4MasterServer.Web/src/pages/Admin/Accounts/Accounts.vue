@@ -71,6 +71,20 @@
   </CrudPage>
 </template>
 
+<style lang="scss" scoped>
+td.username {
+  width: 30%;
+}
+
+td.actions {
+  width: 6rem;
+
+  button:not(:last-child) {
+    margin-right: 1rem;
+  }
+}
+</style>
+
 <script lang="ts" setup>
 import { shallowRef, ref, computed } from 'vue';
 import CrudPage from '@/components/CrudPage.vue';
@@ -176,17 +190,3 @@ function handleUpdated(account: IGridAccount) {
   loadAccounts();
 }
 </script>
-
-<style lang="scss" scoped>
-td.username {
-  width: 30%;
-}
-
-td.actions {
-  width: 6rem;
-
-  button:not(:last-child) {
-    margin-right: 1rem;
-  }
-}
-</style>

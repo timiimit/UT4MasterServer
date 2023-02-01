@@ -12,6 +12,16 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+h5,
+div {
+  text-transform: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+</style>
+
 <script setup lang="ts">
 import { IGameHub } from '@/types/game-server';
 import { PropType } from 'vue';
@@ -24,13 +34,3 @@ defineProps({
   },
 });
 </script>
-
-<style lang="scss" scoped>
-h5,
-div {
-  text-transform: none;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-</style>

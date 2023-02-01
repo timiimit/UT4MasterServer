@@ -31,6 +31,31 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+h5,
+div {
+  text-transform: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 80vw;
+}
+
+.alert {
+  margin-top: 0.5rem;
+
+  .players {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    div {
+      margin: 0 0.5rem;
+    }
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { IGameServer } from '@/types/game-server';
 import { PropType, shallowRef } from 'vue';
@@ -59,28 +84,3 @@ function getPlayerName(id: string) {
   return player?.Username;
 }
 </script>
-
-<style lang="scss" scoped>
-h5,
-div {
-  text-transform: none;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 80vw;
-}
-
-.alert {
-  margin-top: 0.5rem;
-
-  .players {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-
-    div {
-      margin: 0 0.5rem;
-    }
-  }
-}
-</style>

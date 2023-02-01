@@ -74,6 +74,16 @@
   </CrudPage>
 </template>
 
+<style lang="scss" scoped>
+td.actions {
+  width: 6rem;
+
+  button:not(:last-child) {
+    margin-right: 1rem;
+  }
+}
+</style>
+
 <script lang="ts" setup>
 import { shallowRef, ref, computed } from 'vue';
 import CrudPage from '@/components/CrudPage.vue';
@@ -143,13 +153,3 @@ async function handleDelete(client: IGridClient) {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-td.actions {
-  width: 6rem;
-
-  button:not(:last-child) {
-    margin-right: 1rem;
-  }
-}
-</style>

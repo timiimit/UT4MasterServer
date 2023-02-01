@@ -15,6 +15,21 @@
   </nav>
 </template>
 
+<style lang="scss" scoped>
+.navbar {
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  padding: 10px;
+  z-index: 10;
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue';
 import { ServerStore } from '@/stores/server-store';
@@ -76,18 +91,3 @@ onUnmounted(() => {
   document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
-
-<style lang="scss" scoped>
-.navbar {
-  width: 100%;
-  position: fixed;
-  bottom: 0;
-  padding: 10px;
-  z-index: 10;
-
-  .container {
-    display: flex;
-    justify-content: space-between;
-  }
-}
-</style>

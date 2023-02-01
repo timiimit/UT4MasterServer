@@ -16,6 +16,32 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+.loading-panel-container {
+  position: relative;
+
+  .loading-panel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-color: white;
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .spinner {
+      background-image: url(../assets/loading.gif);
+      background-size: contain;
+      height: 50px;
+      width: 50px;
+      z-index: 10;
+    }
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { PropType, ref, watch, onUnmounted, onMounted } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
@@ -62,29 +88,3 @@ onMounted(() => {
 
 onUnmounted(destroyWatch);
 </script>
-
-<style lang="scss" scoped>
-.loading-panel-container {
-  position: relative;
-
-  .loading-panel {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    background-color: white;
-    opacity: 0.5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .spinner {
-      background-image: url(../assets/loading.gif);
-      background-size: contain;
-      height: 50px;
-      width: 50px;
-      z-index: 10;
-    }
-  }
-}
-</style>

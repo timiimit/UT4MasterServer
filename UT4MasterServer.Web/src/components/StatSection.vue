@@ -12,6 +12,14 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+.stat-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+</style>
+
 <script setup lang="ts">
 import { IStatisticSection } from '@/types/statistic-config';
 import { IStatisticData } from '@/types/statistic-data';
@@ -29,11 +37,3 @@ defineProps({
   },
 });
 </script>
-
-<style lang="scss" scoped>
-.stat-section {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 30px;
-}
-</style>

@@ -8,7 +8,8 @@
     "dev-open": "vite --host 0.0.0.0 --open",
     "build": "vite build",
     "build-dev": "vite build --mode development",
-    "lint": "eslint . --ext .ts,.vue --fix",
+    "lint": "eslint . --ext .ts,.vue",
+    "lint-fix": "eslint . --ext .ts,.vue --fix",
     "prepare": "cd .. && husky install client/.husky"
   },
   "dependencies": {
@@ -64,7 +65,17 @@
       "prettier"
     ],
     "rules": {
-      "vue/multi-word-component-names": "off"
+      "vue/multi-word-component-names": "off",
+      "vue/component-tags-order": [
+        "error",
+        {
+          "order": [
+            "template",
+            "style",
+            "script"
+          ]
+        }
+      ]
     },
     "globals": {
       "__BACKEND_URL": "readonly",

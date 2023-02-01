@@ -19,6 +19,27 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+.card {
+  margin: 10px;
+
+  .card-header {
+    display: flex;
+    justify-content: space-around;
+
+    img {
+      height: 1.5rem;
+    }
+  }
+
+  .card-body .card-text {
+    .key {
+      font-weight: 700;
+    }
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { IStatisticCard } from '@/types/statistic-config';
 import { IStatisticData } from '@/types/statistic-data';
@@ -81,24 +102,3 @@ function getStatValueDisplay(stat: Statistic): string {
   return `${value}`;
 }
 </script>
-
-<style lang="scss" scoped>
-.card {
-  margin: 10px;
-
-  .card-header {
-    display: flex;
-    justify-content: space-around;
-
-    img {
-      height: 1.5rem;
-    }
-  }
-
-  .card-body .card-text {
-    .key {
-      font-weight: 700;
-    }
-  }
-}
-</style>

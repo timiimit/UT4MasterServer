@@ -29,6 +29,29 @@
   </div>
 </template>
 
+<style lang="scss" scoped>
+.user-info {
+  padding: 10px 0;
+  text-transform: none;
+  font-size: 0.8rem;
+
+  label {
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    margin-right: 5px;
+  }
+
+  button {
+    margin-left: 5px;
+    padding: 3px 5px;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}
+</style>
+
 <script setup lang="ts">
 import { shallowRef, onMounted } from 'vue';
 import AuthenticationService from '@/services/authentication.service';
@@ -58,26 +81,3 @@ onMounted(() => {
   }
 });
 </script>
-
-<style lang="scss" scoped>
-.user-info {
-  padding: 10px 0;
-  text-transform: none;
-  font-size: 0.8rem;
-
-  label {
-    text-transform: uppercase;
-    font-size: 0.6rem;
-    margin-right: 5px;
-  }
-
-  button {
-    margin-left: 5px;
-    padding: 3px 5px;
-  }
-
-  a {
-    text-decoration: none;
-  }
-}
-</style>

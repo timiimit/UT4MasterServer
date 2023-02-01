@@ -84,6 +84,16 @@
   </CrudPage>
 </template>
 
+<style lang="scss" scoped>
+td.actions {
+  width: 6rem;
+
+  button:not(:last-child) {
+    margin-right: 1rem;
+  }
+}
+</style>
+
 <script lang="ts" setup>
 import { shallowRef, ref, computed } from 'vue';
 import CrudPage from '@/components/CrudPage.vue';
@@ -104,7 +114,7 @@ import { AccountStore } from '@/stores/account-store';
 
 interface IGridTrustedServer extends ITrustedGameServer {
   editing?: boolean;
-  client?: IClient;
+  client: IClient;
   owner?: IAccount;
 }
 
@@ -134,11 +144,19 @@ async function loadTrustedServers() {
       AccountStore.fetchAllAccounts(),
     ]);
     allClients.value = clients;
-    trustedServers.value = servers.map((s) => ({
-      ...s,
-      client: clients.find((c) => c.id === s.id),
-      owner: accounts?.find((a) => a.ID === s.ownerID),
-    }));
+    trustedServers.value = [];
+    servers.forEach((s) => {
+      const client = clients.find((c) => c.id === s.id);
+      const owner = accounts.find((a) => a.ID === s.ownerID);
+      if (client && owner) {
+        const server = {
+          ...s,
+          client,
+          owner,
+        };
+        trustedServers.value.push(server);
+      }
+    });
     status.value = AsyncStatus.OK;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
@@ -168,13 +186,3 @@ async function handleDelete(trustedServer: IGridTrustedServer) {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-td.actions {
-  width: 6rem;
-
-  button:not(:last-child) {
-    margin-right: 1rem;
-  }
-}
-</style>

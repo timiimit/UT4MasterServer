@@ -41,12 +41,13 @@ export const AccountStore = {
       console.error('Error fetching user account:', err);
     }
   },
-  async fetchAllAccounts() {
+  async fetchAllAccounts(): Promise<IAccount[]> {
     try {
       _accounts.value = await _accountService.getAllAccounts();
       return _accounts.value;
     } catch (err: unknown) {
       console.error('Error fetching all accounts:', err);
     }
+    return [];
   },
 };
