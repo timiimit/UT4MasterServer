@@ -279,8 +279,10 @@ public sealed class UnrealTournamentMatchmakingController : JsonAPIController
 
 		foreach (var player in players)
 		{
-			server.PublicPlayers.Remove(player);
-			server.PrivatePlayers.Remove(player);
+			if (!server.PublicPlayers.Remove(player))
+			{
+				server.PrivatePlayers.Remove(player);
+			}
 		}
 
 		await matchmakingService.UpdateAsync(server);
