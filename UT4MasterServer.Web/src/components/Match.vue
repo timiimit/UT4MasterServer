@@ -65,8 +65,8 @@ import { toMinutesSeconds } from '@/utils/utilities';
 defineProps({
   match: {
     type: Object as PropType<IGameServer>,
-    default: undefined,
-  },
+    default: undefined
+  }
 });
 
 const playersVisible = shallowRef(false);
