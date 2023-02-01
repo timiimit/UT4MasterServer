@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using Newtonsoft.Json.Linq;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Other;
@@ -12,6 +13,120 @@ public sealed class RatingsService
 	public RatingsService(DatabaseContext dbContext)
 	{
 		ratingsCollection = dbContext.Database.GetCollection<Rating>("ratings");
+	}
+
+	public async Task<MMRBulk> GetRatingsAsync(EpicID accountID, MMRBulk mmrBulk)
+	{
+		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID);
+		var ratings = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
+
+		var result = new MMRBulk();
+
+		foreach (var ratingType in mmrBulk.RatingTypes)
+		{
+
+			switch (ratingType)
+			{
+				case "SkillRating":
+					result.RatingTypes.Add(ratingType);
+					result.Ratings.Add(ratings.SkillRating / 1000);
+					result.NumGamesPlayed.Add(ratings.SkillRatingGamesPlayed);
+					break;
+
+				case "TDMSkillRating":
+					result.RatingTypes.Add(ratingType);
+					result.Ratings.Add(ratings.TDMSkillRating / 1000);
+					result.NumGamesPlayed.Add(ratings.TDMSkillRatingGamesPlayed);
+					break;
+
+				case "CTFSkillRating":
+					result.RatingTypes.Add(ratingType);
+					result.Ratings.Add(ratings.CTFSkillRating / 1000);
+					result.NumGamesPlayed.Add(ratings.CTFSkillRatingGamesPlayed);
+					break;
+
+				case "ShowdownSkillRating":
+					result.RatingTypes.Add(ratingType);
+					result.Ratings.Add(ratings.ShowdownSkillRating / 1000);
+					result.NumGamesPlayed.Add(ratings.ShowdownSkillRatingGamesPlayed);
+					break;
+
+				case "FlagRunSkillRating":
+					result.RatingTypes.Add(ratingType);
+					result.Ratings.Add(ratings.FlagRunSkillRating / 1000);
+					result.NumGamesPlayed.Add(ratings.FlagRunSkillRatingGamesPlayed);
+					break;
+
+				case "DMSkillRating":
+					result.RatingTypes.Add(ratingType);
+					result.Ratings.Add(ratings.DMSkillRating / 1000);
+					result.NumGamesPlayed.Add(ratings.DMSkillRatingGamesPlayed);
+					break;
+			}
+		}
+
+		return result;
+	}
+
+	public async Task<JObject> GetRatingAsync(EpicID accountID, string ratingType)
+	{
+		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID);
+		var ratings = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
+
+		JObject result = new();
+
+		switch (ratingType)
+		{
+			case "SkillRating":
+				result = new JObject
+				{
+					{ "rating", ratings.SkillRating / 1000 },
+					{ "numGamesPlayed", ratings.SkillRatingGamesPlayed }
+				};
+				break;
+
+			case "TDMSkillRating":
+				result = new JObject
+				{
+					{ "rating", ratings.TDMSkillRating / 1000 },
+					{ "numGamesPlayed", ratings.TDMSkillRatingGamesPlayed }
+				};
+				break;
+
+			case "CTFSkillRating":
+				result = new JObject
+				{
+					{ "rating", ratings.CTFSkillRating / 1000 },
+					{ "numGamesPlayed", ratings.CTFSkillRatingGamesPlayed }
+				};
+				break;
+
+			case "ShowdownSkillRating":
+				result = new JObject
+				{
+					{ "rating", ratings.ShowdownSkillRating / 1000 },
+					{ "numGamesPlayed", ratings.ShowdownSkillRatingGamesPlayed }
+				};
+				break;
+
+			case "FlagRunSkillRating":
+				result = new JObject
+				{
+					{ "rating", ratings.FlagRunSkillRating / 1000 },
+					{ "numGamesPlayed", ratings.FlagRunSkillRatingGamesPlayed }
+				};
+				break;
+
+			case "DMSkillRating":
+				result = new JObject
+				{
+					{ "rating", ratings.DMSkillRating / 1000 },
+					{ "numGamesPlayed", ratings.DMSkillRatingGamesPlayed }
+				};
+				break;
+		}
+
+		return result;
 	}
 
 	public async Task UpdateTeamsRatingsAsync(RatingMatch ratingMatch, Func<Rating, int> propertySelector)
