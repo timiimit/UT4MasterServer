@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using UT4MasterServer.Authentication;
 using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Services
@@ -13,12 +12,12 @@ namespace UT4MasterServer.Services
 
 		public ApplicationStartupService(
 			ILogger<ApplicationStartupService> logger, ILogger<StatisticsService> statsLogger,
-			IOptions<ApplicationSettings> settings)
+			IOptions<ApplicationSettings> settings, ILogger<CloudStorageService> cloudStorageLogger)
 		{
 			this.logger = logger;
 			var db = new DatabaseContext(settings);
 			statisticsService = new StatisticsService(statsLogger, db);
-			cloudStorageService = new CloudStorageService(db);
+			cloudStorageService = new CloudStorageService(db, cloudStorageLogger);
 			clientService = new ClientService(db);
 		}
 

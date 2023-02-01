@@ -4,6 +4,8 @@ services:
   ut4masterserver:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "80:80"
   ut4masterserver-web:
     build:
       dockerfile: .docker/Development.Dockerfile

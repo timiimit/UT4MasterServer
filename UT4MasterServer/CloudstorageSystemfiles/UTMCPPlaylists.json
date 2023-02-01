@@ -1,41 +1,40 @@
 {
-	"NewItems":
-	[
-		{
-			"PlaylistId": 2,
-			"bRanked": false,
-			"bSkipEloChecks": true,
-			"TeamEloRating": "iDMSkillRating",
-			"bAllowBots": true,
-			"BotDifficulty": 5,
-			"SlateBadgeName": "UT.HomePanel.DMBadge",
-			"SortWeight": 1.0,
-			"RulesetTag": "QuickPlay_iDM",
-			"bHideInUI": true
-		},
-		{
-			"PlaylistId": 3,
-			"bRanked": false,
-			"bSkipEloChecks": true,
-			"TeamEloRating": "CTFSkillRating",
-			"bAllowBots": true,
-			"BotDifficulty": 5,
-			"SlateBadgeName": "UT.HomePanel.CTFBadge",
-			"SortWeight": 2.0,
-			"RulesetTag": "QuickPlay_CTF",
-			"bHideInUI": true
-		},
-		{
-			"PlaylistId": 1,
-			"bRanked": false,
-			"bSkipEloChecks": true,
-			"TeamEloRating": "DuelSkillRating",
-			"bAllowBots": false,
-			"BotDifficulty": 5,
-			"SlateBadgeName": "UT.HomePanel.Flak",
-			"SortWeight": 3.0,
-			"RulesetTag": "QuickPlay_DUEL",
-			"bHideInUI": true
-		}
-	]
+  "NewItems": [
+    {
+      "PlaylistId": 2,
+      "bRanked": false,
+      "bSkipEloChecks": true,
+      "TeamEloRating": "iDMSkillRating",
+      "bAllowBots": true,
+      "BotDifficulty": 5,
+      "SlateBadgeName": "UT.HomePanel.DMBadge",
+      "SortWeight": 1.0,
+      "RulesetTag": "QuickPlay_iDM",
+      "bHideInUI": true
+    },
+    {
+      "PlaylistId": 3,
+      "bRanked": false,
+      "bSkipEloChecks": true,
+      "TeamEloRating": "CTFSkillRating",
+      "bAllowBots": true,
+      "BotDifficulty": 5,
+      "SlateBadgeName": "UT.HomePanel.CTFBadge",
+      "SortWeight": 2.0,
+      "RulesetTag": "QuickPlay_CTF",
+      "bHideInUI": true
+    },
+    {
+      "PlaylistId": 1,
+      "bRanked": false,
+      "bSkipEloChecks": true,
+      "TeamEloRating": "DuelSkillRating",
+      "bAllowBots": false,
+      "BotDifficulty": 5,
+      "SlateBadgeName": "UT.HomePanel.Flak",
+      "SortWeight": 3.0,
+      "RulesetTag": "QuickPlay_DUEL",
+      "bHideInUI": true
+    }
+  ]
 }
