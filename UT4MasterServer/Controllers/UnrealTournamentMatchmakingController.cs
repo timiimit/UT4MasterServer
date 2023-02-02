@@ -235,8 +235,29 @@ public sealed class UnrealTournamentMatchmakingController : JsonAPIController
 		if (server.OwningClientID != user.Session.ClientID)
 			Unauthorized();
 
-		server.PublicPlayers = serverOnlyWithPlayers.PublicPlayers;
-		server.PrivatePlayers = serverOnlyWithPlayers.PrivatePlayers;
+		// handle player list update
+		foreach (var player in serverOnlyWithPlayers.PublicPlayers)
+		{
+			if (!server.PublicPlayers.Where(x => x == player).Any())
+			{
+				server.PublicPlayers.Add(player);
+			}
+			if (server.PrivatePlayers.Where(x => x == player).Any())
+			{
+				server.PrivatePlayers.Remove(player);
+			}
+		}
+		foreach (var player in serverOnlyWithPlayers.PrivatePlayers)
+		{
+			if (!server.PrivatePlayers.Where(x => x == player).Any())
+			{
+				server.PrivatePlayers.Add(player);
+			}
+			if (server.PublicPlayers.Where(x => x == player).Any())
+			{
+				server.PublicPlayers.Remove(player);
+			}
+		}
 
 		await matchmakingService.UpdateAsync(server);
 
@@ -258,8 +279,10 @@ public sealed class UnrealTournamentMatchmakingController : JsonAPIController
 
 		foreach (var player in players)
 		{
-			server.PublicPlayers.Remove(player);
-			server.PrivatePlayers.Remove(player);
+			if (!server.PublicPlayers.Remove(player))
+			{
+				server.PrivatePlayers.Remove(player);
+			}
 		}
 
 		await matchmakingService.UpdateAsync(server);
