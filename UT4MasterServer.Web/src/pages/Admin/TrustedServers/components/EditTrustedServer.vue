@@ -96,8 +96,9 @@ import {
   ITrustedGameServer
 } from '../types/trusted-game-server';
 import { GameServerTrust } from '@/enums/game-server-trust';
-import { AccountStore } from '@/stores/account-store';
-import { AccountFlag } from '@/enums/account-flag';
+import { Role } from '@/enums/role';
+import { IAccount } from '@/types/account';
+import AccountService from '@/services/account.service';
 
 const props = defineProps({
   server: {
@@ -109,6 +110,7 @@ const props = defineProps({
 const emit = defineEmits(['updated', 'cancel']);
 
 const adminService = new AdminService();
+const accountService = new AccountService();
 
 const status = shallowRef(AsyncStatus.OK);
 const clientId = shallowRef(props.server.id);
@@ -121,11 +123,9 @@ const errorMessage = shallowRef(
 );
 
 const clientOptions = [props.server.client];
+const owners = shallowRef<IAccount[]>([]);
 const ownerOptions = computed(() => {
-  const hubOwners = AccountStore.accounts?.filter((a) =>
-    a.Roles?.includes(AccountFlag.HubOwner)
-  );
-  return hubOwners?.map((a) => ({ text: a.Username, value: a.ID }));
+  return owners.value.map((a) => ({ text: a.username, value: a.id }));
 });
 const trustLevelOptions = [
   { text: 'Epic', value: GameServerTrust.Epic },
@@ -153,13 +153,14 @@ async function handleSubmit() {
     errorMessage.value = (err as Error)?.message;
   }
 }
+
 async function loadAccounts() {
-  if (AccountStore.accounts?.length) {
-    return;
-  }
   try {
     status.value = AsyncStatus.BUSY;
-    await AccountStore.fetchAllAccounts();
+    const response = await accountService.searchAccounts('', 0, 1000, false, [
+      Role.HubOwner
+    ]);
+    owners.value = response.accounts;
     status.value = AsyncStatus.OK;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;

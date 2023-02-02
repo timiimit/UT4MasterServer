@@ -88,8 +88,9 @@ import { useClientOptions } from '../../Clients/hooks/use-client-options.hook';
 import { IClient } from '../../Clients/types/client';
 import { ITrustedGameServer } from '../types/trusted-game-server';
 import { GameServerTrust } from '@/enums/game-server-trust';
-import { AccountStore } from '@/stores/account-store';
-import { AccountFlag } from '@/enums/account-flag';
+import { Role } from '@/enums/role';
+import AccountService from '@/services/account.service';
+import { IAccount } from '@/types/account';
 
 const props = defineProps({
   clients: {
@@ -107,6 +108,7 @@ const emit = defineEmits(['added', 'cancel']);
 const { getClientOptionsForTrustedServer } = useClientOptions();
 
 const adminService = new AdminService();
+const accountService = new AccountService();
 
 const status = shallowRef(AsyncStatus.OK);
 const clientId = shallowRef('');
@@ -122,11 +124,9 @@ const clientOptions = getClientOptionsForTrustedServer(
   props.clients,
   props.servers
 );
+const owners = shallowRef<IAccount[]>([]);
 const ownerOptions = computed(() => {
-  const hubOwners = AccountStore.accounts?.filter((a) =>
-    a.Roles?.includes(AccountFlag.HubOwner)
-  );
-  return hubOwners?.map((a) => ({ text: a.Username, value: a.ID }));
+  return owners.value.map((a) => ({ text: a.username, value: a.id }));
 });
 const trustLevelOptions = [
   { text: 'Epic', value: GameServerTrust.Epic },
@@ -146,7 +146,6 @@ async function handleSubmit() {
       ownerID: ownerId.value,
       trustLevel: trustLevel.value
     };
-    console.debug('create', trustedServer);
     await adminService.createTrustedServer(trustedServer);
     status.value = AsyncStatus.OK;
     emit('added');
@@ -157,12 +156,12 @@ async function handleSubmit() {
 }
 
 async function loadAccounts() {
-  if (AccountStore.accounts?.length) {
-    return;
-  }
   try {
     status.value = AsyncStatus.BUSY;
-    await AccountStore.fetchAllAccounts();
+    const response = await accountService.searchAccounts('', 0, 1000, false, [
+      Role.HubOwner
+    ]);
+    owners.value = response.accounts;
     status.value = AsyncStatus.OK;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;

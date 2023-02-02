@@ -1,40 +1,43 @@
 <template>
   <h1>Stats</h1>
-  <LoadingPanel :status="accountsStatus">
-    <div class="form-group row">
-      <div class="col-sm-6">
+
+  <div class="form-group row">
+    <div class="col-sm-6">
+      <LoadingPanel :status="accountsStatus">
         <label for="accountId" class="col-sm-6 col-form-label">Account</label>
         <Autocomplete
+          v-if="AccountStore.account"
           :value="accountId"
           :items="accounts"
-          item-key="ID"
-          search-key="Username"
+          item-key="id"
+          search-key="username"
+          @input-change="searchAccounts"
           @select="handleSelectAccount"
         />
-      </div>
-      <div class="col-sm-6">
-        <label for="statWindow" class="col-sm-6 col-form-label"
-          >Timeframe</label
-        >
-        <select
-          v-model="statWindow"
-          class="form-select"
-          @change="handleParameterChange"
-        >
-          <option
-            v-for="window in statWindowOptions"
-            :key="window.value"
-            :value="window.value"
-          >
-            {{ window.text }}
-          </option>
-        </select>
-      </div>
+      </LoadingPanel>
     </div>
-  </LoadingPanel>
+    <div class="col-sm-6">
+      <label for="statWindow" class="col-sm-6 col-form-label">
+        Timeframe
+      </label>
+      <select
+        v-model="statWindow"
+        class="form-select"
+        @change="handleParameterChange"
+      >
+        <option
+          v-for="window in statWindowOptions"
+          :key="window.value"
+          :value="window.value"
+        >
+          {{ window.text }}
+        </option>
+      </select>
+    </div>
+  </div>
   <LoadingPanel :status="statsStatus">
     <template v-if="accountId">
-      <h5>Viewing stats for: {{ viewingAccount?.Username }}</h5>
+      <h5>Viewing stats for: {{ viewingAccount?.username }}</h5>
       <StatSection
         v-for="section in statSections"
         :key="section.heading"
@@ -49,30 +52,31 @@
 <script setup lang="ts">
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
-import { shallowRef, onMounted, computed } from 'vue';
-import { SessionStore } from '@/stores/session-store';
+import { shallowRef, ref, onMounted, computed } from 'vue';
 import StatsService from '@/services/stats.service';
 import { StatisticWindow } from '@/enums/statistic-window';
 import { IAccount } from '@/types/account';
 import { Statistic } from '@/enums/statistic';
 import { IStatisticSection } from '@/types/statistic-config';
-import StatSection from '@/components/StatSection.vue';
+import StatSection from '@/pages/Stats/components/StatSection.vue';
 import { IStatisticData } from '@/types/statistic-data';
 import Autocomplete from '@/components/Autocomplete.vue';
 import { AccountStore } from '@/stores/account-store';
+import AccountService from '@/services/account.service';
 
 const statsStatus = shallowRef(AsyncStatus.OK);
 const statWindow = shallowRef(StatisticWindow.AllTime);
 const stats = shallowRef<IStatisticData[]>([]);
 
 const accountsStatus = shallowRef(AsyncStatus.OK);
-const accountId = shallowRef<string | undefined>(undefined);
-const accounts = computed(() => AccountStore.accounts ?? []);
+const accountId = ref<string | undefined>(undefined);
+const accounts = ref<IAccount[]>([]);
 const viewingAccount = computed(() =>
-  accounts.value.find((a) => a.ID === accountId.value)
+  accounts.value.find((a) => a?.id === accountId.value)
 );
 
 const statsService = new StatsService();
+const accountService = new AccountService();
 
 const statWindowOptions = [
   { text: 'All Time', value: StatisticWindow.AllTime },
@@ -376,14 +380,19 @@ async function loadStats() {
   }
 }
 
-async function loadAccounts() {
+async function searchAccounts(query: string) {
   try {
-    if (AccountStore.accounts?.length) {
-      return;
-    }
     accountsStatus.value = AsyncStatus.BUSY;
-    await AccountStore.fetchAllAccounts();
-    accountId.value = SessionStore.session?.account_id?.toString();
+    accounts.value = (await accountService.searchAccounts(query)).accounts;
+    // remove logged in user from search results
+    accounts.value = accounts.value.filter(
+      (a) => a.id !== AccountStore.account?.id
+    );
+    // always show logged in user as first option
+    if (AccountStore.account) {
+      accounts.value.unshift(AccountStore.account);
+    }
+    accountId.value = AccountStore.account?.id;
     accountsStatus.value = AsyncStatus.OK;
   } catch (err: unknown) {
     accountsStatus.value = AsyncStatus.ERROR;
@@ -399,12 +408,20 @@ function handleParameterChange() {
 }
 
 function handleSelectAccount(account?: IAccount) {
-  accountId.value = account?.ID;
+  accountId.value = account?.id;
   handleParameterChange();
 }
 
-onMounted(async () => {
-  await loadAccounts();
+function setCurrentAccount() {
+  if (!AccountStore.account) {
+    return;
+  }
+  accounts.value = [AccountStore.account];
+  accountId.value = AccountStore.account.id;
+}
+
+onMounted(() => {
+  setCurrentAccount();
   loadStats();
 });
 </script>

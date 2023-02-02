@@ -5,7 +5,7 @@ export const routes: RouteRecordRaw[] = [
   // Secure Pages
   {
     path: `/Stats`,
-    component: async () => import('./pages/Stats.vue'),
+    component: async () => import('./pages/Stats/Stats.vue'),
     beforeEnter: privateGuard
   },
   {
@@ -78,7 +78,7 @@ export const routes: RouteRecordRaw[] = [
   },
   {
     path: `/Servers`,
-    component: async () => import('./pages/Servers.vue')
+    component: async () => import('./pages/Servers/Servers.vue')
   },
   // Public Only Pages
   {

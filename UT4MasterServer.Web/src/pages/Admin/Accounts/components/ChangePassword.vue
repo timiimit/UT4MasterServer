@@ -86,7 +86,7 @@ async function handleSubmit() {
       newPassword: CryptoJS.SHA512(newPassword.value).toString(),
       iAmSure: iAmSure.value
     };
-    await adminService.changePassword(props.account.ID, request);
+    await adminService.changePassword(props.account.id, request);
     status.value = AsyncStatus.OK;
     emit('updated');
   } catch (err: unknown) {

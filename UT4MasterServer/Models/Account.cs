@@ -65,7 +65,6 @@ public class Account
 	public DateTime LastLoginAt { get; set; } = DateTime.UtcNow;
 
 	[BsonElement("Email")]
-	[JsonIgnore]
 	public string Email { get; set; } = string.Empty;
 
 	[BsonIgnoreIfDefault] // default value is set in Program.cs
@@ -158,7 +157,7 @@ public class Account
 			var flags = new List<string>();
 			var flagNamesAll = Enum.GetNames<AccountFlags>();
 			var flagValuesAll = Enum.GetValues<AccountFlags>();
-			for (int i = 0; i < flagNamesAll.Length; i++)
+			for (int i = 1; i < flagNamesAll.Length; i++)
 			{
 				if (Flags.HasFlag(flagValuesAll[i]))
 				{

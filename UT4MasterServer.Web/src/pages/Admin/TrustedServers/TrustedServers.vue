@@ -41,7 +41,7 @@
           >
             <tr :class="{ 'table-light': trustedServer.editing }">
               <td>{{ trustedServer.client?.name }}</td>
-              <td>{{ trustedServer.owner?.Username }}</td>
+              <td>{{ trustedServer.owner?.username }}</td>
               <td>{{ GameServerTrust[trustedServer.trustLevel] }}</td>
               <td class="actions">
                 <button
@@ -76,7 +76,7 @@
         </tbody>
       </table>
       <Paging
-        :items="filteredTrustedServers"
+        :item-count="filteredTrustedServers.length"
         :page-size="pageSize"
         @update="handlePagingUpdate"
       />
@@ -101,7 +101,6 @@ import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
 import { objectHash } from '@/utils/utilities';
 import AdminService from '@/services/admin-service';
-import { ITrustedGameServer } from './types/trusted-game-server';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import AddTrustedServer from './components/AddTrustedServer.vue';
 import Paging from '@/components/Paging.vue';
@@ -109,14 +108,7 @@ import { IClient } from '../Clients/types/client';
 import EditTrustedServer from './components/EditTrustedServer.vue';
 import { GameServerTrust } from '@/enums/game-server-trust';
 import { usePaging } from '@/hooks/use-paging.hook';
-import { IAccount } from '@/types/account';
-import { AccountStore } from '@/stores/account-store';
-
-interface IGridTrustedServer extends ITrustedGameServer {
-  editing?: boolean;
-  client: IClient;
-  owner?: IAccount;
-}
+import { IGridTrustedServer } from './types/trusted-game-server';
 
 const adminService = new AdminService();
 const trustedServers = ref<IGridTrustedServer[]>([]);
@@ -138,25 +130,12 @@ const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 async function loadTrustedServers() {
   try {
     status.value = AsyncStatus.BUSY;
-    const [clients, servers, accounts] = await Promise.all([
+    const [clients, servers] = await Promise.all([
       adminService.getClients(),
-      adminService.getTrustedServers(),
-      AccountStore.fetchAllAccounts()
+      adminService.getTrustedServers()
     ]);
     allClients.value = clients;
-    trustedServers.value = [];
-    servers.forEach((s) => {
-      const client = clients.find((c) => c.id === s.id);
-      const owner = accounts.find((a) => a.ID === s.ownerID);
-      if (client && owner) {
-        const server = {
-          ...s,
-          client,
-          owner
-        };
-        trustedServers.value.push(server);
-      }
-    });
+    trustedServers.value = servers;
     status.value = AsyncStatus.OK;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;

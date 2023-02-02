@@ -5,7 +5,7 @@
         <label>
           <RouterLink to="/Profile/PlayerCard">Username:</RouterLink>
         </label>
-        {{ AccountStore.account?.Username ?? SessionStore.username }}
+        {{ AccountStore.account?.username ?? SessionStore.username }}
       </div>
       <div>
         <LoadingPanel :status="status">
