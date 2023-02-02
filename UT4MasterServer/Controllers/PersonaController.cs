@@ -95,7 +95,7 @@ public sealed class PersonaController : JsonAPIController
 			return Unauthorized();
 		}
 
-		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for account {id}");
+		logger.LogInformation("{AccountId} is looking for account {id}", authenticatedUser.Session.AccountID, id);
 
 		var account = await accountService.GetAccountAsync(eid);
 		if (account == null)
@@ -116,7 +116,7 @@ public sealed class PersonaController : JsonAPIController
 
 		var eIds = ids.Distinct().Select(x => EpicID.FromString(x));
 		var accounts = await accountService.GetAccountsAsync(eIds);
-		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for limited accounts by ID");
+		logger.LogInformation("{AccountId} is looking for limited accounts by ID", authenticatedUser.Session.AccountID);
 
 		return Ok(accounts.Select((account) => new { account.ID, account.Username }));
 	}

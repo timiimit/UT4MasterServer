@@ -2,7 +2,7 @@
 
 namespace UT4MasterServer.Models.Requests;
 
-public class AccountSearchRequest
+public sealed class AccountSearchRequest
 {
 	[JsonPropertyName("query")]
 	public string Query { get; set; } = string.Empty;
