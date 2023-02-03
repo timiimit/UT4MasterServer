@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Text.Json;
-using UT4MasterServer.Models;
+using UT4MasterServer.Models.Database;
 
 namespace UT4MasterServer.Formatters;
 

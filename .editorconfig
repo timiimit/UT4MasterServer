@@ -12,6 +12,11 @@ tab_width = 4
 indent_size = 4
 indent_style = tab
 
+[UT4MasterServer/**.json]
+tab_width = 4
+indent_size = 4
+indent_style = tab
+
 [*.{md,yml}]
 indent_style = space
 indent_size = 2

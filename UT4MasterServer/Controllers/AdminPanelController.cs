@@ -1,10 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Helpers;
+using UT4MasterServer.Common.Helpers;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Common;
+using UT4MasterServer.Services.Scoped;
+using UT4MasterServer.Services.Singleton;
+using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models;
-using UT4MasterServer.Models.Requests;
-using UT4MasterServer.Other;
-using UT4MasterServer.Services;
+using UT4MasterServer.Models.Responses;
 
 namespace UT4MasterServer.Controllers;
 
@@ -111,7 +115,7 @@ public sealed class AdminPanelController : ControllerBase
 
 
 	[HttpPost("clients/new")]
-	public async Task<IActionResult> CreateClient([FromBody]string name)
+	public async Task<IActionResult> CreateClient([FromBody] string name)
 	{
 		await VerifyAdmin();
 
@@ -187,8 +191,22 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAdmin();
 
-		var ret = await trustedGameServerService.ListAsync();
-		return Ok(ret);
+		var getTrustedServers = trustedGameServerService.ListAsync();
+		var getClients = clientService.ListAsync();
+		Task.WaitAll(getTrustedServers, getClients);
+		var trustedServers = getTrustedServers.Result;
+		var clients = getClients.Result;
+		var eIds = trustedServers.Select((t) => t.OwnerID).Distinct();
+		var accounts = await accountService.GetAccountsAsync(eIds);
+		var response = trustedServers.Select((t) => new TrustedGameServerResponse
+		{
+			ID = t.ID,
+			OwnerID = t.OwnerID,
+			TrustLevel = t.TrustLevel,
+			Client = clients.SingleOrDefault((c) => c.ID == t.ID),
+			Owner = accounts.SingleOrDefault((a) => a.ID == t.OwnerID)
+		});
+		return Ok(response);
 	}
 
 	[HttpGet("trusted_servers/{id}")]
@@ -289,7 +307,7 @@ public sealed class AdminPanelController : ControllerBase
 	public async Task<IActionResult> UpdateMCPFile(string filename)
 	{
 		await VerifyAdmin();
-		await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, HttpContext.Request.BodyReader);
+		await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, HttpContext.Request.Body);
 		return Ok();
 	}
 

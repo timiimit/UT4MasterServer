@@ -1,48 +1,34 @@
-import { TypedStorage } from "@/utils/typed-storage";
-import { ref } from "vue";
-import { IAccount } from "@/types/account";
-import AccountService from "@/services/account.service";
-import { SessionStore } from "./session-store";
-import { AccountFlag } from "@/enums/account-flag";
+import { TypedStorage } from '@/utils/typed-storage';
+import { ref } from 'vue';
+import { IAccountExtended } from '@/types/account';
+import AccountService from '@/services/account.service';
+import { SessionStore } from './session-store';
+import { Role } from '@/enums/role';
 
-const _account = ref<IAccount | null>(TypedStorage.getItem<IAccount>('account'));
-const _accounts = ref<IAccount[] | null>(TypedStorage.getItem<IAccount[]>('accounts'));
+const _account = ref<IAccountExtended | null>(
+  TypedStorage.getItem<IAccountExtended>('account')
+);
 const _accountService = new AccountService();
-const _adminRoles = [AccountFlag.Admin, AccountFlag.Moderator];
+const _adminRoles = [Role.Admin, Role.Moderator];
 
 export const AccountStore = {
-    get account() {
-        return _account.value;
-    },
-    set account(account: IAccount | null) {
-        _account.value = account;
-        TypedStorage.setItem<IAccount>('account', account);
-    },
-    get accounts() {
-        return _accounts.value;
-    },
-    set accounts(accounts: IAccount[] | null) {
-        _accounts.value = accounts;
-        TypedStorage.setItem<IAccount[]>('accounts', accounts);
-    },
-    get isAdmin() {
-        return _account.value?.Roles?.some((r) => _adminRoles.includes(r));
-    },
-    async fetchUserAccount() {
-        try {
-            _account.value = SessionStore.session?.account_id ? await _accountService.getAccount(SessionStore.session.account_id) : null;
-        }
-        catch (err: unknown) {
-            console.error('Error fetching user account:', err);
-        }
-    },
-    async fetchAllAccounts() {
-        try {
-            _accounts.value = await _accountService.getAllAccounts();
-            return _accounts.value;
-        }
-        catch (err: unknown) {
-            console.error('Error fetching all accounts:', err);
-        }
+  get account() {
+    return _account.value;
+  },
+  set account(account: IAccountExtended | null) {
+    _account.value = account;
+    TypedStorage.setItem<IAccountExtended>('account', account);
+  },
+  get isAdmin() {
+    return _account.value?.roles?.some((r) => _adminRoles.includes(r));
+  },
+  async fetchUserAccount() {
+    try {
+      _account.value = SessionStore.session?.account_id
+        ? await _accountService.getAccount(SessionStore.session.account_id)
+        : null;
+    } catch (err: unknown) {
+      console.error('Error fetching user account:', err);
     }
+  }
 };

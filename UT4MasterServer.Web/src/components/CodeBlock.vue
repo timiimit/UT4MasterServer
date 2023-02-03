@@ -1,17 +1,21 @@
 <template>
-    <div class="code codeblock">
-        <div ref="code">
-            <slot />
-        </div>
-        <CopyButton v-if="code" :subject="code?.innerText" custom-class="btn-smaller" />
+  <div class="code codeblock">
+    <div ref="code">
+      <slot />
     </div>
+    <CopyButton
+      v-if="code"
+      :subject="code?.innerText"
+      custom-class="btn-smaller"
+    />
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .copy-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 </style>
 

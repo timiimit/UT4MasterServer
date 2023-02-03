@@ -1,15 +1,17 @@
 <template>
   <div class="loading-panel-container">
-    <div class="loading-panel" v-show="asyncStatus === AsyncStatus.BUSY">
+    <div v-show="asyncStatus === AsyncStatus.BUSY" class="loading-panel">
       <div class="spinner" />
     </div>
     <div class="content">
       <slot />
     </div>
-    <div class="alert alert-dismissible alert-danger" v-show="asyncStatus === AsyncStatus.ERROR">
+    <div
+      v-show="asyncStatus === AsyncStatus.ERROR"
+      class="alert alert-dismissible alert-danger"
+    >
       <button type="button" class="btn-close" @click="dismissError"></button>
-      <div v-if="error">{{ error }}</div>
-      <div v-else>An error occurred. Please try again.</div>
+      <div>{{ error }}</div>
     </div>
   </div>
 </template>
@@ -24,7 +26,7 @@
     height: 100%;
     z-index: 1;
     background-color: white;
-    opacity: 0.50;
+    opacity: 0.5;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,14 +41,20 @@
   }
 }
 </style>
-  
+
 <script setup lang="ts">
 import { PropType, ref, watch, onUnmounted, onMounted } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 
 const props = defineProps({
-  status: Number as PropType<AsyncStatus>,
-  error: String,
+  status: {
+    type: Number as PropType<AsyncStatus>,
+    default: AsyncStatus.OK
+  },
+  error: {
+    type: String,
+    default: 'An error occurred. Please try again.'
+  },
   onLoad: {
     type: Function,
     default: undefined
@@ -61,9 +69,12 @@ const emit = defineEmits(['load']);
 
 const asyncStatus = ref(props.status);
 
-const destroyWatch = watch(() => props.status, () => {
-  asyncStatus.value = props.status;
-})
+const destroyWatch = watch(
+  () => props.status,
+  () => {
+    asyncStatus.value = props.status;
+  }
+);
 
 function dismissError() {
   asyncStatus.value = AsyncStatus.OK;

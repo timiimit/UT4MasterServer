@@ -1,18 +1,17 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container text-white">
-      <div>
-        Hubs Online: {{ ServerStore.hubs.length }}
-      </div>
-      <div>
-        Matches In Progress: {{ matchesInProgress }}
-      </div>
-      <div>
-        Players Online: {{ playersOnline }}
-      </div>
+      <div>Hubs Online: {{ ServerStore.hubs.length }}</div>
+      <div>Matches In Progress: {{ matchesInProgress }}</div>
+      <div>Players Online: {{ playersOnline }}</div>
     </div>
 
-    <button class="btn btn-secondary btn-sm btn-smaller" @click="ServerStore.fetchGameServers">Refresh</button>
+    <button
+      class="btn btn-secondary btn-sm btn-smaller"
+      @click="ServerStore.fetchGameServers"
+    >
+      Refresh
+    </button>
   </nav>
 </template>
 
@@ -30,12 +29,14 @@
   }
 }
 </style>
-  
+
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue';
 import { ServerStore } from '@/stores/server-store';
 
 const pollTime = 30000;
+// Seems to be a bug with eslint ts parser version
+// eslint-disable-next-line no-undef
 const timer = shallowRef<NodeJS.Timer | undefined>(undefined);
 
 const playersOnline = computed(() => {
@@ -43,10 +44,13 @@ const playersOnline = computed(() => {
 });
 
 const matchesInProgress = computed(() => {
-  return ServerStore.hubs
-    .reduce((sum, h) => sum +
-      h.matches.filter((m) => m.attributes.UT_MATCHSTATE_s === 'InProgress').length,
-      0);
+  return ServerStore.hubs.reduce(
+    (sum, h) =>
+      sum +
+      h.matches.filter((m) => m.attributes.UT_MATCHSTATE_s === 'InProgress')
+        .length,
+    0
+  );
 });
 
 function poll() {

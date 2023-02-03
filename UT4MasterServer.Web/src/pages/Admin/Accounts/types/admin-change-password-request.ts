@@ -1,4 +1,4 @@
 export interface IAdminChangePasswordRequest {
-    newPassword: string;
-    iAmSure: boolean;
+  newPassword: string;
+  iAmSure: boolean;
 }

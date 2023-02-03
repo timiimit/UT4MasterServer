@@ -9,106 +9,105 @@
 		"REWARD_DailyStars"
 	],
 	"Challenges": [
-
-	{
-		"challengeName": "SpookyCTF",
-		"challenge": {
-			"title": "CTF in Spooky Facing Worlds",
-			"map": "/Game/EpicInternal/Stu/CTF-Face_Halloween",
-			"GameURL": "?Game=CTF",
-			"description": "Capture the Flag in a spooky version of the classic Facing Worlds map, with a few twists.",
-			"playerTeamSize": 4,
-			"enemyTeamSize": 5,
-			"enemyTeamName": [
-				"EasyNecrisTeam",
-				"MediumMixedTeam",
-				"HardMixedTeamB"
-			],
-			"slateUIImageName": "UT.ChallengeBadges.SpookyA",
-			"RewardTag": "REWARD_HalloweenStars",
-			"bExpiredChallenge":1,
-			"bDailyChallenge":0
-		}
-	},
 		{
-		"challengeName": "HalloweenShowdown",
-		"challenge": {
-			"title": "Duel in Chill",
-			"map": "/Game/RestrictedAssets/Maps/DM-Chill",
-			"GameURL": "?Game=DUEL",
-			"description": "Duel in the Chill Deathmatch arena.",
-			"playerTeamSize": 0,
-			"enemyTeamSize": 1,
-			"enemyTeamName": [
-				"EasyNecrisTeam",
-				"MediumMixedTeam",
-				"HardNecrisTeam"
-			],
-			"slateUIImageName": "UT.ChallengeBadges.SpookyB",
-			"RewardTag": "REWARD_HalloweenStars",
-			"bExpiredChallenge":1,
-			"bDailyChallenge":0
-		}
-	},
-		{
-		"challengeName": "HalloweenInstagibCTF",
-		"challenge": {
-			"title": "Instagib CTF in Pistola Battleground",
-			"map": "/Game/EpicInternal/Pistola/CTF-Pistola",
-			"GameURL": "?Game=CTF?Mutator=Instagib",
-			"description": "Instagib CTF in Pistola Balleground.",
-			"playerTeamSize": 4,
-			"enemyTeamSize": 5,
-			"enemyTeamName": [
-				"EasyNecrisTeam",
-				"MediumNecrisTeam",
-				"HardMixedTeamA"
-			],
-			"slateUIImageName": "UT.ChallengeBadges.SpookyC",
-			"RewardTag": "REWARD_HalloweenStars",
-			"bExpiredChallenge":1,
-			"bDailyChallenge":0
-		}
+			"challengeName": "SpookyCTF",
+			"challenge": {
+				"title": "CTF in Spooky Facing Worlds",
+				"map": "/Game/EpicInternal/Stu/CTF-Face_Halloween",
+				"GameURL": "?Game=CTF",
+				"description": "Capture the Flag in a spooky version of the classic Facing Worlds map, with a few twists.",
+				"playerTeamSize": 4,
+				"enemyTeamSize": 5,
+				"enemyTeamName": [
+					"EasyNecrisTeam",
+					"MediumMixedTeam",
+					"HardMixedTeamB"
+				],
+				"slateUIImageName": "UT.ChallengeBadges.SpookyA",
+				"RewardTag": "REWARD_HalloweenStars",
+				"bExpiredChallenge": 1,
+				"bDailyChallenge": 0
+			}
 		},
 		{
-		"challengeName": "Halloween2v2TDM",
-		"challenge": {
-			"title": "2v2 TDM in ASDF",
-			"map": "/Game/RestrictedAssets/Maps/WIP/DM-ASDF",
-			"GameURL": "?Game=TDM",
-			"description": "2v2 Team Deathmatch in the ASDF Deathmatch arena.",
-			"playerTeamSize": 1,
-			"enemyTeamSize": 2,
-			"enemyTeamName": [
-				"EasyNecrisTeam",
-				"MediumMixedTeam",
-				"HardMixedTeamA"
-			],
-			"slateUIImageName": "UT.ChallengeBadges.SpookyD",
-			"RewardTag": "REWARD_HalloweenStars",
-			"bExpiredChallenge":1,
-			"bDailyChallenge":0
-		}
+			"challengeName": "HalloweenShowdown",
+			"challenge": {
+				"title": "Duel in Chill",
+				"map": "/Game/RestrictedAssets/Maps/DM-Chill",
+				"GameURL": "?Game=DUEL",
+				"description": "Duel in the Chill Deathmatch arena.",
+				"playerTeamSize": 0,
+				"enemyTeamSize": 1,
+				"enemyTeamName": [
+					"EasyNecrisTeam",
+					"MediumMixedTeam",
+					"HardNecrisTeam"
+				],
+				"slateUIImageName": "UT.ChallengeBadges.SpookyB",
+				"RewardTag": "REWARD_HalloweenStars",
+				"bExpiredChallenge": 1,
+				"bDailyChallenge": 0
+			}
 		},
-	{
-		"challengeName": "LGIDeck",
-		"challenge": {
-			"title": "Low Gravity Instagib in Deck 16",
-			"map": "/Game/RestrictedAssets/Maps/WIP/DM-DeckTest",
-			"GameURL": "?Game=DM?Mutator=Instagib,LowGrav",
-			"description": "Low Gravity Instagib in the Deck 16 Deathmatch arena.",
-			"playerTeamSize": 0,
-			"enemyTeamSize": 5,
-			"enemyTeamName": [
-				"EasyFFATeam",
-				"MediumFFATeam",
-				"HardFFATeamB"
-			],
-			"slateUIImageName": "UT.ChallengeBadges.SpookyE",
-			"RewardTag": "REWARD_HalloweenStars",
-			"bExpiredChallenge":1,
-			"bDailyChallenge":0
+		{
+			"challengeName": "HalloweenInstagibCTF",
+			"challenge": {
+				"title": "Instagib CTF in Pistola Battleground",
+				"map": "/Game/EpicInternal/Pistola/CTF-Pistola",
+				"GameURL": "?Game=CTF?Mutator=Instagib",
+				"description": "Instagib CTF in Pistola Balleground.",
+				"playerTeamSize": 4,
+				"enemyTeamSize": 5,
+				"enemyTeamName": [
+					"EasyNecrisTeam",
+					"MediumNecrisTeam",
+					"HardMixedTeamA"
+				],
+				"slateUIImageName": "UT.ChallengeBadges.SpookyC",
+				"RewardTag": "REWARD_HalloweenStars",
+				"bExpiredChallenge": 1,
+				"bDailyChallenge": 0
+			}
+		},
+		{
+			"challengeName": "Halloween2v2TDM",
+			"challenge": {
+				"title": "2v2 TDM in ASDF",
+				"map": "/Game/RestrictedAssets/Maps/WIP/DM-ASDF",
+				"GameURL": "?Game=TDM",
+				"description": "2v2 Team Deathmatch in the ASDF Deathmatch arena.",
+				"playerTeamSize": 1,
+				"enemyTeamSize": 2,
+				"enemyTeamName": [
+					"EasyNecrisTeam",
+					"MediumMixedTeam",
+					"HardMixedTeamA"
+				],
+				"slateUIImageName": "UT.ChallengeBadges.SpookyD",
+				"RewardTag": "REWARD_HalloweenStars",
+				"bExpiredChallenge": 1,
+				"bDailyChallenge": 0
+			}
+		},
+		{
+			"challengeName": "LGIDeck",
+			"challenge": {
+				"title": "Low Gravity Instagib in Deck 16",
+				"map": "/Game/RestrictedAssets/Maps/WIP/DM-DeckTest",
+				"GameURL": "?Game=DM?Mutator=Instagib,LowGrav",
+				"description": "Low Gravity Instagib in the Deck 16 Deathmatch arena.",
+				"playerTeamSize": 0,
+				"enemyTeamSize": 5,
+				"enemyTeamName": [
+					"EasyFFATeam",
+					"MediumFFATeam",
+					"HardFFATeamB"
+				],
+				"slateUIImageName": "UT.ChallengeBadges.SpookyE",
+				"RewardTag": "REWARD_HalloweenStars",
+				"bExpiredChallenge": 1,
+				"bDailyChallenge": 0
+			}
 		}
-	}
 	]
 }
