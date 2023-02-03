@@ -1,12 +1,12 @@
 ﻿namespace UT4MasterServer.Services;
 
 /// <summary>
-/// This service is used only for calculating new ratings of players in the deathmatch mode
+/// This helper is used only for calculating new ratings of players in the deathmatch mode
 /// </summary>
 /// <remarks>
 /// The standard ELO calculation was adjusted to be more suitable for the deathmatch mode using this article: <see href="https://towardsdatascience.com/developing-a-generalized-elo-rating-system-for-multiplayer-games-b9b495e87802">Developing a Generalized Elo Rating System for Multiplayer Games</see>
 /// </remarks>
-public static class EloDeathmatchCalculationService
+public static class EloDeathmatchCalculationHelper
 {
 	private const int KRating = 32;
 	private const int AverageRatingDifference = 400;

@@ -27,7 +27,7 @@ public sealed class RatingsService
 		foreach (var ratingType in ratingTypes)
 		{
 			var rating = ratings.Where(w => w.RatingType == ratingType).FirstOrDefault();
-			
+
 			result.RatingTypes.Add(ratingType);
 			result.Ratings.Add(rating?.RatingValue / Rating.Precision ?? Rating.DefaultRating);
 			result.NumGamesPlayed.Add(rating?.GamesPlayed ?? 0);
@@ -110,11 +110,11 @@ public sealed class RatingsService
 				.FirstOrDefault(Rating.DefaultRating * Rating.Precision) / Rating.Precision;
 		}
 
-		double[] redTeamExpectedScores = EloTeamsCalculationService.GetExpectedScores(redTeamCurrentRatings, blueTeamCurrentRatings);
-		double[] blueTeamExpectedScores = EloTeamsCalculationService.GetExpectedScores(blueTeamCurrentRatings, redTeamCurrentRatings);
+		double[] redTeamExpectedScores = EloTeamsCalculationHelper.GetExpectedScores(redTeamCurrentRatings, blueTeamCurrentRatings);
+		double[] blueTeamExpectedScores = EloTeamsCalculationHelper.GetExpectedScores(blueTeamCurrentRatings, redTeamCurrentRatings);
 
-		double[] redTeamNewRatings = EloTeamsCalculationService.GetNewRatings(redTeamCurrentRatings, redTeamExpectedScores, redTeamActualScore);
-		double[] blueTeamNewRatings = EloTeamsCalculationService.GetNewRatings(blueTeamCurrentRatings, blueTeamExpectedScores, blueTeamActualScore);
+		double[] redTeamNewRatings = EloTeamsCalculationHelper.GetNewRatings(redTeamCurrentRatings, redTeamExpectedScores, redTeamActualScore);
+		double[] blueTeamNewRatings = EloTeamsCalculationHelper.GetNewRatings(blueTeamCurrentRatings, blueTeamExpectedScores, blueTeamActualScore);
 
 		var bulkWriteModelList = new List<UpdateOneModel<Rating>>();
 
@@ -165,9 +165,9 @@ public sealed class RatingsService
 			currentRatings[i] = playersCurrentRatings.FirstOrDefault(f => f.AccountID == playersAccountIds[i])?.RatingValue / Rating.Precision ?? Rating.DefaultRating;
 		}
 
-		double[] expectedScores = EloDeathmatchCalculationService.GetExpectedScores(currentRatings);
-		double[] relativeScores = EloDeathmatchCalculationService.GetLineralyDistributedRelativeScores(playersCount);
-		double[] newRatings = EloDeathmatchCalculationService.GetNewRatings(currentRatings, expectedScores, relativeScores);
+		double[] expectedScores = EloDeathmatchCalculationHelper.GetExpectedScores(currentRatings);
+		double[] relativeScores = EloDeathmatchCalculationHelper.GetLineralyDistributedRelativeScores(playersCount);
+		double[] newRatings = EloDeathmatchCalculationHelper.GetNewRatings(currentRatings, expectedScores, relativeScores);
 
 		var bulkWriteModelList = new List<UpdateOneModel<Rating>>();
 

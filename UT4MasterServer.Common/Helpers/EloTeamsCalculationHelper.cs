@@ -1,12 +1,12 @@
 ﻿namespace UT4MasterServer.Services;
 
 /// <summary>
-/// This service is used only for calculating new ratings of players in a team-based mode
+/// This helper is used only for calculating new ratings of players in a team-based mode
 /// </summary>
 /// <remarks>
 /// The standard ELO calculation was adjusted to be more suitable for team-based modes using this article: <see href="https://www.ageofempires.com/news/updates-to-ranked-team-game-elo-calculation/">Updates to Ranked Team Game Elo Calculation</see>
 /// </remarks>
-public static class EloTeamsCalculationService
+public static class EloTeamsCalculationHelper
 {
 	private const int KRating = 32;
 	private const int AverageRatingDifference = 400;
