@@ -4,7 +4,7 @@
 			"PlaylistId": 2,
 			"bRanked": false,
 			"bSkipEloChecks": true,
-			"TeamEloRating": "iDMSkillRating",
+			"TeamEloRating": "DMSkillRating",
 			"bAllowBots": true,
 			"BotDifficulty": 5,
 			"SlateBadgeName": "UT.HomePanel.DMBadge",
