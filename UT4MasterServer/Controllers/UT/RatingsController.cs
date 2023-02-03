@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
+using UT4MasterServer.Models;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Services;
 
@@ -43,6 +44,10 @@ public sealed class RatingsController : JsonAPIController
 		if (User.Identity is not EpicUserIdentity user)
 		{
 			return Unauthorized();
+		}
+		if (!Rating.AllowedRatingTypes.Contains(ratingType))
+		{
+			return BadRequest($"'{ratingType}' is not supported rating type.");
 		}
 
 		var accountId = EpicID.FromString(id);
@@ -87,34 +92,18 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/match_result")]
 	public async Task<IActionResult> MatchResult([FromBody] RatingMatch ratingMatch)
 	{
-		switch (ratingMatch.RatingType)
+		if (!Rating.AllowedRatingTypes.Contains(ratingMatch.RatingType))
 		{
-			case "SkillRating":
-				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.SkillRating);
-				break;
+			return BadRequest($"'{ratingMatch.RatingType}' is not supported rating type.");
+		}
 
-			case "TDMSkillRating":
-				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.TDMSkillRating);
-				break;
-
-			case "CTFSkillRating":
-				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.CTFSkillRating);
-				break;
-
-			case "ShowdownSkillRating":
-				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.ShowdownSkillRating);
-				break;
-
-			case "FlagRunSkillRating":
-				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.FlagRunSkillRating);
-				break;
-
-			case "DMSkillRating":
-				await ratingsService.UpdateDeathmatchRatingsAsync(ratingMatch);
-				break;
-
-			default:
-				return BadRequest("Unknown rating type.");
+		if (Rating.DmRatingTypes.Contains(ratingMatch.RatingType))
+		{
+			await ratingsService.UpdateDeathmatchRatingsAsync(ratingMatch);
+		}
+		else
+		{
+			await ratingsService.UpdateTeamsRatingsAsync(ratingMatch);
 		}
 
 		return NoContent();

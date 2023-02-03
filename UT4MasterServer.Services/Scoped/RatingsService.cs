@@ -17,52 +17,20 @@ public sealed class RatingsService
 
 	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkResponse mmrBulk)
 	{
-		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID);
-		var ratings = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
+		var ratingTypes = mmrBulk.RatingTypes.Intersect(Rating.AllowedRatingTypes);
+		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
+					 Builders<Rating>.Filter.In(f => f.RatingType, ratingTypes);
+		var ratings = await ratingsCollection.Find(filter).ToListAsync();
 
 		var result = new MMRBulkResponse();
 
-		foreach (var ratingType in mmrBulk.RatingTypes)
+		foreach (var ratingType in ratingTypes)
 		{
-
-			switch (ratingType)
-			{
-				case "SkillRating":
-					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.SkillRating / Rating.Precision);
-					result.NumGamesPlayed.Add(ratings.SkillRatingGamesPlayed);
-					break;
-
-				case "TDMSkillRating":
-					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.TDMSkillRating / Rating.Precision);
-					result.NumGamesPlayed.Add(ratings.TDMSkillRatingGamesPlayed);
-					break;
-
-				case "CTFSkillRating":
-					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.CTFSkillRating / Rating.Precision);
-					result.NumGamesPlayed.Add(ratings.CTFSkillRatingGamesPlayed);
-					break;
-
-				case "ShowdownSkillRating":
-					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.ShowdownSkillRating / Rating.Precision);
-					result.NumGamesPlayed.Add(ratings.ShowdownSkillRatingGamesPlayed);
-					break;
-
-				case "FlagRunSkillRating":
-					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.FlagRunSkillRating / Rating.Precision);
-					result.NumGamesPlayed.Add(ratings.FlagRunSkillRatingGamesPlayed);
-					break;
-
-				case "DMSkillRating":
-					result.RatingTypes.Add(ratingType);
-					result.Ratings.Add(ratings.DMSkillRating / Rating.Precision);
-					result.NumGamesPlayed.Add(ratings.DMSkillRatingGamesPlayed);
-					break;
-			}
+			var rating = ratings.Where(w => w.RatingType == ratingType).FirstOrDefault();
+			
+			result.RatingTypes.Add(ratingType);
+			result.Ratings.Add(rating?.RatingValue / Rating.Precision ?? Rating.DefaultRating);
+			result.NumGamesPlayed.Add(rating?.GamesPlayed ?? 0);
 		}
 
 		return result;
@@ -70,66 +38,20 @@ public sealed class RatingsService
 
 	public async Task<MMRRatingResponse> GetRatingAsync(EpicID accountID, string ratingType)
 	{
-		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID);
-		var ratings = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
+		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
+					 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
+		var rating = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
 
-		MMRRatingResponse result = new();
-
-		switch (ratingType)
+		var result = new MMRRatingResponse()
 		{
-			case "SkillRating":
-				result = new MMRRatingResponse
-				{
-					Rating = ratings.SkillRating / Rating.Precision,
-					GamesPlayed = ratings.SkillRatingGamesPlayed,
-				};
-				break;
-
-			case "TDMSkillRating":
-				result = new MMRRatingResponse
-				{
-					Rating = ratings.TDMSkillRating / Rating.Precision,
-					GamesPlayed = ratings.TDMSkillRatingGamesPlayed,
-				};
-				break;
-
-			case "CTFSkillRating":
-				result = new MMRRatingResponse
-				{
-					Rating = ratings.CTFSkillRating / Rating.Precision,
-					GamesPlayed = ratings.CTFSkillRatingGamesPlayed,
-				};
-				break;
-
-			case "ShowdownSkillRating":
-				result = new MMRRatingResponse
-				{
-					Rating = ratings.ShowdownSkillRating / Rating.Precision,
-					GamesPlayed = ratings.ShowdownSkillRatingGamesPlayed,
-				};
-				break;
-
-			case "FlagRunSkillRating":
-				result = new MMRRatingResponse
-				{
-					Rating = ratings.FlagRunSkillRating / Rating.Precision,
-					GamesPlayed = ratings.FlagRunSkillRatingGamesPlayed,
-				};
-				break;
-
-			case "DMSkillRating":
-				result = new MMRRatingResponse
-				{
-					Rating = ratings.DMSkillRating / Rating.Precision,
-					GamesPlayed = ratings.DMSkillRatingGamesPlayed,
-				};
-				break;
-		}
+			Rating = rating?.RatingValue / Rating.Precision ?? Rating.DefaultRating,
+			GamesPlayed = rating?.GamesPlayed ?? 0,
+		};
 
 		return result;
 	}
 
-	public async Task UpdateTeamsRatingsAsync(RatingMatch ratingMatch, Func<Rating, int> propertySelector)
+	public async Task UpdateTeamsRatingsAsync(RatingMatch ratingMatch)
 	{
 		double redTeamActualScore = 1;
 		double blueTeamActualScore = 0;
@@ -163,7 +85,8 @@ public sealed class RatingsService
 			.Select(s => EpicID.FromString(s.AccountID))
 			.ToArray();
 
-		var filter = Builders<Rating>.Filter.In(f => f.AccountID, redTeamAccountIds.Union(blueTeamAccountIds));
+		var filter = Builders<Rating>.Filter.In(f => f.AccountID, redTeamAccountIds.Union(blueTeamAccountIds)) &
+					 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
 		var playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
 
 		int redTeamPlayersCount = redTeamAccountIds.Length;
@@ -175,7 +98,7 @@ public sealed class RatingsService
 		{
 			redTeamCurrentRatings[i] = playersCurrentRatings
 				.Where(w => w.AccountID == redTeamAccountIds[i])
-				.Select(propertySelector)
+				.Select(s => s.RatingValue)
 				.FirstOrDefault(Rating.DefaultRating * Rating.Precision) / Rating.Precision;
 		}
 
@@ -183,7 +106,7 @@ public sealed class RatingsService
 		{
 			blueTeamCurrentRatings[i] = playersCurrentRatings
 				.Where(w => w.AccountID == blueTeamAccountIds[i])
-				.Select(propertySelector)
+				.Select(s => s.RatingValue)
 				.FirstOrDefault(Rating.DefaultRating * Rating.Precision) / Rating.Precision;
 		}
 
@@ -202,8 +125,9 @@ public sealed class RatingsService
 		{
 			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, redTeamAccountIds[i]);
 			var updateDefinition = Builders<Rating>.Update
-				.Set(setFieldDefinition, (int)(redTeamNewRatings[i] * Rating.Precision))
-				.Inc(incFieldDefinition, 1);
+				.Set(s => s.RatingType, ratingMatch.RatingType)
+				.Set(s => s.RatingValue, (int)(redTeamNewRatings[i] * Rating.Precision))
+				.Inc(i => i.GamesPlayed, 1);
 			bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 		}
 
@@ -211,8 +135,9 @@ public sealed class RatingsService
 		{
 			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, blueTeamAccountIds[i]);
 			var updateDefinition = Builders<Rating>.Update
-				.Set(setFieldDefinition, (int)(blueTeamNewRatings[i] * Rating.Precision))
-				.Inc(incFieldDefinition, 1);
+				.Set(s => s.RatingType, ratingMatch.RatingType)
+				.Set(s => s.RatingValue, (int)(blueTeamNewRatings[i] * Rating.Precision))
+				.Inc(i => i.GamesPlayed, 1);
 			bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 		}
 
@@ -237,7 +162,7 @@ public sealed class RatingsService
 
 		for (int i = 0; i < playersCount; i++)
 		{
-			currentRatings[i] = playersCurrentRatings.FirstOrDefault(f => f.AccountID == playersAccountIds[i])?.DMSkillRating / Rating.Precision ?? Rating.DefaultRating;
+			currentRatings[i] = playersCurrentRatings.FirstOrDefault(f => f.AccountID == playersAccountIds[i])?.RatingValue / Rating.Precision ?? Rating.DefaultRating;
 		}
 
 		double[] expectedScores = EloDeathmatchCalculationService.GetExpectedScores(currentRatings);
@@ -250,8 +175,9 @@ public sealed class RatingsService
 		{
 			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, playersAccountIds[i]);
 			var updateDefinition = Builders<Rating>.Update
-				.Set(s => s.DMSkillRating, (int)(newRatings[i] * Rating.Precision))
-				.Inc(i => i.DMSkillRatingGamesPlayed, 1);
+				.Set(s => s.RatingType, ratingMatch.RatingType)
+				.Set(s => s.RatingValue, (int)(newRatings[i] * Rating.Precision))
+				.Inc(i => i.GamesPlayed, 1);
 			bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 		}
 
