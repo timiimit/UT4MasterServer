@@ -23,4 +23,11 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UT4MasterServer.Authentication\UT4MasterServer.Authentication.csproj" />
+    <ProjectReference Include="..\UT4MasterServer.Models\UT4MasterServer.Models.csproj" />
+    <ProjectReference Include="..\UT4MasterServer.Serializers\UT4MasterServer.Serializers.csproj" />
+    <ProjectReference Include="..\UT4MasterServer.Services\UT4MasterServer.Services.csproj" />
+  </ItemGroup>
+
 </Project>

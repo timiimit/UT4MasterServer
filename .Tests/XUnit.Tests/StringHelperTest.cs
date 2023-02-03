@@ -1,5 +1,5 @@
 using System.Text;
-using UT4MasterServer.Helpers;
+using UT4MasterServer.Common.Helpers;
 
 namespace XUnit.Tests;
 

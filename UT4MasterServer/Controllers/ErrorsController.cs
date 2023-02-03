@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using UT4MasterServer.Exceptions;
-using UT4MasterServer.Models;
+using UT4MasterServer.Common.Exceptions;
+using UT4MasterServer.Models.DTO.Responses;
 
 namespace UT4MasterServer.Controllers;
 

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text;
-using UT4MasterServer.Models;
-using UT4MasterServer.Other;
-using UT4MasterServer.Services;
+using UT4MasterServer.Controllers.UT;
+using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers;
 
@@ -14,7 +14,7 @@ public sealed class CustomAPIController : JsonAPIController
 	private readonly IOptions<ApplicationSettings> configuration;
 	private readonly AccountService accountService;
 
-	public CustomAPIController(ILogger<UnrealTournamentMatchmakingController> logger, IOptions<ApplicationSettings> configuration, AccountService accountService) : base(logger)
+	public CustomAPIController(ILogger<MatchmakingController> logger, IOptions<ApplicationSettings> configuration, AccountService accountService) : base(logger)
 	{
 		this.configuration = configuration;
 		this.accountService = accountService;

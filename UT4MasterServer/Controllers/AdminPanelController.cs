@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Helpers;
+using UT4MasterServer.Common.Helpers;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Common;
+using UT4MasterServer.Services.Scoped;
+using UT4MasterServer.Services.Singleton;
+using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models;
-using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Models.Responses;
-using UT4MasterServer.Other;
-using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 
@@ -304,7 +307,7 @@ public sealed class AdminPanelController : ControllerBase
 	public async Task<IActionResult> UpdateMCPFile(string filename)
 	{
 		await VerifyAdmin();
-		await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, HttpContext.Request.BodyReader);
+		await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, HttpContext.Request.Body);
 		return Ok();
 	}
 
