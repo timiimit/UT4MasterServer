@@ -139,6 +139,11 @@ public sealed class MatchmakingService
 			}
 		}
 
+		// Limit number of results. if request retrieves more results,
+		// then caller should make filter more strict.
+		if (inputFilter.MaxResults > 100)
+			inputFilter.MaxResults = 100;
+
 		var options = new FindOptions<GameServer>()
 		{
 			Limit = inputFilter.MaxResults,
