@@ -1,5 +1,6 @@
 **/.classpath
 **/.dockerignore
+#**/.env Disabled in commit 291f17e: Added web to docker compose
 **/.git
 **/.gitignore
 **/.project
