@@ -31,8 +31,6 @@ public sealed class StatsController : JsonAPIController
         this.trustedGameServerService = trustedGameServerService;
     }
 
-    // Examples:
-    // /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/daily
     [HttpGet("accountId/{id}/bulk/window/daily")]
     public async Task<IActionResult> GetDailyAccountStatistics(string id)
     {
@@ -41,8 +39,6 @@ public sealed class StatsController : JsonAPIController
         return Ok(result);
     }
 
-    // Examples:
-    // /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/weekly
     [HttpGet("accountId/{id}/bulk/window/weekly")]
     public async Task<IActionResult> GetWeeklyAccountStatistics(string id)
     {
@@ -51,8 +47,6 @@ public sealed class StatsController : JsonAPIController
         return Ok(result);
     }
 
-    // Examples:
-    // /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/monthly
     [HttpGet("accountId/{id}/bulk/window/monthly")]
     public async Task<IActionResult> GetMonthlyAccountStatistics(string id)
     {
@@ -61,8 +55,6 @@ public sealed class StatsController : JsonAPIController
         return Ok(result);
     }
 
-    // Examples:
-    // /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk/window/alltime
     [HttpGet("accountId/{id}/bulk/window/alltime")]
     public async Task<IActionResult> GetAllTimeAccountStatistics(string id)
     {
@@ -71,8 +63,6 @@ public sealed class StatsController : JsonAPIController
         return Ok(result);
     }
 
-    // Example:
-    // /ut/api/stats/accountId/0b0f09b400854b9b98932dd9e5abe7c5/bulk?ownertype=1
     [HttpPost("accountId/{id}/bulk")]
     public async Task<IActionResult> CreateAccountStatistics(
         string id,
