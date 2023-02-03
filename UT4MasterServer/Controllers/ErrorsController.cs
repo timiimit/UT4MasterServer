@@ -38,7 +38,7 @@ public sealed class ErrorsController : ControllerBase
 		{
 			case InvalidEpicIDException invalidEpicIDException:
 			{
-				var err = new Error()
+				var err = new ErrorResponse()
 				{
 					ErrorCode = invalidEpicIDException.ErrorCode,
 					ErrorMessage = invalidEpicIDException.Message,
@@ -53,7 +53,7 @@ public sealed class ErrorsController : ControllerBase
 			case UnauthorizedAccessException unauthorizedAccessException:
 			{
 				logger.LogWarning(exception, UnauthorizedError);
-				return StatusCode(401, new Error()
+				return StatusCode(401, new ErrorResponse()
 				{
 					ErrorCode = "com.epicgames.errors.unauthorized",
 					ErrorMessage = string.IsNullOrWhiteSpace(unauthorizedAccessException.Message) ? UnauthorizedError : unauthorizedAccessException.Message,

@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace UT4MasterServer.Models.DTO.Responses;
 
-public class Error
+public class ErrorResponse
 {
 	[JsonPropertyName("errorCode")]
 	public string? ErrorCode { get; set; }

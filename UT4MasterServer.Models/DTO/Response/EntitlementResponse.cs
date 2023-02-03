@@ -3,7 +3,7 @@ using UT4MasterServer.Common;
 
 namespace UT4MasterServer.Models.DTO.Responses;
 
-public class Entitlement
+public class EntitlementResponse
 {
 	/*
 
@@ -79,7 +79,7 @@ public class Entitlement
 	[JsonPropertyName("country")]
 	public string Country { get; set; } = "US";
 
-	public Entitlement(string name, string id, EpicID accountID)
+	public EntitlementResponse(string name, string id, EpicID accountID)
 	{
 		var commonDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 

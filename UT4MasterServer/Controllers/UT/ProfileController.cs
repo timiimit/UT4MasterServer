@@ -256,7 +256,7 @@ public sealed class ProfileController : JsonAPIController
     }
 
     [HttpPost("{id}/{clientKind}/GrantXP")]
-    public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] int rvn, [FromBody] GrantXP body)
+    public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] int rvn, [FromBody] GrantXPRequest body)
     {
         if (User.Identity is not EpicUserIdentity user)
             return Unauthorized();
@@ -377,7 +377,7 @@ public sealed class ProfileController : JsonAPIController
     }
 
     [HttpPost("{id}/{clientKind}/SetStars")]
-    public async Task<IActionResult> SetStars(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] SetStars body)
+    public async Task<IActionResult> SetStars(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] SetStarsRequest body)
     {
         if (User.Identity is not EpicUserIdentity user)
             return Unauthorized();

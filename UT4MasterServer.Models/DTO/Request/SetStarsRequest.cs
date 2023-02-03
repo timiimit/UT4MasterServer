@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace UT4MasterServer.Models.DTO.Request;
 
-public sealed class SetStars
+public sealed class SetStarsRequest
 {
 	[JsonPropertyName("newGoldStars")]
 	public int NewGoldStars { get; set; }

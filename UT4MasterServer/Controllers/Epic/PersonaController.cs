@@ -2,11 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
+using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Services.Scoped;
-using UT4MasterServer.Services.Singleton;
-using Microsoft.Extensions.Logging;
 
-namespace UT4MasterServer.Controllers.Epic;
+namespace UT4MasterServer.Controllers;
 
 /// <summary>
 /// persona-public-service-prod06.ol.epicgames.com
@@ -17,75 +16,108 @@ namespace UT4MasterServer.Controllers.Epic;
 [Produces("application/json")]
 public sealed class PersonaController : JsonAPIController
 {
-    private readonly AccountService accountService;
+	private readonly AccountService accountService;
 
-    public PersonaController(ILogger<PersonaController> logger, AccountService accountService) : base(logger)
-    {
-        this.accountService = accountService;
-    }
+	public PersonaController(ILogger<PersonaController> logger, AccountService accountService) : base(logger)
+	{
+		this.accountService = accountService;
+	}
 
-    [HttpGet("public/account/lookup")]
-    public async Task<IActionResult> AccountLookup([FromQuery(Name = "q")] string query)
-    {
-        if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+	[HttpGet("public/account/lookup")]
+	public async Task<IActionResult> AccountLookup([FromQuery(Name = "q")] string query)
+	{
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+			return Unauthorized();
 
-        var account = await accountService.GetAccountAsync(query);
-        if (account == null)
-            return BadRequest();
+		var account = await accountService.GetAccountAsync(query);
+		if (account == null)
+			return BadRequest();
 
-        var obj = new JObject();
-        obj.Add("id", account.ID.ToString());
-        obj.Add("displayName", account.Username);
-        obj.Add("extenalAuths", new JObject());
+		var obj = new JObject
+		{
+			{ "id", account.ID.ToString() },
+			{ "displayName", account.Username },
+			{ "extenalAuths", new JObject() }
+		};
 
-        return Json(obj);
-    }
+		return Json(obj);
+	}
 
-    [HttpGet("account/{id}")]
-    public async Task<IActionResult> GetAccount(string id)
-    {
-        if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+	[HttpPost("accounts/search")]
+	public async Task<IActionResult> SearchAccounts([FromBody] AccountSearchRequest request)
+	{
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		{
+			return Unauthorized();
+		}
+		var accounts = await accountService.SearchAccountsAsync(request.Query);
 
-        EpicID eid = EpicID.FromString(id);
+		if (request.Roles != null && request.Roles.Length > 0)
+		{
+			accounts = accounts.Where((a) => a.Roles != null && a.Roles.Intersect(request.Roles).Any());
+		}
 
-        if (eid != authenticatedUser.Session.AccountID)
-            return Unauthorized();
+		var count = accounts.Count();
 
-        logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for account {id}");
+		accounts = accounts.Skip(request.Skip).Take(request.Take);
 
-        var account = await accountService.GetAccountAsync(eid);
-        if (account == null)
-            return NotFound();
+		if (request.IncludeRoles)
+		{
+			return Ok(
+				new
+				{
+					accounts = accounts.Select((account) => new { account.ID, account.Username, account.Roles }),
+					count
+				}
+			);
+		}
+		return Ok(
+				new
+				{
+					accounts = accounts.Select((account) => new { account.ID, account.Username, }),
+					count
+				}
+			);
+	}
 
-        return Ok(account);
-    }
+	[HttpGet("account/{id}")]
+	public async Task<IActionResult> GetAccount(string id)
+	{
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		{
+			return Unauthorized();
+		}
 
-    [HttpGet("accounts")]
-    public async Task<IActionResult> GetAllAccounts()
-    {
-        if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+		var eid = EpicID.FromString(id);
 
-        var accounts = await accountService.GetAllAccountsAsync();
-        logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for all accounts");
+		if (eid != authenticatedUser.Session.AccountID)
+		{
+			return Unauthorized();
+		}
 
-        // create json response
-        var arr = new JArray();
-        // TODO: Limit to 1000 for now, just to not allow unlimited access to the accounts collection. Should be replaced with paging or a search function at some point.
-        foreach (var account in accounts.Take(1000))
-        {
-            var obj = new JObject();
-            obj.Add("ID", account.ID.ToString());
-            obj.Add("Username", account.Username);
-            var roles = new JArray();
-            roles.Add(account.Roles);
-            obj.Add("Roles", roles);
-            arr.Add(obj);
-        }
+		logger.LogInformation("{AccountId} is looking for account {id}", authenticatedUser.Session.AccountID, id);
 
-        return Json(arr);
-    }
+		var account = await accountService.GetAccountAsync(eid);
+		if (account == null)
+		{
+			return NotFound();
+		}
 
+		return Ok(account);
+	}
+
+	[HttpPost("accounts")]
+	public async Task<IActionResult> GetAccountsByIds([FromBody] string[] ids)
+	{
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		{
+			return Unauthorized();
+		}
+
+		var eIds = ids.Distinct().Select(x => EpicID.FromString(x));
+		var accounts = await accountService.GetAccountsAsync(eIds);
+		logger.LogInformation("{AccountId} is looking for limited accounts by ID", authenticatedUser.Session.AccountID);
+
+		return Ok(accounts.Select((account) => new { account.ID, account.Username }));
+	}
 }

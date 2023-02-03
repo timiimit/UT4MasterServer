@@ -15,7 +15,7 @@ public enum LeagueTier
 	GrandMasterLeague = 5,
 }
 
-public class League
+public class LeagueResponse
 {
 	// i think this structure is in UT source, so it can be explored further there
 

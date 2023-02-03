@@ -117,7 +117,7 @@ public sealed class SessionController : JsonAPIController
                     // EPIC is returning this ErrorResponse after checking username and password... This is better place IMO
                     if (!allowPasswordGrant)
                     {
-                        return Unauthorized(new Error
+                        return Unauthorized(new ErrorResponse
                         {
                             ErrorCode = "errors.com.epicgames.common.oauth.unauthorized_client",
                             ErrorMessage = $"Sorry your client is not allowed to use the grant type {grantType}. Please download and use UT4UU",
@@ -149,7 +149,7 @@ public sealed class SessionController : JsonAPIController
                 }
             default:
                 {
-                    return BadRequest(new Error
+                    return BadRequest(new ErrorResponse
                     {
                         ErrorCode = "errors.com.epicgames.common.oauth.unsupported_grant_type",
                         ErrorMessage = $"Unsupported grant type: {grantType}",
@@ -168,7 +168,7 @@ public sealed class SessionController : JsonAPIController
             logger.LogError(message);
 
             // TODO: Find proper response
-            return Unauthorized(new Error
+            return Unauthorized(new ErrorResponse
             {
                 ErrorCode = "errors.com.epicgames.common.oauth.invalid_credentials",
                 ErrorMessage = message,
@@ -249,7 +249,7 @@ public sealed class SessionController : JsonAPIController
 
         var code = await codeService.CreateCodeAsync(CodeKind.Exchange, user.Session.AccountID, user.Session.ClientID);
         if (code == null)
-            return BadRequest(new Error()
+            return BadRequest(new ErrorResponse()
             {
                 ErrorName = "cannot_create_exchangecode" // TODO: find proper response
             });
@@ -434,7 +434,7 @@ public sealed class SessionController : JsonAPIController
     [NonAction]
     private BadRequestObjectResult ErrorInvalidRequest(string requiredInput)
     {
-        return BadRequest(new Error
+        return BadRequest(new ErrorResponse
         {
             ErrorCode = "errors.com.epicgames.common.oauth.invalid_request",
             ErrorMessage = $"{requiredInput} is required.",

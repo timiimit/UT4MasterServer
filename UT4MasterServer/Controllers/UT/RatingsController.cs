@@ -25,7 +25,7 @@ public sealed class RatingController : JsonAPIController
     }
 
     [HttpPost("account/{id}/mmrbulk")]
-    public IActionResult MmrBulk(string id, [FromBody] MMRBulk ratings)
+    public IActionResult MmrBulk(string id, [FromBody] MMRBulkResponse ratings)
     {
         if (User.Identity is not EpicUserIdentity user)
             return Unauthorized();
@@ -63,7 +63,7 @@ public sealed class RatingController : JsonAPIController
         if (User.Identity is not EpicUserIdentity user)
             return Unauthorized();
 
-        var league = new League();
+        var league = new LeagueResponse();
         // TODO: for now we just send default/empty values
         return Ok(league);
     }
@@ -76,7 +76,7 @@ public sealed class RatingController : JsonAPIController
 
         // TODO: calculate proper rating for this team
 
-        return Ok(new Rating() { RatingValue = 1500 });
+        return Ok(new RatingResponse() { RatingValue = 1500 });
     }
 
     [HttpPost("team/match_result")]

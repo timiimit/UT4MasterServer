@@ -60,11 +60,11 @@ public sealed class EntitlementController : JsonAPIController
 
         EpicID eid = EpicID.FromString(id);
 
-        List<Entitlement> entitlements = new List<Entitlement>();
-        entitlements.Add(new Entitlement("UnrealTournament", UTEntitlementID, eid));
+        List<EntitlementResponse> entitlements = new List<EntitlementResponse>();
+        entitlements.Add(new EntitlementResponse("UnrealTournament", UTEntitlementID, eid));
         foreach (var entitlementID in mapEntitlementIDs)
         {
-            entitlements.Add(new Entitlement(entitlementID, entitlementID, eid));
+            entitlements.Add(new EntitlementResponse(entitlementID, entitlementID, eid));
         }
         // TODO: decide how players unlock these special cosmetics
         //foreach (var entitlementID in cosmeticEntitlementIDs)

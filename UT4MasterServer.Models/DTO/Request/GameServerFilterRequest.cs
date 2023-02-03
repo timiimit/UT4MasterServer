@@ -10,7 +10,7 @@ public class GameServerAttributeCriteria
 	public JsonElement Value { get; set; } = default;
 }
 
-public class GameServerFilter
+public class GameServerFilterRequest
 {
 	public List<GameServerAttributeCriteria> Criteria { get; set; } = new();
 	public string? BuildUniqueId { get; set; } = null;

@@ -52,7 +52,7 @@ public sealed class AccountController : JsonAPIController
 
         var account = await accountService.GetAccountAsync(eid);
         if (account == null)
-            return NotFound(new Error
+            return NotFound(new ErrorResponse
             {
                 ErrorCode = "errors.com.epicgames.account.account_not_found",
                 ErrorMessage = $"Sorry, we couldn't find an account for {id}",
@@ -95,7 +95,7 @@ public sealed class AccountController : JsonAPIController
 
         if (accountIDs.Count == 0 || accountIDs.Count > 100)
         {
-            return NotFound(new Error
+            return NotFound(new ErrorResponse
             {
                 ErrorCode = "errors.com.epicgames.account.invalid_account_id_count",
                 ErrorMessage = "Sorry, the number of account id should be at least one and not more than 100.",
@@ -259,7 +259,7 @@ public sealed class AccountController : JsonAPIController
         if (matchingAccount != null)
         {
             logger.LogInformation($"Change Username failed, already taken: {newUsername}");
-            return Conflict(new Error()
+            return Conflict(new ErrorResponse()
             {
                 ErrorMessage = $"Username already taken"
             });
@@ -268,7 +268,7 @@ public sealed class AccountController : JsonAPIController
         var account = await accountService.GetAccountAsync(user.Session.AccountID);
         if (account == null)
         {
-            return NotFound(new Error()
+            return NotFound(new ErrorResponse()
             {
                 ErrorMessage = $"Failed to retrieve your account"
             });
@@ -299,7 +299,7 @@ public sealed class AccountController : JsonAPIController
         var account = await accountService.GetAccountAsync(user.Session.AccountID);
         if (account == null)
         {
-            return NotFound(new Error()
+            return NotFound(new ErrorResponse()
             {
                 ErrorMessage = $"Failed to retrieve your account"
             });
@@ -329,7 +329,7 @@ public sealed class AccountController : JsonAPIController
         // passwords should already be hashed, but check its length just in case
         if (!ValidationHelper.ValidatePassword(newPassword))
         {
-            return BadRequest(new Error()
+            return BadRequest(new ErrorResponse()
             {
                 ErrorMessage = $"newPassword is not a SHA512 hash"
             });
@@ -338,7 +338,7 @@ public sealed class AccountController : JsonAPIController
         var account = await accountService.GetAccountAsync(user.Session.AccountID);
         if (account == null)
         {
-            return NotFound(new Error()
+            return NotFound(new ErrorResponse()
             {
                 ErrorMessage = $"Failed to retrieve your account"
             });
@@ -346,7 +346,7 @@ public sealed class AccountController : JsonAPIController
 
         if (!account.CheckPassword(currentPassword, false))
         {
-            return BadRequest(new Error()
+            return BadRequest(new ErrorResponse()
             {
                 ErrorMessage = $"Current Password is invalid"
             });

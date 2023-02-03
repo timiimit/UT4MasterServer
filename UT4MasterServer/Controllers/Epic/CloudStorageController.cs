@@ -79,7 +79,7 @@ public sealed class CloudStorageController : JsonAPIController
         {
             if (!isStatsFile)
             {
-                return NotFound(new Error()
+                return NotFound(new ErrorResponse()
                 {
                     ErrorCode = "errors.com.epicgames.cloudstorage.file_not_found",
                     ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}",

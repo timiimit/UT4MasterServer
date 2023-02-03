@@ -2,7 +2,7 @@
 
 namespace UT4MasterServer.Models.DTO.Request;
 
-public class AdminPanelChangePassword
+public class AdminPanelChangePasswordRequest
 {
 	[JsonPropertyName("newPassword")]
 	public string NewPassword { get; set; } = string.Empty;

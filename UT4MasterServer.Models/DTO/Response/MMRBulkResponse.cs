@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace UT4MasterServer.Models.DTO.Responses;
 
-public class MMRBulk
+public class MMRBulkResponse
 {
 	[JsonPropertyName("ratingTypes")]
 	public List<string> RatingTypes { get; set; } = new List<string>();
