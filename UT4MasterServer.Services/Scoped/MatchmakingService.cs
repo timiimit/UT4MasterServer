@@ -68,7 +68,7 @@ public sealed class MatchmakingService
 		return await cursor.FirstOrDefaultAsync();
 	}
 
-	public async Task<List<GameServer>> ListAsync(GameServerFilter inputFilter)
+	public async Task<List<GameServer>> ListAsync(GameServerFilterRequest inputFilter)
 	{
 		// Begin removing stale GameServers
 		var taskStaleRemoval = RemoveAllStaleAsync();
