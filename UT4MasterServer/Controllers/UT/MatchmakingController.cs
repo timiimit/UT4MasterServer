@@ -12,6 +12,7 @@ using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Common.Enums;
+using System.Text.Json.Nodes;
 
 namespace UT4MasterServer.Controllers.UT;
 
@@ -317,7 +318,7 @@ public sealed class MatchmakingController : JsonAPIController
 		//	new GameServer("matrix", "[DS]dallastn-22938", "192.223.24.243"),
 		//};
 
-		var arr = new JArray();
+		var arr = new JsonArray();
 		foreach (var server in servers)
 		{
 #if DEBUG && USE_LOCALHOST_TEST
@@ -327,7 +328,7 @@ public sealed class MatchmakingController : JsonAPIController
 			arr.Add(server.ToJson(true));
 		}
 
-		return Json(arr);
+		return Ok(arr);
 	}
 
 	/// <summary>
