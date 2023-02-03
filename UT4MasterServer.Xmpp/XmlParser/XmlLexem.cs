@@ -2,8 +2,8 @@
 
 internal class XmlLexem
 {
-	XmlToken Token { get; set; }
-	string Value { get; set; } = string.Empty;
-	int Line { get; set; }
-	int Column { get; set; }
+	public XmlToken Token { get; set; }
+	public string Value { get; set; } = string.Empty;
+	public int Line { get; set; }
+	public int Column { get; set; }
 }

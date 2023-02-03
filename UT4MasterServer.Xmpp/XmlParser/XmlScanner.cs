@@ -79,7 +79,7 @@ internal class XmlScanner
         stateToToken.Add(state, token);
     }
 
-    public (string, XmlToken, int, int)? NextChar(char c)
+    public XmlLexem? NextChar(char c)
     {
         if (stateMachine.NextChar(c))
         {
@@ -101,7 +101,7 @@ internal class XmlScanner
         // reset machine state
         stateMachine.State = 0;
 
-        return (lexem.ToString(), stateToToken[finalState], line, column);
+        return new XmlLexem { Token = stateToToken[finalState], Value = lexem.ToString(), Line = line, Column = column };
     }
 
 }
