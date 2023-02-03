@@ -1,25 +1,25 @@
 {
-  "Announcements": [
-    {
-      "Title": "Welcome to new master server! [23.01.2023]",
-      "StartDate": "2023.01.01-00.00.0",
-      "EndDate": "2023.02.01-00.00.0",
-      "AnnouncementURL": "https://ut4.timiimit.com/news/2023-01-23.html",
-      "MinHeight": 300
-    },
-    {
-      "Title": "Anouncement System Test! [03.08.2017]",
-      "StartDate": "2017.03.08-17.00.0",
-      "EndDate": "2017.03.08-20.15.59",
-      "AnnouncementURL": "https://www.epicgames.com/unrealtournament/blog",
-      "MinHeight": 300
-    },
-    {
-      "Title": "Rick 'Troll' Roll! Test [03.16.2017]",
-      "StartDate": "2016.03.14-0.0.0",
-      "EndDate": "2016.03.18-23.59.59",
-      "AnnouncementURL": "https://www.epicgames.com/unrealtournament/flag-run",
-      "MinHeight": 600
-    }
-  ]
+	"Announcements": [
+		{
+			"Title": "Welcome to new master server! [23.01.2023]",
+			"StartDate": "2023.01.01-00.00.0",
+			"EndDate": "2023.02.01-00.00.0",
+			"AnnouncementURL": "https://ut4.timiimit.com/news/2023-01-23.html",
+			"MinHeight": 300
+		},
+		{
+			"Title": "Anouncement System Test! [03.08.2017]",
+			"StartDate": "2017.03.08-17.00.0",
+			"EndDate": "2017.03.08-20.15.59",
+			"AnnouncementURL": "https://www.epicgames.com/unrealtournament/blog",
+			"MinHeight": 300
+		},
+		{
+			"Title": "Rick 'Troll' Roll! Test [03.16.2017]",
+			"StartDate": "2016.03.14-0.0.0",
+			"EndDate": "2016.03.18-23.59.59",
+			"AnnouncementURL": "https://www.epicgames.com/unrealtournament/flag-run",
+			"MinHeight": 600
+		}
+	]
 }
