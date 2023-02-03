@@ -20,10 +20,12 @@ public sealed class AccountService
 
 	public async Task CreateAccountAsync(string username, string email, string password)
 	{
-		var newAccount = new Account();
-		newAccount.ID = EpicID.GenerateNew();
-		newAccount.Username = username;
-		newAccount.Email = email;
+		var newAccount = new Account
+		{
+			ID = EpicID.GenerateNew(),
+			Username = username,
+			Email = email
+		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);

@@ -120,7 +120,7 @@ public sealed class MatchmakingService
 
 			if (comparisonKeyword == null)
 			{
-				logger.LogWarning($"Matchmaking search criteria contains unknown condition type '{condition.Type}' with key '{condition.Key}' and value '{condition.Value}'");
+				logger.LogWarning("Matchmaking search criteria contains unknown condition type '{Condition}' with key '{Key}' and value '{Value}'", condition.Type, condition.Key, condition.Value);
 				continue;
 			}
 

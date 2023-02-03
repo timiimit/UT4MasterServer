@@ -41,11 +41,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Models", "U
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Common", "UT4MasterServer.Common\UT4MasterServer.Common.csproj", "{468351B6-1222-46B2-B026-6B78585BAEDE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Serializers", "..\UT4MasterServer.Serializers\UT4MasterServer.Serializers.csproj", "{9EC2021D-6D10-48B8-8604-4563757F6E82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Serializers", "UT4MasterServer.Serializers\UT4MasterServer.Serializers.csproj", "{9EC2021D-6D10-48B8-8604-4563757F6E82}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Services", "UT4MasterServer.Services\UT4MasterServer.Services.csproj", "{6DDDF02C-C06F-4148-AE39-29A4B771F8FB}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Controllers", "..\UT4MasterServer.Controllers\UT4MasterServer.Controllers.csproj", "{F87A425A-728F-4667-A131-676C926F506C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UT4MasterServer.Authentication", "UT4MasterServer.Authentication\UT4MasterServer.Authentication.csproj", "{9D946358-61C8-4AA3-8151-805393049F8A}"
 EndProject
@@ -121,14 +119,6 @@ Global
 		{6DDDF02C-C06F-4148-AE39-29A4B771F8FB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6DDDF02C-C06F-4148-AE39-29A4B771F8FB}.Release|x64.ActiveCfg = Release|Any CPU
 		{6DDDF02C-C06F-4148-AE39-29A4B771F8FB}.Release|x64.Build.0 = Release|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Debug|x64.Build.0 = Debug|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Release|x64.ActiveCfg = Release|Any CPU
-		{F87A425A-728F-4667-A131-676C926F506C}.Release|x64.Build.0 = Release|Any CPU
 		{9D946358-61C8-4AA3-8151-805393049F8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9D946358-61C8-4AA3-8151-805393049F8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D946358-61C8-4AA3-8151-805393049F8A}.Debug|x64.ActiveCfg = Debug|Any CPU
