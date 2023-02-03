@@ -298,7 +298,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 	[AllowAnonymous]
 	[HttpPost("session/matchMakingRequest")]
-	public async Task<IActionResult> ListGameServers([FromBody] GameServerFilter filter)
+	public async Task<IActionResult> ListGameServers([FromBody] GameServerFilterRequest filter)
 	{
 		if (User.Identity is not EpicUserIdentity)
 		{
@@ -348,7 +348,7 @@ public sealed class MatchmakingController : JsonAPIController
 		}
 
 		// TODO: implement query filters
-		return await ListGameServers(new GameServerFilter());
+		return await ListGameServers(new GameServerFilterRequest());
 	}
 
 	[HttpPost("session/{id}/join")]
@@ -376,7 +376,7 @@ public sealed class MatchmakingController : JsonAPIController
 	[NonAction]
 	private NotFoundObjectResult UnknownSessionId(string id)
 	{
-		return NotFound(new Error
+		return NotFound(new ErrorResponse
 		{
 			ErrorCode = "errors.com.epicgames.modules.matchmaking.unknown_session",
 			ErrorMessage = $"unknown session id {id}",

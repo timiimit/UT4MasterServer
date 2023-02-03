@@ -11,7 +11,7 @@ using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Models.Responses;
-using UT4MasterServer.Other;
+using UT4MasterServer.Common;
 using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
@@ -256,14 +256,14 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[HttpPatch("change_password/{id}")]
-	public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminPanelChangePassword body)
+	public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminPanelChangePasswordRequest body)
 	{
 		await VerifyAdmin();
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
 		if (account is null)
 		{
-			return NotFound(new Error() { ErrorMessage = $"Failed to find account {id}" });
+			return NotFound(new ErrorResponse() { ErrorMessage = $"Failed to find account {id}" });
 		}
 
 		if (account.Flags.HasFlag(AccountFlags.Moderator) || account.Flags.HasFlag(AccountFlags.Admin))
@@ -274,7 +274,7 @@ public sealed class AdminPanelController : ControllerBase
 		// passwords should already be hashed, but check its length just in case
 		if (!ValidationHelper.ValidatePassword(body.NewPassword))
 		{
-			return BadRequest(new Error()
+			return BadRequest(new ErrorResponse()
 			{
 				ErrorMessage = $"newPassword is not a SHA512 hash"
 			});
@@ -282,7 +282,7 @@ public sealed class AdminPanelController : ControllerBase
 
 		if (body.IAmSure != true)
 		{
-			return BadRequest(new Error()
+			return BadRequest(new ErrorResponse()
 			{
 				ErrorMessage = $"'iAmSure' was not 'true'"
 			});
@@ -323,7 +323,7 @@ public sealed class AdminPanelController : ControllerBase
 		var file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
 		if (file is null)
 		{
-			return NotFound(new Error() { ErrorMessage = "File not found" });
+			return NotFound(new ErrorResponse() { ErrorMessage = "File not found" });
 		}
 
 		return new FileContentResult(file.RawContent, "application/octet-stream");
@@ -340,7 +340,7 @@ public sealed class AdminPanelController : ControllerBase
 		{
 			if (forceCheckBroken != true)
 			{
-				return NotFound(new Error() { ErrorMessage = "Account not found" });
+				return NotFound(new ErrorResponse() { ErrorMessage = "Account not found" });
 			}
 		}
 		else
