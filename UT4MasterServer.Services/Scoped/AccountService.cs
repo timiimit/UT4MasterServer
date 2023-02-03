@@ -49,9 +49,9 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<IEnumerable<Account>> SearchAccountsAsync(string query)
+	public async Task<IEnumerable<Account>> SearchAccountsAsync(string usernameQuery)
 	{
-		var cursor = await accountCollection.FindAsync(account => account.Username.ToLower().Contains(query.ToLower()));
+		var cursor = await accountCollection.FindAsync(account => account.Username.ToLower().Contains(usernameQuery.ToLower()));
 		return await cursor.ToListAsync();
 	}
 
