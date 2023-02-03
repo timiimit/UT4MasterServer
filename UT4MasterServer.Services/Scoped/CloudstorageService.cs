@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Common.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace UT4MasterServer.Services.Scoped;
 
