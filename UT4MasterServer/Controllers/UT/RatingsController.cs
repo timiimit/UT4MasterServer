@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Controllers.Epic;
+using UT4MasterServer.Common;
 using UT4MasterServer.Models.DTO.Responses;
-using UT4MasterServer.Services.Scoped;
+using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers.UT;
 
@@ -14,75 +13,110 @@ namespace UT4MasterServer.Controllers.UT;
 [Route("ut/api/game/v2/ratings")]
 [AuthorizeBearer]
 [Produces("application/json")]
-public sealed class RatingController : JsonAPIController
+public sealed class RatingsController : JsonAPIController
 {
-    private readonly AccountService accountService;
+	private readonly RatingsService ratingsService;
 
-    public RatingController(ILogger<SessionController> logger, AccountService accountService) : base(logger)
-    {
-        this.accountService = accountService;
-    }
+	public RatingsController(ILogger<RatingsController> logger, RatingsService ratingsService) : base(logger)
+	{
+		this.ratingsService = ratingsService;
+	}
 
-    [HttpPost("account/{id}/mmrbulk")]
-    public IActionResult MmrBulk(string id, [FromBody] MMRBulkResponse ratings)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+	[HttpPost("account/{id}/mmrbulk")]
+	public async Task<IActionResult> MmrBulk(string id, [FromBody] MMRBulkResponse ratings)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
 
-        for (int i = 0; i < ratings.RatingTypes.Count; i++)
-        {
-            ratings.Ratings.Add(1500);
-            ratings.NumGamesPlayed.Add(0);
-        }
+		var accountId = EpicID.FromString(id);
 
-        return Ok(ratings);
-    }
+		var result = await ratingsService.GetRatingsAsync(accountId, ratings);
 
-    [HttpGet("account/{id}/mmr/{ratingType}")]
-    public IActionResult Mmr(string id, string ratingType)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+		return Ok(result);
+	}
 
-        // TODO: return only one type of rating
+	[HttpGet("account/{id}/mmr/{ratingType}")]
+	public async Task<IActionResult> Mmr(string id, string ratingType)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
 
-        // proper response: {"rating":1844,"numGamesPlayed":182}
-        JObject obj = new JObject()
-        {
-            { "rating", 1500 },
-            { "numGamesPlayed", 0 }
-        };
+		var accountId = EpicID.FromString(id);
 
-        return Json(obj);
-    }
+		var result = await ratingsService.GetRatingAsync(accountId, ratingType);
 
-    [HttpGet("account/{id}/league/{leagueName}")]
-    public IActionResult LeagueRating(string id, string leagueName)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+		return Ok(result);
+	}
 
-        var league = new LeagueResponse();
-        // TODO: for now we just send default/empty values
-        return Ok(league);
-    }
+	// THIS IS RETURNING SOME RESULTS
+	// REQUEST: GET /ut/api/game/v2/ratings/account/0b0f09b400854b9b98932dd9e5abe7c5/league/RankedDuelSkillRating 
+	// RESPONSE: {"tier":2,"division":0,"points":13,"isInPromotionSeries":false,"promotionMatchesAttempted":3,"promotionMatchesWon":3,"placementMatchesAttempted":10}
+	[HttpGet("account/{id}/league/{leagueName}")]
+	public IActionResult LeagueRating(string id, string leagueName)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
 
-    [HttpPost("team/elo/{ratingType}")]
-    public IActionResult JoinQuickplay(string ratingType, [FromBody] RatingTeam body)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+		var league = new LeagueResponse();
+		// TODO: for now we just send default/empty values
+		return Ok(league);
+	}
 
-        // TODO: calculate proper rating for this team
+	// ONLY SENDING ONE PLAYER ALWAYS
+	// REQUEST:	 { "members": [ { "accountId": "0b0f09b400854b9b98932dd9e5abe7c5", "score": 0, "isBot": false }], "socialPartySize": 1 }
+	// RESPONSE: { "rating":1666 }
+	[HttpPost("team/elo/{ratingType}")]
+	public IActionResult JoinQuickplay(string ratingType, [FromBody] RatingTeam body)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
 
-        return Ok(new RatingResponse() { RatingValue = 1500 });
-    }
+		// TODO: calculate proper rating for this team
 
-    [HttpPost("team/match_result")]
-    public IActionResult MatchResult([FromBody] RatingMatch body)
-    {
-        // TODO: update ELO rating
+		return Ok(new RatingResponse() { RatingValue = 1500 });
+	}
 
-        return NoContent(); // Response: correct response
-    }
+	[HttpPost("team/match_result")]
+	public async Task<IActionResult> MatchResult([FromBody] RatingMatch ratingMatch)
+	{
+		switch (ratingMatch.RatingType)
+		{
+			case "SkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.SkillRating);
+				break;
+
+			case "TDMSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.TDMSkillRating);
+				break;
+
+			case "CTFSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.CTFSkillRating);
+				break;
+
+			case "ShowdownSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.ShowdownSkillRating);
+				break;
+
+			case "FlagRunSkillRating":
+				await ratingsService.UpdateTeamsRatingsAsync(ratingMatch, x => x.FlagRunSkillRating);
+				break;
+
+			case "DMSkillRating":
+				await ratingsService.UpdateDeathmatchRatingsAsync(ratingMatch);
+				break;
+
+			default:
+				return BadRequest("Unknown rating type.");
+		}
+
+		return NoContent();
+	}
 }

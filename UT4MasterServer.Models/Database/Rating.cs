@@ -1,6 +1,6 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
-using UT4MasterServer.Other;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using UT4MasterServer.Common;
 
 namespace UT4MasterServer.Models;
 
@@ -18,7 +18,7 @@ public sealed class Rating
 	public int SkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
-    public int SkillRatingGamesPlayed { get; set; }
+	public int SkillRatingGamesPlayed { get; set; }
 
 	[BsonDefaultValue(DefaultRating * Precision), BsonIgnoreIfDefault]
 	public int TDMSkillRating { get; set; }
@@ -30,23 +30,23 @@ public sealed class Rating
 	public int DMSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
-    public int DMSkillRatingGamesPlayed { get; set; }
+	public int DMSkillRatingGamesPlayed { get; set; }
 
 	[BsonDefaultValue(DefaultRating * Precision), BsonIgnoreIfDefault]
 	public int CTFSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
-    public int CTFSkillRatingGamesPlayed { get; set; }
+	public int CTFSkillRatingGamesPlayed { get; set; }
 
 	[BsonDefaultValue(DefaultRating * Precision), BsonIgnoreIfDefault]
 	public int ShowdownSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
-    public int ShowdownSkillRatingGamesPlayed { get; set; }
+	public int ShowdownSkillRatingGamesPlayed { get; set; }
 
 	[BsonDefaultValue(DefaultRating * Precision), BsonIgnoreIfDefault]
 	public int FlagRunSkillRating { get; set; }
 
 	[BsonIgnoreIfDefault]
-    public int FlagRunSkillRatingGamesPlayed { get; set; }
+	public int FlagRunSkillRatingGamesPlayed { get; set; }
 }

@@ -1,8 +1,8 @@
 ﻿using MongoDB.Driver;
-using Newtonsoft.Json.Linq;
+using UT4MasterServer.Common;
 using UT4MasterServer.Models;
-using UT4MasterServer.Models.Requests;
-using UT4MasterServer.Other;
+using UT4MasterServer.Models.DTO.Response;
+using UT4MasterServer.Models.DTO.Responses;
 
 namespace UT4MasterServer.Services;
 
@@ -15,12 +15,12 @@ public sealed class RatingsService
 		ratingsCollection = dbContext.Database.GetCollection<Rating>("ratings");
 	}
 
-	public async Task<MMRBulk> GetRatingsAsync(EpicID accountID, MMRBulk mmrBulk)
+	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkResponse mmrBulk)
 	{
 		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID);
 		var ratings = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
 
-		var result = new MMRBulk();
+		var result = new MMRBulkResponse();
 
 		foreach (var ratingType in mmrBulk.RatingTypes)
 		{
@@ -68,60 +68,60 @@ public sealed class RatingsService
 		return result;
 	}
 
-	public async Task<JObject> GetRatingAsync(EpicID accountID, string ratingType)
+	public async Task<MMRRatingResponse> GetRatingAsync(EpicID accountID, string ratingType)
 	{
 		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID);
 		var ratings = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
 
-		JObject result = new();
+		MMRRatingResponse result = new();
 
 		switch (ratingType)
 		{
 			case "SkillRating":
-				result = new JObject
+				result = new MMRRatingResponse
 				{
-					{ "rating", ratings.SkillRating / Rating.Precision },
-					{ "numGamesPlayed", ratings.SkillRatingGamesPlayed }
+					Rating = ratings.SkillRating / Rating.Precision,
+					GamesPlayed = ratings.SkillRatingGamesPlayed,
 				};
 				break;
 
 			case "TDMSkillRating":
-				result = new JObject
+				result = new MMRRatingResponse
 				{
-					{ "rating", ratings.TDMSkillRating / Rating.Precision },
-					{ "numGamesPlayed", ratings.TDMSkillRatingGamesPlayed }
+					Rating = ratings.TDMSkillRating / Rating.Precision,
+					GamesPlayed = ratings.TDMSkillRatingGamesPlayed,
 				};
 				break;
 
 			case "CTFSkillRating":
-				result = new JObject
+				result = new MMRRatingResponse
 				{
-					{ "rating", ratings.CTFSkillRating / Rating.Precision },
-					{ "numGamesPlayed", ratings.CTFSkillRatingGamesPlayed }
+					Rating = ratings.CTFSkillRating / Rating.Precision,
+					GamesPlayed = ratings.CTFSkillRatingGamesPlayed,
 				};
 				break;
 
 			case "ShowdownSkillRating":
-				result = new JObject
+				result = new MMRRatingResponse
 				{
-					{ "rating", ratings.ShowdownSkillRating / Rating.Precision },
-					{ "numGamesPlayed", ratings.ShowdownSkillRatingGamesPlayed }
+					Rating = ratings.ShowdownSkillRating / Rating.Precision,
+					GamesPlayed = ratings.ShowdownSkillRatingGamesPlayed,
 				};
 				break;
 
 			case "FlagRunSkillRating":
-				result = new JObject
+				result = new MMRRatingResponse
 				{
-					{ "rating", ratings.FlagRunSkillRating / Rating.Precision },
-					{ "numGamesPlayed", ratings.FlagRunSkillRatingGamesPlayed }
+					Rating = ratings.FlagRunSkillRating / Rating.Precision,
+					GamesPlayed = ratings.FlagRunSkillRatingGamesPlayed,
 				};
 				break;
 
 			case "DMSkillRating":
-				result = new JObject
+				result = new MMRRatingResponse
 				{
-					{ "rating", ratings.DMSkillRating / Rating.Precision },
-					{ "numGamesPlayed", ratings.DMSkillRatingGamesPlayed }
+					Rating = ratings.DMSkillRating / Rating.Precision,
+					GamesPlayed = ratings.DMSkillRatingGamesPlayed,
 				};
 				break;
 		}
