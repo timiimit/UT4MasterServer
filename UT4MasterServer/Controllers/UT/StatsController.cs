@@ -3,9 +3,7 @@ using UT4MasterServer.Authentication;
 using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Common;
-using UT4MasterServer.Services;
 using UT4MasterServer.Services.Scoped;
-using Microsoft.Extensions.Logging;
 
 namespace UT4MasterServer.Controllers.UT;
 

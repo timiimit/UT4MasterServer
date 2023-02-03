@@ -2,9 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Net;
-using System.Text.Json;
-using UT4MasterServer.Common;
-using Microsoft.Extensions.Logging;
 using UT4MasterServer.Models.Settings;
 
 namespace UT4MasterServer.Controllers;

@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using System.Text;
-using System.Security.Cryptography;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;

@@ -6,13 +6,9 @@ using UT4MasterServer.Models.DTO.Request;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
-using Microsoft.Extensions.Logging;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models;
-using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Models.Responses;
-using UT4MasterServer.Common;
-using UT4MasterServer.Services;
 
 namespace UT4MasterServer.Controllers;
 

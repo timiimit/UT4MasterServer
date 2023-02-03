@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Services.Singleton;
-using Microsoft.Extensions.Logging;
 
 namespace UT4MasterServer.Controllers.UT;
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using UT4MasterServer.Common.Exceptions;
 using UT4MasterServer.Models.DTO.Responses;
 

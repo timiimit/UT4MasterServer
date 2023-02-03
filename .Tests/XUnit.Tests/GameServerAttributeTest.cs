@@ -1,8 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
-using UT4MasterServer.Models;
-
-namespace XUnit.Tests;
+﻿namespace XUnit.Tests;
 
 #if false
 public class GameServerAttributeTest

@@ -10,9 +10,7 @@ using UT4MasterServer.Models.DTO.Request;
 using UT4MasterServer.Models.Settings;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
-using Microsoft.Extensions.Logging;
 using UT4MasterServer.Models.DTO.Responses;
-using Microsoft.AspNetCore.Http;
 using UT4MasterServer.Common.Enums;
 
 namespace UT4MasterServer.Controllers.UT;

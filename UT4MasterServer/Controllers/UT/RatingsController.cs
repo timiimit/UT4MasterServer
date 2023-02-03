@@ -4,7 +4,6 @@ using UT4MasterServer.Authentication;
 using UT4MasterServer.Controllers.Epic;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Services.Scoped;
-using Microsoft.Extensions.Logging;
 
 namespace UT4MasterServer.Controllers.UT;
 

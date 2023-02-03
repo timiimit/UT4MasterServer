@@ -5,10 +5,7 @@ using Microsoft.Extensions.Options;
 using System.Text;
 using UT4MasterServer.Controllers.UT;
 using UT4MasterServer.Models.Settings;
-using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
-using UT4MasterServer.Services.Singleton;
-using Microsoft.Extensions.Logging;
 
 namespace UT4MasterServer.Controllers;
 

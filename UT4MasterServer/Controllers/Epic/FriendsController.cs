@@ -4,8 +4,6 @@ using UT4MasterServer.Authentication;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 using UT4MasterServer.Common.Helpers;
 
 namespace UT4MasterServer.Controllers.Epic;

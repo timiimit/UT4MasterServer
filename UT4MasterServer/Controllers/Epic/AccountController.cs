@@ -6,8 +6,6 @@ using UT4MasterServer.Authentication;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models;
-using UT4MasterServer.Services;
-using Microsoft.Extensions.Logging;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Settings;
 using UT4MasterServer.Services.Scoped;

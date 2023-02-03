@@ -1,11 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using UT4MasterServer.Authentication;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Common;
-using UT4MasterServer.Services.Scoped;
-using UT4MasterServer.Services.Singleton;
-using Microsoft.Extensions.Logging;
 
 namespace UT4MasterServer.Controllers.Epic;
 
