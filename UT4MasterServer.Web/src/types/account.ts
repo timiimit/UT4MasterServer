@@ -1,19 +1,25 @@
-import { AccountFlag } from '@/enums/account-flag';
+import { Role } from '@/enums/role';
 
 export interface IAccount {
-  ID: string;
-  Username: string;
-  CreatedAt: string;
-  LastLoginAt: string;
-  Email: string;
-  CountryFlag: string;
-  Avatar: string;
-  GoldStars: number;
-  BlueStars: number;
-  XP: number;
-  XPLastMatch: number;
-  LastMatchAt: string;
-  Level: number;
-  LevelStockLimited: number;
-  Roles?: AccountFlag[];
+  id: string;
+  username: string;
+}
+
+export interface IAccountWithRoles extends IAccount {
+  roles: Role[];
+}
+
+export interface IAccountExtended extends IAccountWithRoles {
+  email: string;
+  createdAt: string;
+  lastLoginAt: string;
+  countryFlag: string;
+  avatar: string;
+  goldStars: number;
+  blueStars: number;
+  xp: number;
+  lastMatchAt: string;
+  flags: number;
+  level: number;
+  levelStockLimited: number;
 }

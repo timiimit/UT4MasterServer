@@ -57,13 +57,11 @@
 </style>
 
 <script lang="ts" setup>
-import { onMounted, computed, shallowRef } from 'vue';
-import Hub from '@/components/Hub.vue';
+import { computed, shallowRef } from 'vue';
+import Hub from '@/pages/Servers/components/Hub.vue';
 import { ServerStore } from '@/stores/server-store';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import { AccountStore } from '@/stores/account-store';
 import { orderBy } from 'lodash';
-import { SessionStore } from '@/stores/session-store';
 
 const filterText = shallowRef('');
 const hideEmpty = shallowRef(true);
@@ -84,11 +82,4 @@ const filteredHubs = computed(() =>
     )
   )
 );
-
-onMounted(() => {
-  ServerStore.fetchGameServers();
-  if (SessionStore.isAuthenticated) {
-    AccountStore.fetchAllAccounts();
-  }
-});
 </script>

@@ -1,8 +1,7 @@
 {
-	"Announcements":
-	[
+	"Announcements": [
 		{
-			"Title": "Welcome to new master server! [23.01.2023]  ",
+			"Title": "Welcome to new master server! [23.01.2023]",
 			"StartDate": "2023.01.01-00.00.0",
 			"EndDate": "2023.02.01-00.00.0",
 			"AnnouncementURL": "https://ut4.timiimit.com/news/2023-01-23.html",

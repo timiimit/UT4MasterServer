@@ -7,6 +7,7 @@
       @focus="handleFocus"
       @blur="handleBlur"
       @keydown="handleKeydown"
+      @keyup="handleKeyup()"
     />
     <div v-show="menuOpen" class="autocomplete-menu dropdown-menu show">
       <a
@@ -62,7 +63,8 @@
 </style>
 
 <script setup lang="ts">
-import { ref, PropType, computed, watch, onMounted } from 'vue';
+import { ref, PropType, computed, watch } from 'vue';
+import { debounce } from 'ts-debounce';
 
 const props = defineProps({
   items: {
@@ -84,11 +86,12 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['select']);
+const emit = defineEmits(['select', 'inputChange']);
 
 const searchText = ref('');
 const menuOpen = ref(false);
 const activeIndex = ref(-1);
+const initialValueSet = ref(false);
 
 const filteredItems = computed(() =>
   props.items.filter((i) =>
@@ -108,14 +111,17 @@ function handleBlur(event: FocusEvent) {
   }
 }
 
-function handleSelect(item?: unknown) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleSelect(item?: any) {
   emit('select', item);
   menuOpen.value = false;
+  searchText.value = item[props.searchKey].toString();
 }
 
 function handleClear() {
   searchText.value = '';
   handleSelect();
+  handleKeyup();
 }
 
 function setActiveIndex(i: number) {
@@ -146,16 +152,27 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
+const handleKeyup = debounce(
+  () => emit('inputChange', searchText.value ?? ''),
+  500
+);
+
 function valueChanged() {
   if (props.value) {
     const match = props.items.find((i) => i[props.itemKey] === props.value);
-    if (match) {
-      const matchText = match[props.searchKey];
-      if (matchText !== undefined) searchText.value = matchText.toString();
+    if (match && !initialValueSet.value) {
+      searchText.value = match[props.searchKey].toString();
+      initialValueSet.value = true;
     }
   }
 }
 
+function itemsChanged() {
+  if (!initialValueSet.value) {
+    valueChanged();
+  }
+}
+
 watch(() => props.value, valueChanged);
-onMounted(valueChanged);
+watch(() => props.items, itemsChanged);
 </script>

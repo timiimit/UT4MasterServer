@@ -151,8 +151,8 @@ public static class Program
 			});
 		});
 
-		var allowOriginsPolicy = "_ut4msOriginsPolicy";
-		var devAllowOriginsPolicy = "_ut4msDevOriginsPolicy";
+		const string allowOriginsPolicy = "_ut4msOriginsPolicy";
+		const string devAllowOriginsPolicy = "_ut4msDevOriginsPolicy";
 
 		builder.Services.AddCors(options =>
 		{

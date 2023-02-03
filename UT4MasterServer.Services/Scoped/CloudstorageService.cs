@@ -6,21 +6,24 @@ using UT4MasterServer.Common.Helpers;
 
 namespace UT4MasterServer.Services.Scoped;
 
+/// <summary>
+/// Some general information about cloudstorage files<br/><br/>
+///
+/// systemfiles: <code>{game_install_location}\UnrealTournament\PersistentDownloadDir\EMS</code>
+/// system files are always downloaded when game boots<br/><br/>
+///
+/// userfiles: <code>{documents}\UnrealTournament\Saved\Cloud\{accountID}\{filename}</code>
+/// userfiles are only there while game is running and file had to have been needed within the game
+/// </summary>
 public sealed class CloudStorageService
 {
-	// some general information about cloudstorage files
-	//
-	// systemfiles: <game_install_location>\UnrealTournament\PersistentDownloadDir\EMS
-	// system files are always downloaded when game boots
-	//
-	// userfiles: <documents>\UnrealTournament\Saved\Cloud\<accountID>\<filename>
-	// userfiles are only there while game is running and file had to have been needed within the game
-
 	private readonly IMongoCollection<CloudFile> cloudStorageCollection;
+	private readonly ILogger<CloudStorageService> logger;
 
-	public CloudStorageService(DatabaseContext dbContext)
+	public CloudStorageService(DatabaseContext dbContext, ILogger<CloudStorageService> logger)
 	{
 		cloudStorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
+		this.logger = logger;
 	}
 
 	public async Task EnsureSystemFilesExistAsync()
@@ -39,13 +42,14 @@ public sealed class CloudStorageService
 			if (filename == null)
 				continue;
 
-			if (stored.Where(x => x.Filename == filename).Any())
+			if (stored.Any(x => x.Filename == filename))
 			{
 				// file already in db
 				continue;
 			}
 
 			// file is not in db, save it
+			logger.LogInformation("Adding cloud storage system file to database: {filename}", filename);
 			using var stream = File.OpenRead(file);
 			await UpdateFileAsync(EpicID.Empty, filename, stream);
 		}
@@ -108,8 +112,6 @@ public sealed class CloudStorageService
 
 		return (int)result.DeletedCount;
 	}
-
-
 
 	private static bool IsCommonUserFileFilename(string filename)
 	{

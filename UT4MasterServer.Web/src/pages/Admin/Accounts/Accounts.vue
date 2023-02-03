@@ -7,18 +7,14 @@
           type="text"
           class="form-control"
           placeholder="Filter by Username..."
+          @keyup="filtersUpdated()"
         />
       </div>
       <div>
-        <Multiselect
-          v-model="filterRoles"
-          placeholder="Filter by Roles..."
-          :options="flagOptions"
-          mode="tags"
-        />
+        <RoleMultiSelect v-model="filterRoles" />
       </div>
     </template>
-    <LoadingPanel :status="status" auto-load @load="loadAccounts">
+    <LoadingPanel :status="status" auto-load @load="searchAccounts">
       <table class="table">
         <thead>
           <tr>
@@ -28,13 +24,10 @@
           </tr>
         </thead>
         <tbody>
-          <template
-            v-for="account in filteredAccounts.slice(pageStart, pageEnd)"
-            :key="objectHash(account)"
-          >
+          <template v-for="account in accounts" :key="objectHash(account)">
             <tr :class="{ 'table-light': account.editing }">
-              <td class="username">{{ account.Username }}</td>
-              <td>{{ account.Roles?.join(', ') }}</td>
+              <td class="username">{{ account.username }}</td>
+              <td>{{ account.roles?.join(', ') }}</td>
               <td class="actions">
                 <button
                   class="btn btn-icon"
@@ -63,7 +56,7 @@
         </tbody>
       </table>
       <Paging
-        :items="filteredAccounts"
+        :item-count="totalAccounts"
         :page-size="pageSize"
         @update="handlePagingUpdate"
       />
@@ -86,10 +79,10 @@ td.actions {
 </style>
 
 <script lang="ts" setup>
-import { shallowRef, ref, computed } from 'vue';
+import { shallowRef, ref, watch } from 'vue';
 import CrudPage from '@/components/CrudPage.vue';
 import AccountService from '@/services/account.service';
-import { IAccount } from '@/types/account';
+import { IAccountWithRoles } from '@/types/account';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
 import EditAccount from './components/EditAccount.vue';
@@ -98,53 +91,37 @@ import { usePaging } from '@/hooks/use-paging.hook';
 import Paging from '@/components/Paging.vue';
 import { AccountStore } from '@/stores/account-store';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { AccountFlag } from '@/enums/account-flag';
+import { Role } from '@/enums/role';
 import AdminService from '@/services/admin-service';
-import Multiselect from '@vueform/multiselect';
+import RoleMultiSelect from './components/RoleMultiSelect.vue';
+import { debounce } from 'ts-debounce';
 
-interface IGridAccount extends IAccount {
+interface IGridAccount extends IAccountWithRoles {
   editing?: boolean;
 }
 
 const accountService = new AccountService();
 const adminService = new AdminService();
 const accounts = ref<IGridAccount[]>([]);
+const totalAccounts = shallowRef(0);
 const status = shallowRef(AsyncStatus.OK);
 const filterText = shallowRef('');
-const filterRoles = shallowRef<AccountFlag[]>([]);
-
-const allFlags = shallowRef<string[]>([]);
-const flagOptions = computed(() =>
-  allFlags.value.map((f) => ({ label: f, value: f }))
-);
+const filterRoles = shallowRef<Role[]>([]);
 
 const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 
-const usernameFiltered = computed(() =>
-  accounts.value.filter((a) =>
-    a.Username.toLocaleLowerCase().includes(
-      filterText.value.toLocaleLowerCase()
-    )
-  )
-);
-
-const filteredAccounts = computed(() =>
-  usernameFiltered.value.filter(
-    (a) =>
-      filterRoles.value.length === 0 ||
-      a.Roles?.some((r) => filterRoles.value.includes(r))
-  )
-);
-
-async function loadAccounts() {
+async function searchAccounts() {
   try {
     status.value = AsyncStatus.BUSY;
-    const [allPossibleFlags, allAccounts] = await Promise.all([
-      adminService.getAccountFlagOptions(),
-      accountService.getAllAccounts()
-    ]);
-    allFlags.value = allPossibleFlags;
-    accounts.value = allAccounts;
+    const response = await accountService.searchAccounts<IAccountWithRoles>(
+      filterText.value,
+      pageStart.value,
+      pageEnd.value,
+      true,
+      filterRoles.value
+    );
+    accounts.value = response.accounts;
+    totalAccounts.value = response.count;
     status.value = AsyncStatus.OK;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
@@ -153,12 +130,10 @@ async function loadAccounts() {
 }
 
 function canDelete(account: IGridAccount) {
-  const accountIsUser = AccountStore.account?.ID === account.ID;
-  const accountIsAdmin = account.Roles?.includes(AccountFlag.Admin);
-  const accountIsModerator = account.Roles?.includes(AccountFlag.Moderator);
-  const userIsModerator = AccountStore.account?.Roles?.includes(
-    AccountFlag.Moderator
-  );
+  const accountIsUser = AccountStore.account?.id === account.id;
+  const accountIsAdmin = account.roles?.includes(Role.Admin);
+  const accountIsModerator = account.roles?.includes(Role.Moderator);
+  const userIsModerator = AccountStore.account?.roles?.includes(Role.Moderator);
 
   return (
     !accountIsUser &&
@@ -170,13 +145,13 @@ function canDelete(account: IGridAccount) {
 async function handleDelete(account: IGridAccount) {
   // TODO: something less hideous than browser confirm dialog
   const confirmDelete = confirm(
-    `Are you sure you want to delete account ${account.Username}?`
+    `Are you sure you want to delete account ${account.username}?`
   );
   if (confirmDelete) {
     try {
       status.value = AsyncStatus.BUSY;
-      await adminService.deleteAccount(account.ID);
-      loadAccounts();
+      await adminService.deleteAccount(account.id);
+      searchAccounts();
       status.value = AsyncStatus.OK;
     } catch (err: unknown) {
       status.value = AsyncStatus.ERROR;
@@ -187,6 +162,11 @@ async function handleDelete(account: IGridAccount) {
 
 function handleUpdated(account: IGridAccount) {
   account.editing = false;
-  loadAccounts();
+  searchAccounts();
 }
+
+const filtersUpdated = debounce(searchAccounts, 500);
+
+watch(filterRoles, searchAccounts);
+watch(pageEnd, searchAccounts);
 </script>

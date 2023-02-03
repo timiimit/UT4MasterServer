@@ -66,7 +66,7 @@
         </tbody>
       </table>
       <Paging
-        :items="filteredClients"
+        :item-count="filteredClients.length"
         :page-size="pageSize"
         @update="handlePagingUpdate"
       />

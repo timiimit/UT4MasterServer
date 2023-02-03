@@ -60,7 +60,7 @@ const props = defineProps({
 });
 
 const imgIconUrl = new URL(
-  `../assets/weapons/${props.card.headingIcon}`,
+  `../../../assets/weapons/${props.card.headingIcon}`,
   import.meta.url
 ).href;
 
