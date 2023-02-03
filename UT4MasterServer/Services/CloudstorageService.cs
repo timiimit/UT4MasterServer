@@ -49,7 +49,7 @@ public sealed class CloudStorageService
 			}
 
 			// file is not in db, save it
-			logger.LogInformation($"Adding cloud storage system file to database: {filename}");
+			logger.LogInformation("Adding cloud storage system file to database: {filename}", filename);
 			using var stream = File.OpenRead(file);
 			var reader = PipeReader.Create(stream);
 			await UpdateFileAsync(EpicID.Empty, filename, reader);
@@ -113,8 +113,6 @@ public sealed class CloudStorageService
 
 		return (int)result.DeletedCount;
 	}
-
-
 
 	private static bool IsCommonUserFileFilename(string filename)
 	{
