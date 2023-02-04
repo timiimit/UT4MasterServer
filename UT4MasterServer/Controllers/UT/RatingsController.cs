@@ -77,16 +77,20 @@ public sealed class RatingsController : JsonAPIController
 	// REQUEST:	 { "members": [ { "accountId": "0b0f09b400854b9b98932dd9e5abe7c5", "score": 0, "isBot": false }], "socialPartySize": 1 }
 	// RESPONSE: { "rating":1666 }
 	[HttpPost("team/elo/{ratingType}")]
-	public IActionResult JoinQuickplay(string ratingType, [FromBody] RatingTeam body)
+	public async Task<IActionResult> JoinQuickplay(string ratingType, [FromBody] RatingTeam ratingTeam)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
 			return Unauthorized();
 		}
+		if (!Rating.AllowedRatingTypes.Contains(ratingType))
+		{
+			return BadRequest($"'{ratingType}' is not supported rating type.");
+		}
 
-		// TODO: calculate proper rating for this team
+		var response = await ratingsService.GetAverageTeamRatingAsync(ratingType, ratingTeam);
 
-		return Ok(new RatingResponse() { RatingValue = 1500 });
+		return Ok(response);
 	}
 
 	[HttpPost("team/match_result")]

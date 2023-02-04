@@ -51,6 +51,30 @@ public sealed class RatingsService
 		return result;
 	}
 
+	public async Task<RatingResponse> GetAverageTeamRatingAsync(string ratingType, RatingTeam ratingTeam)
+	{
+		var accountIds = ratingTeam.Members
+			.Where(w => !w.IsBot)
+			.Select(s => EpicID.FromString(s.AccountID))
+			.ToArray();
+		var filter = Builders<Rating>.Filter.In(f => f.AccountID, accountIds) &
+					 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
+		var ratings = await ratingsCollection.Find(filter).ToListAsync();
+
+		List<int> ratingValues = new();
+
+		foreach (var member in ratingTeam.Members.Where(w => !w.IsBot))
+		{
+			var ratingValue = ratings.Where(w => w.AccountID == EpicID.FromString(member.AccountID)).FirstOrDefault()?.RatingValue / Rating.Precision ?? Rating.DefaultRating;
+			ratingValues.Add(ratingValue);
+		}
+
+		return new RatingResponse()
+		{
+			RatingValue = ratingValues.Any() ? (int)ratingValues.Average() : Rating.DefaultRating
+		};
+	}
+
 	public async Task UpdateTeamsRatingsAsync(RatingMatch ratingMatch)
 	{
 		double redTeamActualScore = 1;
