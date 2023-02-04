@@ -88,7 +88,9 @@ public sealed class RatingsService
 
 		foreach (var member in ratingTeam.Members.Where(w => !w.IsBot))
 		{
-			var ratingValue = ratings.Where(w => w.AccountID == EpicID.FromString(member.AccountID)).FirstOrDefault()?.RatingValue / Rating.Precision ?? Rating.DefaultRating;
+			var ratingValue = ratings
+				.Where(w => w.AccountID == EpicID.FromString(member.AccountID))
+				.FirstOrDefault()?.RatingValue / Rating.Precision ?? Rating.DefaultRating;
 			ratingValues.Add(ratingValue);
 		}
 
