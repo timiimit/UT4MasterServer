@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 
 namespace UT4MasterServer.Models.Database;
@@ -28,7 +29,9 @@ public sealed class Rating
 
 	public static readonly List<string> AllowedRatingTypes = DmRatingTypes.Union(TeamRatingTypes).ToList();
 
-	[BsonId]
+	[BsonId, BsonElement("_id"), BsonRepresentation(BsonType.ObjectId)]
+	public string ID { get; set; } = default!;
+
 	public EpicID AccountID { get; set; } = default!;
 
 	public string RatingType { get; set; } = string.Empty;
