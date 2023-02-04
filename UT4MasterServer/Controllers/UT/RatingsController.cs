@@ -31,8 +31,12 @@ public sealed class RatingsController : JsonAPIController
 		{
 			return Unauthorized();
 		}
-
 		var accountId = EpicID.FromString(id);
+		var unsupportedRatingTypes = ratings.RatingTypes.Except(Rating.AllowedRatingTypes).ToArray();
+		if (unsupportedRatingTypes.Any())
+		{
+			logger.LogWarning("Unsupported rating types requested: {RatingTypes}. Account: {AccountID}.", string.Join(", ", unsupportedRatingTypes), accountId);
+		}
 
 		var result = await ratingsService.GetRatingsAsync(accountId, ratings);
 
@@ -49,7 +53,7 @@ public sealed class RatingsController : JsonAPIController
 		var accountId = EpicID.FromString(id);
 		if (!Rating.AllowedRatingTypes.Contains(ratingType))
 		{
-			logger.LogWarning("Unsupported rating type requested: {RatingType}, {AccountID}.", ratingType, accountId);
+			logger.LogWarning("Unsupported rating type requested: {RatingType}. Account: {AccountID}.", ratingType, accountId);
 		}
 
 		var result = await ratingsService.GetRatingAsync(accountId, ratingType);
