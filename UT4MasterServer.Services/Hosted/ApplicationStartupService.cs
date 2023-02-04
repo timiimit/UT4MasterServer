@@ -12,22 +12,27 @@ namespace UT4MasterServer.Services.Hosted
 		private readonly StatisticsService statisticsService;
 		private readonly CloudStorageService cloudStorageService;
 		private readonly ClientService clientService;
+		private readonly RatingsService ratingsService;
 
 		public ApplicationStartupService(
-			ILogger<ApplicationStartupService> logger, ILogger<StatisticsService> statsLogger,
-			IOptions<ApplicationSettings> settings, ILogger<CloudStorageService> cloudStorageLogger)
+			ILogger<ApplicationStartupService> logger,
+			ILogger<StatisticsService> statsLogger,
+			IOptions<ApplicationSettings> settings,
+			ILogger<CloudStorageService> cloudStorageLogger)
 		{
 			this.logger = logger;
 			var db = new DatabaseContext(settings);
 			statisticsService = new StatisticsService(statsLogger, db);
 			cloudStorageService = new CloudStorageService(db, cloudStorageLogger);
 			clientService = new ClientService(db);
+			ratingsService = new RatingsService(db);
 		}
 
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			logger.LogInformation("Configuring MongoDB indexes.");
 			await statisticsService.CreateIndexesAsync();
+			await ratingsService.CreateIndexesAsync();
 
 			logger.LogInformation("Initializing MongoDB CloudStorage.");
 			await cloudStorageService.EnsureSystemFilesExistAsync();

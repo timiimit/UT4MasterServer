@@ -15,6 +15,16 @@ public sealed class RatingsService
 		ratingsCollection = dbContext.Database.GetCollection<Rating>("ratings");
 	}
 
+	public async Task CreateIndexesAsync()
+	{
+		var indexAccountId = new IndexKeysDefinitionBuilder<Rating>().Ascending(f => f.AccountID);
+		var indexRatingType = new IndexKeysDefinitionBuilder<Rating>().Ascending(f => f.RatingType);
+		var indexesCombined = new IndexKeysDefinitionBuilder<Rating>().Combine(new[] { indexAccountId, indexRatingType });
+
+		var createIndexModel = new CreateIndexModel<Rating>(indexesCombined, new CreateIndexOptions() { Unique = true });
+		await ratingsCollection.Indexes.CreateOneAsync(createIndexModel);
+	}
+
 	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkResponse mmrBulk)
 	{
 		var ratingTypes = mmrBulk.RatingTypes.Intersect(Rating.AllowedRatingTypes);
