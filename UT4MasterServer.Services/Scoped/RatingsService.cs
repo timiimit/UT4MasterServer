@@ -63,6 +63,7 @@ public sealed class RatingsService
 		var result = new MMRRatingResponse()
 		{
 			Rating = Rating.DefaultRating,
+			GamesPlayed = 0,
 		};
 
 		if (rating is not null)
