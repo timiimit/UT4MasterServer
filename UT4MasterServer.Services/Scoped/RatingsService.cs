@@ -39,8 +39,16 @@ public sealed class RatingsService
 			var rating = ratings.Where(w => w.RatingType == ratingType).FirstOrDefault();
 
 			result.RatingTypes.Add(ratingType);
-			result.Ratings.Add(rating?.RatingValue / Rating.Precision ?? Rating.DefaultRating);
-			result.NumGamesPlayed.Add(rating?.GamesPlayed ?? 0);
+			if (rating is not null)
+			{
+				result.Ratings.Add(rating.RatingValue / Rating.Precision);
+				result.NumGamesPlayed.Add(rating.GamesPlayed);
+			}
+			else
+			{
+				result.Ratings.Add(Rating.DefaultRating);
+				result.NumGamesPlayed.Add(0);
+			}
 		}
 
 		return result;
