@@ -56,7 +56,7 @@ import { shallowRef, PropType } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { IAccount } from '@/types/account';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import CryptoJS from 'crypto-js';
 
 const props = defineProps({

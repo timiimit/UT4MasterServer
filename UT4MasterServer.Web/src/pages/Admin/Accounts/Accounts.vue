@@ -92,7 +92,7 @@ import Paging from '@/components/Paging.vue';
 import { AccountStore } from '@/stores/account-store';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { Role } from '@/enums/role';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import RoleMultiSelect from './components/RoleMultiSelect.vue';
 import { debounce } from 'ts-debounce';
 

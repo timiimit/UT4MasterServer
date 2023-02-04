@@ -90,7 +90,7 @@
 import { shallowRef, computed, PropType, onMounted } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import {
   IGridTrustedServer,
   ITrustedGameServer

@@ -1,11 +1,10 @@
 <template>
-  <CrudPage title="Clients">
+  <CrudPage title="Cloud Files">
     <template #add="p">
-      <AddClient
-        :all-clients="clients"
+      <AddCloudFile
         @cancel="p.cancel"
         @added="
-          loadClients();
+          loadFiles();
           p.cancel();
         "
       />
@@ -20,45 +19,43 @@
         />
       </div>
     </template>
-    <LoadingPanel :status="status" auto-load @load="loadClients">
+    <LoadingPanel :status="status" auto-load @load="loadFiles">
       <table class="table">
         <thead>
           <tr>
             <th>Name</th>
-            <th>ID</th>
             <th />
           </tr>
         </thead>
         <tbody>
           <template
-            v-for="client in filteredClients.slice(pageStart, pageEnd)"
-            :key="objectHash(client)"
+            v-for="file in filteredFiles.slice(pageStart, pageEnd)"
+            :key="objectHash(file)"
           >
-            <tr :class="{ 'table-light': client.editing }">
-              <td>{{ client.name }}</td>
-              <td>{{ client.id }}</td>
+            <tr :class="{ 'table-light': file.editing }">
+              <td>{{ file.filename }}</td>
               <td class="actions">
                 <button
                   class="btn btn-icon"
-                  @click="client.editing = !client.editing"
+                  @click="file.editing = !file.editing"
                 >
                   <FontAwesomeIcon icon="fa-regular fa-pen-to-square" />
                 </button>
                 <button
-                  v-if="canDelete(client)"
+                  v-if="canDelete(file)"
                   class="btn btn-icon"
-                  @click="handleDelete(client)"
+                  @click="handleDelete(file)"
                 >
                   <FontAwesomeIcon icon="fa-solid fa-trash-can" />
                 </button>
               </td>
             </tr>
-            <tr v-if="client.editing" class="edit-row table-light">
+            <tr v-if="file.editing" class="edit-row table-light">
               <td colspan="3">
-                <EditClient
-                  :client="client"
-                  @cancel="client.editing = false"
-                  @updated="handleUpdated(client)"
+                <EditFile
+                  :file="file"
+                  @cancel="file.editing = false"
+                  @updated="handleUpdated(file)"
                 />
               </td>
             </tr>
@@ -66,7 +63,7 @@
         </tbody>
       </table>
       <Paging
-        :item-count="filteredClients.length"
+        :item-count="filteredFiles.length"
         :page-size="pageSize"
         @update="handlePagingUpdate"
       />
@@ -91,64 +88,73 @@ import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
 import { objectHash } from '@/utils/utilities';
 import AdminService from '@/services/admin.service';
-import { IClient } from './types/client';
+import { ICloudFile } from './types/cloud-file';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import AddClient from './components/AddClient.vue';
-import EditClient from './components/EditClient.vue';
+import AddCloudFile from './components/AddCloudFile.vue';
+import EditFile from './components/EditCloudFile.vue';
 import Paging from '@/components/Paging.vue';
 import { usePaging } from '@/hooks/use-paging.hook';
-import { useClientOptions } from './hooks/use-client-options.hook';
 
-interface IGridClient extends IClient {
+interface IGridCloudFile extends ICloudFile {
   editing?: boolean;
 }
 
+const restrictedFiles = [
+  'UnrealTournamentOnlineSettings.json',
+  'UnrealTournmentMCPAnnouncement.json',
+  'UnrealTournmentMCPGameRulesets.json',
+  'UnrealTournmentMCPStorage.json',
+  'UTMCPPlaylists.json'
+];
+
 const adminService = new AdminService();
-const clients = ref<IGridClient[]>([]);
+const files = ref<IGridCloudFile[]>([]);
 const status = shallowRef(AsyncStatus.OK);
 const filterText = shallowRef('');
-const filteredClients = computed(() =>
-  clients.value.filter((c) =>
-    c.name.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())
+const filteredFiles = computed(() =>
+  files.value.filter((c) =>
+    c.filename
+      .toLocaleLowerCase()
+      .includes(filterText.value.toLocaleLowerCase())
   )
 );
 
 const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
-const { isReservedClient } = useClientOptions();
 
-async function loadClients() {
+async function loadFiles() {
   try {
     status.value = AsyncStatus.BUSY;
-    clients.value = await adminService.getClients();
+    files.value = await adminService.getCloudFiles();
+    console.debug(files.value);
     status.value = AsyncStatus.OK;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
-    console.error('Error loading clients', err);
+    console.error('Error loading files', err);
   }
 }
 
-function canDelete(client: IGridClient) {
-  return !isReservedClient(client);
+function canDelete(file: IGridCloudFile) {
+  return !restrictedFiles.includes(file.filename);
 }
 
-function handleUpdated(client: IGridClient) {
-  client.editing = false;
-  loadClients();
+function handleUpdated(file: IGridCloudFile) {
+  file.editing = false;
+  loadFiles();
 }
 
-async function handleDelete(client: IGridClient) {
+async function handleDelete(file: IGridCloudFile) {
   const confirmDelete = confirm(
-    `Are you sure you want to delete client ${client.name}?`
+    `Are you sure you want to delete file ${file.filename}?`
   );
   if (confirmDelete) {
     try {
       status.value = AsyncStatus.BUSY;
-      await adminService.deleteClient(client.id);
-      loadClients();
+      await adminService.deleteCloudFile(file.filename);
+      loadFiles();
       status.value = AsyncStatus.OK;
     } catch (err: unknown) {
       status.value = AsyncStatus.ERROR;
-      console.error('Error deleting client', err);
+      console.error('Error deleting file', err);
     }
   }
 }

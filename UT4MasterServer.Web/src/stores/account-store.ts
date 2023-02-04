@@ -5,9 +5,7 @@ import AccountService from '@/services/account.service';
 import { SessionStore } from './session-store';
 import { Role } from '@/enums/role';
 
-const _account = ref<IAccountExtended | null>(
-  TypedStorage.getItem<IAccountExtended>('account')
-);
+const _account = ref<IAccountExtended | null>(null);
 const _accountService = new AccountService();
 const _adminRoles = [Role.Admin, Role.Moderator];
 
@@ -17,7 +15,10 @@ export const AccountStore = {
   },
   set account(account: IAccountExtended | null) {
     _account.value = account;
-    TypedStorage.setItem<IAccountExtended>('account', account);
+    TypedStorage.setItem<IAccountExtended>(
+      `account-${SessionStore.session?.session_id}`,
+      account
+    );
   },
   get isAdmin() {
     return _account.value?.roles?.some((r) => _adminRoles.includes(r));

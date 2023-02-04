@@ -6,20 +6,19 @@
       @submit.prevent="handleSubmit"
     >
       <fieldset>
-        <legend>Add Client</legend>
+        <legend>Edit Client</legend>
         <div class="form-group row">
           <label for="name" class="col-sm-12 col-form-label">Name</label>
           <div class="col-sm-6">
             <input
               id="name"
               v-model="name"
-              v-valid="formValid"
               type="text"
               class="form-control"
               name="name"
               required
             />
-            <div class="invalid-feedback">A unique name is required</div>
+            <div class="invalid-feedback">Name is required</div>
           </div>
         </div>
         <div class="d-flex justify-content-between mb-2">
@@ -30,40 +29,37 @@
           >
             Cancel
           </button>
-          <button type="submit" class="btn btn-primary">Add Client</button>
+          <button type="submit" class="btn btn-primary">Update Client</button>
         </div>
       </fieldset>
     </form>
   </LoadingPanel>
 </template>
 
-<script setup lang="ts">
-import { shallowRef, computed, PropType } from 'vue';
+<script lang="ts" setup>
+import { PropType } from 'vue';
+import { ICloudFile } from '../types/cloud-file';
+import { shallowRef, computed } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import AdminService from '@/services/admin.service';
-import { IClient } from '../types/client';
-import { useClientOptions } from '../hooks/use-client-options.hook';
-import { valid as vValid } from '@/directives/valid';
 
 const props = defineProps({
-  allClients: {
-    type: Array as PropType<IClient[]>,
+  file: {
+    type: Object as PropType<ICloudFile>,
     required: true
   }
 });
 
-const emit = defineEmits(['added', 'cancel']);
-
-const { isValidName } = useClientOptions();
+const emit = defineEmits(['updated', 'cancel']);
 
 const adminService = new AdminService();
 
 const status = shallowRef(AsyncStatus.OK);
-const name = shallowRef('');
+const name = shallowRef(props.file.name);
 const submitAttempted = shallowRef(false);
-const formValid = computed(() => isValidName(name.value, props.allClients));
-const errorMessage = shallowRef('Error adding client. Please try again.');
+const formValid = computed(() => name.value.length);
+const errorMessage = shallowRef('Error updating client. Please try again.');
 
 async function handleSubmit() {
   submitAttempted.value = true;
@@ -72,9 +68,13 @@ async function handleSubmit() {
   }
   try {
     status.value = AsyncStatus.BUSY;
-    await adminService.createClient(name.value);
+    const updatedFile = {
+      ...props.file,
+      name: name.value
+    };
+    await adminService.updateClient(props.file.id, updatedFile);
     status.value = AsyncStatus.OK;
-    emit('added');
+    emit('updated');
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;

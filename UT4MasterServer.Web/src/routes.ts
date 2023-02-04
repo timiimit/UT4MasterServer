@@ -55,6 +55,12 @@ export const routes: RouteRecordRaw[] = [
         component: async () =>
           import('./pages/Admin/TrustedServers/TrustedServers.vue'),
         beforeEnter: adminGuard
+      },
+      {
+        path: `CloudFiles`,
+        component: async () =>
+          import('./pages/Admin/CloudFiles/CloudFiles.vue'),
+        beforeEnter: adminGuard
       }
     ]
   },
