@@ -1,8 +1,8 @@
 ﻿using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Request;
 using UT4MasterServer.Models.DTO.Response;
-using UT4MasterServer.Models.DTO.Responses;
 
 namespace UT4MasterServer.Services.Scoped;
 
@@ -25,7 +25,7 @@ public sealed class RatingsService
 		await ratingsCollection.Indexes.CreateOneAsync(createIndexModel);
 	}
 
-	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkResponse mmrBulk)
+	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkRequest mmrBulk)
 	{
 		var ratingTypes = mmrBulk.RatingTypes.Intersect(Rating.AllowedRatingTypes);
 		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
