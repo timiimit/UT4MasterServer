@@ -27,7 +27,7 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("account/{id}/mmrbulk")]
 	public async Task<IActionResult> MmrBulk(string id, [FromBody] MMRBulkResponse ratings)
 	{
-		if (User.Identity is not EpicUserIdentity user)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
 		}
@@ -42,7 +42,7 @@ public sealed class RatingsController : JsonAPIController
 	[HttpGet("account/{id}/mmr/{ratingType}")]
 	public async Task<IActionResult> Mmr(string id, string ratingType)
 	{
-		if (User.Identity is not EpicUserIdentity user)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
 		}
@@ -64,7 +64,7 @@ public sealed class RatingsController : JsonAPIController
 	[HttpGet("account/{id}/league/{leagueName}")]
 	public IActionResult LeagueRating(string id, string leagueName)
 	{
-		if (User.Identity is not EpicUserIdentity user)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
 		}
@@ -80,7 +80,7 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/elo/{ratingType}")]
 	public async Task<IActionResult> JoinQuickplay(string ratingType, [FromBody] RatingTeam ratingTeam)
 	{
-		if (User.Identity is not EpicUserIdentity user)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
 		}
