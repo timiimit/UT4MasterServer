@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using UT4MasterServer.Common;
 
-namespace UT4MasterServer.Models.DTO.Responses;
+namespace UT4MasterServer.Models.DTO.Response;
 
 public sealed class RatingMatch
 {
