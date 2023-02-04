@@ -46,12 +46,11 @@ public sealed class RatingsController : JsonAPIController
 		{
 			return Unauthorized();
 		}
+		var accountId = EpicID.FromString(id);
 		if (!Rating.AllowedRatingTypes.Contains(ratingType))
 		{
-			return BadRequest($"'{ratingType}' is not supported rating type.");
+			logger.LogWarning("Unsupported rating type requested: {RatingType}, {AccountID}.", ratingType, accountId);
 		}
-
-		var accountId = EpicID.FromString(id);
 
 		var result = await ratingsService.GetRatingAsync(accountId, ratingType);
 
