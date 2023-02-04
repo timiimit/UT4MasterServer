@@ -54,9 +54,14 @@ public sealed class RatingsService
 
 		var result = new MMRRatingResponse()
 		{
-			Rating = rating?.RatingValue / Rating.Precision ?? Rating.DefaultRating,
-			GamesPlayed = rating?.GamesPlayed ?? 0,
+			Rating = Rating.DefaultRating,
 		};
+
+		if (rating is not null)
+		{
+			result.Rating = rating.RatingValue / Rating.Precision;
+			result.GamesPlayed = rating.GamesPlayed;
+		}
 
 		return result;
 	}
