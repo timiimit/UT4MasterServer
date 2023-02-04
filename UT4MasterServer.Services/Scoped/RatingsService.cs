@@ -34,9 +34,9 @@ public sealed class RatingsService
 
 		var result = new MMRBulkResponse();
 
-		foreach (var ratingType in ratingTypes)
+		foreach (var ratingType in mmrBulk.RatingTypes)
 		{
-			var rating = ratings.Where(w => w.RatingType == ratingType).FirstOrDefault();
+			var rating = ratings.FirstOrDefault(f => f.RatingType == ratingType);
 
 			result.RatingTypes.Add(ratingType);
 			if (rating is not null)
