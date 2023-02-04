@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 
-namespace UT4MasterServer.Models;
+namespace UT4MasterServer.Models.Database;
 
 public sealed class Rating
 {

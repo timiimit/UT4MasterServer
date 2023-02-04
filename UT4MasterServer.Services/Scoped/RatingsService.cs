@@ -4,7 +4,7 @@ using UT4MasterServer.Models;
 using UT4MasterServer.Models.DTO.Response;
 using UT4MasterServer.Models.DTO.Responses;
 
-namespace UT4MasterServer.Services;
+namespace UT4MasterServer.Services.Scoped;
 
 public sealed class RatingsService
 {
