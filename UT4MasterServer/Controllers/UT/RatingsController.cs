@@ -25,7 +25,7 @@ public sealed class RatingsController : JsonAPIController
 	}
 
 	[HttpPost("account/{id}/mmrbulk")]
-	public async Task<IActionResult> MmrBulk(string id, [FromBody] MMRBulkResponse ratings)
+	public async Task<IActionResult> MmrBulk(string id, [FromBody] MMRBulkRequest ratings)
 	{
 		if (User.Identity is not EpicUserIdentity)
 		{
