@@ -131,7 +131,8 @@ public sealed class RatingsService
 		for (int i = 0; i < redTeamPlayersCount; i++)
 		{
 			redTeamCurrentRatings[i] = playersCurrentRatings
-				.Where(w => w.AccountID == redTeamAccountIds[i])
+				.Where(w => w.AccountID == redTeamAccountIds[i] &&
+							w.RatingType == ratingMatch.RatingType)
 				.Select(s => s.RatingValue)
 				.FirstOrDefault(Rating.DefaultRating * Rating.Precision) / Rating.Precision;
 		}
@@ -139,7 +140,8 @@ public sealed class RatingsService
 		for (int i = 0; i < blueTeamPlayersCount; i++)
 		{
 			blueTeamCurrentRatings[i] = playersCurrentRatings
-				.Where(w => w.AccountID == blueTeamAccountIds[i])
+				.Where(w => w.AccountID == blueTeamAccountIds[i] &&
+							w.RatingType == ratingMatch.RatingType)
 				.Select(s => s.RatingValue)
 				.FirstOrDefault(Rating.DefaultRating * Rating.Precision) / Rating.Precision;
 		}
@@ -157,7 +159,8 @@ public sealed class RatingsService
 
 		for (int i = 0; i < redTeamAccountIds.Length; i++)
 		{
-			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, redTeamAccountIds[i]);
+			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, redTeamAccountIds[i]) &
+							   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
 			var updateDefinition = Builders<Rating>.Update
 				.Set(s => s.RatingType, ratingMatch.RatingType)
 				.Set(s => s.RatingValue, (int)(redTeamNewRatings[i] * Rating.Precision))
@@ -167,7 +170,8 @@ public sealed class RatingsService
 
 		for (int i = 0; i < blueTeamAccountIds.Length; i++)
 		{
-			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, blueTeamAccountIds[i]);
+			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, blueTeamAccountIds[i]) &
+							   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
 			var updateDefinition = Builders<Rating>.Update
 				.Set(s => s.RatingType, ratingMatch.RatingType)
 				.Set(s => s.RatingValue, (int)(blueTeamNewRatings[i] * Rating.Precision))
@@ -185,15 +189,13 @@ public sealed class RatingsService
 			.OrderByDescending(o => o.Score)
 			.Select(s => EpicID.FromString(s.AccountID))
 			.ToArray();
-
 		int playersCount = playersAccountIds.Length;
 
-		var filter = Builders<Rating>.Filter.In(f => f.AccountID, playersAccountIds);
-
+		var filter = Builders<Rating>.Filter.In(f => f.AccountID, playersAccountIds) &
+					 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
 		var playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
 
 		double[] currentRatings = new double[playersCount];
-
 		for (int i = 0; i < playersCount; i++)
 		{
 			currentRatings[i] = playersCurrentRatings.FirstOrDefault(f => f.AccountID == playersAccountIds[i])?.RatingValue / Rating.Precision ?? Rating.DefaultRating;
@@ -204,17 +206,16 @@ public sealed class RatingsService
 		double[] newRatings = EloDeathmatchCalculationHelper.GetNewRatings(currentRatings, expectedScores, relativeScores);
 
 		var bulkWriteModelList = new List<UpdateOneModel<Rating>>();
-
 		for (int i = 0; i < playersCount; i++)
 		{
-			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, playersAccountIds[i]);
+			var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, playersAccountIds[i]) &
+							   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
 			var updateDefinition = Builders<Rating>.Update
 				.Set(s => s.RatingType, ratingMatch.RatingType)
 				.Set(s => s.RatingValue, (int)(newRatings[i] * Rating.Precision))
 				.Inc(i => i.GamesPlayed, 1);
 			bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 		}
-
 		await ratingsCollection.BulkWriteAsync(bulkWriteModelList);
 	}
 }
