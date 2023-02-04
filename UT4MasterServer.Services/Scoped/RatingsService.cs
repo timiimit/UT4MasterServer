@@ -1,6 +1,6 @@
 ﻿using MongoDB.Driver;
 using UT4MasterServer.Common;
-using UT4MasterServer.Models;
+using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Response;
 using UT4MasterServer.Models.DTO.Responses;
 

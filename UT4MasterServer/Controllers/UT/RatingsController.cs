@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
-using UT4MasterServer.Models;
+using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
-using UT4MasterServer.Services;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers.UT;
 
