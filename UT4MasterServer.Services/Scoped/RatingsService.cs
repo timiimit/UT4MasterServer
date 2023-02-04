@@ -25,7 +25,7 @@ public sealed class RatingsService
 		await ratingsCollection.Indexes.CreateOneAsync(createIndexModel);
 	}
 
-	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkRequest mmrBulk)
+	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkResponse mmrBulk)
 	{
 		var ratingTypes = mmrBulk.RatingTypes.Intersect(Rating.AllowedRatingTypes);
 		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
