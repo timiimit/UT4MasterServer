@@ -70,6 +70,7 @@ import { IAccountWithRoles } from '@/types/account';
 import AdminService from '@/services/admin-service';
 import CryptoJS from 'crypto-js';
 import { Role } from '@/enums/role';
+import { validatePassword } from '@/utils/validation';
 
 const props = defineProps({
   account: {
@@ -89,7 +90,8 @@ const submitAttempted = shallowRef(false);
 const errorMessage = shallowRef(
   'Error changing account password. Please try again.'
 );
-const formValid = computed(() => newPassword.value.length && iAmSure.value);
+const passwordValid = computed(() => validatePassword(newPassword.value));
+const formValid = computed(() => passwordValid.value && iAmSure.value);
 
 // Don't allow changing admin or moderator password
 const disableForm = [Role.Admin, Role.Moderator].some((r) =>
