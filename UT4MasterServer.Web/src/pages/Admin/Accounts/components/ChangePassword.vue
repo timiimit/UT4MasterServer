@@ -92,10 +92,9 @@ const errorMessage = shallowRef(
 const formValid = computed(() => newPassword.value.length && iAmSure.value);
 
 // Don't allow changing admin or moderator password
-const accountIsAdmin = [Role.Admin, Role.Moderator].some((r) =>
+const disableForm = [Role.Admin, Role.Moderator].some((r) =>
   props.account?.roles?.includes(r)
 );
-const disableForm = accountIsAdmin;
 
 async function handleSubmit() {
   submitAttempted.value = true;
