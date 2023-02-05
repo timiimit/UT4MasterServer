@@ -78,7 +78,8 @@ export default class AuthenticationService extends HttpService {
       };
       SessionStore.session = session;
     } catch (err: unknown) {
-      this.clearSession();
+      this.logOut();
+      window.location.href = '/';
     }
     const tokenValid =
       SessionStore.session &&
