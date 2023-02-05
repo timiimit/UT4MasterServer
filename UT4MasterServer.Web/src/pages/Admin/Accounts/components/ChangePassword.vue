@@ -24,6 +24,13 @@
               autofocus
             />
             <div class="invalid-feedback">New Password is required</div>
+            <div
+              v-if="disableForm"
+              class="invalid-feedback"
+              :class="{ show: disableForm }"
+            >
+              You do not have permission to change this account's password
+            </div>
           </div>
           <div class="col-sm-6 flex-v-center">
             <div class="form-check">
@@ -41,7 +48,11 @@
         </div>
         <div class="form-group row">
           <div class="col-sm-12">
-            <button type="submit" class="btn btn-primary">
+            <button
+              :disabled="disableForm"
+              type="submit"
+              class="btn btn-primary"
+            >
               Change Password
             </button>
           </div>
@@ -52,16 +63,18 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, PropType } from 'vue';
+import { shallowRef, PropType, computed } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import { IAccount } from '@/types/account';
+import { IAccountWithRoles } from '@/types/account';
 import AdminService from '@/services/admin-service';
 import CryptoJS from 'crypto-js';
+import { Role } from '@/enums/role';
+import { validatePassword } from '@/utils/validation';
 
 const props = defineProps({
   account: {
-    type: Object as PropType<IAccount>,
+    type: Object as PropType<IAccountWithRoles>,
     required: true
   }
 });
@@ -77,9 +90,19 @@ const submitAttempted = shallowRef(false);
 const errorMessage = shallowRef(
   'Error changing account password. Please try again.'
 );
+const passwordValid = computed(() => validatePassword(newPassword.value));
+const formValid = computed(() => passwordValid.value && iAmSure.value);
+
+// Don't allow changing admin or moderator password
+const disableForm = [Role.Admin, Role.Moderator].some((r) =>
+  props.account?.roles?.includes(r)
+);
 
 async function handleSubmit() {
   submitAttempted.value = true;
+  if (!formValid.value || disableForm) {
+    return;
+  }
   try {
     status.value = AsyncStatus.BUSY;
     const request = {
