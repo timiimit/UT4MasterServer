@@ -207,6 +207,7 @@ public sealed class RatingsService
 			.Select(s => EpicID.FromString(s.AccountID))
 			.ToArray();
 		int playersCount = playersAccountIds.Length;
+		if (playersCount <= 1) return;
 
 		var filter = Builders<Rating>.Filter.In(f => f.AccountID, playersAccountIds) &
 					 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
