@@ -111,9 +111,16 @@ public sealed class CloudStorageService
 		return await cursor.ToListAsync();
 	}
 
-	public async Task DeleteFileAsync(EpicID accountID, string filename)
+	public async Task<bool?> DeleteFileAsync(EpicID accountID, string filename)
 	{
-		await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
+		if (accountID.IsEmpty && !IsCommonSystemFileFilename(filename))
+			return false;
+
+		var result = await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
+		if (!result.IsAcknowledged)
+			return null;
+
+		return result.DeletedCount > 0;
 	}
 
 	public async Task<int?> RemoveFilesByAccountAsync(EpicID accountID)
