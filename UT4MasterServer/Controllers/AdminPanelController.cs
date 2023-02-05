@@ -325,6 +325,14 @@ public sealed class AdminPanelController : ControllerBase
 		return new FileContentResult(file.RawContent, "application/octet-stream");
 	}
 
+	[HttpDelete("mcp_files/{filename}")]
+	public async Task<IActionResult> DeleteMCPFile(string filename)
+	{
+		await VerifyAdmin();
+		await cloudStorageService.DeleteFileAsync(EpicID.Empty, filename);
+		return Ok();
+	}
+
 	[HttpDelete("account/{id}")]
 	public async Task<IActionResult> DeleteAccountInfo(string id, [FromBody] bool? forceCheckBroken)
 	{
