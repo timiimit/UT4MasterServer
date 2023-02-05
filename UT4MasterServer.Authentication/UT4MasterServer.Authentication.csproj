@@ -8,11 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.13" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UT4MasterServer.Models\UT4MasterServer.Models.csproj" />
     <ProjectReference Include="..\UT4MasterServer.Services\UT4MasterServer.Services.csproj" />
   </ItemGroup>
 
