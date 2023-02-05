@@ -5,13 +5,24 @@ namespace UT4MasterServer.Xmpp;
 
 public class XmppWriter
 {
+	private class StackNode
+	{
+		public string Name { get; set; } = string.Empty;
+		public bool HasOpenTagEnded { get; set; } = false;
+
+		public StackNode(string name)
+		{
+			Name = name;
+		}
+	}
+
 	TextWriter w;
-	Stack<XmlParser.XmlNode> elements;
+	Stack<StackNode> elements;
 
 	public XmppWriter(TextWriter writer)
 	{
 		w = writer;
-		elements = new Stack<XmlParser.XmlNode>();
+		elements = new Stack<StackNode>();
 	}
 
 	public void Flush()
@@ -55,7 +66,7 @@ public class XmppWriter
 
 		w.Write($"<{name}");
 
-		elements.Push(new XmlParser.XmlNode(name));
+		elements.Push(new StackNode(name));
 	}
 
 	public void OpenTagNS(string prefix, string localName, string ns)
@@ -85,7 +96,7 @@ public class XmppWriter
 		w.Write($"<{name}");
 		Attribute("xmlns", ns);
 
-		elements.Push(new XmlParser.XmlNode(name));
+		elements.Push(new StackNode(name));
 	}
 
 	public void OpenTagEnd()

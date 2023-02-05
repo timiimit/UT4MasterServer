@@ -1,11 +1,24 @@
-﻿namespace UT4MasterServer.Xmpp;
+﻿using System.Security.Cryptography.X509Certificates;
+
+namespace UT4MasterServer.Xmpp;
 
 internal class Program
 {
 	static async Task Main(string[] args)
 	{
+		//XmlParser.XmlScanner scanner = new();
+		//XmlParser.XmlParserPermissive parsers = new(scanner, File.OpenText("../../../example.xml"));
+		//while (true)
+		//{
+		//	await parsers.ReadElementStartAsync(CancellationToken.None);
+		//	Console.WriteLine(parsers.Current.ToString());
+		//}
+
 		var cts = new CancellationTokenSource();
-		var server = new XmppServer("master-ut4.timiimit.com");
+
+		var cert = new X509Certificate2("../../../Certs/master-ut4.pfx", "");
+
+		var server = new XmppServer("master-ut4.timiimit.com", cert);
 		var serverTask = server.StartAsync(cts.Token);
 		while (true)
 		{

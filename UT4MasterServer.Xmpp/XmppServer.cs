@@ -8,34 +8,24 @@ namespace UT4MasterServer.Xmpp;
 
 public class XmppServer
 {
-	TcpListener listener;
-	object _lock;
-	DateTimeOffset lastAcceptTime = default;
-	TimeSpan OnlyAcceptEvery = TimeSpan.FromMinutes(1);
+	private TcpListener listener;
+	private List<XmppConnection> connections;
 
-
-	X509Certificate cert; // TODO: dispose cert
-
-	List<XmppConnection> connections;
-	Dictionary<string, List<XmppConnection>> userConnections;
+	private DateTimeOffset lastAcceptTime = default;
+	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
 
 	public string Domain { get; private set; }
 	public JID AdminID { get; private set; }
+	public X509Certificate2 Certificate { get; private set; }
 
-
-	public XmppServer(string domain)
+	public XmppServer(string domain, X509Certificate2 certificate)
 	{
 		Domain = domain;
 		AdminID = new JID("xmpp-admin", Domain);
+		Certificate = certificate;
 
-		_lock = new object();
 		listener = new TcpListener(IPAddress.Any, 5222);
 		connections = new List<XmppConnection>();
-		userConnections = new Dictionary<string, List<XmppConnection>>();
-
-		// create a self-signed certificate
-		var cr = new CertificateRequest(new X500DistinguishedName("cn=this.is.invalid"), RSA.Create(), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-		cert = cr.CreateSelfSigned(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddYears(+1));
 	}
 
 	public async Task StartAsync(CancellationToken cancellationToken)
@@ -149,7 +139,7 @@ public class XmppServer
 
 	private async Task OnConnectionAcceptedAsync(TcpClient tcpConnection, CancellationToken cancellationToken)
 	{
-		if (DateTimeOffset.UtcNow < lastAcceptTime + OnlyAcceptEvery)
+		if (DateTimeOffset.UtcNow < lastAcceptTime + onlyAcceptEvery)
 		{
 			lastAcceptTime = DateTimeOffset.UtcNow;
 			return;

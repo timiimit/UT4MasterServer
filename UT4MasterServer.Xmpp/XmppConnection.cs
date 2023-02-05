@@ -395,8 +395,7 @@ public class XmppConnection : IDisposable
 		var tmp = new SslStream(Stream, true); //, SSLCertificateValidation, SSLCertificateSelection, EncryptionPolicy.AllowNoEncryption);
 		try
 		{
-			var cert = new X509Certificate2("../../../master-ut4.pfx", "3s24csxj8");
-			tmp.AuthenticateAsServer(cert);
+			tmp.AuthenticateAsServer(Server.Certificate);
 			SetStream(tmp);
 			IsStreamEncrypted = true;
 
@@ -407,7 +406,7 @@ public class XmppConnection : IDisposable
 		catch (AuthenticationException ex)
 		{
 			// failed to authenticate. continue to close the stream.
-			Console.WriteLine($"AuthenticationException: {ex.Message}");
+			Console.WriteLine(ex.ToString());
 		}
 		return false;
 	}
