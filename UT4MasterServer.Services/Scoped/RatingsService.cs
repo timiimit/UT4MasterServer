@@ -103,6 +103,18 @@ public sealed class RatingsService
 
 	public async Task UpdateTeamsRatingsAsync(RatingMatch ratingMatch)
 	{
+		var redTeamAccountIds = ratingMatch.RedTeam.Members
+			.Where(w => !w.IsBot)
+			.Select(s => EpicID.FromString(s.AccountID))
+			.ToArray();
+		var blueTeamAccountIds = ratingMatch.BlueTeam.Members
+			.Where(w => !w.IsBot)
+			.Select(s => EpicID.FromString(s.AccountID))
+			.ToArray();
+		int redTeamPlayersCount = redTeamAccountIds.Length;
+		int blueTeamPlayersCount = blueTeamAccountIds.Length;
+		if (redTeamPlayersCount < 1 || blueTeamPlayersCount < 1) return;
+
 		double redTeamActualScore = 1;
 		double blueTeamActualScore = 0;
 		switch (ratingMatch.MatchInfo.RedScore)
@@ -126,21 +138,10 @@ public sealed class RatingsService
 				break;
 		}
 
-		var redTeamAccountIds = ratingMatch.RedTeam.Members
-			.Where(w => !w.IsBot)
-			.Select(s => EpicID.FromString(s.AccountID))
-			.ToArray();
-		var blueTeamAccountIds = ratingMatch.BlueTeam.Members
-			.Where(w => !w.IsBot)
-			.Select(s => EpicID.FromString(s.AccountID))
-			.ToArray();
-
 		var filter = Builders<Rating>.Filter.In(f => f.AccountID, redTeamAccountIds.Union(blueTeamAccountIds)) &
 					 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
 		var playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
 
-		int redTeamPlayersCount = redTeamAccountIds.Length;
-		int blueTeamPlayersCount = blueTeamAccountIds.Length;
 		double[] redTeamCurrentRatings = new double[redTeamPlayersCount];
 		double[] blueTeamCurrentRatings = new double[blueTeamPlayersCount];
 
