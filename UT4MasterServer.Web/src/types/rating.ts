@@ -1,6 +1,6 @@
 export interface IRanking {
   rank: number;
-  accountId: string;
+  accountID: string;
   player: string;
   rating: number;
   gamesPlayed: string;
