@@ -85,6 +85,7 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		var admin = await VerifyAdmin();
 
+		// TODO: duplicate code in PersonaController
 		var flagNamesAll = Enum.GetNames<AccountFlags>();
 		var flagValuesAll = Enum.GetValues<AccountFlags>();
 
