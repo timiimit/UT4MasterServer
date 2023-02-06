@@ -40,3 +40,14 @@ export function toHoursMinutesSeconds(rawtime?: number) {
   }
   return `${hoursString}:${toMinutesSeconds(rawtime)}`;
 }
+
+type DateTimeStyle = 'short' | 'full' | 'long' | 'medium' | undefined;
+export function isoDateTimeStringToLocalDateTime(
+  dateTime: string,
+  dateStyle: DateTimeStyle = 'short',
+  timeStyle: DateTimeStyle = 'short'
+) {
+  return new Intl.DateTimeFormat('default', { dateStyle, timeStyle }).format(
+    new Date(dateTime)
+  );
+}

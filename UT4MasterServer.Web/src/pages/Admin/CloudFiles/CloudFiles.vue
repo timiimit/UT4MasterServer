@@ -25,6 +25,8 @@
         <thead>
           <tr>
             <th>Name</th>
+            <th>Uploaded</th>
+            <th style="width: 8rem">Size</th>
             <th />
           </tr>
         </thead>
@@ -35,6 +37,8 @@
           >
             <tr :class="{ 'table-light': file.editing }">
               <td>{{ file.filename }}</td>
+              <td>{{ isoDateTimeStringToLocalDateTime(file.uploadedAt) }}</td>
+              <td>{{ getFileSize(file.length) }}</td>
               <td class="actions">
                 <button
                   class="btn btn-icon"
@@ -87,7 +91,10 @@ import { shallowRef, ref, computed } from 'vue';
 import CrudPage from '@/components/CrudPage.vue';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
-import { objectHash } from '@/utils/utilities';
+import {
+  objectHash,
+  isoDateTimeStringToLocalDateTime
+} from '@/utils/utilities';
 import AdminService from '@/services/admin.service';
 import { ICloudFile } from './types/cloud-file';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -121,6 +128,13 @@ const filteredFiles = computed(() =>
 );
 
 const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
+
+function getFileSize(fileLength: number) {
+  if (fileLength < 1024) {
+    return `${fileLength} B`;
+  }
+  return `${Math.round(fileLength / 1024)} KB`;
+}
 
 async function loadFiles() {
   try {

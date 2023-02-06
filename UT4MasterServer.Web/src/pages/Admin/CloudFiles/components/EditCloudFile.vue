@@ -23,7 +23,7 @@
               required
               @change="handleFileChange($event.target)"
             />
-            <div class="invalid-feedback">A unique filename is required</div>
+            <div class="invalid-feedback">File is required</div>
           </div>
         </div>
         <div class="d-flex justify-content-between mb-2">
@@ -34,7 +34,7 @@
           >
             Cancel
           </button>
-          <button type="submit" class="btn btn-primary">Add File</button>
+          <button type="submit" class="btn btn-primary">Update File</button>
         </div>
       </fieldset>
     </form>
