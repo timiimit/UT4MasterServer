@@ -75,7 +75,7 @@ import { usePaging } from '@/hooks/use-paging.hook';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import Paging from '@/components/Paging.vue';
 
-const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging(10);
+const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging(50);
 
 const ratingType = shallowRef(RatingType.DMSkillRating);
 const rankings = shallowRef<IRanking[]>([]);
