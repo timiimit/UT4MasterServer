@@ -9,11 +9,14 @@ using UT4MasterServer.Common.Helpers;
 public enum AccountFlags
 {
 	None = 0,
+
 	Admin = 1,
 	Moderator = 2,
 	Developer = 4,
 	ContentCreator = 8,
-	HubOwner = 16
+	HubOwner = 16,
+
+	All = ~0
 }
 
 [BsonIgnoreExtraElements]
