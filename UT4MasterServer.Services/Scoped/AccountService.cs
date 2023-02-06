@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Response;
 using UT4MasterServer.Models.Settings;
 
 namespace UT4MasterServer.Services.Scoped;
@@ -58,16 +59,16 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<IEnumerable<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = (AccountFlags)~0, int skip = 0, int limit = 50)
+	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = AccountFlags.All, int skip = 0, int limit = 50)
 	{
 		var f = Builders<Account>.Filter;
-		FilterDefinition<Account>? filter = null;
+		FilterDefinition<Account> filter = new ExpressionFilterDefinition<Account>(
+			account => account.Username.ToLower().Contains(usernameQuery.ToLower())
+		);
 
-		filter = new ExpressionFilterDefinition<Account>(account => account.Username.ToLower().Contains(usernameQuery.ToLower()));
-			
-		if (flagsMask != (AccountFlags)~0)
+		if (flagsMask != AccountFlags.All)
 		{
-			filter &= f.BitsAnySet(x => x.Flags, (long)flagsMask);
+			filter &= Builders<Account>.Filter.BitsAnySet(x => x.Flags, (long)flagsMask);
 		}
 
 		var options = new FindOptions<Account>()
@@ -76,8 +77,17 @@ public sealed class AccountService
 			Limit = limit
 		};
 
-		var cursor = await accountCollection.FindAsync(filter, options);
-		return await cursor.ToListAsync();
+		var taskCount = accountCollection.CountDocumentsAsync(filter);
+		var taskCursor = accountCollection.FindAsync(filter, options);
+
+		var count = await taskCount;
+		var cursor = await taskCursor;
+
+		return new PagedResponse<Account>()
+		{
+			Data = await cursor.ToListAsync(),
+			Count = count
+		};
 	}
 
 	public async Task<Account?> GetAccountUsernameOrEmailAsync(string username)
