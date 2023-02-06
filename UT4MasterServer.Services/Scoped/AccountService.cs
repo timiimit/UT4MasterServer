@@ -58,9 +58,25 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<IEnumerable<Account>> SearchAccountsAsync(string usernameQuery)
+	public async Task<IEnumerable<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = (AccountFlags)~0, int skip = 0, int limit = 50)
 	{
-		var cursor = await accountCollection.FindAsync(account => account.Username.ToLower().Contains(usernameQuery.ToLower()));
+		var f = Builders<Account>.Filter;
+		FilterDefinition<Account>? filter = null;
+
+		filter = new ExpressionFilterDefinition<Account>(account => account.Username.ToLower().Contains(usernameQuery.ToLower()));
+			
+		if (flagsMask != (AccountFlags)~0)
+		{
+			filter &= f.BitsAnySet(x => x.Flags, (long)flagsMask);
+		}
+
+		var options = new FindOptions<Account>()
+		{
+			Skip = skip,
+			Limit = limit
+		};
+
+		var cursor = await accountCollection.FindAsync(filter, options);
 		return await cursor.ToListAsync();
 	}
 
