@@ -105,10 +105,11 @@ public sealed class RatingsService
 		};
 	}
 
-	public async Task<List<PlayersRatingsResponse>> GetPlayersRankingsAsync(string ratingType, int skip, int limit)
+	public async Task<PagedResponse<RankingsResponse>> GetRankingsAsync(string ratingType, int skip, int limit)
 	{
 		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
 		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
+		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
 		var ratings = await ratingsCollection.Find(filter)
 			.Sort(sort)
 			.Skip(skip)
@@ -124,8 +125,8 @@ public sealed class RatingsService
 			.ToListAsync();
 
 		var rank = skip;
-		var response = ratings
-			.Select(s => new PlayersRatingsResponse()
+		var rankings = ratings
+			.Select(s => new RankingsResponse()
 			{
 				Rank = ++rank,
 				AccountID = s.AccountID,
@@ -134,6 +135,12 @@ public sealed class RatingsService
 				GamesPlayed = s.GamesPlayed,
 			})
 			.ToList();
+
+		var response = new PagedResponse<RankingsResponse>()
+		{
+			Count = ratingsCount,
+			Data = rankings,
+		};
 
 		return response;
 	}

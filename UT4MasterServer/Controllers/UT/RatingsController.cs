@@ -118,8 +118,8 @@ public sealed class RatingsController : JsonAPIController
 		return NoContent();
 	}
 
-	[HttpGet("players-rankings")]
-	public async Task<IActionResult> GetPlayersRankings(string ratingType, int skip, int limit)
+	[HttpGet("rankings")]
+	public async Task<IActionResult> GetRankings(string ratingType, int skip, int limit)
 	{
 		if (User.Identity is not EpicUserIdentity)
 		{
@@ -131,7 +131,7 @@ public sealed class RatingsController : JsonAPIController
 			return BadRequest($"'{ratingType}' is not supported rating type.");
 		}
 
-		var response = await ratingsService.GetPlayersRankingsAsync(ratingType, skip, limit);
+		var response = await ratingsService.GetRankingsAsync(ratingType, skip, limit);
 
 		return Ok(response);
 	}

@@ -2,7 +2,7 @@
 
 namespace UT4MasterServer.Models.DTO.Response;
 
-public sealed class PlayersRatingsResponse
+public sealed class RankingsResponse
 {
 	public int Rank { get; set; }
 	public EpicID AccountID { get; set; }
