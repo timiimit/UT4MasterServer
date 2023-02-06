@@ -47,8 +47,13 @@
           </li>
           <HeaderLink text="Servers" path="/Servers" />
           <HeaderLink text="Rankings" path="/Rankings" />
-          <a href="https://discord.gg/2DaCWkK" class="nav-link">Discord</a>
-          <a href="https://github.com/timiimit/UT4MasterServer" class="nav-link"
+          <a href="https://discord.gg/2DaCWkK" class="nav-link" target="_blank"
+            >Discord</a
+          >
+          <a
+            href="https://github.com/timiimit/UT4MasterServer"
+            class="nav-link"
+            target="_blank"
             >GitHub</a
           >
           <template v-if="!SessionStore.isAuthenticated">
