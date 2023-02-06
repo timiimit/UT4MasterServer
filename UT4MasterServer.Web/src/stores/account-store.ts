@@ -1,4 +1,3 @@
-import { TypedStorage } from '@/utils/typed-storage';
 import { ref } from 'vue';
 import { IAccountExtended } from '@/types/account';
 import AccountService from '@/services/account.service';
@@ -15,10 +14,6 @@ export const AccountStore = {
   },
   set account(account: IAccountExtended | null) {
     _account.value = account;
-    TypedStorage.setItem<IAccountExtended>(
-      `account-${SessionStore.session?.session_id}`,
-      account
-    );
   },
   get isAdmin() {
     return _account.value?.roles?.some((r) => _adminRoles.includes(r));
