@@ -33,7 +33,13 @@
           </thead>
           <tbody>
             <template v-for="ranking in rankings" :key="ranking.accountId">
-              <tr>
+              <tr
+                :class="`${
+                  AccountStore.account?.id === ranking.accountID
+                    ? 'table-info'
+                    : ''
+                }`"
+              >
                 <td>{{ ranking.rank }}</td>
                 <td>{{ ranking.player }}</td>
                 <td>{{ ranking.rating }}</td>
@@ -64,6 +70,7 @@ import { onMounted, shallowRef, watch } from 'vue';
 import { IRanking } from '@/types/rating';
 import { RatingType } from '@/enums/rating-type';
 import { RatingStore } from '@/stores/rating-store';
+import { AccountStore } from '@/stores/account-store';
 import { usePaging } from '@/hooks/use-paging.hook';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import Paging from '@/components/Paging.vue';
@@ -104,6 +111,9 @@ async function loadRankings() {
 }
 
 onMounted(() => {
+  if (AccountStore.account === null) {
+    AccountStore.fetchUserAccount();
+  }
   loadRankings();
 });
 
