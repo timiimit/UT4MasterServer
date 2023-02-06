@@ -1,17 +1,32 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container text-white">
-      <div>Hubs Online: {{ ServerStore.hubs.length }}</div>
-      <div>Matches In Progress: {{ matchesInProgress }}</div>
-      <div>Players Online: {{ playersOnline }}</div>
+    <div class="container">
+      <div class="d-flex justify-content-between text-white">
+        <div>Hubs Online: {{ ServerStore.hubs.length }}</div>
+        <div>Matches In Progress: {{ matchesInProgress }}</div>
+        <div>Players Online: {{ playersOnline }}</div>
+      </div>
+      <div class="text-center disclaimer">
+        This website is not affiliated with Epic Games or the Unreal Tournament
+        brand in any way.
+      </div>
+      <div class="links d-flex justify-content-around">
+        <a
+          class="btn btn-sm btn-icon text-white"
+          href="https://discord.gg/2DaCWkK"
+          target="_blank"
+        >
+          <FontAwesomeIcon icon="fa-brands fa-discord" />
+        </a>
+        <a
+          href="https://github.com/timiimit/UT4MasterServer"
+          target="_blank"
+          class="btn btn-sm btn-icon text-white"
+        >
+          <FontAwesomeIcon icon="fa-brands fa-github" />
+        </a>
+      </div>
     </div>
-
-    <button
-      class="btn btn-secondary btn-sm btn-smaller"
-      @click="ServerStore.fetchGameServers"
-    >
-      Refresh
-    </button>
   </nav>
 </template>
 
@@ -22,10 +37,27 @@
   bottom: 0;
   padding: 10px;
   z-index: 10;
+}
 
-  .container {
-    display: flex;
-    justify-content: space-between;
+.container {
+  display: flex;
+  flex-direction: column;
+
+  > div:first-child {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+
+  .disclaimer {
+    font-size: 0.5rem;
+    color: white;
+    margin-bottom: 0.25rem;
+  }
+
+  .links {
+    a.btn {
+      margin-right: 1rem;
+    }
   }
 }
 </style>
@@ -33,6 +65,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue';
 import { ServerStore } from '@/stores/server-store';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const pollTime = 30000;
 // Seems to be a bug with eslint ts parser version
