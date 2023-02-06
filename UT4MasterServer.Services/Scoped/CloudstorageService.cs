@@ -35,7 +35,7 @@ public sealed class CloudStorageService
 		// old players might also have "user_profile_1", but it is not used for anything anymore
 		"user_profile_2",
 		"user_progression_1",
-		"stats.json",
+		"stats.json"
 	};
 
 	public CloudStorageService(DatabaseContext dbContext, ILogger<CloudStorageService> logger)
