@@ -22,7 +22,7 @@ export const RatingStore = {
     try {
       _status.value = AsyncStatus.BUSY;
 
-      var response = await _ratingService.getRankings(ratingType, skip, limit);
+      let response = await _ratingService.getRankings(ratingType, skip, limit);
       _rankings.value = response.data;
       _rankingsCount.value = response.count;
       _status.value = AsyncStatus.OK;
