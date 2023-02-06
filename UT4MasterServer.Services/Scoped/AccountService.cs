@@ -16,6 +16,17 @@ public sealed class AccountService
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
 	}
 
+	public async Task CreateIndexesAsync()
+	{
+		var indexKeys = Builders<Account>.IndexKeys;
+		var indexes = new[]
+		{
+			new CreateIndexModel<Account>(indexKeys.Ascending(f => f.Username)),
+			new CreateIndexModel<Account>(indexKeys.Ascending(f => f.Email))
+		};
+		await accountCollection.Indexes.CreateManyAsync(indexes);
+	}
+
 	public async Task CreateAccountAsync(string username, string email, string password)
 	{
 		var newAccount = new Account
