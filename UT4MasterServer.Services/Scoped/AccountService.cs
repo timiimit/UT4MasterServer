@@ -99,6 +99,7 @@ public sealed class AccountService
 		return await result.ToListAsync();
 	}
 
+	[Obsolete("This should never be used due to being expensive")]
 	public async Task<IEnumerable<Account>> GetAllAccountsAsync()
 	{
 		var result = await accountCollection.FindAsync(account => true);
