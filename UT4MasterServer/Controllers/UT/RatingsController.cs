@@ -1,5 +1,4 @@
-﻿using MessagePack.Formatters;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
