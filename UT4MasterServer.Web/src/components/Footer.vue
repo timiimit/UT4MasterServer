@@ -1,36 +1,53 @@
 <template>
+  <div class="footer container text-center">
+    <div class="disclaimer">
+      This website is not affiliated with Epic Games or the Unreal Tournament
+      brand in any way.
+    </div>
+    <div class="links">
+      <a
+        class="btn btn-sm btn-icon"
+        href="https://discord.gg/2DaCWkK"
+        target="_blank"
+      >
+        <FontAwesomeIcon icon="fa-brands fa-discord" />
+      </a>
+      <a
+        href="https://github.com/timiimit/UT4MasterServer"
+        target="_blank"
+        class="btn btn-sm btn-icon"
+      >
+        <FontAwesomeIcon icon="fa-brands fa-github" />
+      </a>
+    </div>
+  </div>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <div class="d-flex justify-content-between text-white">
+      <div class="online d-flex text-white">
         <div>Hubs Online: {{ ServerStore.hubs.length }}</div>
         <div>Matches In Progress: {{ matchesInProgress }}</div>
         <div>Players Online: {{ playersOnline }}</div>
-      </div>
-      <div class="text-center disclaimer">
-        This website is not affiliated with Epic Games or the Unreal Tournament
-        brand in any way.
-      </div>
-      <div class="links d-flex justify-content-around">
-        <a
-          class="btn btn-sm btn-icon text-white"
-          href="https://discord.gg/2DaCWkK"
-          target="_blank"
-        >
-          <FontAwesomeIcon icon="fa-brands fa-discord" />
-        </a>
-        <a
-          href="https://github.com/timiimit/UT4MasterServer"
-          target="_blank"
-          class="btn btn-sm btn-icon text-white"
-        >
-          <FontAwesomeIcon icon="fa-brands fa-github" />
-        </a>
       </div>
     </div>
   </nav>
 </template>
 
 <style lang="scss" scoped>
+.footer {
+  margin-bottom: 5rem;
+  .disclaimer {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .links {
+    text-align: center;
+    a.btn {
+      margin-right: 1rem;
+    }
+  }
+}
+
 .navbar {
   width: 100%;
   position: fixed;
@@ -43,21 +60,10 @@
   display: flex;
   flex-direction: column;
 
-  > div:first-child {
+  .online {
     width: 100%;
     margin-bottom: 0.25rem;
-  }
-
-  .disclaimer {
-    font-size: 0.5rem;
-    color: white;
-    margin-bottom: 0.25rem;
-  }
-
-  .links {
-    a.btn {
-      margin-right: 1rem;
-    }
+    justify-content: space-between;
   }
 }
 </style>
