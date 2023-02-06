@@ -9,10 +9,14 @@ namespace UT4MasterServer.Services.Scoped;
 public sealed class RatingsService
 {
 	private readonly IMongoCollection<Rating> ratingsCollection;
+	private readonly IMongoCollection<Account> accountsCollection;
+
+	private const string UnknownUser = "Unknown user";
 
 	public RatingsService(DatabaseContext dbContext)
 	{
 		ratingsCollection = dbContext.Database.GetCollection<Rating>("ratings");
+		accountsCollection = dbContext.Database.GetCollection<Account>("accounts");
 	}
 
 	public async Task CreateIndexesAsync()
@@ -99,6 +103,46 @@ public sealed class RatingsService
 		{
 			RatingValue = ratingValues.Any() ? (int)ratingValues.Average() : Rating.DefaultRating
 		};
+	}
+
+	public async Task<PagedResponse<RankingsResponse>> GetRankingsAsync(string ratingType, int skip, int limit)
+	{
+		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
+		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
+		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
+		var ratings = await ratingsCollection.Find(filter)
+			.Sort(sort)
+			.Skip(skip)
+			.Limit(limit)
+			.ToListAsync();
+
+		var accountIds = ratings.Select(s => s.AccountID);
+		var filterAccounts = Builders<Account>.Filter.In(f => f.ID, accountIds);
+		var fields = Builders<Account>.Projection.Include(i => i.Username);
+		var userNames = await accountsCollection
+			.Find(filterAccounts)
+			.Project(p => new { p.ID, p.Username })
+			.ToListAsync();
+
+		var rank = skip;
+		var rankings = ratings
+			.Select(s => new RankingsResponse()
+			{
+				Rank = ++rank,
+				AccountID = s.AccountID,
+				Player = userNames.FirstOrDefault(f => f.ID == s.AccountID)?.Username ?? UnknownUser,
+				Rating = s.RatingValue / Rating.Precision,
+				GamesPlayed = s.GamesPlayed,
+			})
+			.ToList();
+
+		var response = new PagedResponse<RankingsResponse>()
+		{
+			Count = ratingsCount,
+			Data = rankings,
+		};
+
+		return response;
 	}
 
 	public async Task UpdateTeamsRatingsAsync(RatingMatch ratingMatch)

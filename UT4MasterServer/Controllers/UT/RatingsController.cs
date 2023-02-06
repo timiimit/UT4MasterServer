@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
@@ -115,5 +116,20 @@ public sealed class RatingsController : JsonAPIController
 		}
 
 		return NoContent();
+	}
+
+	[AllowAnonymous]
+	[HttpGet("rankings")]
+	public async Task<IActionResult> GetRankings(string ratingType, int skip, int limit)
+	{
+		if (!Rating.AllowedRatingTypes.Contains(ratingType))
+		{
+			logger.LogError("Unsupported rating type requested: {RatingType}.", ratingType);
+			return BadRequest($"'{ratingType}' is not supported rating type.");
+		}
+
+		var response = await ratingsService.GetRankingsAsync(ratingType, skip, limit);
+
+		return Ok(response);
 	}
 }

@@ -32,6 +32,7 @@
             />
           </Dropdown>
           <HeaderLink text="Servers" path="/Servers" />
+          <HeaderLink text="Rankings" path="/Rankings" />
           <template v-if="!SessionStore.isAuthenticated">
             <HeaderLink text="Register" path="/Register" />
             <HeaderLink text="Log In" path="/Login" />
