@@ -39,7 +39,7 @@ internal class Program
 					var connection = await server.FindConnectionAsync(JID.Parse(commandParts[2]));
 					if (connection == null)
 					{
-						Console.WriteLine($"Could not find connection for '{commandParts[2]}'.");
+						Console.WriteLine("Could not find connection for '{JID}'.", commandParts[2]);
 						continue;
 					}
 

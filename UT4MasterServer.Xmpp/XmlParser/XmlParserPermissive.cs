@@ -99,13 +99,24 @@ public class XmlParserPermissive
 		}
 	}
 
-	private int tokenState = 0;
+
+	private enum ParsingState
+	{
+		ElementStart,
+		Name,
+		AttributeName,
+		AttributeEquals,
+		AttributeValue,
+		ElementEnd
+	}
+
+	private ParsingState parsingState = 0;
 	private XmlToken lastOpenType;
 	private bool hasExitedCurrent = false;
 
 	public int ProcessNextLexem(XmlLexem lexem)
 	{
-		if (tokenState == 0)
+		if (parsingState == ParsingState.ElementStart)
 		{
 			if (lexem.Token == XmlToken.Open || lexem.Token == XmlToken.OpenProcInst)
 			{
@@ -122,14 +133,14 @@ public class XmlParserPermissive
 				Current = new XmlElement("#UNKNOWN") { Parent = old };
 				old.Elements.Add(Current);
 
-				tokenState = 1;
+				parsingState = ParsingState.Name;
 				lastOpenType = lexem.Token;
 				return 0;
 			}
 			else if (lexem.Token == XmlToken.OpenEnd)
 			{
 				hasExitedCurrent = true;
-				tokenState = 5;
+				parsingState = ParsingState.ElementEnd;
 				return 0;
 			}
 			else
@@ -138,21 +149,21 @@ public class XmlParserPermissive
 				return 0;
 			}
 		}
-		else if (tokenState == 1)
+		else if (parsingState == ParsingState.Name)
 		{
 			if (lexem.Token == XmlToken.Name)
 			{
 				Current.Name = lexem.Value;
-				tokenState = 2;
+				parsingState = ParsingState.AttributeName;
 				return 0;
 			}
 		}
-		else if (tokenState == 2)
+		else if (parsingState == ParsingState.AttributeName)
 		{
 			if (lexem.Token == XmlToken.Name)
 			{
 				Current.Attributes.Add(new XmlAttribute(lexem.Value, string.Empty));
-				tokenState = 3;
+				parsingState = ParsingState.AttributeEquals;
 				return 0;
 			}
 			if (lexem.Token == XmlToken.Close || lexem.Token == XmlToken.CloseProcInst)
@@ -161,39 +172,39 @@ public class XmlParserPermissive
 				{
 					hasExitedCurrent = true;
 				}
-				tokenState = 0;
+				parsingState = 0;
 				return 1;
 			}
 			if (lexem.Token == XmlToken.CloseEmpty)
 			{
 				hasExitedCurrent = true;
-				tokenState = 0;
+				parsingState = 0;
 				return 2;
 			}
 		}
-		else if (tokenState == 3)
+		else if (parsingState == ParsingState.AttributeEquals)
 		{
 			if (lexem.Token == XmlToken.Equal)
 			{
-				tokenState = 4;
+				parsingState = ParsingState.AttributeValue;
 				return 0;
 			}
 		}
-		else if (tokenState == 4)
+		else if (parsingState == ParsingState.AttributeValue)
 		{
 			if (lexem.Token == XmlToken.String)
 			{
 				Current.Attributes.Last().Value = lexem.Value[1..^1];
-				tokenState = 2;
+				parsingState = ParsingState.AttributeName;
 				return 0;
 			}
 		}
-		else if (tokenState == 5)
+		else if (parsingState == ParsingState.ElementEnd)
 		{
-			if (lexem.Token == XmlToken.OpenEnd)
+			if (lexem.Token == XmlToken.Close)
 			{
 				hasExitedCurrent = true;
-				tokenState = 0;
+				parsingState = 0;
 				return 4;
 			}
 		}

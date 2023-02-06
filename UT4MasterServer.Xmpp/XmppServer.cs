@@ -15,16 +15,18 @@ public class XmppServer
 	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
 
 	public string Domain { get; private set; }
+	public int Port { get; private set; }
 	public JID AdminID { get; private set; }
 	public X509Certificate2 Certificate { get; private set; }
 
-	public XmppServer(string domain, X509Certificate2 certificate)
+	public XmppServer(string domain, X509Certificate2 certificate, int port = 5222)
 	{
 		Domain = domain;
+		Port = port;
 		AdminID = new JID("xmpp-admin", Domain);
 		Certificate = certificate;
 
-		listener = new TcpListener(IPAddress.Any, 5222);
+		listener = new TcpListener(IPAddress.Any, Port);
 		connections = new List<XmppConnection>();
 	}
 
@@ -32,7 +34,7 @@ public class XmppServer
 	{
 		listener.Start(8);
 
-		Console.WriteLine("Started listening for XMPP connections on port 5222");
+		Console.WriteLine("Started listening for XMPP connections on port {PortNumber}", Port);
 
 		try
 		{

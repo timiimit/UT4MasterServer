@@ -155,8 +155,12 @@ public class XmppWriter
 	public async Task StanzaAsync(Stanza stanza, CancellationToken cancellationToken)
 	{
 		if (stanza is StanzaMessage stanzaMessage)
+		{
 			await stanzaMessage.WriteAsync(this, cancellationToken);
+		}
 		else if (stanza is StanzaPresence stanzaPresence)
+		{
 			await stanzaPresence.WriteAsync(this, cancellationToken);
+		}
 	}
 }

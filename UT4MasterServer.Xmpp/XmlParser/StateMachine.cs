@@ -52,7 +52,7 @@ public class StateMachine<T>
 	{
 		if (fromState < 0 || toState < 0)
 		{
-			throw new ArgumentOutOfRangeException("parameters fromState and toState must both be positive.");
+			throw new ArgumentOutOfRangeException($"parameters {nameof(fromState)} and {nameof(toState)} must both be positive.");
 		}
 
 		if (!automata.ContainsKey(fromState))
