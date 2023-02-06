@@ -71,6 +71,7 @@ import { IRanking } from '@/types/rating';
 import { RatingType } from '@/enums/rating-type';
 import { RatingStore } from '@/stores/rating-store';
 import { AccountStore } from '@/stores/account-store';
+import { SessionStore } from '@/stores/session-store';
 import { usePaging } from '@/hooks/use-paging.hook';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import Paging from '@/components/Paging.vue';
@@ -111,8 +112,10 @@ async function loadRankings() {
 }
 
 onMounted(() => {
-  if (AccountStore.account === null) {
-    AccountStore.fetchUserAccount();
+  if (SessionStore.isAuthenticated) {
+    if (AccountStore.account === null) {
+      AccountStore.fetchUserAccount();
+    }
   }
   loadRankings();
 });
