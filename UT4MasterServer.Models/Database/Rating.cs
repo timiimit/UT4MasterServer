@@ -21,10 +21,6 @@ public sealed class Rating
 		"CTFSkillRating",
 		"ShowdownSkillRating",
 		"FlagRunSkillRating",
-		"RankedDuelSkillRating",
-		"RankedCTFSkillRating",
-		"RankedShowdownSkillRating",
-		"RankedFlagRunSkillRating",
 	};
 
 	public static readonly List<string> AllowedRatingTypes = DmRatingTypes.Union(TeamRatingTypes).ToList();

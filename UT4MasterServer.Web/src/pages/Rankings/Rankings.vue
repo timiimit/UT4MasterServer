@@ -88,11 +88,7 @@ const ratingTypeOptions = [
   { text: 'Team Deathmatch', value: RatingType.TDMSkillRating },
   { text: 'Capture the Flag', value: RatingType.CTFSkillRating },
   { text: 'Showdown', value: RatingType.ShowdownSkillRating },
-  { text: 'Flag Run', value: RatingType.FlagRunSkillRating },
-  { text: 'Ranked Duel', value: RatingType.RankedDuelSkillRating },
-  { text: 'Ranked Capture the Flag', value: RatingType.RankedCTFSkillRating },
-  { text: 'Ranked Showdown', value: RatingType.RankedShowdownSkillRating },
-  { text: 'Ranked Flag Run', value: RatingType.RankedFlagRunSkillRating }
+  { text: 'Flag Run', value: RatingType.FlagRunSkillRating }
 ];
 
 async function loadRankings() {
