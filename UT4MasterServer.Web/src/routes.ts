@@ -80,6 +80,10 @@ export const routes: RouteRecordRaw[] = [
     path: `/Servers`,
     component: async () => import('./pages/Servers/Servers.vue')
   },
+  {
+    path: `/Rankings`,
+    component: async () => import('./pages/Rankings/Rankings.vue')
+  },
   // Public Only Pages
   {
     path: `/Register`,
