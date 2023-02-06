@@ -75,6 +75,11 @@
                 path="/Admin/TrustedServers"
                 dropdown
               />
+              <HeaderLink
+                text="Cloud Files"
+                path="/Admin/CloudFiles"
+                dropdown
+              />
             </div>
           </li>
           <li

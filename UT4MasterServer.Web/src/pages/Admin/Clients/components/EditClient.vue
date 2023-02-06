@@ -59,7 +59,7 @@ import { IClient } from '../types/client';
 import { shallowRef, computed } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 
 const props = defineProps({
   client: {

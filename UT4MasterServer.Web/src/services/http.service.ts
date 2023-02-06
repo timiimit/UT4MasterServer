@@ -5,6 +5,7 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export interface HttpRequestOptions<T = unknown> {
   body?: T;
   headers?: HeadersInit;
+  formData?: FormData;
 }
 
 export default class HttpService {
@@ -30,12 +31,17 @@ export default class HttpService {
         : JSON.stringify(options.body);
     }
 
-    const headers: HeadersInit = {
-      'Content-Type': form
-        ? 'application/x-www-form-urlencoded'
-        : 'application/json'
-    };
+    if (options?.formData && form) {
+      fetchOptions.body = options.formData;
+    }
+
+    const headers: HeadersInit = {};
     headers['SameSite'] = 'Strict';
+    if (options?.body) {
+      headers['Content-Type'] = form
+        ? 'application/x-www-form-urlencoded'
+        : 'application/json';
+    }
 
     if (SessionStore.token) {
       headers.Authorization = `bearer ${SessionStore.token}`;

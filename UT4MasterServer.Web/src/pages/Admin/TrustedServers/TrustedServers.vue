@@ -100,7 +100,7 @@ import CrudPage from '@/components/CrudPage.vue';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
 import { objectHash } from '@/utils/utilities';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import AddTrustedServer from './components/AddTrustedServer.vue';
 import Paging from '@/components/Paging.vue';

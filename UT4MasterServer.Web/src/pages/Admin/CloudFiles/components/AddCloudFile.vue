@@ -6,20 +6,20 @@
       @submit.prevent="handleSubmit"
     >
       <fieldset>
-        <legend>Add Client</legend>
+        <legend>Add Cloud File</legend>
         <div class="form-group row">
           <label for="name" class="col-sm-12 col-form-label">Name</label>
           <div class="col-sm-6">
             <input
               id="name"
-              v-model="name"
-              v-valid="formValid"
-              type="text"
+              v-valid="fileValid"
+              type="file"
               class="form-control"
               name="name"
               required
+              @change="handleFileChange($event.target)"
             />
-            <div class="invalid-feedback">A unique name is required</div>
+            <div class="invalid-feedback">A unique filename is required</div>
           </div>
         </div>
         <div class="d-flex justify-content-between mb-2">
@@ -30,7 +30,7 @@
           >
             Cancel
           </button>
-          <button type="submit" class="btn btn-primary">Add Client</button>
+          <button type="submit" class="btn btn-primary">Add File</button>
         </div>
       </fieldset>
     </form>
@@ -38,41 +38,52 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, computed, PropType } from 'vue';
+import { shallowRef, PropType, computed } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import AdminService from '@/services/admin.service';
-import { IClient } from '../types/client';
-import { useClientOptions } from '../hooks/use-client-options.hook';
+import { ICloudFile } from '../types/cloud-file';
 import { valid as vValid } from '@/directives/valid';
 
 const props = defineProps({
-  allClients: {
-    type: Array as PropType<IClient[]>,
-    required: true
+  allFiles: {
+    type: Array as PropType<ICloudFile[]>,
+    default: () => []
   }
 });
 
 const emit = defineEmits(['added', 'cancel']);
 
-const { isValidName } = useClientOptions();
-
 const adminService = new AdminService();
 
 const status = shallowRef(AsyncStatus.OK);
 const name = shallowRef('');
+const file = shallowRef<File | undefined>(undefined);
+const fileValid = computed(
+  () => !props.allFiles.map((f) => f.filename).includes(name.value)
+);
 const submitAttempted = shallowRef(false);
-const formValid = computed(() => isValidName(name.value, props.allClients));
-const errorMessage = shallowRef('Error adding client. Please try again.');
+const errorMessage = shallowRef('Error adding file. Please try again.');
+
+function handleFileChange(eventTarget: EventTarget | null) {
+  const target = eventTarget as HTMLInputElement;
+  if (!target?.files) {
+    return;
+  }
+  file.value = target.files[0];
+  name.value = file.value.name;
+}
 
 async function handleSubmit() {
   submitAttempted.value = true;
-  if (!formValid.value) {
+  if (!file.value || !fileValid.value) {
     return;
   }
   try {
     status.value = AsyncStatus.BUSY;
-    await adminService.createClient(name.value);
+    const formData = new FormData();
+    formData.append('file', file.value, name.value);
+    await adminService.upsertCloudFile(formData);
     status.value = AsyncStatus.OK;
     emit('added');
   } catch (err: unknown) {
