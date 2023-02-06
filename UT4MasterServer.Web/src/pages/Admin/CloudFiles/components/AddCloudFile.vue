@@ -58,33 +58,32 @@ const adminService = new AdminService();
 
 const status = shallowRef(AsyncStatus.OK);
 const name = shallowRef('');
-const content = shallowRef<string | ArrayBuffer | null>(null);
+const file = shallowRef<File | undefined>(undefined);
 const fileValid = computed(
   () => !props.allFiles.map((f) => f.filename).includes(name.value)
 );
 const submitAttempted = shallowRef(false);
-const errorMessage = shallowRef('Error adding client. Please try again.');
+const errorMessage = shallowRef('Error adding file. Please try again.');
 
 function handleFileChange(eventTarget: EventTarget | null) {
   const target = eventTarget as HTMLInputElement;
   if (!target?.files) {
     return;
   }
-  let reader = new FileReader();
-  if (target.files.length > 0) {
-    let file = target.files[0];
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      content.value = reader.result;
-    };
-  }
+  file.value = target.files[0];
+  name.value = file.value.name;
 }
 
 async function handleSubmit() {
   submitAttempted.value = true;
+  if (!file.value || !fileValid.value) {
+    return;
+  }
   try {
     status.value = AsyncStatus.BUSY;
-    await adminService.createCloudFile(name.value, content.value);
+    const formData = new FormData();
+    formData.append('file', file.value, name.value);
+    await adminService.upsertCloudFile(formData);
     status.value = AsyncStatus.OK;
     emit('added');
   } catch (err: unknown) {

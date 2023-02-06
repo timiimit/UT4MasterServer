@@ -98,20 +98,8 @@ export default class AdminService extends HttpService {
     return await this.get<ICloudFile[]>(`${this.baseUrl}/mcp_files`);
   }
 
-  async createCloudFile(name: string, file: unknown) {
-    return await this.post(
-      `${this.baseUrl}/mcp_files/${name}`,
-      { body: file, headers: { 'Content-Type': 'application/octet-stream' } },
-      false
-    );
-  }
-
-  async updateCloudFile(name: string, file: unknown) {
-    return await this.patch(
-      `${this.baseUrl}/mcp_files/${name}`,
-      { body: file, headers: { 'Content-Type': 'application/octet-stream' } },
-      false
-    );
+  async upsertCloudFile(formData: FormData) {
+    return await this.post(`${this.baseUrl}/mcp_files`, { formData });
   }
 
   async deleteCloudFile(name: string) {

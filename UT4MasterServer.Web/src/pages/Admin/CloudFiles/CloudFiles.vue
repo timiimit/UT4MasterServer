@@ -2,6 +2,7 @@
   <CrudPage title="Cloud Files">
     <template #add="p">
       <AddCloudFile
+        :all-files="files"
         @cancel="p.cancel"
         @added="
           loadFiles();

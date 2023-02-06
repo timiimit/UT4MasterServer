@@ -9,6 +9,7 @@ using UT4MasterServer.Services.Singleton;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Responses;
+using Microsoft.Net.Http.Headers;
 
 namespace UT4MasterServer.Controllers;
 
@@ -302,13 +303,25 @@ public sealed class AdminPanelController : ControllerBase
 		return Ok(await cloudStorageService.ListFilesAsync(EpicID.Empty));
 	}
 
-	[HttpPost("mcp_files/{filename}")]
-	[HttpPatch("mcp_files/{filename}")]
-	public async Task<IActionResult> UpdateMCPFile(string filename)
+	[HttpPost("mcp_files")]
+	public async Task<IActionResult> UpdateMCPFile()
 	{
 		await VerifyAdmin();
-		await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, HttpContext.Request.Body);
-		return Ok();
+		var formCollection = await Request.ReadFormAsync();
+		var file = formCollection.Files.First();
+		var filename = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.ToString().Trim('"');
+		if (file.Length > 0)
+		{
+			using (var stream = file.OpenReadStream())
+			{
+				await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, stream);
+			}
+			return Ok();
+		}
+		else
+		{
+			return BadRequest();
+		}
 	}
 
 	[HttpGet("mcp_files/{filename}")]
