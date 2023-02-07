@@ -85,7 +85,7 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/elo/{ratingType}")]
 	public async Task<IActionResult> JoinQuickplay(string ratingType, [FromBody] RatingTeam ratingTeam)
 	{
-		logger.LogInformation("JOIN QUICKPLAY {DateTime}, {RatingType}: {JSON}.", DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss"), ratingType, JsonSerializer.Serialize(ratingTeam));
+		logger.LogInformation("JOIN QUICKPLAY {RatingType}: {JSON}.", ratingType, JsonSerializer.Serialize(ratingTeam));
 
 		if (User.Identity is not EpicUserIdentity)
 		{
@@ -104,7 +104,7 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/match_result")]
 	public async Task<IActionResult> MatchResult([FromBody] RatingMatch ratingMatch)
 	{
-		logger.LogInformation("MATCH RESULT {DateTime}: {JSON}.", DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss"), JsonSerializer.Serialize(ratingMatch));
+		logger.LogInformation("MATCH RESULT: {JSON}.", JsonSerializer.Serialize(ratingMatch));
 
 		if (!Rating.AllowedRatingTypes.Contains(ratingMatch.RatingType))
 		{
