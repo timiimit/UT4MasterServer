@@ -99,19 +99,42 @@ public sealed class AdminPanelController : ControllerBase
 			}
 		}
 
-		if (flags.HasFlag(AccountFlags.Admin) && !admin.Account.Flags.HasFlag(AccountFlags.Admin))
-			return Unauthorized();
-
-		if (flags.HasFlag(AccountFlags.Moderator) && (!admin.Account.Flags.HasFlag(AccountFlags.Moderator) && !admin.Account.Flags.HasFlag(AccountFlags.Admin)))
-			return Unauthorized();
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
 			return NotFound();
 
-		account.Flags = flags;
+		var flagsOld = account.Flags;
+		var adminFlags = admin.Account.Flags;
 
-		await accountService.UpdateAccountAsync(account);
+		// verify that user is authorized to edit specified flags
+		if (adminFlags.HasFlag(AccountFlags.Admin))
+		{
+			if (flagsOld.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
+			{
+				return Unauthorized("Cannot remove Admin flag, this action must be performed with direct access to database");
+			}
+		}
+		else
+		{
+			if (flags.HasFlag(AccountFlags.Admin))
+			{
+				return Unauthorized("Only Admin may add Admin flag to account");
+			}
+
+			if (flagsOld.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
+			{
+				logger.LogWarning("Suspicius activity by {User}. Tried to remove Admin privilege of {Admin}.", admin.Account, account);
+				return Unauthorized("Cannot remove Admin flag as a non-Admin");
+			}
+
+			if (flagsOld.HasFlag(AccountFlags.Moderator) && !flags.HasFlag(AccountFlags.Moderator))
+			{
+				return Unauthorized("Only an Admin may remove Moderator flag");
+			}
+		}
+
+		await accountService.UpdateAccountFlagsAsync(account.ID, flags);
 		return Ok();
 	}
 
@@ -286,7 +309,7 @@ public sealed class AdminPanelController : ControllerBase
 			});
 		}
 
-		await accountService.UpdateAccountPasswordAsync(account, body.NewPassword);
+		await accountService.UpdateAccountPasswordAsync(account.ID, body.NewPassword);
 
 		// logout user to make sure they remember they changed password by being forced to log in again,
 		// as well as prevent anyone else from using this account after successful password change.
