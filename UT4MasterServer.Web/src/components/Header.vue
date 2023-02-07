@@ -48,6 +48,7 @@
               path="/Admin/TrustedServers"
               dropdown
             />
+            <HeaderLink text="CloudFiles" path="/Admin/CloudFiles" dropdown />
           </Dropdown>
           <Dropdown v-if="SessionStore.isAuthenticated" text="Profile">
             <HeaderLink
