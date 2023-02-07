@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
@@ -84,6 +85,8 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/elo/{ratingType}")]
 	public async Task<IActionResult> JoinQuickplay(string ratingType, [FromBody] RatingTeam ratingTeam)
 	{
+		logger.LogInformation("JOIN QUICKPLAY {DateTime}, {RatingType}: {JSON}.", DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss"), ratingType, JsonSerializer.Serialize(ratingTeam));
+
 		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
@@ -101,6 +104,8 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/match_result")]
 	public async Task<IActionResult> MatchResult([FromBody] RatingMatch ratingMatch)
 	{
+		logger.LogInformation("MATCH RESULT {DateTime}: {JSON}.", DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss"), JsonSerializer.Serialize(ratingMatch));
+
 		if (!Rating.AllowedRatingTypes.Contains(ratingMatch.RatingType))
 		{
 			return BadRequest($"'{ratingMatch.RatingType}' is not supported rating type.");
