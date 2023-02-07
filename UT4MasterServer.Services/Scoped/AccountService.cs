@@ -61,7 +61,6 @@ public sealed class AccountService
 
 	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = AccountFlags.All, int skip = 0, int limit = 50)
 	{
-		var f = Builders<Account>.Filter;
 		FilterDefinition<Account> filter = new ExpressionFilterDefinition<Account>(
 			account => account.Username.ToLower().Contains(usernameQuery.ToLower())
 		);
