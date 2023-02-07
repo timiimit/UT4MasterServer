@@ -4,7 +4,7 @@ import { adminGuard, privateGuard, publicGuard } from './route-guards';
 export const routes: RouteRecordRaw[] = [
   // Secure Pages
   {
-    path: `/Stats`,
+    path: `/Stats/:accountId?`,
     component: async () => import('./pages/Stats/Stats.vue'),
     beforeEnter: privateGuard
   },

@@ -67,6 +67,8 @@ function nextPage() {
 watch(
   () => props.itemCount,
   () => {
+    // Reset to first page on item count change
+    currentPage.value = 0;
     emitUpdate();
   }
 );

@@ -1,5 +1,5 @@
 <template>
-  <LoadingPanel :status="RatingStore.status">
+  <LoadingPanel :status="status">
     <div class="d-flex justify-content-center">
       <div class="col-md-6 col-sm-12 mb-4">
         <label for="ratingType" class="col-md-6 col-sm-12 col-form-label">
@@ -32,7 +32,7 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="ranking in rankings" :key="ranking.accountId">
+            <template v-for="ranking in rankings" :key="ranking.accountID">
               <tr
                 :class="`${
                   AccountStore.account?.id === ranking.accountID
@@ -41,7 +41,11 @@
                 }`"
               >
                 <td>{{ ranking.rank }}</td>
-                <td>{{ ranking.player }}</td>
+                <td>
+                  <router-link :to="`/Stats/${ranking.accountID}`">
+                    {{ ranking.player }}</router-link
+                  >
+                </td>
                 <td>{{ ranking.rating }}</td>
                 <td>{{ ranking.gamesPlayed }}</td>
               </tr>
@@ -56,6 +60,7 @@
     <div class="d-flex justify-content-center">
       <div class="col-md-9 col-sm-12">
         <Paging
+          :key="ratingType"
           :item-count="rankingsCount"
           :page-size="pageSize"
           @update="handlePagingUpdate"
@@ -69,18 +74,22 @@
 import { onMounted, shallowRef, watch } from 'vue';
 import { IRanking } from '@/types/rating';
 import { RatingType } from '@/enums/rating-type';
-import { RatingStore } from '@/stores/rating-store';
 import { AccountStore } from '@/stores/account-store';
 import { SessionStore } from '@/stores/session-store';
 import { usePaging } from '@/hooks/use-paging.hook';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import Paging from '@/components/Paging.vue';
+import RatingsService from '@/services/ratings.service';
+import { AsyncStatus } from '@/types/async-status';
 
-const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging(50);
+const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 
 const ratingType = shallowRef(RatingType.DMSkillRating);
+const status = shallowRef(AsyncStatus.OK);
 const rankings = shallowRef<IRanking[]>([]);
 const rankingsCount = shallowRef(0);
+
+const ratingService = new RatingsService();
 
 const ratingTypeOptions = [
   { text: 'Deathmatch', value: RatingType.DMSkillRating },
@@ -88,25 +97,31 @@ const ratingTypeOptions = [
   { text: 'Team Deathmatch', value: RatingType.TDMSkillRating },
   { text: 'Capture the Flag', value: RatingType.CTFSkillRating },
   { text: 'Showdown', value: RatingType.ShowdownSkillRating },
-  { text: 'Flag Run', value: RatingType.FlagRunSkillRating },
-  { text: 'Ranked Duel', value: RatingType.RankedDuelSkillRating },
-  { text: 'Ranked Capture the Flag', value: RatingType.RankedCTFSkillRating },
-  { text: 'Ranked Showdown', value: RatingType.RankedShowdownSkillRating },
-  { text: 'Ranked Flag Run', value: RatingType.RankedFlagRunSkillRating }
+  { text: 'Flag Run', value: RatingType.FlagRunSkillRating }
+  // Ranked gametype rankings not available at this time
+  // { text: 'Ranked Duel', value: RatingType.RankedDuelSkillRating },
+  // { text: 'Ranked Capture the Flag', value: RatingType.RankedCTFSkillRating },
+  // { text: 'Ranked Showdown', value: RatingType.RankedShowdownSkillRating },
+  // { text: 'Ranked Flag Run', value: RatingType.RankedFlagRunSkillRating }
 ];
 
 async function loadRankings() {
-  if (!ratingType.value) return;
+  if (!ratingType.value) {
+    return;
+  }
 
   try {
-    await RatingStore.fetchRankings(
+    status.value = AsyncStatus.BUSY;
+    const response = await ratingService.getRankings(
       ratingType.value,
       pageStart.value,
       pageSize
     );
-    rankings.value = RatingStore.rankings;
-    rankingsCount.value = RatingStore.rankingsCount;
+    rankings.value = response.data;
+    rankingsCount.value = response.count;
+    status.value = AsyncStatus.OK;
   } catch (err: unknown) {
+    status.value = AsyncStatus.ERROR;
     console.error(err);
   }
 }
@@ -121,7 +136,10 @@ onMounted(() => {
 });
 
 function handleParameterChange() {
-  if (!ratingType.value) return;
+  if (!ratingType.value) {
+    return;
+  }
+  pageStart.value = 0;
   loadRankings();
 }
 

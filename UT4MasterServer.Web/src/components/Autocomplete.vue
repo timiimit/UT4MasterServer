@@ -83,6 +83,10 @@ const props = defineProps({
   value: {
     type: String,
     default: undefined
+  },
+  minSearchLength: {
+    type: Number,
+    default: 2
   }
 });
 
@@ -92,6 +96,7 @@ const searchText = ref('');
 const menuOpen = ref(false);
 const activeIndex = ref(-1);
 const initialValueSet = ref(false);
+const lastEmittedValue = ref('');
 
 const filteredItems = computed(() =>
   props.items.filter((i) =>
@@ -152,10 +157,16 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
-const handleKeyup = debounce(
-  () => emit('inputChange', searchText.value ?? ''),
-  500
-);
+const handleKeyup = debounce(() => {
+  if (
+    searchText.value === lastEmittedValue.value ||
+    props.minSearchLength > searchText.value.length
+  ) {
+    return;
+  }
+  emit('inputChange', searchText.value ?? '');
+  lastEmittedValue.value = searchText.value;
+}, 250);
 
 function valueChanged() {
   if (props.value) {

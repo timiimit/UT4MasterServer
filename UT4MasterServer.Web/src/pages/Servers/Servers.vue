@@ -3,7 +3,7 @@
     <div class="d-flex justify-content-center">
       <div class="col-md-9 col-sm-12">
         <div class="row mb-3">
-          <div class="col-md-6 col-sm-12">
+          <div class="col-md-7 col-12">
             <input
               v-model="filterText"
               type="text"
@@ -11,9 +11,7 @@
               placeholder="Filter..."
             />
           </div>
-          <div
-            class="col-md-6 col-sm-12 d-flex align-items-center justify-content-end"
-          >
+          <div class="col-md-4 col-9 d-flex align-items-center">
             <div class="form-check d-flex align-items-center">
               <input
                 id="hideEmpty"
@@ -26,6 +24,17 @@
                 Hide Empty Hubs
               </label>
             </div>
+          </div>
+          <div
+            class="col-md-1 col-3 d-flex align-items-center justify-content-end"
+          >
+            <button
+              class="btn btn-lg btn-icon"
+              title="Refresh Servers"
+              @click="ServerStore.fetchGameServers"
+            >
+              <FontAwesomeIcon icon="fa-solid fa-arrows-rotate" />
+            </button>
           </div>
         </div>
         <div class="list-group">
@@ -62,6 +71,7 @@ import Hub from '@/pages/Servers/components/Hub.vue';
 import { ServerStore } from '@/stores/server-store';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { orderBy } from 'lodash';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const filterText = shallowRef('');
 const hideEmpty = shallowRef(true);
