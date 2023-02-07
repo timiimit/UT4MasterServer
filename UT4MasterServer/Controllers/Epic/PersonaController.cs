@@ -124,7 +124,7 @@ public sealed class PersonaController : JsonAPIController
 			return NotFound();
 		}
 
-		account.CountryFlag = account.CountryFlag.Replace(".", " ");
+		account.CountryFlag = account.CountryFlag.Replace('.', ' ');
 
 		return Ok(account);
 	}
