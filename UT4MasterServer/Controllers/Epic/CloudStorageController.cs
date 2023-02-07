@@ -7,6 +7,8 @@ using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Response;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UT4MasterServer.Controllers.Epic;
 
