@@ -22,8 +22,14 @@ public class EloTest
 	}
 
 	[Theory]
-	[InlineData(100, 5, 1000)]
-	private static void TestTeamEloBalancing(int gamesPerIteration, int playersPerTeam, int iterations)
+	[InlineData(100, 5, 2, 1000)]
+	[InlineData(100, 6, 1, 1000)]
+	[InlineData(100, 12, 1, 1000)]
+	[InlineData(10, 1, 1, 1000)]
+	[InlineData(10, 1, 1000, 3)]
+	[InlineData(10, 2, 100, 100)]
+	[InlineData(30, 2, 100, 1)]
+	private static void TestTeamEloBalancing(int gamesPerIteration, int playersPerTeam, int matchesWithSameTeams, int iterations)
 	{
 		int playersPerGame = playersPerTeam * 2;
 		int playerCount = gamesPerIteration * playersPerGame;
@@ -49,28 +55,31 @@ public class EloTest
 			// play 1 game with each team
 			for (int j = 0; j < gamesPerIteration; j++)
 			{
-				// pick an outcome absed on aproximated skill
-				double expectedRatingsTeamA = shuffledApproxPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).Sum();
-				double expectedRatingsTeamB = shuffledApproxPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).Sum();
+				for (int k = 0; k < matchesWithSameTeams; k++)
+				{
+					// pick an outcome based on aproximated skill
+					double expectedRatingsTeamA = shuffledApproxPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).Sum();
+					double expectedRatingsTeamB = shuffledApproxPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).Sum();
 
-				double outcome = expectedRatingsTeamA - expectedRatingsTeamB;
+					double outcome = expectedRatingsTeamA - expectedRatingsTeamB;
 
-				outcome = ((int)Math.Clamp(outcome, -1, 1)) * 0.5 + 0.5;
+					outcome = ((int)Math.Clamp(outcome, -1, 1)) * 0.5 + 0.5;
 
-				// create arrays with team ratings
-				double[] ratingsTeamA = shuffledPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).ToArray();
-				double[] ratingsTeamB = shuffledPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).ToArray();
+					// create arrays with team ratings
+					double[] ratingsTeamA = shuffledPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).ToArray();
+					double[] ratingsTeamB = shuffledPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).ToArray();
 
-				// calculate new ratings
-				double[] expectedScoresA = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamA, ratingsTeamB);
-				double[] newRatingsA = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamA, expectedScoresA, outcome);
+					// calculate new ratings
+					double[] expectedScoresA = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamA, ratingsTeamB);
+					double[] newRatingsA = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamA, expectedScoresA, outcome);
 
-				double[] expectedScoresB = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamB, ratingsTeamA);
-				double[] newRatingsB = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamB, expectedScoresB, 1 - outcome);
+					double[] expectedScoresB = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamB, ratingsTeamA);
+					double[] newRatingsB = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamB, expectedScoresB, 1 - outcome);
 
-				// put team ratings back into main arrays
-				Array.Copy(newRatingsA, 0, shuffledPlayerRatings, j * playersPerGame, playersPerTeam);
-				Array.Copy(newRatingsB, 0, shuffledPlayerRatings, j * playersPerGame + playersPerTeam, playersPerTeam);
+					// put team ratings back into main arrays
+					Array.Copy(newRatingsA, 0, shuffledPlayerRatings, j * playersPerGame, playersPerTeam);
+					Array.Copy(newRatingsB, 0, shuffledPlayerRatings, j * playersPerGame + playersPerTeam, playersPerTeam);
+				}
 			}
 
 			// update ratings in players
