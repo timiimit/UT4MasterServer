@@ -42,8 +42,6 @@ public sealed class CloudStorageController : JsonAPIController
 	[HttpGet("user/{id}/{filename}")]
 	public async Task<IActionResult> GetUserFile(string id, string filename)
 	{
-		// get the user file from cloudstorage - any user can see files from another user
-
 		bool isStatsFile = filename == "stats.json";
 
 		var accountID = EpicID.FromString(id);
