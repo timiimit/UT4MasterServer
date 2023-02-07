@@ -99,15 +99,27 @@ public sealed class AdminPanelController : ControllerBase
 			}
 		}
 
+		// verify that user is authorized to give specified flags to desired account
 		if (flags.HasFlag(AccountFlags.Admin) && !admin.Account.Flags.HasFlag(AccountFlags.Admin))
-			return Unauthorized();
+			return Unauthorized("Only Admin may add Admin flag to account");
 
 		if (flags.HasFlag(AccountFlags.Moderator) && (!admin.Account.Flags.HasFlag(AccountFlags.Moderator) && !admin.Account.Flags.HasFlag(AccountFlags.Admin)))
-			return Unauthorized();
+			return Unauthorized("Only Admin or Moderator may add Moderator flag to account");
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
 			return NotFound();
+
+		// verify that user is authorized to take flags away from desired account
+		if (account.Flags.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
+		{
+			return Unauthorized("Cannot remove Admin flag, this action must be performed with direct access to database");
+		}
+
+		if (!admin.Account.Flags.HasFlag(AccountFlags.Admin) && account.Flags.HasFlag(AccountFlags.Moderator) && account.Flags.HasFlag(AccountFlags.Moderator))
+		{
+			return Unauthorized("Only an Admin may remove Moderator flag");
+		}
 
 		account.Flags = flags;
 
