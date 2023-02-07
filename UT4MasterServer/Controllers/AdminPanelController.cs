@@ -116,7 +116,7 @@ public sealed class AdminPanelController : ControllerBase
 			return Unauthorized("Cannot remove Admin flag, this action must be performed with direct access to database");
 		}
 
-		if (!admin.Account.Flags.HasFlag(AccountFlags.Admin) && account.Flags.HasFlag(AccountFlags.Moderator) && account.Flags.HasFlag(AccountFlags.Moderator))
+		if (account.Flags.HasFlag(AccountFlags.Moderator) && !flags.HasFlag(AccountFlags.Moderator) && !admin.Account.Flags.HasFlag(AccountFlags.Admin))
 		{
 			return Unauthorized("Only an Admin may remove Moderator flag");
 		}
