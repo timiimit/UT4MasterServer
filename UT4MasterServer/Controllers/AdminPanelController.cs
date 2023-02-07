@@ -309,7 +309,7 @@ public sealed class AdminPanelController : ControllerBase
 			});
 		}
 
-		await accountService.UpdateAccountPasswordAsync(account, body.NewPassword);
+		await accountService.UpdateAccountPasswordAsync(account.ID, body.NewPassword);
 
 		// logout user to make sure they remember they changed password by being forced to log in again,
 		// as well as prevent anyone else from using this account after successful password change.
