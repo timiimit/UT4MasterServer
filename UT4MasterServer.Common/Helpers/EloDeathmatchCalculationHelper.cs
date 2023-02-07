@@ -35,7 +35,7 @@ public static class EloDeathmatchCalculationHelper
 		for (int i = 0; i < playersCount; i++)
 		{
 			var playersPlace = i + 1;
-			lineralyDistributedScores[i] = (playersCount - playersPlace) / (playersCount * (playersCount - 1) / 2);
+			lineralyDistributedScores[i] = (playersCount - playersPlace) / (playersCount * (playersCount - 1) / 2.0);
 		}
 
 		return lineralyDistributedScores;
