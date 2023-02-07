@@ -120,7 +120,6 @@ public sealed class RatingsService
 
 		var accountIds = ratings.Select(s => s.AccountID);
 		var filterAccounts = Builders<Account>.Filter.In(f => f.ID, accountIds);
-		var fields = Builders<Account>.Projection.Include(i => i.Username);
 		var accounts = await accountsCollection
 			.Find(filterAccounts)
 			.Project(p => new { p.ID, p.Username, p.CountryFlag })
