@@ -26,6 +26,7 @@
           <thead>
             <tr>
               <th>Rank</th>
+              <th>Flag</th>
               <th>Player</th>
               <th>Rating</th>
               <th>Games Played</th>
@@ -41,6 +42,12 @@
                 }`"
               >
                 <td>{{ ranking.rank }}</td>
+                <td>
+                  <img
+                    class="flag"
+                    :src="`/assets/flags/${ranking.countryFlag}.png`"
+                  />
+                </td>
                 <td>
                   <router-link :to="`/Stats/${ranking.accountID}`">
                     {{ ranking.player }}</router-link
@@ -82,7 +89,7 @@ import Paging from '@/components/Paging.vue';
 import RatingsService from '@/services/ratings.service';
 import { AsyncStatus } from '@/types/async-status';
 
-const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
+const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging(5);
 
 const ratingType = shallowRef(RatingType.DMSkillRating);
 const status = shallowRef(AsyncStatus.OK);

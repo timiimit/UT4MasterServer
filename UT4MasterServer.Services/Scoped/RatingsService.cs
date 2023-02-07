@@ -12,6 +12,7 @@ public sealed class RatingsService
 	private readonly IMongoCollection<Account> accountsCollection;
 
 	private const string UnknownUser = "Unknown user";
+	private const string DefaultCountryFlag = "Unreal";
 
 	public RatingsService(DatabaseContext dbContext)
 	{
@@ -119,20 +120,35 @@ public sealed class RatingsService
 		var accountIds = ratings.Select(s => s.AccountID);
 		var filterAccounts = Builders<Account>.Filter.In(f => f.ID, accountIds);
 		var fields = Builders<Account>.Projection.Include(i => i.Username);
-		var userNames = await accountsCollection
+		var accounts = await accountsCollection
 			.Find(filterAccounts)
-			.Project(p => new { p.ID, p.Username })
+			.Project(p => new { p.ID, p.Username, p.CountryFlag })
 			.ToListAsync();
 
 		var rank = skip;
 		var rankings = ratings
-			.Select(s => new RankingsResponse()
+			.Select(s =>
 			{
-				Rank = ++rank,
-				AccountID = s.AccountID,
-				Player = userNames.FirstOrDefault(f => f.ID == s.AccountID)?.Username ?? UnknownUser,
-				Rating = s.RatingValue / Rating.Precision,
-				GamesPlayed = s.GamesPlayed,
+				var userName = UnknownUser;
+				var countryFlag = DefaultCountryFlag;
+				if (accounts.FirstOrDefault(f => f.ID == s.AccountID) is { } account)
+				{
+					userName = account.Username;
+					if (account.CountryFlag is not null)
+					{
+						countryFlag = account.CountryFlag.Replace('.', ' ');
+					}
+				}
+
+				return new RankingsResponse()
+				{
+					Rank = ++rank,
+					AccountID = s.AccountID,
+					Player = userName,
+					CountryFlag = countryFlag,
+					Rating = s.RatingValue / Rating.Precision,
+					GamesPlayed = s.GamesPlayed,
+				};
 			})
 			.ToList();
 
