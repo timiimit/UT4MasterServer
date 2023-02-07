@@ -35,19 +35,8 @@ public sealed class CloudStorageController : JsonAPIController
 	[HttpGet("user/{id}")]
 	public async Task<IActionResult> ListUserFiles(string id)
 	{
-		// list all files this user has in storage - any user can see files from another user
-
-		var eid = EpicID.FromString(id);
-
-		var files = await cloudStorageService.ListFilesAsync(eid);
-
-		var arr = new List<CloudFileResponse>();
-		foreach (var file in files)
-		{
-			arr.Add(new CloudFileResponse(file));
-		}
-
-		return Ok(arr);
+		var files = await cloudStorageService.ListFilesAsync(EpicID.FromString(id), false);
+		return BuildListResult(files);
 	}
 
 	[HttpGet("user/{id}/{filename}")]
@@ -124,9 +113,10 @@ public sealed class CloudStorageController : JsonAPIController
 	}
 
 	[HttpGet("system")]
-	public Task<IActionResult> ListSystemFiles()
+	public async Task<IActionResult> ListSystemFiles()
 	{
-		return ListUserFiles(EpicID.Empty.ToString());
+		var files = await cloudStorageService.ListFilesAsync(EpicID.Empty, true);
+		return BuildListResult(files);
 	}
 
 	[AllowAnonymous]
@@ -134,5 +124,17 @@ public sealed class CloudStorageController : JsonAPIController
 	public async Task<IActionResult> GetSystemFile(string filename)
 	{
 		return await GetUserFile(EpicID.Empty.ToString(), filename);
+	}
+
+	[NonAction]
+	private IActionResult BuildListResult(IEnumerable<CloudFile> files)
+	{
+		var arr = new List<CloudFileResponse>();
+		foreach (var file in files)
+		{
+			arr.Add(new CloudFileResponse(file));
+		}
+
+		return Ok(arr);
 	}
 }

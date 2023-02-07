@@ -301,7 +301,7 @@ public sealed class AdminPanelController : ControllerBase
 	public async Task<IActionResult> GetMCPFiles()
 	{
 		await VerifyAdmin();
-		return Ok(await cloudStorageService.ListFilesAsync(EpicID.Empty));
+		return Ok(await cloudStorageService.ListFilesAsync(EpicID.Empty, false));
 	}
 
 	[HttpPost("mcp_files")]
