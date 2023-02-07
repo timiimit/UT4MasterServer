@@ -85,7 +85,7 @@ public class EloTest
 			// update ratings in players
 			for (int j = 0; j < playerCount; j++)
 			{
-				players[j].Rating = shuffledPlayerRatings[unshuffledPlayerIndices[j]];
+				players[j].Rating = shuffledPlayerRatings[shuffledPlayerIndices[j]];
 			}
 		}
 
@@ -93,7 +93,10 @@ public class EloTest
 
 		double expectedAvg = players.Select(x => x.ApproxSkillRating).Average();
 
-		Assert.Equal(expectedAvg, avg, 10);
+		for (int i = 0; i < playerCount; i++)
+		{
+			Assert.Equal(players[i].ApproxSkillRating, players[i].Rating, 20.0);
+		}
 	}
 
 	private static Random r = new Random();
