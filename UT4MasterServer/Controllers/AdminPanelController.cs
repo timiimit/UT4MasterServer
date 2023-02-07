@@ -99,31 +99,42 @@ public sealed class AdminPanelController : ControllerBase
 			}
 		}
 
-		// verify that user is authorized to give specified flags to desired account
-		if (flags.HasFlag(AccountFlags.Admin) && !admin.Account.Flags.HasFlag(AccountFlags.Admin))
-			return Unauthorized("Only Admin may add Admin flag to account");
-
-		if (flags.HasFlag(AccountFlags.Moderator) && (!admin.Account.Flags.HasFlag(AccountFlags.Moderator) && !admin.Account.Flags.HasFlag(AccountFlags.Admin)))
-			return Unauthorized("Only Admin or Moderator may add Moderator flag to account");
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
 			return NotFound();
 
-		// verify that user is authorized to take flags away from desired account
-		if (account.Flags.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
+		var flagsOld = account.Flags;
+		var adminFlags = admin.Account.Flags;
+
+		// verify that user is authorized to edit specified flags
+		if (adminFlags.HasFlag(AccountFlags.Admin))
 		{
-			return Unauthorized("Cannot remove Admin flag, this action must be performed with direct access to database");
+			if (flagsOld.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
+			{
+				return Unauthorized("Cannot remove Admin flag, this action must be performed with direct access to database");
+			}
+		}
+		else
+		{
+			if (flags.HasFlag(AccountFlags.Admin))
+			{
+				return Unauthorized("Only Admin may add Admin flag to account");
+			}
+
+			if (flagsOld.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
+			{
+				logger.LogWarning("Suspicius activity by {User}. Tried to remove Admin privilege of {Admin}.", admin.Account, account);
+				return Unauthorized("Cannot remove Admin flag as a non-Admin");
+			}
+
+			if (flagsOld.HasFlag(AccountFlags.Moderator) && !flags.HasFlag(AccountFlags.Moderator))
+			{
+				return Unauthorized("Only an Admin may remove Moderator flag");
+			}
 		}
 
-		if (account.Flags.HasFlag(AccountFlags.Moderator) && !flags.HasFlag(AccountFlags.Moderator) && !admin.Account.Flags.HasFlag(AccountFlags.Admin))
-		{
-			return Unauthorized("Only an Admin may remove Moderator flag");
-		}
-
-		account.Flags = flags;
-
-		await accountService.UpdateAccountAsync(account);
+		await accountService.UpdateAccountFlagsAsync(account.ID, flags);
 		return Ok();
 	}
 
