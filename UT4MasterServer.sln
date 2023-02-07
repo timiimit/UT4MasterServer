@@ -13,7 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnit.Tests", ".Tests\XUnit
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{47853299-8BA6-460B-9C54-91E40D59B8ED}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.prettierignore = .prettierignore
 	EndProjectSection
 EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "UT4MasterServer.Web", "UT4MasterServer.Web\", "{351E5A62-5562-4E30-A70C-93D5236F6C7A}"
@@ -45,7 +49,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Serializers
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Services", "UT4MasterServer.Services\UT4MasterServer.Services.csproj", "{6DDDF02C-C06F-4148-AE39-29A4B771F8FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UT4MasterServer.Authentication", "UT4MasterServer.Authentication\UT4MasterServer.Authentication.csproj", "{9D946358-61C8-4AA3-8151-805393049F8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UT4MasterServer.Authentication", "UT4MasterServer.Authentication\UT4MasterServer.Authentication.csproj", "{9D946358-61C8-4AA3-8151-805393049F8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
