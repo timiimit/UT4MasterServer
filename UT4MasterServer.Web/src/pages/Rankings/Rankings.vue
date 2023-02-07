@@ -89,7 +89,7 @@ import Paging from '@/components/Paging.vue';
 import RatingsService from '@/services/ratings.service';
 import { AsyncStatus } from '@/types/async-status';
 
-const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging(5);
+const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 
 const ratingType = shallowRef(RatingType.DMSkillRating);
 const status = shallowRef(AsyncStatus.OK);
