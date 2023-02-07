@@ -39,27 +39,13 @@ public sealed class CloudStorageController : JsonAPIController
 
         var files = await cloudStorageService.ListFilesAsync(eid);
 
-        var arr = new JArray();
+        var arr = new List<CloudFileResponse>();
         foreach (var file in files)
         {
-            var obj = new JObject();
-            obj.Add("uniqueFilename", file.Filename);
-            obj.Add("filename", file.Filename);
-            obj.Add("hash", file.Hash);
-            obj.Add("hash256", file.Hash256);
-            obj.Add("length", file.Length);
-            obj.Add("contentType", "text/plain"); // this seems to be constant
-            obj.Add("uploaded", file.UploadedAt.ToStringISO());
-            obj.Add("storageType", "S3");
-            obj.Add("accountId", id);
-            if (eid.IsEmpty)
-            {
-                obj.Add("doNotCache", false);
-            }
-            arr.Add(obj);
+			arr.Add(new CloudFileResponse(file));
         }
 
-        return Json(arr);
+        return Ok(arr);
     }
 
     [HttpGet("user/{id}/{filename}")]
