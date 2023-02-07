@@ -129,7 +129,8 @@ public sealed class CloudStorageController : JsonAPIController
         return ListUserFiles(EpicID.Empty.ToString());
     }
 
-    [HttpGet("system/{filename}")]
+	[AllowAnonymous]
+	[HttpGet("system/{filename}")]
     public async Task<IActionResult> GetSystemFile(string filename)
     {
         return await GetUserFile(EpicID.Empty.ToString(), filename);
