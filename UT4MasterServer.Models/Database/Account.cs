@@ -79,6 +79,7 @@ public class Account
 	public DateTime LastMatchAt { get; set; } = DateTime.UnixEpoch;
 
 	[BsonIgnoreIfDefault, BsonDefaultValue(AccountFlags.None)]
+	[BsonElement("Flags")]
 	public AccountFlags Flags { get; set; } = AccountFlags.None;
 
 	[BsonIgnore]
