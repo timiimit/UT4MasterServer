@@ -82,7 +82,7 @@ public sealed class RatingsService
 	public async Task<RatingResponse> GetAverageTeamRatingAsync(string ratingType, RatingTeam ratingTeam)
 	{
 		var accountIds = ratingTeam.Members
-			.Where(w => !w.IsBot)
+			.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 			.Select(s => EpicID.FromString(s.AccountID))
 			.ToArray();
 		var filter = Builders<Rating>.Filter.In(f => f.AccountID, accountIds) &
@@ -148,11 +148,11 @@ public sealed class RatingsService
 	public async Task UpdateTeamsRatingsAsync(RatingMatch ratingMatch)
 	{
 		var redTeamAccountIds = ratingMatch.RedTeam.Members
-			.Where(w => !w.IsBot)
+			.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 			.Select(s => EpicID.FromString(s.AccountID))
 			.ToArray();
 		var blueTeamAccountIds = ratingMatch.BlueTeam.Members
-			.Where(w => !w.IsBot)
+			.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 			.Select(s => EpicID.FromString(s.AccountID))
 			.ToArray();
 		int redTeamPlayersCount = redTeamAccountIds.Length;
@@ -246,7 +246,7 @@ public sealed class RatingsService
 	public async Task UpdateDeathmatchRatingsAsync(RatingMatch ratingMatch)
 	{
 		var playersAccountIds = ratingMatch.RedTeam.Members
-			.Where(w => !w.IsBot)
+			.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 			.OrderByDescending(o => o.Score)
 			.Select(s => EpicID.FromString(s.AccountID))
 			.ToArray();

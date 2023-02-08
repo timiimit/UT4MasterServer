@@ -121,10 +121,32 @@ public sealed class AccountService
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 
-	public async Task UpdateAccountPasswordAsync(Account updatedAccount, string password)
+	public async Task<AccountFlags> GetAccountFlagsAsync(EpicID accountID)
 	{
-		updatedAccount.Password = PasswordHelper.GetPasswordHash(updatedAccount.ID, password);
-		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var options = new FindOptions<Account>()
+		{
+			Projection = Builders<Account>.Projection.Include(x => x.Flags)
+		};
+		var result = await accountCollection.FindAsync(filter, options);
+		var account = await result.FirstOrDefaultAsync();
+		return account.Flags;
+	}
+
+	public async Task UpdateAccountFlagsAsync(EpicID accountID, AccountFlags flags)
+	{
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var update = Builders<Account>.Update.Set(x => x.Flags, flags);
+		await accountCollection.UpdateOneAsync(filter, update);
+	}
+
+	public async Task UpdateAccountPasswordAsync(EpicID accountID, string password)
+	{
+		password = PasswordHelper.GetPasswordHash(accountID, password);
+
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var update = Builders<Account>.Update.Set(x => x.Password, password);
+		await accountCollection.UpdateOneAsync(filter, update);
 	}
 
 	public async Task RemoveAccountAsync(EpicID id)

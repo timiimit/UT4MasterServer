@@ -350,7 +350,7 @@ public sealed class AccountController : JsonAPIController
             });
         }
 
-        await accountService.UpdateAccountPasswordAsync(account, newPassword);
+        await accountService.UpdateAccountPasswordAsync(account.ID, newPassword);
 
         // logout user to make sure they remember they changed password by being forced to log in again,
         // as well as prevent anyone else from using this account after successful password change.
