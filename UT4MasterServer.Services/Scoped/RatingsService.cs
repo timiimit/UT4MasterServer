@@ -134,10 +134,7 @@ public sealed class RatingsService
 				if (accounts.FirstOrDefault(f => f.ID == s.AccountID) is { } account)
 				{
 					userName = account.Username;
-					if (account.CountryFlag is not null)
-					{
-						countryFlag = account.CountryFlag.Replace('.', ' ');
-					}
+					countryFlag = account.CountryFlag;
 				}
 
 				return new RankingsResponse()
