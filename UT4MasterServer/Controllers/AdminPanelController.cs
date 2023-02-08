@@ -50,7 +50,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("flags")]
 	public async Task<IActionResult> GetAllPossibleFlags()
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		return Ok(Enum.GetNames<AccountFlags>());
 	}
@@ -58,7 +58,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("flags/{accountID}")]
 	public async Task<IActionResult> GetAccountFlags(string accountID)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
@@ -83,7 +83,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPut("flags/{accountID}")]
 	public async Task<IActionResult> SetAccountFlags(string accountID, [FromBody] string[] flagNames)
 	{
-		var admin = await VerifyAdmin();
+		var admin = await VerifyAdminAsync();
 
 		// TODO: duplicate code in PersonaController
 		var flagNamesAll = Enum.GetNames<AccountFlags>();
@@ -119,7 +119,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPost("clients/new")]
 	public async Task<IActionResult> CreateClient([FromBody] string name)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString(), name);
 		await clientService.UpdateAsync(client);
@@ -130,7 +130,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("clients")]
 	public async Task<IActionResult> GetAllClients()
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var clients = await clientService.ListAsync();
 		return Ok(clients);
@@ -139,7 +139,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("clients/{id}")]
 	public async Task<IActionResult> GetClient(string id)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var client = await clientService.GetAsync(EpicID.FromString(id));
 		if (client == null)
@@ -151,7 +151,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPatch("clients/{id}")]
 	public async Task<IActionResult> UpdateClient(string id, [FromBody] Client client)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var eid = EpicID.FromString(id);
 
@@ -171,7 +171,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpDelete("clients/{id}")]
 	public async Task<IActionResult> DeleteClient(string id)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var eid = EpicID.FromString(id);
 
@@ -191,7 +191,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("trusted_servers")]
 	public async Task<IActionResult> GetAllTrustedServers()
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var getTrustedServers = trustedGameServerService.ListAsync();
 		var getClients = clientService.ListAsync();
@@ -214,7 +214,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("trusted_servers/{id}")]
 	public async Task<IActionResult> GetTrustedServer(string id)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var ret = await trustedGameServerService.GetAsync(EpicID.FromString(id));
 		return Ok(ret);
@@ -223,7 +223,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPost("trusted_servers")]
 	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer server)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 		// TODO: validate server.ID is valid Client ID and not already in use and owner ID is a valid Account ID and has HubOwner flag
 
 		await trustedGameServerService.UpdateAsync(server);
@@ -233,7 +233,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPatch("trusted_servers/{id}")]
 	public async Task<IActionResult> UpdateTrustedServer(string id, [FromBody] TrustedGameServer server)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var eid = EpicID.FromString(id);
 
@@ -247,7 +247,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpDelete("trusted_servers/{id}")]
 	public async Task<IActionResult> DeleteTrustedServer(string id)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var ret = await trustedGameServerService.RemoveAsync(EpicID.FromString(id));
 		return Ok(ret);
@@ -256,7 +256,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPatch("change_password/{id}")]
 	public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminPanelChangePasswordRequest body)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
 		if (account is null)
@@ -300,14 +300,14 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("mcp_files")]
 	public async Task<IActionResult> GetMCPFiles()
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 		return Ok(await cloudStorageService.ListFilesAsync(EpicID.Empty, false));
 	}
 
 	[HttpPost("mcp_files")]
 	public async Task<IActionResult> UpdateMCPFile()
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 		var formCollection = await Request.ReadFormAsync();
 		var file = formCollection.Files.First();
 		var filename = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.ToString().Trim('"');
@@ -328,7 +328,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("mcp_files/{filename}")]
 	public async Task<IActionResult> GetMCPFile(string filename)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 
 		var file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
 		if (file is null)
@@ -342,7 +342,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpDelete("mcp_files/{filename}")]
 	public async Task<IActionResult> DeleteMCPFile(string filename)
 	{
-		await VerifyAdmin();
+		await VerifyAdminAsync();
 		await cloudStorageService.DeleteFileAsync(EpicID.Empty, filename);
 		return Ok();
 	}
@@ -350,7 +350,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpDelete("account/{id}")]
 	public async Task<IActionResult> DeleteAccountInfo(string id, [FromBody] bool? forceCheckBroken)
 	{
-		var admin = await VerifyAdmin();
+		var admin = await VerifyAdminAsync();
 
 		var accountID = EpicID.FromString(id);
 		var account = await accountService.GetAccountAsync(accountID);
@@ -399,7 +399,7 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[NonAction]
-	private async Task<(Session Session, Account Account)> VerifyAdmin()
+	private async Task<(Session Session, Account Account)> VerifyAdminAsync()
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
