@@ -130,7 +130,12 @@ public sealed class CloudStorageController : JsonAPIController
 		var arr = new List<CloudFileResponse>();
 		foreach (var file in files)
 		{
-			arr.Add(new CloudFileResponse(file));
+			var fileResponse = new CloudFileResponse(file);
+			if (file.AccountID.IsEmpty)
+			{
+				fileResponse.DoNotCache = true;
+			}
+			arr.Add(fileResponse);
 		}
 
 		return Ok(arr);
