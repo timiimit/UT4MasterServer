@@ -15,7 +15,6 @@ namespace UT4MasterServer.Controllers.Epic;
 [ApiController]
 [Route("ut/api/cloudstorage")]
 [AuthorizeBearer]
-[Produces("application/octet-stream")]
 public sealed class CloudStorageController : JsonAPIController
 {
 	private readonly CloudStorageService cloudStorageService;
@@ -39,7 +38,7 @@ public sealed class CloudStorageController : JsonAPIController
 		return BuildListResult(files);
 	}
 
-	[HttpGet("user/{id}/{filename}")]
+	[HttpGet("user/{id}/{filename}"), Produces("application/octet-stream")]
 	public async Task<IActionResult> GetUserFile(string id, string filename)
 	{
 		bool isStatsFile = filename == "stats.json";
@@ -118,7 +117,7 @@ public sealed class CloudStorageController : JsonAPIController
 	}
 
 	[AllowAnonymous]
-	[HttpGet("system/{filename}")]
+	[HttpGet("system/{filename}"), Produces("application/octet-stream")]
 	public async Task<IActionResult> GetSystemFile(string filename)
 	{
 		return await GetUserFile(EpicID.Empty.ToString(), filename);
@@ -133,7 +132,7 @@ public sealed class CloudStorageController : JsonAPIController
 			var fileResponse = new CloudFileResponse(file);
 			if (file.AccountID.IsEmpty)
 			{
-				fileResponse.DoNotCache = true;
+				fileResponse.DoNotCache = false;
 			}
 			arr.Add(fileResponse);
 		}

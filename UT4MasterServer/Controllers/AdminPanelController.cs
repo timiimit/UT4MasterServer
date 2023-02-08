@@ -325,7 +325,7 @@ public sealed class AdminPanelController : ControllerBase
 		}
 	}
 
-	[HttpGet("mcp_files/{filename}")]
+	[HttpGet("mcp_files/{filename}"), Produces("application/octet-stream")]
 	public async Task<IActionResult> GetMCPFile(string filename)
 	{
 		await VerifyAdminAsync();
