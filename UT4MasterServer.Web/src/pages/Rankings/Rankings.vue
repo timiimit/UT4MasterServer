@@ -45,7 +45,10 @@
                 <td>
                   <img
                     class="flag"
-                    :src="`/assets/flags/${ranking.countryFlag}.png`"
+                    :src="`/assets/flags/${ranking.countryFlag.replaceAll(
+                      '.',
+                      ' '
+                    )}.png`"
                   />
                 </td>
                 <td>

@@ -22,7 +22,8 @@
               <img
                 class="flag"
                 :src="`/assets/flags/${
-                  AccountStore.account?.countryFlag ?? 'Unreal'
+                  AccountStore.account?.countryFlag.replaceAll('.', ' ') ??
+                  'Unreal'
                 }.png`"
               />
               {{ AccountStore.account?.countryFlag }}
