@@ -83,7 +83,7 @@
 import { shallowRef, computed, PropType, onMounted } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import { useClientOptions } from '../../Clients/hooks/use-client-options.hook';
 import { IClient } from '../../Clients/types/client';
 import { ITrustedGameServer } from '../types/trusted-game-server';

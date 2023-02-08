@@ -63,13 +63,19 @@ import { IStatisticData } from '@/types/statistic-data';
 import Autocomplete from '@/components/Autocomplete.vue';
 import { AccountStore } from '@/stores/account-store';
 import AccountService from '@/services/account.service';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const statsStatus = shallowRef(AsyncStatus.OK);
 const statWindow = shallowRef(StatisticWindow.AllTime);
 const stats = shallowRef<IStatisticData[]>([]);
 
 const accountsStatus = shallowRef(AsyncStatus.OK);
-const accountId = ref<string | undefined>(undefined);
+const accountId = ref<string | undefined>(
+  route.params.accountId?.length
+    ? (route.params.accountId as string)
+    : undefined
+);
 const accounts = ref<IAccount[]>([]);
 const viewingAccount = computed(() =>
   accounts.value.find((a) => a?.id === accountId.value)
@@ -392,7 +398,9 @@ async function searchAccounts(query: string) {
     if (AccountStore.account) {
       accounts.value.unshift(AccountStore.account);
     }
-    accountId.value = AccountStore.account?.id;
+    if (!accountId.value?.length) {
+      accountId.value = AccountStore.account?.id;
+    }
     accountsStatus.value = AsyncStatus.OK;
   } catch (err: unknown) {
     accountsStatus.value = AsyncStatus.ERROR;
@@ -412,12 +420,21 @@ function handleSelectAccount(account?: IAccount) {
   handleParameterChange();
 }
 
-function setCurrentAccount() {
-  if (!AccountStore.account) {
+async function setCurrentAccount() {
+  let account: IAccount | undefined = undefined;
+  // if account is passed as param
+  if (accountId.value?.length) {
+    account = (await accountService.getAccountsByIds([accountId.value]))[0];
+  }
+  // if no account passed as param, use logged in account (if available)
+  if (!account && AccountStore.account) {
+    account = AccountStore.account;
+  }
+  if (!account) {
     return;
   }
-  accounts.value = [AccountStore.account];
-  accountId.value = AccountStore.account.id;
+  accounts.value = [account];
+  accountId.value = account.id;
 }
 
 onMounted(() => {

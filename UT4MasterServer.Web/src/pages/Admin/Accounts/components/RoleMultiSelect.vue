@@ -11,7 +11,7 @@
 import { PropType, computed, shallowRef, onMounted, watch } from 'vue';
 import Multiselect from '@vueform/multiselect';
 import { Role } from '@/enums/role';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 
 const props = defineProps({
   modelValue: {

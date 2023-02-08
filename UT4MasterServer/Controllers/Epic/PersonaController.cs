@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
+using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Services.Scoped;
 
@@ -43,6 +44,7 @@ public sealed class PersonaController : JsonAPIController
 		return Json(obj);
 	}
 
+	// TODO: modify into a GET with query parameters
 	[HttpPost("accounts/search")]
 	public async Task<IActionResult> SearchAccounts([FromBody] AccountSearchRequest request)
 	{
@@ -50,32 +52,51 @@ public sealed class PersonaController : JsonAPIController
 		{
 			return Unauthorized();
 		}
-		var accounts = await accountService.SearchAccountsAsync(request.Query);
 
-		if (request.Roles != null && request.Roles.Length > 0)
+		// do not allow more than 50 entries
+		if (request.Take > 50)
 		{
-			accounts = accounts.Where((a) => a.Roles != null && a.Roles.Intersect(request.Roles).Any());
+			request.Take = 50;
 		}
 
-		var count = accounts.Count();
+		// TODO: duplicate code in AdminPanelController
+		AccountFlags flags;
+		if (request.Roles != null && request.Roles.Length > 0)
+		{
+			var flagNamesAll = Enum.GetNames<AccountFlags>();
+			var flagValuesAll = Enum.GetValues<AccountFlags>();
 
-		accounts = accounts.Skip(request.Skip).Take(request.Take);
+			flags = AccountFlags.None;
+			for (int i = 0; i < flagNamesAll.Length; i++)
+			{
+				if (request.Roles.Contains(flagNamesAll[i]))
+				{
+					flags |= flagValuesAll[i];
+				}
+			}
+		}
+		else
+		{
+			flags = AccountFlags.All;
+		}
+
+		var result = await accountService.SearchAccountsAsync(request.Query, flags, request.Skip, request.Take);
 
 		if (request.IncludeRoles)
 		{
 			return Ok(
 				new
 				{
-					accounts = accounts.Select((account) => new { account.ID, account.Username, account.Roles }),
-					count
+					accounts = result.Data.Select((account) => new { account.ID, account.Username, account.Roles }),
+					count = result.Count
 				}
 			);
 		}
 		return Ok(
 				new
 				{
-					accounts = accounts.Select((account) => new { account.ID, account.Username, }),
-					count
+					accounts = result.Data.Select((account) => new { account.ID, account.Username, }),
+					count = result.Count
 				}
 			);
 	}
@@ -106,6 +127,7 @@ public sealed class PersonaController : JsonAPIController
 		return Ok(account);
 	}
 
+	// TODO: modify into a GET with query parameters
 	[HttpPost("accounts")]
 	public async Task<IActionResult> GetAccountsByIds([FromBody] string[] ids)
 	{

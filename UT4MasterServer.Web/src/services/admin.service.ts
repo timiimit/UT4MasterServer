@@ -1,6 +1,7 @@
 import { Role } from '@/enums/role';
 import { IAdminChangePasswordRequest } from '@/pages/Admin/Accounts/types/admin-change-password-request';
 import { IClient } from '@/pages/Admin/Clients/types/client';
+import { ICloudFile } from '@/pages/Admin/CloudFiles/types/cloud-file';
 import { ITrustedGameServer } from '@/pages/Admin/TrustedServers/types/trusted-game-server';
 import HttpService from './http.service';
 
@@ -90,5 +91,18 @@ export default class AdminService extends HttpService {
 
   async deleteClient(id: string) {
     return await this.delete(`${this.baseUrl}/clients/${id}`);
+  }
+
+  // Cloud Files
+  async getCloudFiles() {
+    return await this.get<ICloudFile[]>(`${this.baseUrl}/mcp_files`);
+  }
+
+  async upsertCloudFile(formData: FormData) {
+    return await this.post(`${this.baseUrl}/mcp_files`, { formData });
+  }
+
+  async deleteCloudFile(name: string) {
+    return await this.delete(`${this.baseUrl}/mcp_files/${name}`);
   }
 }

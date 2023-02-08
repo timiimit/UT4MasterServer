@@ -1,11 +1,11 @@
 import { SessionStore } from '@/stores/session-store';
-import AuthenticationService from './authentication.service';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface HttpRequestOptions<T = unknown> {
   body?: T;
   headers?: HeadersInit;
+  formData?: FormData;
 }
 
 export default class HttpService {
@@ -31,12 +31,17 @@ export default class HttpService {
         : JSON.stringify(options.body);
     }
 
-    const headers: HeadersInit = {
-      'Content-Type': form
-        ? 'application/x-www-form-urlencoded'
-        : 'application/json'
-    };
+    if (options?.formData && form) {
+      fetchOptions.body = options.formData;
+    }
+
+    const headers: HeadersInit = {};
     headers['SameSite'] = 'Strict';
+    if (options?.body) {
+      headers['Content-Type'] = form
+        ? 'application/x-www-form-urlencoded'
+        : 'application/json';
+    }
 
     if (SessionStore.token) {
       headers.Authorization = `bearer ${SessionStore.token}`;
@@ -47,20 +52,12 @@ export default class HttpService {
     const response = await fetch(url, fetchOptions);
 
     if (!response.ok) {
-      // Note: Logging the user out on any API request returning 401 may not be the perfect solution,
-      //       there could be a legitimate case for returning 401 that wouldn't require logout,
-      //       but I don't think we have such a case at this point.
-      if (response.status === 401 && SessionStore.isAuthenticated) {
-        new AuthenticationService().logOut();
-        window.location.href = '/';
-      } else {
-        const error = await response.json().catch(() => {
-          console.debug('Unable to parse json response');
-        });
-        const errorMessage = error?.errorMessage ?? error;
-        const defaultErrorMessage = `HTTP request error - ${response.status}: ${response.statusText}`;
-        throw new Error(errorMessage ?? defaultErrorMessage);
-      }
+      const error = await response.json().catch(() => {
+        console.debug('Unable to parse json response');
+      });
+      const errorMessage = error?.errorMessage ?? error;
+      const defaultErrorMessage = `HTTP request error - ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage ?? defaultErrorMessage);
     }
 
     const responseObj = await response.json().catch(() => {

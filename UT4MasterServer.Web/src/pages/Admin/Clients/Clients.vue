@@ -90,7 +90,7 @@ import CrudPage from '@/components/CrudPage.vue';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
 import { objectHash } from '@/utils/utilities';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import { IClient } from './types/client';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import AddClient from './components/AddClient.vue';

@@ -41,7 +41,7 @@
 import { shallowRef, computed, PropType } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import { IClient } from '../types/client';
 import { useClientOptions } from '../hooks/use-client-options.hook';
 import { valid as vValid } from '@/directives/valid';

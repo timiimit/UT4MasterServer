@@ -21,6 +21,23 @@ public sealed class CloudStorageService
 	private readonly IMongoCollection<CloudFile> cloudStorageCollection;
 	private readonly ILogger<CloudStorageService> logger;
 
+	private static readonly string[] commonSystemFileFilenames = new string[]
+	{
+		// yes, 3 of these are misspelled by epic
+		"UnrealTournamentOnlineSettings.json",
+		"UnrealTournmentMCPAnnouncement.json",
+		"UnrealTournmentMCPGameRulesets.json",
+		"UnrealTournmentMCPStorage.json",
+		"UTMCPPlaylists.json"
+	};
+	private static readonly string[] commonUserFileFilenames = new string[]
+	{
+		// old players might also have "user_profile_1", but it is not used for anything anymore
+		"user_profile_2",
+		"user_progression_1",
+		"stats.json"
+	};
+
 	public CloudStorageService(DatabaseContext dbContext, ILogger<CloudStorageService> logger)
 	{
 		cloudStorageCollection = dbContext.Database.GetCollection<CloudFile>("cloudstorage");
@@ -30,22 +47,21 @@ public sealed class CloudStorageService
 	public async Task EnsureSystemFilesExistAsync()
 	{
 		// get a list of already stored system files
-		var stored = await ListFilesAsync(EpicID.Empty);
-
-		// get a list of default system files
-		var files = Directory.EnumerateFiles("CloudstorageSystemfiles");
+		var stored = await ListFilesAsync(EpicID.Empty, true);
 
 		// ensure that all default files exist in db
-		foreach (var file in files)
+		foreach (var filename in commonSystemFileFilenames)
 		{
-			// get just the filename part of file path
-			var filename = Path.GetFileName(file);
-			if (filename == null)
-				continue;
+			var file = Path.Combine("CloudStorageSystemFiles", filename);
 
 			if (stored.Any(x => x.Filename == filename))
 			{
 				// file already in db
+				continue;
+			}
+
+			if (!File.Exists(file))
+			{
 				continue;
 			}
 
@@ -90,19 +106,39 @@ public sealed class CloudStorageService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<List<CloudFile>> ListFilesAsync(EpicID accountID)
+	public async Task<List<CloudFile>> ListFilesAsync(EpicID accountID, bool hideCustomFiles)
 	{
 		FindOptions<CloudFile> options = new FindOptions<CloudFile>()
 		{
 			Projection = Builders<CloudFile>.Projection.Exclude(x => x.RawContent)
 		};
-		var cursor = await cloudStorageCollection.FindAsync(GetFilter(accountID), options);
+
+		var filter = GetFilter(accountID);
+		if (hideCustomFiles)
+		{
+			if (accountID.IsEmpty)
+			{
+				filter &= Builders<CloudFile>.Filter.In(x => x.Filename, commonSystemFileFilenames);
+			}
+			else
+			{
+				filter &= Builders<CloudFile>.Filter.In(x => x.Filename, commonUserFileFilenames);
+			}
+		}
+		var cursor = await cloudStorageCollection.FindAsync(filter, options);
 		return await cursor.ToListAsync();
 	}
 
-	public async Task DeleteFileAsync(EpicID accountID, string filename)
+	public async Task<bool?> DeleteFileAsync(EpicID accountID, string filename)
 	{
-		await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
+		if (accountID.IsEmpty && IsCommonSystemFileFilename(filename))
+			return false;
+
+		var result = await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
+		if (!result.IsAcknowledged)
+			return null;
+
+		return result.DeletedCount > 0;
 	}
 
 	public async Task<int?> RemoveFilesByAccountAsync(EpicID accountID)
@@ -116,8 +152,12 @@ public sealed class CloudStorageService
 
 	private static bool IsCommonUserFileFilename(string filename)
 	{
-		// old players might also have "user_profile_1", but it is not used for anything
-		return filename == "user_profile_2" || filename == "user_progression_1" || filename == "stats.json";
+		return commonUserFileFilenames.Contains(filename);
+	}
+
+	private static bool IsCommonSystemFileFilename(string filename)
+	{
+		return commonSystemFileFilenames.Contains(filename);
 	}
 
 	private static string CalcFileHash(byte[] data)

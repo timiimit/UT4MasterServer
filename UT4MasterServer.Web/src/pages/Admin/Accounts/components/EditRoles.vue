@@ -41,7 +41,7 @@ import { shallowRef, PropType } from 'vue';
 import { AsyncStatus } from '@/types/async-status';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { IAccountWithRoles } from '@/types/account';
-import AdminService from '@/services/admin-service';
+import AdminService from '@/services/admin.service';
 import RoleMultiSelect from './RoleMultiSelect.vue';
 import { Role } from '@/enums/role';
 import { AccountStore } from '@/stores/account-store';
