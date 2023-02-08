@@ -25,7 +25,7 @@ public class EloTest
 	[InlineData(100, 5, 2, 1000)]
 	[InlineData(100, 6, 1, 1000)]
 	[InlineData(100, 12, 1, 1000)]
-	[InlineData(10, 1, 1, 1000)]
+	[InlineData(10, 1, 1, 1000)]	// 1vs1 game
 	[InlineData(10, 1, 1000, 3)]
 	[InlineData(10, 2, 100, 100)]
 	[InlineData(30, 2, 100, 1)]
