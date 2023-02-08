@@ -19,7 +19,8 @@ namespace UT4MasterServer.Services.Hosted
 			ILogger<ApplicationStartupService> logger,
 			ILogger<StatisticsService> statsLogger,
 			IOptions<ApplicationSettings> settings,
-			ILogger<CloudStorageService> cloudStorageLogger)
+			ILogger<CloudStorageService> cloudStorageLogger,
+			ILogger<RatingsService> ratingsLogger)
 		{
 			this.logger = logger;
 			var db = new DatabaseContext(settings);
@@ -27,7 +28,7 @@ namespace UT4MasterServer.Services.Hosted
 			statisticsService = new StatisticsService(statsLogger, db);
 			cloudStorageService = new CloudStorageService(db, cloudStorageLogger);
 			clientService = new ClientService(db);
-			ratingsService = new RatingsService(db);
+			ratingsService = new RatingsService(ratingsLogger, db);
 		}
 
 		public async Task StartAsync(CancellationToken cancellationToken)
