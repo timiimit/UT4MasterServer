@@ -1,5 +1,5 @@
 import { IPagedResponse } from '@/types/paged-response';
-import { IRanking } from 'src/types/rating';
+import { IRanking } from '@/types/ranking';
 import HttpService from './http.service';
 
 export default class RatingsService extends HttpService {

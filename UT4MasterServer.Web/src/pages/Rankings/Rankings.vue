@@ -26,6 +26,7 @@
           <thead>
             <tr>
               <th>Rank</th>
+              <th>Flag</th>
               <th>Player</th>
               <th>Rating</th>
               <th>Games Played</th>
@@ -41,6 +42,15 @@
                 }`"
               >
                 <td>{{ ranking.rank }}</td>
+                <td>
+                  <img
+                    class="flag"
+                    :src="`/assets/flags/${ranking.countryFlag.replaceAll(
+                      '.',
+                      ' '
+                    )}.png`"
+                  />
+                </td>
                 <td>
                   <router-link :to="`/Stats/${ranking.accountID}`">
                     {{ ranking.player }}</router-link
@@ -72,7 +82,7 @@
 
 <script lang="ts" setup>
 import { onMounted, shallowRef, watch } from 'vue';
-import { IRanking } from '@/types/rating';
+import { IRanking } from '@/types/ranking';
 import { RatingType } from '@/enums/rating-type';
 import { AccountStore } from '@/stores/account-store';
 import { SessionStore } from '@/stores/session-store';
