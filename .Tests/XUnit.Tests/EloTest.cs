@@ -90,7 +90,6 @@ public class EloTest
 		}
 
 		double avg = players.Select(x => x.Rating).Average();
-
 		double expectedAvg = players.Select(x => x.ApproxSkillRating).Average();
 
 		for (int i = 0; i < playerCount; i++)
