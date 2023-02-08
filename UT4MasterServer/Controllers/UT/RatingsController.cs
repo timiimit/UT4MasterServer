@@ -85,14 +85,17 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/elo/{ratingType}")]
 	public async Task<IActionResult> JoinQuickplay(string ratingType, [FromBody] RatingTeam ratingTeam)
 	{
-		logger.LogInformation("JOIN QUICKPLAY {RatingType}: {JSON}.", ratingType, JsonSerializer.Serialize(ratingTeam));
-
+		if (ratingTeam.Members.Any(a => string.IsNullOrWhiteSpace(a.AccountID)))
+		{
+			logger.LogWarning("{MethodName} | {RatingType} | {JSON}", nameof(JoinQuickplay), ratingType, JsonSerializer.Serialize(ratingTeam));
+		}
 		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
 		}
 		if (!Rating.AllowedRatingTypes.Contains(ratingType))
 		{
+			logger.LogWarning("{MethodName} | {RatingType} | {JSON}", nameof(JoinQuickplay), ratingType, JsonSerializer.Serialize(ratingTeam));
 			return BadRequest($"'{ratingType}' is not supported rating type.");
 		}
 
@@ -104,10 +107,14 @@ public sealed class RatingsController : JsonAPIController
 	[HttpPost("team/match_result")]
 	public async Task<IActionResult> MatchResult([FromBody] RatingMatch ratingMatch)
 	{
-		logger.LogInformation("MATCH RESULT: {JSON}.", JsonSerializer.Serialize(ratingMatch));
-
+		if (ratingMatch.RedTeam.Members.Any(a => string.IsNullOrWhiteSpace(a.AccountID)) ||
+			ratingMatch.BlueTeam.Members.Any(a => string.IsNullOrWhiteSpace(a.AccountID)))
+		{
+			logger.LogWarning("{MethodName} | {JSON}", nameof(MatchResult), JsonSerializer.Serialize(ratingMatch));
+		}
 		if (!Rating.AllowedRatingTypes.Contains(ratingMatch.RatingType))
 		{
+			logger.LogWarning("{MethodName} | {JSON}", nameof(MatchResult), JsonSerializer.Serialize(ratingMatch));
 			return BadRequest($"'{ratingMatch.RatingType}' is not supported rating type.");
 		}
 
