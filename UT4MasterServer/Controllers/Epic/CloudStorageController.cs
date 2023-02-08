@@ -7,143 +7,136 @@ using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Response;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UT4MasterServer.Controllers.Epic;
 
 [ApiController]
 [Route("ut/api/cloudstorage")]
 [AuthorizeBearer]
-[Produces("application/octet-stream")]
 public sealed class CloudStorageController : JsonAPIController
 {
-    private readonly CloudStorageService cloudStorageService;
-    private readonly MatchmakingService matchmakingService;
-    private readonly AccountService accountService;
+	private readonly CloudStorageService cloudStorageService;
+	private readonly MatchmakingService matchmakingService;
+	private readonly AccountService accountService;
 
-    public CloudStorageController(ILogger<CloudStorageController> logger,
-        CloudStorageService cloudStorageService,
-        MatchmakingService matchmakingService,
-        AccountService accountService) : base(logger)
-    {
-        this.cloudStorageService = cloudStorageService;
-        this.matchmakingService = matchmakingService;
-        this.accountService = accountService;
-    }
+	public CloudStorageController(ILogger<CloudStorageController> logger,
+		CloudStorageService cloudStorageService,
+		MatchmakingService matchmakingService,
+		AccountService accountService) : base(logger)
+	{
+		this.cloudStorageService = cloudStorageService;
+		this.matchmakingService = matchmakingService;
+		this.accountService = accountService;
+	}
 
-    [HttpGet("user/{id}")]
-    public async Task<IActionResult> ListUserFiles(string id)
-    {
-        // list all files this user has in storage - any user can see files from another user
+	[HttpGet("user/{id}")]
+	public async Task<IActionResult> ListUserFiles(string id)
+	{
+		var files = await cloudStorageService.ListFilesAsync(EpicID.FromString(id), false);
+		return BuildListResult(files);
+	}
 
-        var eid = EpicID.FromString(id);
+	[HttpGet("user/{id}/{filename}"), Produces("application/octet-stream")]
+	public async Task<IActionResult> GetUserFile(string id, string filename)
+	{
+		bool isStatsFile = filename == "stats.json";
 
-        var files = await cloudStorageService.ListFilesAsync(eid);
+		var accountID = EpicID.FromString(id);
+		var file = await cloudStorageService.GetFileAsync(accountID, filename);
+		if (file == null)
+		{
+			if (!isStatsFile)
+			{
+				return NotFound(new ErrorResponse()
+				{
+					ErrorCode = "errors.com.epicgames.cloudstorage.file_not_found",
+					ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}",
+					MessageVars = new[] { filename, id },
+					NumericErrorCode = 12007,
+					OriginatingService = "utservice",
+					Intent = "prod10"
+				});
+			}
 
-        var arr = new JArray();
-        foreach (var file in files)
-        {
-            var obj = new JObject();
-            obj.Add("uniqueFilename", file.Filename);
-            obj.Add("filename", file.Filename);
-            obj.Add("hash", file.Hash);
-            obj.Add("hash256", file.Hash256);
-            obj.Add("length", file.Length);
-            obj.Add("contentType", "text/plain"); // this seems to be constant
-            obj.Add("uploaded", file.UploadedAt.ToStringISO());
-            obj.Add("storageType", "S3");
-            obj.Add("accountId", id);
-            if (eid.IsEmpty)
-            {
-                obj.Add("doNotCache", false);
-            }
-            arr.Add(obj);
-        }
+			// Send a fake response in order to fix #109 (which is a game bug)
+			var playerName = "New Player";
+			var playerID = EpicID.Empty;
+			var account = await accountService.GetAccountAsync(accountID);
+			if (account != null)
+			{
+				playerName = account.Username;
+				playerID = account.ID;
+			}
 
-        return Json(arr);
-    }
+			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",StatsID:\"{playerID}\",Version:0}}") };
+		}
 
-    [HttpGet("user/{id}/{filename}")]
-    public async Task<IActionResult> GetUserFile(string id, string filename)
-    {
-        // get the user file from cloudstorage - any user can see files from another user
+		if (isStatsFile)
+		{
+			// HACK: Fix game bug where stats.json is expected to always have nul character at the end
+			//       Bug is at UnrealTournament\Source\UnrealTournament\Private\Slate\Panels\SUTStatsViewerPanel.cpp:415
+			var tmp = new byte[file.RawContent.Length + 1];
+			Array.Copy(file.RawContent, tmp, file.RawContent.Length);
+			tmp[tmp.Length - 1] = 0;
 
-        bool isStatsFile = filename == "stats.json";
+			file.RawContent = tmp;
+		}
 
-        var accountID = EpicID.FromString(id);
-        var file = await cloudStorageService.GetFileAsync(accountID, filename);
-        if (file == null)
-        {
-            if (!isStatsFile)
-            {
-                return NotFound(new ErrorResponse()
-                {
-                    ErrorCode = "errors.com.epicgames.cloudstorage.file_not_found",
-                    ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}",
-                    MessageVars = new[] { filename, id },
-                    NumericErrorCode = 12007,
-                    OriginatingService = "utservice",
-                    Intent = "prod10"
-                });
-            }
+		return new FileContentResult(file.RawContent, "application/octet-stream");
+	}
 
-            // Send a fake response in order to fix #109 (which is a game bug)
-            var playerName = "New Player";
-            var playerID = EpicID.Empty;
-            var account = await accountService.GetAccountAsync(accountID);
-            if (account != null)
-            {
-                playerName = account.Username;
-                playerID = account.ID;
-            }
+	[HttpPut("user/{id}/{filename}")]
+	public async Task<IActionResult> UpdateUserFile(string id, string filename)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+		var accountID = EpicID.FromString(id);
+		if (user.Session.AccountID != accountID)
+		{
+			// cannot modify other's files
 
-            file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",StatsID:\"{playerID}\",Version:0}}") };
-        }
+			// unless you are a game server with this player and are modifying this player's stats file
+			var isServerWithPlayer = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountID);
+			if (!isServerWithPlayer || filename != "stats.json")
+			{
+				return Unauthorized();
+			}
+		}
 
-        if (isStatsFile)
-        {
-            // HACK: Fix game bug where stats.json is expected to always have nul character at the end
-            //       Bug is at UnrealTournament\Source\UnrealTournament\Private\Slate\Panels\SUTStatsViewerPanel.cpp:415
-            var tmp = new byte[file.RawContent.Length + 1];
-            Array.Copy(file.RawContent, tmp, file.RawContent.Length);
-            tmp[tmp.Length - 1] = 0;
+		await cloudStorageService.UpdateFileAsync(accountID, filename, Request.Body);
+		return Ok();
+	}
 
-            file.RawContent = tmp;
-        }
+	[HttpGet("system")]
+	public async Task<IActionResult> ListSystemFiles()
+	{
+		var files = await cloudStorageService.ListFilesAsync(EpicID.Empty, true);
+		return BuildListResult(files);
+	}
 
-        return new FileContentResult(file.RawContent, "application/octet-stream");
-    }
+	[AllowAnonymous]
+	[HttpGet("system/{filename}"), Produces("application/octet-stream")]
+	public async Task<IActionResult> GetSystemFile(string filename)
+	{
+		return await GetUserFile(EpicID.Empty.ToString(), filename);
+	}
 
-    [HttpPut("user/{id}/{filename}")]
-    public async Task<IActionResult> UpdateUserFile(string id, string filename)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
-        var accountID = EpicID.FromString(id);
-        if (user.Session.AccountID != accountID)
-        {
-            // cannot modify other's files
+	[NonAction]
+	private IActionResult BuildListResult(IEnumerable<CloudFile> files)
+	{
+		var arr = new List<CloudFileResponse>();
+		foreach (var file in files)
+		{
+			var fileResponse = new CloudFileResponse(file);
+			if (file.AccountID.IsEmpty)
+			{
+				fileResponse.DoNotCache = false;
+			}
+			arr.Add(fileResponse);
+		}
 
-            // unless you are a game server with this player and are modifying this player's stats file
-            var isServerWithPlayer = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountID);
-            if (!isServerWithPlayer || filename != "stats.json")
-            {
-                return Unauthorized();
-            }
-        }
-
-        await cloudStorageService.UpdateFileAsync(accountID, filename, Request.Body);
-        return Ok();
-    }
-
-    [HttpGet("system")]
-    public Task<IActionResult> ListSystemFiles()
-    {
-        return ListUserFiles(EpicID.Empty.ToString());
-    }
-
-    [HttpGet("system/{filename}")]
-    public async Task<IActionResult> GetSystemFile(string filename)
-    {
-        return await GetUserFile(EpicID.Empty.ToString(), filename);
-    }
+		return Ok(arr);
+	}
 }

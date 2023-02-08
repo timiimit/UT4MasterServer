@@ -47,16 +47,21 @@ public sealed class CloudStorageService
 	public async Task EnsureSystemFilesExistAsync()
 	{
 		// get a list of already stored system files
-		var stored = await ListFilesAsync(EpicID.Empty);
+		var stored = await ListFilesAsync(EpicID.Empty, true);
 
 		// ensure that all default files exist in db
 		foreach (var filename in commonSystemFileFilenames)
 		{
-			var file = Path.Combine("CloudstorageSystemfiles", filename);
+			var file = Path.Combine("CloudStorageSystemFiles", filename);
 
 			if (stored.Any(x => x.Filename == filename))
 			{
 				// file already in db
+				continue;
+			}
+
+			if (!File.Exists(file))
+			{
 				continue;
 			}
 
@@ -101,19 +106,32 @@ public sealed class CloudStorageService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<List<CloudFile>> ListFilesAsync(EpicID accountID)
+	public async Task<List<CloudFile>> ListFilesAsync(EpicID accountID, bool hideCustomFiles)
 	{
 		FindOptions<CloudFile> options = new FindOptions<CloudFile>()
 		{
 			Projection = Builders<CloudFile>.Projection.Exclude(x => x.RawContent)
 		};
-		var cursor = await cloudStorageCollection.FindAsync(GetFilter(accountID), options);
+
+		var filter = GetFilter(accountID);
+		if (hideCustomFiles)
+		{
+			if (accountID.IsEmpty)
+			{
+				filter &= Builders<CloudFile>.Filter.In(x => x.Filename, commonSystemFileFilenames);
+			}
+			else
+			{
+				filter &= Builders<CloudFile>.Filter.In(x => x.Filename, commonUserFileFilenames);
+			}
+		}
+		var cursor = await cloudStorageCollection.FindAsync(filter, options);
 		return await cursor.ToListAsync();
 	}
 
 	public async Task<bool?> DeleteFileAsync(EpicID accountID, string filename)
 	{
-		if (accountID.IsEmpty && !IsCommonSystemFileFilename(filename))
+		if (accountID.IsEmpty && IsCommonSystemFileFilename(filename))
 			return false;
 
 		var result = await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
