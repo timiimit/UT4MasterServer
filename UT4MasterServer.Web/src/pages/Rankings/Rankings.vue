@@ -82,7 +82,7 @@
 
 <script lang="ts" setup>
 import { onMounted, shallowRef, watch } from 'vue';
-import { IRanking } from '@/types/rating';
+import { IRanking } from '@/types/ranking';
 import { RatingType } from '@/enums/rating-type';
 import { AccountStore } from '@/stores/account-store';
 import { SessionStore } from '@/stores/session-store';
