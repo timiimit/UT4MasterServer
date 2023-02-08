@@ -109,7 +109,7 @@ public sealed class RatingsService
 	public async Task<PagedResponse<RankingsResponse>> GetRankingsAsync(string ratingType, int skip, int limit)
 	{
 		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
-					 Builders<Rating>.Filter.Gt(f => f.GamesPlayed, 9);
+					 Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
 		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
 		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
 		var ratings = await ratingsCollection.Find(filter)
