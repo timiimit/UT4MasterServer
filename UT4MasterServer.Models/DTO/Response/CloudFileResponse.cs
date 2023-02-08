@@ -4,7 +4,7 @@ using UT4MasterServer.Models.Database;
 
 namespace UT4MasterServer.Models.DTO.Response;
 
-public class CloudFileResponse
+public sealed class CloudFileResponse
 {
 	[JsonPropertyName("accountId")]
 	public EpicID AccountID { get; set; }
