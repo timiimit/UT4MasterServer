@@ -292,6 +292,9 @@ public sealed class AdminPanelController : ControllerBase
 			return BadRequest();
 
 		await trustedGameServerService.UpdateAsync(server);
+
+
+
 		return Ok();
 	}
 
@@ -436,6 +439,7 @@ public sealed class AdminPanelController : ControllerBase
 		await ratingsService.RemoveAllByAccountAsync(accountID);
 		await friendService.RemoveAllByAccountAsync(accountID);
 		await trustedGameServerService.RemoveAllByAccountAsync(accountID);
+		// NOTE: missing removal of account from live servers. this should take care of itself in a relatively short time.
 
 		return Ok();
 	}
