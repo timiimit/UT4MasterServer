@@ -67,7 +67,7 @@ public sealed class SessionService
 	public async Task<Session?> RefreshSessionAsync(string refreshToken)
 	{
 		var cursor = await sessionCollection.FindAsync(s =>
-			s.RefreshToken.Value == refreshToken
+			s.RefreshToken!.Value == refreshToken
 		);
 		var session = await cursor.SingleOrDefaultAsync();
 		if (session == null)
@@ -104,7 +104,7 @@ public sealed class SessionService
 
 		var expiredRefreshToken =
 			Builders<Session>.Filter.Exists(x => x.RefreshToken, false) |
-			Builders<Session>.Filter.Lt(x => x.RefreshToken.ExpirationTime, now);
+			Builders<Session>.Filter.Lt(x => x.RefreshToken!.ExpirationTime, now);
 
 		var expiredAccessToken =
 			Builders<Session>.Filter.Lt(x => x.AccessToken.ExpirationTime, now);
