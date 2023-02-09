@@ -79,13 +79,10 @@ public sealed class MatchmakingController : JsonAPIController
 		if (client != null)
 		{
 			var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string;
-			if (serverName != null)
+			if (serverName != client.Name)
 			{
-				if (serverName != client.Name)
-				{
-					logger.LogWarning("Client {ClientID} started server with name {ActualServerName} which differes from expected name {ExpectedServerName}. Denying server session creation.", client.ID, serverName, client.Name);
-					return BadRequest(new ErrorResponse($"ServerName has to be \"{client.Name}\". Please contact a master server admin to change this."));
-				}
+				logger.LogWarning("Client {ClientID} started server with name {ActualServerName} which differes from expected name {ExpectedServerName}. Denying server session creation.", client.ID, serverName, client.Name);
+				return BadRequest(new ErrorResponse($"ServerName has to be \"{client.Name}\". Please contact a master server admin to change this."));
 			}
 		}
 
