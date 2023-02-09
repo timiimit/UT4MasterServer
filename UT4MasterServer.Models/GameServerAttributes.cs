@@ -7,7 +7,7 @@ public class GameServerAttributes
 	public const string UT_SERVERTRUSTLEVEL_i = "UT_SERVERTRUSTLEVEL_i";
 	public const string UT_SERVERNAME_s = "UT_SERVERNAME_s";
 
-	public static readonly string[] unownedAttributeNames = new[]
+	public static readonly string[] UnownedAttributeNames = new[]
 	{
 		UT_SERVERTRUSTLEVEL_i,
 		//UT_SERVERNAME_s
@@ -39,7 +39,7 @@ public class GameServerAttributes
 	{
 		foreach (var attribute in other.serverConfigs)
 		{
-			if (unownedAttributeNames.Contains(attribute.Key))
+			if (UnownedAttributeNames.Contains(attribute.Key))
 				continue;
 
 			SetDirect(attribute.Key, attribute.Value);
