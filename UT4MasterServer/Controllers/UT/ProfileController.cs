@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Controllers.Epic;
-using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Models.DTO.Requests;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Common.Helpers;

@@ -3,7 +3,7 @@ using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Response;
+using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Settings;
 
 namespace UT4MasterServer.Services.Scoped;

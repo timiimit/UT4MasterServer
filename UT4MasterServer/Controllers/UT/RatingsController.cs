@@ -4,8 +4,8 @@ using System.Text.Json;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Request;
-using UT4MasterServer.Models.DTO.Response;
+using UT4MasterServer.Models.DTO.Requests;
+using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers.UT;

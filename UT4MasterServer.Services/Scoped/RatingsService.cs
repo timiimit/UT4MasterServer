@@ -3,8 +3,8 @@ using MongoDB.Driver;
 using System.Text.Json;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Request;
-using UT4MasterServer.Models.DTO.Response;
+using UT4MasterServer.Models.DTO.Requests;
+using UT4MasterServer.Models.DTO.Responses;
 
 namespace UT4MasterServer.Services.Scoped;
 

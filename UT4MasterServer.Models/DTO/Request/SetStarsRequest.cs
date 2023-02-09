@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace UT4MasterServer.Models.DTO.Request;
+namespace UT4MasterServer.Models.DTO.Requests;
 
 public sealed class SetStarsRequest
 {

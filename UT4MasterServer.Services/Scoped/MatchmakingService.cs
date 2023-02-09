@@ -2,7 +2,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.Json;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Models.DTO.Requests;
 using UT4MasterServer.Common;
 using Microsoft.Extensions.Logging;
 using UT4MasterServer.Services.Singleton;

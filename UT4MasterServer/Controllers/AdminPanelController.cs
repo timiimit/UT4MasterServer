@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Models.DTO.Requests;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
