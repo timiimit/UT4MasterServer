@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Models.DTO.Requests;
 using UT4MasterServer.Models.Settings;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
