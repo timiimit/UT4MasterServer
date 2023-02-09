@@ -250,12 +250,34 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[HttpPost("trusted_servers")]
-	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer server)
+	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer body)
 	{
 		await VerifyAdminAsync();
-		// TODO: validate server.ID is valid Client ID and not already in use and owner ID is a valid Account ID and has HubOwner flag
 
-		await trustedGameServerService.UpdateAsync(server);
+		var client = await clientService.GetAsync(body.ID);
+		if (client is null)
+		{
+			return BadRequest("Trusted server does not have a matching client with same ID");
+		}
+
+		var server = await trustedGameServerService.GetAsync(body.ID);
+		if (server is not null)
+		{
+			return BadRequest($"Trusted server {body.ID} already exists");
+		}
+
+		var owner = await accountService.GetAccountAsync(body.OwnerID);
+		if (owner is null)
+		{
+			return BadRequest($"OwnerID {body.OwnerID} is not a valid account ID");
+		}
+
+		if (owner.Flags.HasFlag(AccountFlags.HubOwner))
+		{
+			return BadRequest($"Account specified with OwnerID {body.OwnerID} is not marked as HubOwner");
+		}
+
+		await trustedGameServerService.UpdateAsync(body);
 		return Ok();
 	}
 
