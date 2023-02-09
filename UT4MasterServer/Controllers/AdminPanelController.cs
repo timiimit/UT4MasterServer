@@ -29,6 +29,8 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly TrustedGameServerService trustedGameServerService;
 	private readonly RatingsService ratingsService;
 
+	private readonly MatchmakingService matchmakingService;
+
 	public AdminPanelController(
 		ILogger<AdminPanelController> logger,
 		AccountService accountService,
@@ -39,7 +41,8 @@ public sealed class AdminPanelController : ControllerBase
 		StatisticsService statisticsService,
 		ClientService clientService,
 		TrustedGameServerService trustedGameServerService,
-		RatingsService ratingsService)
+		RatingsService ratingsService,
+		MatchmakingService matchmakingService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
@@ -51,6 +54,7 @@ public sealed class AdminPanelController : ControllerBase
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
 		this.ratingsService = ratingsService;
+		this.matchmakingService = matchmakingService;
 	}
 
 	[HttpGet("flags")]
@@ -293,7 +297,7 @@ public sealed class AdminPanelController : ControllerBase
 
 		await trustedGameServerService.UpdateAsync(server);
 
-
+		await matchmakingService.UpdateTrustLevel(server.ID, server.TrustLevel);
 
 		return Ok();
 	}

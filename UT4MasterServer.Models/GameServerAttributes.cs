@@ -4,6 +4,15 @@ namespace UT4MasterServer.Models;
 
 public class GameServerAttributes
 {
+	public const string UT_SERVERTRUSTLEVEL_i = "UT_SERVERTRUSTLEVEL_i";
+	public const string UT_SERVERNAME_s = "UT_SERVERNAME_s";
+
+	public static readonly string[] unownedAttributeNames = new[]
+	{
+		UT_SERVERTRUSTLEVEL_i,
+		//UT_SERVERNAME_s
+	};
+
 	private readonly Dictionary<string, object> serverConfigs;
 
 	public GameServerAttributes()
@@ -30,8 +39,8 @@ public class GameServerAttributes
 	{
 		foreach (var attribute in other.serverConfigs)
 		{
-			if (attribute.Key == "UT_SERVERTRUSTLEVEL_i")
-				continue; // do not allow server to modify this attribute
+			if (unownedAttributeNames.Contains(attribute.Key))
+				continue;
 
 			SetDirect(attribute.Key, attribute.Value);
 		}
