@@ -192,7 +192,7 @@ public sealed class AdminPanelController : ControllerBase
 			return BadRequest();
 
 		if (IsSpecialClientID(eid))
-			return Unauthorized();
+			return Unauthorized("Cannot modify reserved clients");
 
 		if (string.IsNullOrWhiteSpace(client.Name))
 			client.Name = null;
@@ -209,7 +209,7 @@ public sealed class AdminPanelController : ControllerBase
 		var eid = EpicID.FromString(id);
 
 		if (IsSpecialClientID(eid))
-			return Unauthorized();
+			return Unauthorized("Cannot delete reserved clients");
 
 		var success = await clientService.RemoveAsync(eid);
 		if (success == null || success == false)
