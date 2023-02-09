@@ -82,7 +82,7 @@ import { computed, shallowRef } from 'vue';
 import CryptoJS from 'crypto-js';
 import AuthenticationService from '@/services/authentication.service';
 import { SessionStore } from '@/stores/session-store';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { GrantType } from '@/enums/grant-type';
 import { validatePassword } from '@/utils/validation';
 
@@ -98,6 +98,7 @@ const errorMessage = shallowRef('Error logging in. Please try again.');
 const authenticationService = new AuthenticationService();
 
 const router = useRouter();
+const route = useRoute();
 
 async function logIn() {
   try {
@@ -110,7 +111,8 @@ async function logIn() {
     SessionStore.saveUsername = saveUsername.value;
     await authenticationService.passwordLogin(formData);
     status.value = AsyncStatus.OK;
-    router.push('/Profile');
+    const redirectTo = (route.query.redirect ?? 'Profile') as string;
+    router.push(redirectTo);
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;
