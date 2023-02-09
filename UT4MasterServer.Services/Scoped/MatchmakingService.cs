@@ -55,7 +55,7 @@ public sealed class MatchmakingService
 		return result.IsAcknowledged;
 	}
 
-	public async Task UpdateTrustLevel(EpicID clientID, GameServerTrust trustLevel)
+	public async Task UpdateTrustLevelAsync(EpicID clientID, GameServerTrust trustLevel)
 	{
 		var filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
 		var update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERTRUSTLEVEL_i}", trustLevel);
@@ -63,7 +63,7 @@ public sealed class MatchmakingService
 		var result = await serverCollection.UpdateOneAsync(filter, update);
 	}
 
-	public async Task UpdateServerName(EpicID clientID, string serverName)
+	public async Task UpdateServerNameAsync(EpicID clientID, string serverName)
 	{
 		var filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
 		var update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERNAME_s}", serverName);

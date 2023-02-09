@@ -195,7 +195,7 @@ public sealed class AdminPanelController : ControllerBase
 			return Unauthorized("Cannot modify reserved clients");
 
 		var taskUpdateClient = clientService.UpdateAsync(client);
-		var taskUpdateServerName = matchmakingService.UpdateServerName(client.ID, client.Name);
+		var taskUpdateServerName = matchmakingService.UpdateServerNameAsync(client.ID, client.Name);
 
 		await taskUpdateClient;
 		await taskUpdateServerName;
@@ -303,7 +303,7 @@ public sealed class AdminPanelController : ControllerBase
 
 		await trustedGameServerService.UpdateAsync(server);
 
-		await matchmakingService.UpdateTrustLevel(server.ID, server.TrustLevel);
+		await matchmakingService.UpdateTrustLevelAsync(server.ID, server.TrustLevel);
 
 		return Ok();
 	}
