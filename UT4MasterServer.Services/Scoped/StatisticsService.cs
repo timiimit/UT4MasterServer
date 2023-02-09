@@ -626,7 +626,7 @@ public sealed class StatisticsService
 		return result.DeletedCount;
 	}
 
-	public async Task<long?> RemoveStatisticsByAccountAsync(EpicID accountID)
+	public async Task<long?> RemoveAllByAccountAsync(EpicID accountID)
 	{
 		var result = await statisticsCollection.DeleteManyAsync(x => x.AccountID == accountID);
 		if (!result.IsAcknowledged)

@@ -22,29 +22,35 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
 	private readonly CodeService codeService;
+	private readonly FriendService friendService;
 	private readonly CloudStorageService cloudStorageService;
 	private readonly StatisticsService statisticsService;
 	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
+	private readonly RatingsService ratingsService;
 
 	public AdminPanelController(
 		ILogger<AdminPanelController> logger,
 		AccountService accountService,
 		SessionService sessionService,
 		CodeService codeService,
+		FriendService friendService,
 		CloudStorageService cloudStorageService,
 		StatisticsService statisticsService,
 		ClientService clientService,
-		TrustedGameServerService trustedGameServerService)
+		TrustedGameServerService trustedGameServerService,
+		RatingsService ratingsService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
 		this.sessionService = sessionService;
 		this.codeService = codeService;
+		this.friendService = friendService;
 		this.cloudStorageService = cloudStorageService;
 		this.statisticsService = statisticsService;
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
+		this.ratingsService = ratingsService;
 	}
 
 	[HttpGet("flags")]
@@ -402,9 +408,12 @@ public sealed class AdminPanelController : ControllerBase
 
 		// remove all associated data
 		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, accountID, EpicID.Empty);
-		await codeService.RemoveCodesByAccountAsync(accountID);
-		await cloudStorageService.RemoveFilesByAccountAsync(accountID);
-		await statisticsService.RemoveStatisticsByAccountAsync(accountID);
+		await codeService.RemoveAllByAccountAsync(accountID);
+		await cloudStorageService.RemoveAllByAccountAsync(accountID);
+		await statisticsService.RemoveAllByAccountAsync(accountID);
+		await ratingsService.RemoveAllByAccountAsync(accountID);
+		await friendService.RemoveAllByAccountAsync(accountID);
+		await trustedGameServerService.RemoveAllByAccountAsync(accountID);
 
 		return Ok();
 	}
