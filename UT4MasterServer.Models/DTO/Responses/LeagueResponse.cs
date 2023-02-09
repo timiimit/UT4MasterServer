@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace UT4MasterServer.Models.DTO.Response;
+namespace UT4MasterServer.Models.DTO.Responses;
 
 /// <summary>
 /// Names taken from <see href="https://github.com/EpicGames/UnrealTournament/blob/clean-master/UnrealTournament/Source/UnrealTournament/Private/UTPlayerState.cpp#L2219">LeagueTierToText</see>

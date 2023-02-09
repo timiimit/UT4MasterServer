@@ -1,6 +1,6 @@
 ﻿using UT4MasterServer.Common;
 
-namespace UT4MasterServer.Models.DTO.Response;
+namespace UT4MasterServer.Models.DTO.Responses;
 
 public sealed class RankingsResponse
 {

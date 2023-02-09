@@ -35,7 +35,7 @@ public class ErrorResponse
 	public ErrorResponse(string message)
 	{
 		ErrorMessage = message;
-		ErrorDescription = message;
+		//ErrorDescription = message;
 	}
 
 	public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)

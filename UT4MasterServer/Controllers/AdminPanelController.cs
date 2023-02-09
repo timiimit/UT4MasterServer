@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Models.DTO.Requests;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
@@ -22,39 +22,29 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
 	private readonly CodeService codeService;
-	private readonly FriendService friendService;
 	private readonly CloudStorageService cloudStorageService;
 	private readonly StatisticsService statisticsService;
 	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
-	private readonly RatingsService ratingsService;
-
-	private readonly MatchmakingService matchmakingService;
 
 	public AdminPanelController(
 		ILogger<AdminPanelController> logger,
 		AccountService accountService,
 		SessionService sessionService,
 		CodeService codeService,
-		FriendService friendService,
 		CloudStorageService cloudStorageService,
 		StatisticsService statisticsService,
 		ClientService clientService,
-		TrustedGameServerService trustedGameServerService,
-		RatingsService ratingsService,
-		MatchmakingService matchmakingService)
+		TrustedGameServerService trustedGameServerService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
 		this.sessionService = sessionService;
 		this.codeService = codeService;
-		this.friendService = friendService;
 		this.cloudStorageService = cloudStorageService;
 		this.statisticsService = statisticsService;
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
-		this.ratingsService = ratingsService;
-		this.matchmakingService = matchmakingService;
 	}
 
 	[HttpGet("flags")]
@@ -192,14 +182,12 @@ public sealed class AdminPanelController : ControllerBase
 			return BadRequest();
 
 		if (IsSpecialClientID(eid))
-			return Unauthorized("Cannot modify reserved clients");
+			return Unauthorized();
 
-		var taskUpdateClient = clientService.UpdateAsync(client);
-		var taskUpdateServerName = matchmakingService.UpdateServerNameAsync(client.ID, client.Name);
+		if (string.IsNullOrWhiteSpace(client.Name))
+			client.Name = null;
 
-		await taskUpdateClient;
-		await taskUpdateServerName;
-
+		await clientService.UpdateAsync(client);
 		return Ok();
 	}
 
@@ -211,7 +199,7 @@ public sealed class AdminPanelController : ControllerBase
 		var eid = EpicID.FromString(id);
 
 		if (IsSpecialClientID(eid))
-			return Unauthorized("Cannot delete reserved clients");
+			return Unauthorized();
 
 		var success = await clientService.RemoveAsync(eid);
 		if (success == null || success == false)
@@ -228,24 +216,20 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAdminAsync();
 
-		var trustedServers = await trustedGameServerService.ListAsync();
-
-		var trustedServerIDs = trustedServers.Select(t => t.ID);
-		var trustedServerOwnerIDs = trustedServers.Select(t => t.OwnerID).Distinct();
-
-		var taskClients = clientService.GetManyAsync(trustedServerIDs);
-		var taskAccounts = accountService.GetAccountsAsync(trustedServerOwnerIDs);
-
-		var clients = await taskClients;
-		var accounts = await taskAccounts;
-
-		var response = trustedServers.Select(t => new TrustedGameServerResponse
+		var getTrustedServers = trustedGameServerService.ListAsync();
+		var getClients = clientService.ListAsync();
+		Task.WaitAll(getTrustedServers, getClients);
+		var trustedServers = getTrustedServers.Result;
+		var clients = getClients.Result;
+		var eIds = trustedServers.Select((t) => t.OwnerID).Distinct();
+		var accounts = await accountService.GetAccountsAsync(eIds);
+		var response = trustedServers.Select((t) => new TrustedGameServerResponse
 		{
 			ID = t.ID,
 			OwnerID = t.OwnerID,
 			TrustLevel = t.TrustLevel,
-			Client = clients.SingleOrDefault(c => c.ID == t.ID),
-			Owner = accounts.SingleOrDefault(a => a.ID == t.OwnerID)
+			Client = clients.SingleOrDefault((c) => c.ID == t.ID),
+			Owner = accounts.SingleOrDefault((a) => a.ID == t.OwnerID)
 		});
 		return Ok(response);
 	}
@@ -260,34 +244,12 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[HttpPost("trusted_servers")]
-	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer body)
+	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer server)
 	{
 		await VerifyAdminAsync();
+		// TODO: validate server.ID is valid Client ID and not already in use and owner ID is a valid Account ID and has HubOwner flag
 
-		var client = await clientService.GetAsync(body.ID);
-		if (client is null)
-		{
-			return BadRequest("Trusted server does not have a matching client with same ID");
-		}
-
-		var server = await trustedGameServerService.GetAsync(body.ID);
-		if (server is not null)
-		{
-			return BadRequest($"Trusted server {body.ID} already exists");
-		}
-
-		var owner = await accountService.GetAccountAsync(body.OwnerID);
-		if (owner is null)
-		{
-			return BadRequest($"OwnerID {body.OwnerID} is not a valid account ID");
-		}
-
-		if (owner.Flags.HasFlag(AccountFlags.HubOwner))
-		{
-			return BadRequest($"Account specified with OwnerID {body.OwnerID} is not marked as HubOwner");
-		}
-
-		await trustedGameServerService.UpdateAsync(body);
+		await trustedGameServerService.UpdateAsync(server);
 		return Ok();
 	}
 
@@ -302,9 +264,6 @@ public sealed class AdminPanelController : ControllerBase
 			return BadRequest();
 
 		await trustedGameServerService.UpdateAsync(server);
-
-		await matchmakingService.UpdateTrustLevelAsync(server.ID, server.TrustLevel);
-
 		return Ok();
 	}
 
@@ -443,13 +402,9 @@ public sealed class AdminPanelController : ControllerBase
 
 		// remove all associated data
 		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, accountID, EpicID.Empty);
-		await codeService.RemoveAllByAccountAsync(accountID);
-		await cloudStorageService.RemoveAllByAccountAsync(accountID);
-		await statisticsService.RemoveAllByAccountAsync(accountID);
-		await ratingsService.RemoveAllByAccountAsync(accountID);
-		await friendService.RemoveAllByAccountAsync(accountID);
-		await trustedGameServerService.RemoveAllByAccountAsync(accountID);
-		// NOTE: missing removal of account from live servers. this should take care of itself in a relatively short time.
+		await codeService.RemoveCodesByAccountAsync(accountID);
+		await cloudStorageService.RemoveFilesByAccountAsync(accountID);
+		await statisticsService.RemoveStatisticsByAccountAsync(accountID);
 
 		return Ok();
 	}
