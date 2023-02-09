@@ -63,7 +63,7 @@ public sealed class MatchmakingService
 		var result = await serverCollection.UpdateOneAsync(filter, update);
 	}
 
-	public async Task UpdateServername(EpicID clientID, string serverName)
+	public async Task UpdateServerName(EpicID clientID, string serverName)
 	{
 		var filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
 		var update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERNAME_s}", serverName);

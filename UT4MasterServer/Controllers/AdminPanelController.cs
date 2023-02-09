@@ -228,20 +228,24 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAdminAsync();
 
-		var getTrustedServers = trustedGameServerService.ListAsync();
-		var getClients = clientService.ListAsync();
-		Task.WaitAll(getTrustedServers, getClients);
-		var trustedServers = getTrustedServers.Result;
-		var clients = getClients.Result;
-		var eIds = trustedServers.Select((t) => t.OwnerID).Distinct();
-		var accounts = await accountService.GetAccountsAsync(eIds);
-		var response = trustedServers.Select((t) => new TrustedGameServerResponse
+		var trustedServers = await trustedGameServerService.ListAsync();
+
+		var trustedServerIDs = trustedServers.Select(t => t.ID);
+		var trustedServerOwnerIDs = trustedServers.Select(t => t.OwnerID).Distinct();
+
+		var taskClients = clientService.GetManyAsync(trustedServerIDs);
+		var taskAccounts = accountService.GetAccountsAsync(trustedServerOwnerIDs);
+
+		var clients = await taskClients;
+		var accounts = await taskAccounts;
+
+		var response = trustedServers.Select(t => new TrustedGameServerResponse
 		{
 			ID = t.ID,
 			OwnerID = t.OwnerID,
 			TrustLevel = t.TrustLevel,
-			Client = clients.SingleOrDefault((c) => c.ID == t.ID),
-			Owner = accounts.SingleOrDefault((a) => a.ID == t.OwnerID)
+			Client = clients.SingleOrDefault(c => c.ID == t.ID),
+			Owner = accounts.SingleOrDefault(a => a.ID == t.OwnerID)
 		});
 		return Ok(response);
 	}
