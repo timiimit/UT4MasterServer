@@ -40,4 +40,9 @@ public sealed class TrustedGameServerService
 
 		return result.DeletedCount > 0;
 	}
+
+	public async Task RemoveAllByAccountAsync(EpicID accountID)
+	{
+		await collection.DeleteManyAsync(x => x.OwnerID == accountID);
+	}
 }

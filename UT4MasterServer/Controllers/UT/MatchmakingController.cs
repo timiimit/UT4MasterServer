@@ -13,6 +13,7 @@ using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Common.Enums;
 using System.Text.Json.Nodes;
+using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Controllers.UT;
 
@@ -26,6 +27,7 @@ namespace UT4MasterServer.Controllers.UT;
 public sealed class MatchmakingController : JsonAPIController
 {
 	private readonly MatchmakingService matchmakingService;
+	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
 
 	private readonly IOptions<ApplicationSettings> configuration;
@@ -39,6 +41,7 @@ public sealed class MatchmakingController : JsonAPIController
 	{
 		this.configuration = configuration;
 		this.matchmakingService = matchmakingService;
+		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
 	}
 
@@ -72,18 +75,26 @@ public sealed class MatchmakingController : JsonAPIController
 		server.ServerAddress = ipClient.ToString();
 		server.Started = false;
 
+		var client = await clientService.GetAsync(server.OwningClientID);
+		if (client != null)
+		{
+			var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string;
+			if (serverName != client.Name)
+			{
+				logger.LogWarning("Client {ClientID} started server with name {ActualServerName} which differes from expected name {ExpectedServerName}. Denying server session creation.", client.ID, serverName, client.Name);
+				return BadRequest(new ErrorResponse($"ServerName has to be \"{client.Name}\". Please contact a master server admin to change this."));
+			}
+		}
+
 		GameServerTrust trust = GameServerTrust.Untrusted;
 		var trusted = await trustedGameServerService.GetAsync(server.OwningClientID);
 		if (trusted != null)
 		{
 			trust = trusted.TrustLevel;
 		}
+		server.Attributes.Set(GameServerAttributes.UT_SERVERTRUSTLEVEL_i, (int)trust);
 
-#if DEBUG && true
-		trust = GameServerTrust.Epic;
-#endif
 
-		server.Attributes.Set("UT_SERVERTRUSTLEVEL_i", (int)trust);
 
 		if (await matchmakingService.DoesExistWithSessionAsync(server.SessionID))
 		{

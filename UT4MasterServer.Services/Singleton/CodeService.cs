@@ -56,7 +56,7 @@ public sealed class CodeService
 		});
 	}
 
-	public async Task<int> RemoveCodesByAccountAsync(EpicID accountID)
+	public async Task<int> RemoveAllByAccountAsync(EpicID accountID)
 	{
 		return await Task.Run(() =>
 		{

@@ -321,4 +321,9 @@ public sealed class RatingsService
 			throw;
 		}
 	}
+
+	public async Task RemoveAllByAccountAsync(EpicID accountID)
+	{
+		await ratingsCollection.DeleteManyAsync(x => x.AccountID == accountID);
+	}
 }

@@ -11,11 +11,10 @@ public class Client
 	[BsonElement("Secret")]
 	public string Secret { get; set; }
 
-	[BsonIgnoreIfNull]
 	[BsonElement("Name")]
-	public string? Name { get; set; }
+	public string Name { get; set; }
 
-	public Client(EpicID id, string secret, string? name = null)
+	public Client(EpicID id, string secret, string name)
 	{
 		ID = id;
 		Secret = secret;

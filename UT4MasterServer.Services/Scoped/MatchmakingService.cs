@@ -6,6 +6,8 @@ using UT4MasterServer.Models.DTO.Request;
 using UT4MasterServer.Common;
 using Microsoft.Extensions.Logging;
 using UT4MasterServer.Services.Singleton;
+using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Models;
 
 namespace UT4MasterServer.Services.Scoped;
 
@@ -51,6 +53,22 @@ public sealed class MatchmakingService
 		var result = await serverCollection.ReplaceOneAsync(x => x.ID == server.ID, server);
 
 		return result.IsAcknowledged;
+	}
+
+	public async Task UpdateTrustLevelAsync(EpicID clientID, GameServerTrust trustLevel)
+	{
+		var filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
+		var update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERTRUSTLEVEL_i}", trustLevel);
+
+		var result = await serverCollection.UpdateOneAsync(filter, update);
+	}
+
+	public async Task UpdateServerNameAsync(EpicID clientID, string serverName)
+	{
+		var filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
+		var update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERNAME_s}", serverName);
+
+		var result = await serverCollection.UpdateOneAsync(filter, update);
 	}
 
 	public async Task<bool> RemoveAsync(EpicID serverID)

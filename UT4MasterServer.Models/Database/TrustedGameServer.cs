@@ -6,7 +6,7 @@ namespace UT4MasterServer.Models.Database;
 
 public class TrustedGameServer
 {
-	[BsonElement("ID"), BsonId]
+	[BsonId]
 	public EpicID ID { get; set; }
 
 	[BsonElement("OwnerID")]
