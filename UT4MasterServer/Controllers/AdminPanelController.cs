@@ -194,10 +194,12 @@ public sealed class AdminPanelController : ControllerBase
 		if (IsSpecialClientID(eid))
 			return Unauthorized("Cannot modify reserved clients");
 
-		if (string.IsNullOrWhiteSpace(client.Name))
-			client.Name = null;
+		var taskUpdateClient = clientService.UpdateAsync(client);
+		var taskUpdateServerName = matchmakingService.UpdateServerName(client.ID, client.Name);
 
-		await clientService.UpdateAsync(client);
+		await taskUpdateClient;
+		await taskUpdateServerName;
+
 		return Ok();
 	}
 
