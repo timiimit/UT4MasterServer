@@ -49,17 +49,17 @@ public enum AccountFlags
 	/// <summary>
 	/// Gives privilege to edit cloud storage file "UnrealTournmentMCPAnnouncement.json" and add/edit/delete any file that starts with "news-".
 	/// </summary>
-	ACL_Announcements = 0x80,
+	ACL_CloudStorageAnnouncements = 0x80,
 
 	/// <summary>
 	/// Gives privilege to edit cloud storage files "UTMCPPlaylists.json", "UnrealTournamentOnlineSettings.json" and "UnrealTournmentMCPGameRulesets.json".
 	/// </summary>
-	ACL_Rulesets = 0x100,
+	ACL_CloudStorageRulesets = 0x100,
 
 	/// <summary>
 	/// Gives privilege to edit cloud storage file "UnrealTournmentMCPStorage.json".
 	/// </summary>
-	ACL_Challenges = 0x200,
+	ACL_CloudStorageChallenges = 0x200,
 
 	/// <summary>
 	/// Gives privilege to see and delete flagged stats and other suspicious XP/rating activity.
@@ -73,8 +73,12 @@ public enum AccountFlags
 	///  - not being able to delete Admin accounts
 	///  - not being able to delete account with an ACL flag
 	/// </summary>
-	ACL_AccountsHigh = 0x800
+	ACL_AccountsHigh = 0x800,
 
+	/// <summary>
+	/// Meant for ease of use when dealing with masks. No account's flags should be set to this value.
+	/// </summary>
+	AllMask = ~0
 
 	// NOTE: if you add more flags, make sure to handle account deletion checks.
 }
