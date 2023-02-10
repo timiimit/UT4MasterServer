@@ -50,6 +50,13 @@ public sealed class ClientService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
+	public async Task<List<Client>> GetManyAsync(IEnumerable<EpicID> ids)
+	{
+		var filter = Builders<Client>.Filter.In(x => x.ID, ids);
+		var cursor = await collection.FindAsync(filter);
+		return await cursor.ToListAsync();
+	}
+
 	public async Task<List<Client>> ListAsync()
 	{
 		var cursor = await collection.FindAsync(x => true);

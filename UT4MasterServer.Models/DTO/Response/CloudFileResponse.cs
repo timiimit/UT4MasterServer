@@ -2,7 +2,7 @@
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
 
-namespace UT4MasterServer.Models.DTO.Response;
+namespace UT4MasterServer.Models.DTO.Responses;
 
 public sealed class CloudFileResponse
 {

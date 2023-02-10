@@ -28,6 +28,16 @@ public class ErrorResponse
 	[JsonPropertyName("error")]
 	public string? ErrorName { get; set; }
 
+	public ErrorResponse()
+	{
+	}
+
+	public ErrorResponse(string message)
+	{
+		ErrorMessage = message;
+		ErrorDescription = message;
+	}
+
 	public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
 	{
 		return new Task<HttpResponseMessage>(() => new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest));

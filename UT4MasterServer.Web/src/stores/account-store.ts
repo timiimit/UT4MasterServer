@@ -8,6 +8,14 @@ const _account = ref<IAccountExtended | null>(null);
 const _accountService = new AccountService();
 const _adminRoles = [Role.Admin, Role.Moderator];
 
+function mapAccount(account: IAccountExtended): IAccountExtended {
+  return {
+    ...account,
+    countryFlag: account.countryFlag.replaceAll('.', ' '),
+    avatar: account.avatar ?? 'UT.Avatar.0'
+  };
+}
+
 export const AccountStore = {
   get account() {
     return _account.value;
@@ -21,7 +29,9 @@ export const AccountStore = {
   async fetchUserAccount() {
     try {
       _account.value = SessionStore.session?.account_id
-        ? await _accountService.getAccount(SessionStore.session.account_id)
+        ? mapAccount(
+            await _accountService.getAccount(SessionStore.session.account_id)
+          )
         : null;
     } catch (err: unknown) {
       console.error('Error fetching user account:', err);

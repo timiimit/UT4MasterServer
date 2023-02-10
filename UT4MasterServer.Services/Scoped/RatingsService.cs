@@ -3,8 +3,8 @@ using MongoDB.Driver;
 using System.Text.Json;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Request;
-using UT4MasterServer.Models.DTO.Response;
+using UT4MasterServer.Models.DTO.Requests;
+using UT4MasterServer.Models.DTO.Responses;
 
 namespace UT4MasterServer.Services.Scoped;
 
@@ -15,6 +15,7 @@ public sealed class RatingsService
 	private readonly IMongoCollection<Account> accountsCollection;
 
 	private const string UnknownUser = "Unknown user";
+	private const string DefaultCountryFlag = "Unreal";
 
 	public RatingsService(ILogger<RatingsService> logger, DatabaseContext dbContext)
 	{
@@ -117,9 +118,44 @@ public sealed class RatingsService
 		}
 	}
 
+	public async Task<RankingsResponse?> GetSelectedRankingAsync(string ratingType, EpicID accountID)
+	{
+		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
+					 Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
+		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
+		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
+		var ratings = await ratingsCollection.Find(filter)
+			.Sort(sort)
+			.ToListAsync();
+
+		var selectedRating = ratings.FirstOrDefault(r => r.AccountID == accountID);
+
+		if(selectedRating == null)
+		{
+			return null;
+		}
+
+		var rank = ratings.IndexOf(selectedRating) + 1;
+
+		var filterAccount = Builders<Account>.Filter.Eq(f => f.ID, accountID);
+		var accountCursor = await accountsCollection.FindAsync(filterAccount);
+		var account = await accountCursor.SingleOrDefaultAsync();
+
+		return new RankingsResponse()
+		{
+			Rank = rank,
+			AccountID = account.ID,
+			Player = account.Username,
+			CountryFlag = account.CountryFlag,
+			Rating = selectedRating.RatingValue / Rating.Precision,
+			GamesPlayed = selectedRating.GamesPlayed
+		};
+	}
+
 	public async Task<PagedResponse<RankingsResponse>> GetRankingsAsync(string ratingType, int skip, int limit)
 	{
-		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
+		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
+					 Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
 		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
 		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
 		var ratings = await ratingsCollection.Find(filter)
@@ -130,21 +166,32 @@ public sealed class RatingsService
 
 		var accountIds = ratings.Select(s => s.AccountID);
 		var filterAccounts = Builders<Account>.Filter.In(f => f.ID, accountIds);
-		var fields = Builders<Account>.Projection.Include(i => i.Username);
-		var userNames = await accountsCollection
+		var accounts = await accountsCollection
 			.Find(filterAccounts)
-			.Project(p => new { p.ID, p.Username })
+			.Project(p => new { p.ID, p.Username, p.CountryFlag })
 			.ToListAsync();
 
 		var rank = skip;
 		var rankings = ratings
-			.Select(s => new RankingsResponse()
+			.Select(s =>
 			{
-				Rank = ++rank,
-				AccountID = s.AccountID,
-				Player = userNames.FirstOrDefault(f => f.ID == s.AccountID)?.Username ?? UnknownUser,
-				Rating = s.RatingValue / Rating.Precision,
-				GamesPlayed = s.GamesPlayed,
+				var userName = UnknownUser;
+				var countryFlag = DefaultCountryFlag;
+				if (accounts.FirstOrDefault(f => f.ID == s.AccountID) is { } account)
+				{
+					userName = account.Username;
+					countryFlag = account.CountryFlag;
+				}
+
+				return new RankingsResponse()
+				{
+					Rank = ++rank,
+					AccountID = s.AccountID,
+					Player = userName,
+					CountryFlag = countryFlag,
+					Rating = s.RatingValue / Rating.Precision,
+					GamesPlayed = s.GamesPlayed,
+				};
 			})
 			.ToList();
 
@@ -307,5 +354,10 @@ public sealed class RatingsService
 			logger.LogError(ex, "{MethodName} | {JSON}", nameof(UpdateDeathmatchRatingsAsync), JsonSerializer.Serialize(ratingMatch));
 			throw;
 		}
+	}
+
+	public async Task RemoveAllByAccountAsync(EpicID accountID)
+	{
+		await ratingsCollection.DeleteManyAsync(x => x.AccountID == accountID);
 	}
 }

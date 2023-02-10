@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace UT4MasterServer.Models.DTO.Response;
+namespace UT4MasterServer.Models.DTO.Responses;
 
 public sealed class RatingResponse
 {

@@ -104,4 +104,9 @@ public sealed class FriendService
 			x.Status == FriendStatus.Blocked);
 		return await cursor.ToListAsync();
 	}
+
+	public async Task RemoveAllByAccountAsync(EpicID accountID)
+	{
+		await friendCollection.DeleteManyAsync(x => x.Sender == accountID || x.Receiver == accountID);
+	}
 }

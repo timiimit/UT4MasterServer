@@ -1,5 +1,5 @@
 <template>
-  <LoadingPanel :status="status">
+  <LoadingPanel :status="status" auto-load @load="loadData">
     <div class="d-flex justify-content-center">
       <div class="col-md-6 col-sm-12 mb-4">
         <label for="ratingType" class="col-md-6 col-sm-12 col-form-label">
@@ -8,7 +8,7 @@
         <select
           v-model="ratingType"
           class="form-select"
-          @change="handleParameterChange"
+          @change="handleRatingTypeChange"
         >
           <option
             v-for="rankingType in ratingTypeOptions"
@@ -29,27 +29,29 @@
               <th>Player</th>
               <th>Rating</th>
               <th>Games Played</th>
+              <th />
             </tr>
           </thead>
           <tbody>
-            <template v-for="ranking in rankings" :key="ranking.accountID">
-              <tr
-                :class="`${
-                  AccountStore.account?.id === ranking.accountID
-                    ? 'table-info'
-                    : ''
-                }`"
-              >
-                <td>{{ ranking.rank }}</td>
-                <td>
-                  <router-link :to="`/Stats/${ranking.accountID}`">
-                    {{ ranking.player }}</router-link
-                  >
-                </td>
-                <td>{{ ranking.rating }}</td>
-                <td>{{ ranking.gamesPlayed }}</td>
-              </tr>
-            </template>
+            <Ranking
+              v-if="selectedRanking && showAbove"
+              selected-player
+              :ranking="selectedRanking!"
+              :page-size="pageSize"
+              @set-page="handleSetPage"
+            />
+            <Ranking
+              v-for="ranking in rankings"
+              :key="ranking.accountID"
+              :ranking="ranking"
+            />
+            <Ranking
+              v-if="selectedRanking && showBelow"
+              selected-player
+              :ranking="selectedRanking"
+              :page-size="pageSize"
+              @set-page="handleSetPage"
+            />
           </tbody>
         </table>
         <p v-if="!rankings.length" class="text-center">
@@ -60,9 +62,10 @@
     <div class="d-flex justify-content-center">
       <div class="col-md-9 col-sm-12">
         <Paging
-          :key="ratingType"
+          :key="pagingKey"
           :item-count="rankingsCount"
           :page-size="pageSize"
+          :page="setPage"
           @update="handlePagingUpdate"
         />
       </div>
@@ -70,26 +73,70 @@
   </LoadingPanel>
 </template>
 
+<style>
+img.flag {
+  margin-right: 0.5rem;
+}
+</style>
+
 <script lang="ts" setup>
-import { onMounted, shallowRef, watch } from 'vue';
-import { IRanking } from '@/types/rating';
+import { shallowRef, watch, computed } from 'vue';
+import { IRanking } from '@/types/ranking';
 import { RatingType } from '@/enums/rating-type';
-import { AccountStore } from '@/stores/account-store';
-import { SessionStore } from '@/stores/session-store';
 import { usePaging } from '@/hooks/use-paging.hook';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import Paging from '@/components/Paging.vue';
-import RatingsService from '@/services/ratings.service';
+import { RankingsService } from '@/services/rankings.service';
 import { AsyncStatus } from '@/types/async-status';
+import Ranking from './components/Ranking.vue';
+import { useRoute, useRouter } from 'vue-router';
+import { SessionStore } from '@/stores/session-store';
+import {
+  getRouteParamNumberValue,
+  getRouteParamStringValue
+} from '@/utils/utilities';
 
-const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
+const route = useRoute();
+const router = useRouter();
+const typeParam = getRouteParamStringValue(
+  route.params,
+  'type',
+  RatingType.DMSkillRating
+) as RatingType;
+const pageParam = getRouteParamNumberValue(route.params, 'page', 1);
+const { pageSize, pageStart, currentPage, handlePagingUpdate } = usePaging();
+const setPage = shallowRef(pageParam - 1);
+const pagingKey = shallowRef(0);
 
-const ratingType = shallowRef(RatingType.DMSkillRating);
+const ratingType = shallowRef(typeParam);
 const status = shallowRef(AsyncStatus.OK);
 const rankings = shallowRef<IRanking[]>([]);
 const rankingsCount = shallowRef(0);
+const selectedRanking = shallowRef<IRanking | undefined>(undefined);
 
-const ratingService = new RatingsService();
+const showSelectedRanking = computed(
+  () =>
+    selectedRanking.value &&
+    !rankings.value.find(
+      (r) => r.accountID === selectedRanking.value?.accountID
+    )
+);
+
+const showAbove = computed(
+  () =>
+    showSelectedRanking.value &&
+    selectedRanking.value &&
+    selectedRanking.value.rank < rankings.value[0].rank
+);
+
+const showBelow = computed(
+  () =>
+    showSelectedRanking.value &&
+    selectedRanking.value &&
+    selectedRanking.value.rank > rankings.value[rankings.value.length - 1].rank
+);
+
+const ratingService = new RankingsService();
 
 const ratingTypeOptions = [
   { text: 'Deathmatch', value: RatingType.DMSkillRating },
@@ -98,11 +145,6 @@ const ratingTypeOptions = [
   { text: 'Capture the Flag', value: RatingType.CTFSkillRating },
   { text: 'Showdown', value: RatingType.ShowdownSkillRating },
   { text: 'Flag Run', value: RatingType.FlagRunSkillRating }
-  // Ranked gametype rankings not available at this time
-  // { text: 'Ranked Duel', value: RatingType.RankedDuelSkillRating },
-  // { text: 'Ranked Capture the Flag', value: RatingType.RankedCTFSkillRating },
-  // { text: 'Ranked Showdown', value: RatingType.RankedShowdownSkillRating },
-  // { text: 'Ranked Flag Run', value: RatingType.RankedFlagRunSkillRating }
 ];
 
 async function loadRankings() {
@@ -126,22 +168,52 @@ async function loadRankings() {
   }
 }
 
-onMounted(() => {
-  if (SessionStore.isAuthenticated) {
-    if (AccountStore.account === null) {
-      AccountStore.fetchUserAccount();
-    }
+async function loadSelectedRanking() {
+  if (!ratingType.value || !SessionStore.session?.account_id) {
+    return;
   }
-  loadRankings();
-});
 
-function handleParameterChange() {
+  try {
+    selectedRanking.value = await ratingService.getSelectedRanking(
+      ratingType.value,
+      SessionStore.session?.account_id
+    );
+  } catch (err: unknown) {
+    //Do nothing
+  }
+}
+
+async function loadData() {
+  try {
+    status.value = AsyncStatus.BUSY;
+    await Promise.all([loadRankings(), loadSelectedRanking()]);
+    status.value = AsyncStatus.OK;
+  } catch (err: unknown) {
+    status.value = AsyncStatus.ERROR;
+    console.error(err);
+  }
+}
+
+function handleRatingTypeChange() {
   if (!ratingType.value) {
     return;
   }
-  pageStart.value = 0;
-  loadRankings();
+  handleSetPage(0);
 }
 
-watch(pageEnd, loadRankings);
+function handleSetPage(page: number) {
+  pagingKey.value++;
+  setPage.value = page;
+  router.push({
+    name: 'Rankings',
+    params: { type: ratingType.value, page: page + 1 }
+  });
+}
+
+watch(currentPage, () => {
+  router.push({
+    name: 'Rankings',
+    params: { type: ratingType.value, page: currentPage.value + 1 }
+  });
+});
 </script>
