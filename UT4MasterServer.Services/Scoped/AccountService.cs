@@ -60,13 +60,13 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = AccountFlags.AllMask, int skip = 0, int limit = 50)
+	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = (AccountFlags)~0, int skip = 0, int limit = 50)
 	{
 		FilterDefinition<Account> filter = new ExpressionFilterDefinition<Account>(
 			account => account.Username.ToLower().Contains(usernameQuery.ToLower())
 		);
 
-		if (flagsMask != AccountFlags.AllMask)
+		if (flagsMask != (AccountFlags)~0)
 		{
 			filter &= Builders<Account>.Filter.BitsAnySet(x => x.Flags, (long)flagsMask);
 		}
@@ -122,7 +122,7 @@ public sealed class AccountService
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 
-	public async Task<AccountFlags> GetAccountFlagsAsync(EpicID accountID)
+	public async Task<AccountFlags?> GetAccountFlagsAsync(EpicID accountID)
 	{
 		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
 		var options = new FindOptions<Account>()
@@ -131,6 +131,11 @@ public sealed class AccountService
 		};
 		var result = await accountCollection.FindAsync(filter, options);
 		var account = await result.FirstOrDefaultAsync();
+		if (account is null)
+		{
+			return null;
+		}
+
 		return account.Flags;
 	}
 
