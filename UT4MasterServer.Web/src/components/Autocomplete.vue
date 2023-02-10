@@ -30,7 +30,7 @@
       </div>
     </div>
     <button
-      v-if="searchText.length && clearable"
+      v-if="searchText.length"
       type="button"
       class="btn btn-primary btn-sm btn-smaller clear-button"
       @click="handleClear"
@@ -87,10 +87,6 @@ const props = defineProps({
   minSearchLength: {
     type: Number,
     default: 2
-  },
-  clearable: {
-    type: Boolean,
-    default: true
   }
 });
 
