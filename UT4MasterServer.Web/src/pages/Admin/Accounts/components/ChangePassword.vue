@@ -32,6 +32,23 @@
               You do not have permission to change this account's password
             </div>
           </div>
+          <label for="email" class="col-sm-12 col-form-label"
+            >Email address</label
+          >
+          <div class="col-sm-6">
+            <input
+              id="email"
+              v-model="email"
+              type="text"
+              class="form-control"
+              name="email"
+              required
+              placeholder="user@mail.com"
+              autocomplete="off"
+              autofocus
+            />
+            <div class="invalid-feedback">Email address is required</div>
+          </div>
           <div class="col-sm-6 flex-v-center">
             <div class="form-check">
               <input
@@ -70,7 +87,7 @@ import { IAccountWithRoles } from '@/types/account';
 import AdminService from '@/services/admin.service';
 import CryptoJS from 'crypto-js';
 import { Role } from '@/enums/role';
-import { validatePassword } from '@/utils/validation';
+import { validateEmail, validatePassword } from '@/utils/validation';
 
 const props = defineProps({
   account: {
@@ -85,13 +102,15 @@ const adminService = new AdminService();
 
 const status = shallowRef(AsyncStatus.OK);
 const newPassword = shallowRef('');
+const email = shallowRef('');
 const iAmSure = shallowRef(false);
 const submitAttempted = shallowRef(false);
 const errorMessage = shallowRef(
   'Error changing account password. Please try again.'
 );
 const passwordValid = computed(() => validatePassword(newPassword.value));
-const formValid = computed(() => passwordValid.value && iAmSure.value);
+const emailValid = computed(() => validateEmail(email.value));
+const formValid = computed(() => passwordValid.value && email.value && iAmSure.value);
 
 // Don't allow changing admin or moderator password
 const disableForm = [Role.Admin, Role.Moderator].some((r) =>
@@ -107,6 +126,7 @@ async function handleSubmit() {
     status.value = AsyncStatus.BUSY;
     const request = {
       newPassword: CryptoJS.SHA512(newPassword.value).toString(),
+      email: email.value,
       iAmSure: iAmSure.value
     };
     await adminService.changePassword(props.account.id, request);
