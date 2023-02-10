@@ -4,7 +4,7 @@
   -->
 <template>
   <h1>Player Card</h1>
-  <div class="row">
+  <div v-if="AccountStore.account" class="row">
     <div class="col-sm-6">
       <table class="table table-hover">
         <tbody>
@@ -12,41 +12,36 @@
             <th scope="row">
               <img
                 class="avatar"
-                :src="`/assets/avatars/${
-                  AccountStore.account?.avatar ?? 'UT.Avatar.0'
-                }.png`"
+                :src="`/assets/avatars/${AccountStore.account.avatar}.png`"
               />
-              {{ AccountStore.account?.username }}
+              {{ AccountStore.account.username }}
             </th>
             <td>
               <img
                 class="flag"
-                :src="`/assets/flags/${
-                  AccountStore.account?.countryFlag.replaceAll('.', ' ') ??
-                  'Unreal'
-                }.png`"
+                :src="`/assets/flags/${AccountStore.account.countryFlag}.png`"
               />
-              {{ AccountStore.account?.countryFlag }}
+              {{ AccountStore.account.countryFlag }}
             </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">Level (Experience)</th>
             <td>
-              {{ AccountStore.account?.level }} ({{ AccountStore.account?.xp }})
+              {{ AccountStore.account.level }} ({{ AccountStore.account.xp }})
             </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">Challenge Stars</th>
             <td>
-              {{ AccountStore.account?.blueStars
+              {{ AccountStore.account.blueStars
               }}<span class="blue star">★</span
-              >{{ AccountStore.account?.goldStars
+              >{{ AccountStore.account.goldStars
               }}<span class="gold star">★</span>
             </td>
           </tr>
           <tr class="table-primary">
             <th scope="row">ID</th>
-            <td>{{ AccountStore.account?.id }}</td>
+            <td>{{ AccountStore.account.id }}</td>
           </tr>
         </tbody>
       </table>

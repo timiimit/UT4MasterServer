@@ -47,7 +47,6 @@ async function loadRoles() {
 
 onMounted(loadRoles);
 watch(filterRoles, () => {
-  console.debug('filter roles changed', filterRoles.value);
   emit('update:modelValue', filterRoles.value);
 });
 </script>

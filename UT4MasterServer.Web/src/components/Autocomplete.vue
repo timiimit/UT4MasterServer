@@ -120,7 +120,7 @@ function handleBlur(event: FocusEvent) {
 function handleSelect(item?: any) {
   emit('select', item);
   menuOpen.value = false;
-  searchText.value = item[props.searchKey].toString();
+  searchText.value = item ? item[props.searchKey].toString() : '';
 }
 
 function handleClear() {

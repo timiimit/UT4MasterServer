@@ -1,4 +1,4 @@
-export interface IPagedResponse<Type> {
+export interface IPagedResponse<T> {
   count: number;
-  data: Type[];
+  data: T[];
 }

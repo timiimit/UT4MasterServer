@@ -118,6 +118,40 @@ public sealed class RatingsService
 		}
 	}
 
+	public async Task<RankingsResponse?> GetSelectedRankingAsync(string ratingType, EpicID accountID)
+	{
+		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
+					 Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
+		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
+		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
+		var ratings = await ratingsCollection.Find(filter)
+			.Sort(sort)
+			.ToListAsync();
+
+		var selectedRating = ratings.FirstOrDefault(r => r.AccountID == accountID);
+
+		if(selectedRating == null)
+		{
+			return null;
+		}
+
+		var rank = ratings.IndexOf(selectedRating) + 1;
+
+		var filterAccount = Builders<Account>.Filter.Eq(f => f.ID, accountID);
+		var accountCursor = await accountsCollection.FindAsync(filterAccount);
+		var account = await accountCursor.SingleOrDefaultAsync();
+
+		return new RankingsResponse()
+		{
+			Rank = rank,
+			AccountID = account.ID,
+			Player = account.Username,
+			CountryFlag = account.CountryFlag,
+			Rating = selectedRating.RatingValue / Rating.Precision,
+			GamesPlayed = selectedRating.GamesPlayed
+		};
+	}
+
 	public async Task<PagedResponse<RankingsResponse>> GetRankingsAsync(string ratingType, int skip, int limit)
 	{
 		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &

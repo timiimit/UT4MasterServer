@@ -140,7 +140,6 @@ async function loadFiles() {
   try {
     status.value = AsyncStatus.BUSY;
     files.value = await adminService.getCloudFiles();
-    console.debug(files.value);
     status.value = AsyncStatus.OK;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;

@@ -1,3 +1,4 @@
+import { RouteLocationNormalized } from 'vue-router';
 import AuthenticationService from './services/authentication.service';
 import { AccountStore } from './stores/account-store';
 
@@ -9,13 +10,13 @@ export async function publicGuard() {
   }
 }
 
-export async function privateGuard() {
+export async function privateGuard(to: RouteLocationNormalized) {
   // ensure that when entering a private page that the account is loaded
   if (AccountStore.account === null) {
     AccountStore.fetchUserAccount();
   }
   if (!(await authenticationService.checkAuth())) {
-    return { path: '/Login' };
+    return { path: '/Login/', query: { redirect: to.path } };
   }
 }
 
