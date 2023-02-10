@@ -65,9 +65,9 @@ public class Account
 	[BsonElement("XPLastMatchAt")]
 	public DateTime LastMatchAt { get; set; } = DateTime.UnixEpoch;
 
-	[BsonIgnoreIfDefault, BsonDefaultValue(AccountFlags.None)]
+	[BsonIgnoreIfDefault, BsonDefaultValue((AccountFlags)0)]
 	[BsonElement("Flags")]
-	public AccountFlags Flags { get; set; } = AccountFlags.None;
+	public AccountFlags Flags { get; set; } = 0;
 
 	[BsonIgnore]
 	public float Level
@@ -118,17 +118,7 @@ public class Account
 	{
 		get
 		{
-			var flags = new List<string>();
-			var flagNamesAll = Enum.GetNames<AccountFlags>();
-			var flagValuesAll = Enum.GetValues<AccountFlags>();
-			for (int i = 1; i < flagNamesAll.Length; i++)
-			{
-				if (Flags.HasFlag(flagValuesAll[i]))
-				{
-					flags.Add(flagNamesAll[i]);
-				}
-			}
-			return flags.ToArray();
+			return EnumHelpers.EnumToStrings(Flags);
 		}
 	}
 

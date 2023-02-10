@@ -9,8 +9,6 @@ namespace UT4MasterServer.Common.Enums;
 [Flags]
 public enum AccountFlags
 {
-	None = 0,
-
 	/// <summary>
 	/// Gives full access to everything.
 	/// </summary>
@@ -70,15 +68,15 @@ public enum AccountFlags
 	/// Gives privilege to do anything to accounts with the following restrictions:
 	///  - not being able to give ACL_AccountsHigh or Admin account flag
 	///  - not being able to remove any ACL flag
-	///  - not being able to delete Admin accounts
-	///  - not being able to delete account with an ACL flag
+	///  - not being able to delete Admin accounts or change password
+	///  - not being able to delete account with an ACL flag or change its password
 	/// </summary>
 	ACL_AccountsHigh = 0x800,
 
 	/// <summary>
-	/// Meant for ease of use when dealing with masks. No account's flags should be set to this value.
+	/// Gives privilege to run maintenance tasks.
 	/// </summary>
-	AllMask = ~0
+	ACL_Maintenance = 0x1000,
 
-	// NOTE: if you add more flags, make sure to handle account deletion checks.
+	/// NOTE: if you add more flags, make sure to update <see cref="AccountFlagsHelper"/> checks.
 }

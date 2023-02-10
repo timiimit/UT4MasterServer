@@ -64,7 +64,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("flags")]
 	public async Task<IActionResult> GetAllPossibleFlags()
 	{
-		await VerifyAccessAsync();
+		await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
 		return Ok(Enum.GetNames<AccountFlags>());
 	}
@@ -72,90 +72,113 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("flags/{accountID}")]
 	public async Task<IActionResult> GetAccountFlags(string accountID)
 	{
-		await VerifyAccessAsync();
+		await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
-		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
-		if (account == null)
+		var flags = await accountService.GetAccountFlagsAsync(EpicID.FromString(accountID));
+		if (flags == null)
 			return NotFound();
 
-		var result = new List<string>();
-
-		var flagNamesAll = Enum.GetNames<AccountFlags>();
-		var flagValuesAll = Enum.GetValues<AccountFlags>();
-
-		for (int i = 0; i < flagNamesAll.Length; i++)
-		{
-			if (account.Flags.HasFlag(flagValuesAll[i]))
-			{
-				result.Add(flagNamesAll[i]);
-			}
-		}
-
+		var result = EnumHelpers.EnumToStrings(flags.Value);
 		return Ok(result);
 	}
 
 	[HttpPut("flags/{accountID}")]
 	public async Task<IActionResult> SetAccountFlags(string accountID, [FromBody] string[] flagNames)
 	{
-		var admin = await VerifyAccessAsync();
+		var admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
-		// TODO: duplicate code in PersonaController
-		var flagNamesAll = Enum.GetNames<AccountFlags>();
-		var flagValuesAll = Enum.GetValues<AccountFlags>();
-
-		AccountFlags flags = AccountFlags.None;
-
-		for (int i = 0; i < flagNamesAll.Length; i++)
-		{
-			if (flagNames.Contains(flagNamesAll[i]))
-			{
-				flags |= flagValuesAll[i];
-			}
-		}
-
+		var flags = EnumHelpers.StringsToEnumArray<AccountFlags>(flagNames);
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
 			return NotFound();
 
-		var flagsOld = account.Flags;
+		var flagsOld = EnumHelpers.EnumFlagsToEnumArray(account.Flags);
 		var adminFlags = admin.Account.Flags;
 
-		// verify that user is authorized to edit specified flags
-		if (adminFlags.HasFlag(AccountFlags.Admin))
+		var flagsAdded = EnumHelpers.EnumArrayToEnumFlags(flags.Where(x => !flagsOld.Contains(x)));
+		var flagsRemoved = EnumHelpers.EnumArrayToEnumFlags(flagsOld.Where(x => !flags.Contains(x)));
+
+		var logLevel = LogLevel.Warning;
+
+		try
 		{
-			if (flagsOld.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
+			if (adminFlags.HasFlag(AccountFlags.Admin))
 			{
-				return Unauthorized("Cannot remove Admin flag, this action must be performed with direct access to database");
+				if (flagsRemoved.HasFlag(AccountFlags.Admin))
+				{
+					// TODO: there should be something like voting in order to pass this decision
+					return Unauthorized($"Cannot remove {nameof(AccountFlags.Admin)} flag, this action must be performed with direct access to database");
+				}
+
+				if (flagsAdded.HasFlag(AccountFlags.Admin))
+				{
+					// TODO: there should be something like voting in order to pass this decision
+				}
 			}
+			else if (adminFlags.HasFlag(AccountFlags.ACL_AccountsHigh))
+			{
+				if (flagsAdded.HasFlag(AccountFlags.Admin))
+				{
+					return Unauthorized($"Only {nameof(AccountFlags.Admin)} may add {nameof(AccountFlags.Admin)} flag to account");
+				}
+
+				if (flagsAdded.HasFlag(AccountFlags.ACL_AccountsHigh))
+				{
+					return Unauthorized($"Only {nameof(AccountFlags.Admin)} may add {nameof(AccountFlags.ACL_AccountsHigh)} flag to account");
+				}
+
+				if (flagsRemoved.HasFlag(AccountFlags.Admin))
+				{
+					return Unauthorized($"Cannot remove {nameof(AccountFlags.Admin)} flag");
+				}
+
+				if (AccountFlagsHelper.IsACLFlag(flagsRemoved))
+				{
+					return Unauthorized($"Only {nameof(AccountFlags.Admin)} may remove ACL flags");
+				}
+			}
+			else // if (adminFlags.HasFlag(AccountFlags.ACL_AccountsLow))
+			{
+				if (AccountFlagsHelper.IsACLFlag(flagsAdded))
+				{
+					return Unauthorized($"Only {nameof(AccountFlags.Admin)} may add ACL flags");
+				}
+
+				if (AccountFlagsHelper.IsACLFlag(flagsRemoved))
+				{
+					return Unauthorized($"Only {nameof(AccountFlags.Admin)} may remove ACL flags");
+				}
+			}
+
+			logLevel = LogLevel.Information;
+
+			if (flagsRemoved.HasFlag(AccountFlags.HubOwner))
+			{
+				await trustedGameServerService.RemoveAllByAccountAsync(account.ID);
+			}
+			await accountService.UpdateAccountFlagsAsync(account.ID, EnumHelpers.EnumArrayToEnumFlags(flags));
+
+			return Ok();
 		}
-		else
+		finally
 		{
-			if (flags.HasFlag(AccountFlags.Admin))
-			{
-				return Unauthorized("Only Admin may add Admin flag to account");
-			}
-
-			if (flagsOld.HasFlag(AccountFlags.Admin) && !flags.HasFlag(AccountFlags.Admin))
-			{
-				logger.LogWarning("Suspicius activity by {User}. Tried to remove Admin privilege of {Admin}.", admin.Account, account);
-				return Unauthorized("Cannot remove Admin flag as a non-Admin");
-			}
-
-			if (flagsOld.HasFlag(AccountFlags.Moderator) && !flags.HasFlag(AccountFlags.Moderator))
-			{
-				return Unauthorized("Only an Admin may remove Moderator flag");
-			}
+			logger.Log(
+				logLevel,
+				"{User} {OperationResultText} flags of {EditedUser}. | Added: {FlagsAdded} | Removed: {FlagsRemoved}",
+				admin.Account,
+				logLevel <= LogLevel.Information ? "edited" : "failed to edit",
+				account,
+				string.Join(", ", EnumHelpers.EnumToStrings(flagsAdded)),
+				string.Join(", ", EnumHelpers.EnumToStrings(flagsRemoved))
+			);
 		}
-
-		await accountService.UpdateAccountFlagsAsync(account.ID, flags);
-		return Ok();
 	}
 
 	[HttpPatch("change_password/{id}")]
 	public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminPanelChangePasswordRequest body)
 	{
-		await VerifyAccessAsync();
+		var admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
 		if (account is null)
@@ -163,80 +186,138 @@ public sealed class AdminPanelController : ControllerBase
 			return NotFound(new ErrorResponse() { ErrorMessage = $"Failed to find account {id}" });
 		}
 
-		if (account.Flags.HasFlag(AccountFlags.Moderator) || account.Flags.HasFlag(AccountFlags.Admin))
-		{
-			throw new UnauthorizedAccessException("Cannot change password of other admins or moderators");
-		}
+		var flags = account.Flags;
+		var logLevel = LogLevel.Warning;
 
-		// passwords should already be hashed, but check its length just in case
-		if (!ValidationHelper.ValidatePassword(body.NewPassword))
+		try
 		{
-			return BadRequest(new ErrorResponse()
+			if (admin.Account.Flags.HasFlag(AccountFlags.Admin))
 			{
-				ErrorMessage = $"newPassword is not a SHA512 hash"
-			});
-		}
-
-		if (body.IAmSure != true)
-		{
-			return BadRequest(new ErrorResponse()
+				if (flags.HasFlag(AccountFlags.Admin))
+				{
+					return Unauthorized($"Cannot change password of another {nameof(AccountFlags.Admin)}");
+				}
+			}
+			else // if (admin.Account.Flags.HasFlag(AccountFlags.ACL_AccountsHigh) || adminFlags.HasFlag(AccountFlags.ACL_AccountsLow))
 			{
-				ErrorMessage = $"'iAmSure' was not 'true'"
-			});
+				if (flags.HasFlag(AccountFlags.Admin))
+				{
+					return Unauthorized($"Cannot change password of {nameof(AccountFlags.Admin)} account");
+				}
+
+				if (AccountFlagsHelper.IsACLFlag(flags))
+				{
+					return Unauthorized($"Cannot change password of an account with ACL flag");
+				}
+			}
+
+			// passwords should already be hashed, but check its length just in case
+			if (!ValidationHelper.ValidatePassword(body.NewPassword))
+			{
+				return BadRequest($"newPassword is not a SHA512 hash");
+			}
+
+			if (account.Email != body.Email)
+			{
+				return BadRequest("Invalid email");
+			}
+
+			if (body.IAmSure != true)
+			{
+				return BadRequest($"'iAmSure' was not 'true'");
+			}
+
+			await accountService.UpdateAccountPasswordAsync(account.ID, body.NewPassword);
+
+			// logout user to make sure they remember the changed password by being forced to log in again,
+			// as well as prevent anyone else from using this account after successful password change.
+			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, account.ID, EpicID.Empty);
+
+			return Ok();
 		}
-
-		await accountService.UpdateAccountPasswordAsync(account.ID, body.NewPassword);
-
-		// logout user to make sure they remember they changed password by being forced to log in again,
-		// as well as prevent anyone else from using this account after successful password change.
-		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, account.ID, EpicID.Empty);
-
-		logger.LogInformation("Updated password for {AccountID}", account.ID);
-
-		return Ok();
+		finally
+		{
+			logger.Log(
+				logLevel,
+				"{User} {OperationResultText} password of {EditedUser}.",
+				admin.Account,
+				logLevel <= LogLevel.Information ? "changed" : "was not authorized to change",
+				account
+			);
+		}
 	}
 
 	[HttpDelete("account/{id}")]
 	public async Task<IActionResult> DeleteAccountInfo(string id, [FromBody] bool? forceCheckBroken)
 	{
-		var admin = await VerifyAccessAsync();
+		var admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsHigh | AccountFlags.ACL_Maintenance);
 
 		var accountID = EpicID.FromString(id);
-		var account = await accountService.GetAccountAsync(accountID);
-		if (account is null)
+		var account = await accountService.GetAccountUsernameAndFlagsAsync(accountID);
+
+		var logLevel = LogLevel.Warning;
+		try
 		{
-			if (forceCheckBroken != true)
+			if (account is null)
 			{
-				return NotFound(new ErrorResponse() { ErrorMessage = "Account not found" });
+				if (!admin.Account.Flags.HasFlag(AccountFlags.Admin) && !admin.Account.Flags.HasFlag(AccountFlags.ACL_Maintenance))
+				{
+					return NotFound(new ErrorResponse() { ErrorMessage = "Account not found" });
+				}
 			}
+			else
+			{
+				if (admin.Account.Flags.HasFlag(AccountFlags.Admin))
+				{
+					if (account.Flags.HasFlag(AccountFlags.Admin))
+					{
+						return Unauthorized($"Cannot delete account of {nameof(AccountFlags.Admin)}. Account needs to be demoted first.");
+					}
+				}
+				else if (admin.Account.Flags.HasFlag(AccountFlags.ACL_AccountsHigh))
+				{
+					if (account.Flags.HasFlag(AccountFlags.Admin))
+					{
+						return Unauthorized($"Cannot delete account of {nameof(AccountFlags.Admin)}");
+					}
+
+					if (AccountFlagsHelper.IsACLFlag(account.Flags))
+					{
+						return Unauthorized($"Cannot delete account with ACL flag");
+					}
+				}
+				else // if (admin.Account.Flags.HasFlag(AccountFlags.ACL_Maintenance))
+				{
+					return Unauthorized("You do not possess sufficient permissions to delete an existing account");
+				}
+
+				await accountService.RemoveAccountAsync(account.ID);
+			}
+
+			// remove all associated data
+			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, accountID, EpicID.Empty);
+			await codeService.RemoveAllByAccountAsync(accountID);
+			await cloudStorageService.RemoveAllByAccountAsync(accountID);
+			await statisticsService.RemoveAllByAccountAsync(accountID);
+			await ratingsService.RemoveAllByAccountAsync(accountID);
+			await friendService.RemoveAllByAccountAsync(accountID);
+			await trustedGameServerService.RemoveAllByAccountAsync(accountID);
+			// NOTE: missing removal of account from live servers. this should take care of itself in a relatively short time.
+
+			logLevel = LogLevel.Information;
+
+			return Ok();
 		}
-		else
+		finally
 		{
-			if (admin.Account.Flags.HasFlag(AccountFlags.Admin) && account.Flags.HasFlag(AccountFlags.Admin))
-			{
-				throw new UnauthorizedAccessException("Cannot delete account of other admin");
-			}
-
-			if (admin.Account.Flags.HasFlag(AccountFlags.Moderator) &&
-				(account.Flags.HasFlag(AccountFlags.Admin) || account.Flags.HasFlag(AccountFlags.Moderator)))
-			{
-				throw new UnauthorizedAccessException("Cannot delete account of other admin or moderator");
-			}
-
-			await accountService.RemoveAccountAsync(account.ID);
+			logger.Log(
+				logLevel,
+				"{User} {OperationResultText} account of {EditedUser}.",
+				admin.Account,
+				logLevel <= LogLevel.Information ? "deleted" : "was not authorized to delete",
+				account
+			);
 		}
-
-		// remove all associated data
-		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, accountID, EpicID.Empty);
-		await codeService.RemoveAllByAccountAsync(accountID);
-		await cloudStorageService.RemoveAllByAccountAsync(accountID);
-		await statisticsService.RemoveAllByAccountAsync(accountID);
-		await ratingsService.RemoveAllByAccountAsync(accountID);
-		await friendService.RemoveAllByAccountAsync(accountID);
-		await trustedGameServerService.RemoveAllByAccountAsync(accountID);
-		// NOTE: missing removal of account from live servers. this should take care of itself in a relatively short time.
-
-		return Ok();
 	}
 
 	#endregion
@@ -503,18 +584,6 @@ public sealed class AdminPanelController : ControllerBase
 
 	#endregion
 
-
-	[NonAction]
-	private bool IsSpecialClientID(EpicID id)
-	{
-		if (id == ClientIdentification.Game.ID || id == ClientIdentification.ServerInstance.ID || id == ClientIdentification.Launcher.ID)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
 	[NonAction]
 	private async Task<(Session Session, Account Account)> VerifyAccessAsync(params AccountFlags[] aclAny)
 	{
@@ -540,7 +609,18 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[NonAction]
-	private bool IsAccessibleCloudStorageFile(AccountFlags flags, string filename)
+	private static bool IsSpecialClientID(EpicID id)
+	{
+		if (id == ClientIdentification.Game.ID || id == ClientIdentification.ServerInstance.ID || id == ClientIdentification.Launcher.ID)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	[NonAction]
+	private static bool IsAccessibleCloudStorageFile(AccountFlags flags, string filename)
 	{
 		if (flags.HasFlag(AccountFlags.Admin))
 		{

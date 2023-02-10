@@ -122,6 +122,19 @@ public sealed class AccountService
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 
+	public async Task<Account?> GetAccountUsernameAndFlagsAsync(EpicID accountID)
+	{
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var options = new FindOptions<Account>()
+		{
+			Projection = Builders<Account>.Projection
+				.Include(x => x.Username)
+				.Include(x => x.Flags)
+		};
+		var result = await accountCollection.FindAsync(filter, options);
+		return await result.FirstOrDefaultAsync();
+	}
+
 	public async Task<AccountFlags?> GetAccountFlagsAsync(EpicID accountID)
 	{
 		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
