@@ -7,7 +7,7 @@ using UT4MasterServer.Common.Enums;
 
 namespace UT4MasterServer.Common.Helpers;
 
-public class AccountFlagsHelper
+public static class AccountFlagsHelper
 {
 	public static bool IsACLFlag(AccountFlags flag)
 	{
