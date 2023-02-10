@@ -11,7 +11,7 @@
           <label for="newPassword" class="col-sm-12 col-form-label"
             >New Password</label
           >
-          <div class="col-sm-6">
+          <div class="col-sm-6"> 
             <input
               id="newPassword"
               v-model="newPassword"
