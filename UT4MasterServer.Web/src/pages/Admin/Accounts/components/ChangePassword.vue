@@ -110,7 +110,7 @@ const errorMessage = shallowRef(
 );
 const passwordValid = computed(() => validatePassword(newPassword.value));
 const emailValid = computed(() => validateEmail(email.value));
-const formValid = computed(() => passwordValid.value && email.value && iAmSure.value);
+const formValid = computed(() => passwordValid.value && emailValid.value && iAmSure.value);
 
 // Don't allow changing admin or moderator password
 const disableForm = [Role.Admin, Role.Moderator].some((r) =>
