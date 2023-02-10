@@ -66,7 +66,7 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
-		return Ok(Enum.GetNames<AccountFlags>());
+		return Ok(Enum.GetNames<AccountFlags>().OrderBy(x => x));
 	}
 
 	[HttpGet("flags/{accountID}")]
