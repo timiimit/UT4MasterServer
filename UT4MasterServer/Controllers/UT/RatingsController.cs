@@ -20,10 +20,12 @@ namespace UT4MasterServer.Controllers.UT;
 public sealed class RatingsController : JsonAPIController
 {
 	private readonly RatingsService ratingsService;
+	private readonly TrustedGameServerService trustedGameServerService;
 
-	public RatingsController(ILogger<RatingsController> logger, RatingsService ratingsService) : base(logger)
+	public RatingsController(ILogger<RatingsController> logger, RatingsService ratingsService, TrustedGameServerService trustedGameServerService) : base(logger)
 	{
 		this.ratingsService = ratingsService;
+		this.trustedGameServerService = trustedGameServerService;
 	}
 
 	[HttpPost("account/{id}/mmrbulk")]
@@ -96,7 +98,7 @@ public sealed class RatingsController : JsonAPIController
 		if (!Rating.AllowedRatingTypes.Contains(ratingType))
 		{
 			logger.LogWarning("{MethodName} | {RatingType} | {JSON}", nameof(JoinQuickplay), ratingType, JsonSerializer.Serialize(ratingTeam));
-			return BadRequest($"'{ratingType}' is not supported rating type.");
+			return BadRequest(new ErrorResponse($"'{ratingType}' is not supported rating type."));
 		}
 
 		var response = await ratingsService.GetAverageTeamRatingAsync(ratingType, ratingTeam);
@@ -115,7 +117,19 @@ public sealed class RatingsController : JsonAPIController
 		if (!Rating.AllowedRatingTypes.Contains(ratingMatch.RatingType))
 		{
 			logger.LogWarning("{MethodName} | {JSON}", nameof(MatchResult), JsonSerializer.Serialize(ratingMatch));
-			return BadRequest($"'{ratingMatch.RatingType}' is not supported rating type.");
+			return BadRequest(new ErrorResponse($"'{ratingMatch.RatingType}' is not supported rating type."));
+		}
+
+		if (User.Identity is not EpicUserIdentity user)
+		{
+			return Unauthorized();
+		}
+
+		var trustedServer = await trustedGameServerService.GetAsync(user.Session.ClientID);
+
+		if (trustedServer is null || trustedServer.TrustLevel == Common.Enums.GameServerTrust.Untrusted)
+		{
+			return Unauthorized(new ErrorResponse("Only trusted servers may update ELO"));
 		}
 
 		if (Rating.DmRatingTypes.Contains(ratingMatch.RatingType))
