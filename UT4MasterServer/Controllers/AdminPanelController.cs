@@ -10,6 +10,8 @@ using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Responses;
 using Microsoft.Net.Http.Headers;
+using UT4MasterServer.Common.Enums;
+using System.Linq;
 
 namespace UT4MasterServer.Controllers;
 
@@ -57,10 +59,12 @@ public sealed class AdminPanelController : ControllerBase
 		this.matchmakingService = matchmakingService;
 	}
 
+	#region Accounts
+
 	[HttpGet("flags")]
 	public async Task<IActionResult> GetAllPossibleFlags()
 	{
-		await VerifyAdminAsync();
+		await VerifyAccessAsync();
 
 		return Ok(Enum.GetNames<AccountFlags>());
 	}
@@ -68,7 +72,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("flags/{accountID}")]
 	public async Task<IActionResult> GetAccountFlags(string accountID)
 	{
-		await VerifyAdminAsync();
+		await VerifyAccessAsync();
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
@@ -93,7 +97,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPut("flags/{accountID}")]
 	public async Task<IActionResult> SetAccountFlags(string accountID, [FromBody] string[] flagNames)
 	{
-		var admin = await VerifyAdminAsync();
+		var admin = await VerifyAccessAsync();
 
 		// TODO: duplicate code in PersonaController
 		var flagNamesAll = Enum.GetNames<AccountFlags>();
@@ -148,179 +152,10 @@ public sealed class AdminPanelController : ControllerBase
 		return Ok();
 	}
 
-
-	[HttpPost("clients/new")]
-	public async Task<IActionResult> CreateClient([FromBody] string name)
-	{
-		await VerifyAdminAsync();
-
-		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString(), name);
-		await clientService.UpdateAsync(client);
-
-		return Ok(client);
-	}
-
-	[HttpGet("clients")]
-	public async Task<IActionResult> GetAllClients()
-	{
-		await VerifyAdminAsync();
-
-		var clients = await clientService.ListAsync();
-		return Ok(clients);
-	}
-
-	[HttpGet("clients/{id}")]
-	public async Task<IActionResult> GetClient(string id)
-	{
-		await VerifyAdminAsync();
-
-		var client = await clientService.GetAsync(EpicID.FromString(id));
-		if (client == null)
-			return NotFound();
-
-		return Ok(client);
-	}
-
-	[HttpPatch("clients/{id}")]
-	public async Task<IActionResult> UpdateClient(string id, [FromBody] Client client)
-	{
-		await VerifyAdminAsync();
-
-		var eid = EpicID.FromString(id);
-
-		if (eid != client.ID)
-			return BadRequest();
-
-		if (IsSpecialClientID(eid))
-			return Unauthorized("Cannot modify reserved clients");
-
-		var taskUpdateClient = clientService.UpdateAsync(client);
-		var taskUpdateServerName = matchmakingService.UpdateServerNameAsync(client.ID, client.Name);
-
-		await taskUpdateClient;
-		await taskUpdateServerName;
-
-		return Ok();
-	}
-
-	[HttpDelete("clients/{id}")]
-	public async Task<IActionResult> DeleteClient(string id)
-	{
-		await VerifyAdminAsync();
-
-		var eid = EpicID.FromString(id);
-
-		if (IsSpecialClientID(eid))
-			return Unauthorized("Cannot delete reserved clients");
-
-		var success = await clientService.RemoveAsync(eid);
-		if (success == null || success == false)
-			return BadRequest();
-
-		// in case this client is a trusted server remove it as well
-		await trustedGameServerService.RemoveAsync(eid);
-
-		return Ok();
-	}
-
-	[HttpGet("trusted_servers")]
-	public async Task<IActionResult> GetAllTrustedServers()
-	{
-		await VerifyAdminAsync();
-
-		var trustedServers = await trustedGameServerService.ListAsync();
-
-		var trustedServerIDs = trustedServers.Select(t => t.ID);
-		var trustedServerOwnerIDs = trustedServers.Select(t => t.OwnerID).Distinct();
-
-		var taskClients = clientService.GetManyAsync(trustedServerIDs);
-		var taskAccounts = accountService.GetAccountsAsync(trustedServerOwnerIDs);
-
-		var clients = await taskClients;
-		var accounts = await taskAccounts;
-
-		var response = trustedServers.Select(t => new TrustedGameServerResponse
-		{
-			ID = t.ID,
-			OwnerID = t.OwnerID,
-			TrustLevel = t.TrustLevel,
-			Client = clients.SingleOrDefault(c => c.ID == t.ID),
-			Owner = accounts.SingleOrDefault(a => a.ID == t.OwnerID)
-		});
-		return Ok(response);
-	}
-
-	[HttpGet("trusted_servers/{id}")]
-	public async Task<IActionResult> GetTrustedServer(string id)
-	{
-		await VerifyAdminAsync();
-
-		var ret = await trustedGameServerService.GetAsync(EpicID.FromString(id));
-		return Ok(ret);
-	}
-
-	[HttpPost("trusted_servers")]
-	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer body)
-	{
-		await VerifyAdminAsync();
-
-		var client = await clientService.GetAsync(body.ID);
-		if (client is null)
-		{
-			return BadRequest("Trusted server does not have a matching client with same ID");
-		}
-
-		var server = await trustedGameServerService.GetAsync(body.ID);
-		if (server is not null)
-		{
-			return BadRequest($"Trusted server {body.ID} already exists");
-		}
-
-		var owner = await accountService.GetAccountAsync(body.OwnerID);
-		if (owner is null)
-		{
-			return BadRequest($"OwnerID {body.OwnerID} is not a valid account ID");
-		}
-
-		if (owner.Flags.HasFlag(AccountFlags.HubOwner))
-		{
-			return BadRequest($"Account specified with OwnerID {body.OwnerID} is not marked as HubOwner");
-		}
-
-		await trustedGameServerService.UpdateAsync(body);
-		return Ok();
-	}
-
-	[HttpPatch("trusted_servers/{id}")]
-	public async Task<IActionResult> UpdateTrustedServer(string id, [FromBody] TrustedGameServer server)
-	{
-		await VerifyAdminAsync();
-
-		var eid = EpicID.FromString(id);
-
-		if (eid != server.ID)
-			return BadRequest();
-
-		await trustedGameServerService.UpdateAsync(server);
-
-		await matchmakingService.UpdateTrustLevelAsync(server.ID, server.TrustLevel);
-
-		return Ok();
-	}
-
-	[HttpDelete("trusted_servers/{id}")]
-	public async Task<IActionResult> DeleteTrustedServer(string id)
-	{
-		await VerifyAdminAsync();
-
-		var ret = await trustedGameServerService.RemoveAsync(EpicID.FromString(id));
-		return Ok(ret);
-	}
-
 	[HttpPatch("change_password/{id}")]
 	public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminPanelChangePasswordRequest body)
 	{
-		await VerifyAdminAsync();
+		await VerifyAccessAsync();
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
 		if (account is null)
@@ -361,60 +196,10 @@ public sealed class AdminPanelController : ControllerBase
 		return Ok();
 	}
 
-	[HttpGet("mcp_files")]
-	public async Task<IActionResult> GetMCPFiles()
-	{
-		await VerifyAdminAsync();
-		return Ok(await cloudStorageService.ListFilesAsync(EpicID.Empty, false));
-	}
-
-	[HttpPost("mcp_files")]
-	public async Task<IActionResult> UpdateMCPFile()
-	{
-		await VerifyAdminAsync();
-		var formCollection = await Request.ReadFormAsync();
-		var file = formCollection.Files.First();
-		var filename = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.ToString().Trim('"');
-		if (file.Length > 0)
-		{
-			using (var stream = file.OpenReadStream())
-			{
-				await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, stream);
-			}
-			return Ok();
-		}
-		else
-		{
-			return BadRequest();
-		}
-	}
-
-	[HttpGet("mcp_files/{filename}"), Produces("application/octet-stream")]
-	public async Task<IActionResult> GetMCPFile(string filename)
-	{
-		await VerifyAdminAsync();
-
-		var file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
-		if (file is null)
-		{
-			return NotFound(new ErrorResponse() { ErrorMessage = "File not found" });
-		}
-
-		return new FileContentResult(file.RawContent, "application/octet-stream");
-	}
-
-	[HttpDelete("mcp_files/{filename}")]
-	public async Task<IActionResult> DeleteMCPFile(string filename)
-	{
-		await VerifyAdminAsync();
-		await cloudStorageService.DeleteFileAsync(EpicID.Empty, filename);
-		return Ok();
-	}
-
 	[HttpDelete("account/{id}")]
 	public async Task<IActionResult> DeleteAccountInfo(string id, [FromBody] bool? forceCheckBroken)
 	{
-		var admin = await VerifyAdminAsync();
+		var admin = await VerifyAccessAsync();
 
 		var accountID = EpicID.FromString(id);
 		var account = await accountService.GetAccountAsync(accountID);
@@ -454,6 +239,270 @@ public sealed class AdminPanelController : ControllerBase
 		return Ok();
 	}
 
+	#endregion
+
+	#region Clients
+
+	[HttpPost("clients/new")]
+	public async Task<IActionResult> CreateClient([FromBody] string name)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_Clients);
+
+		var client = new Client(EpicID.GenerateNew(), EpicID.GenerateNew().ToString(), name);
+		await clientService.UpdateAsync(client);
+
+		return Ok(client);
+	}
+
+	[HttpGet("clients")]
+	public async Task<IActionResult> GetAllClients()
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_Clients);
+
+		var clients = await clientService.ListAsync();
+		return Ok(clients);
+	}
+
+	[HttpGet("clients/{id}")]
+	public async Task<IActionResult> GetClient(string id)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_Clients);
+
+		var client = await clientService.GetAsync(EpicID.FromString(id));
+		if (client == null)
+			return NotFound();
+
+		return Ok(client);
+	}
+
+	[HttpPatch("clients/{id}")]
+	public async Task<IActionResult> UpdateClient(string id, [FromBody] Client client)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_Clients);
+
+		var eid = EpicID.FromString(id);
+
+		if (eid != client.ID)
+		{
+			return BadRequest();
+		}
+
+		if (IsSpecialClientID(eid))
+		{
+			return Forbid("Cannot modify reserved clients");
+		}
+
+		var taskUpdateClient = clientService.UpdateAsync(client);
+		var taskUpdateServerName = matchmakingService.UpdateServerNameAsync(client.ID, client.Name);
+
+		await taskUpdateClient;
+		await taskUpdateServerName;
+
+		return Ok();
+	}
+
+	[HttpDelete("clients/{id}")]
+	public async Task<IActionResult> DeleteClient(string id)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_Clients);
+
+		var eid = EpicID.FromString(id);
+
+		if (IsSpecialClientID(eid))
+		{
+			return Forbid("Cannot delete reserved clients");
+		}
+
+		var success = await clientService.RemoveAsync(eid);
+		if (success != true)
+		{
+			return BadRequest();
+		}
+
+		// in case this client is a trusted server remove, it as well
+		await trustedGameServerService.RemoveAsync(eid);
+
+		return Ok();
+	}
+
+	#endregion
+
+	#region Trusted Servers
+
+	[HttpGet("trusted_servers")]
+	public async Task<IActionResult> GetAllTrustedServers()
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
+
+		var trustedServers = await trustedGameServerService.ListAsync();
+
+		var trustedServerIDs = trustedServers.Select(t => t.ID);
+		var trustedServerOwnerIDs = trustedServers.Select(t => t.OwnerID).Distinct();
+
+		var taskClients = clientService.GetManyAsync(trustedServerIDs);
+		var taskAccounts = accountService.GetAccountsAsync(trustedServerOwnerIDs);
+
+		var clients = await taskClients;
+		var accounts = await taskAccounts;
+
+		var response = trustedServers.Select(t => new TrustedGameServerResponse
+		{
+			ID = t.ID,
+			OwnerID = t.OwnerID,
+			TrustLevel = t.TrustLevel,
+			Client = clients.SingleOrDefault(c => c.ID == t.ID),
+			Owner = accounts.SingleOrDefault(a => a.ID == t.OwnerID)
+		});
+		return Ok(response);
+	}
+
+	[HttpGet("trusted_servers/{id}")]
+	public async Task<IActionResult> GetTrustedServer(string id)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
+
+		var ret = await trustedGameServerService.GetAsync(EpicID.FromString(id));
+		return Ok(ret);
+	}
+
+	[HttpPost("trusted_servers")]
+	public async Task<IActionResult> CreateTrustedServer([FromBody] TrustedGameServer body)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
+
+		var client = await clientService.GetAsync(body.ID);
+		if (client is null)
+		{
+			return BadRequest("Trusted server does not have a matching client with same ID");
+		}
+
+		var server = await trustedGameServerService.GetAsync(body.ID);
+		if (server is not null)
+		{
+			return BadRequest($"Trusted server {body.ID} already exists");
+		}
+
+		var owner = await accountService.GetAccountAsync(body.OwnerID);
+		if (owner is null)
+		{
+			return BadRequest($"OwnerID {body.OwnerID} is not a valid account ID");
+		}
+
+		if (owner.Flags.HasFlag(AccountFlags.HubOwner))
+		{
+			return BadRequest($"Account specified with OwnerID {body.OwnerID} is not marked as HubOwner");
+		}
+
+		await trustedGameServerService.UpdateAsync(body);
+		return Ok();
+	}
+
+	[HttpPatch("trusted_servers/{id}")]
+	public async Task<IActionResult> UpdateTrustedServer(string id, [FromBody] TrustedGameServer server)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
+
+		var eid = EpicID.FromString(id);
+
+		if (eid != server.ID)
+			return BadRequest();
+
+		await trustedGameServerService.UpdateAsync(server);
+
+		await matchmakingService.UpdateTrustLevelAsync(server.ID, server.TrustLevel);
+
+		return Ok();
+	}
+
+	[HttpDelete("trusted_servers/{id}")]
+	public async Task<IActionResult> DeleteTrustedServer(string id)
+	{
+		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
+
+		var eid = EpicID.FromString(id);
+		var ret = await trustedGameServerService.RemoveAsync(eid);
+
+		await matchmakingService.UpdateTrustLevelAsync(eid, GameServerTrust.Untrusted);
+
+		return Ok(ret);
+	}
+
+	#endregion
+
+	#region Cloud Storage
+
+	[HttpGet("mcp_files")]
+	public async Task<IActionResult> GetMCPFiles()
+	{
+		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+		var files = await cloudStorageService.ListFilesAsync(EpicID.Empty, false);
+		var responseFiles = files.Select(x => new CloudFileAdminPanelResponse(x, IsAccessibleCloudStorageFile(admin.Account.Flags, x.Filename)));
+		return Ok(responseFiles);
+	}
+
+	[HttpPost("mcp_files")]
+	public async Task<IActionResult> UpdateMCPFile()
+	{
+		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+
+		var formCollection = await Request.ReadFormAsync();
+		if (formCollection.Files.Count < 1)
+		{
+			return BadRequest("Missing file");
+		}
+
+		var file = formCollection.Files[0];
+		var filename = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.ToString().Trim('"');
+		if (file.Length <= 0)
+		{
+			return BadRequest("Cannot upload empty file");
+		}
+
+		if (!IsAccessibleCloudStorageFile(admin.Account.Flags, filename))
+		{
+			return Unauthorized("You are not authorized to upload this file");
+		}
+
+		using (var stream = file.OpenReadStream())
+		{
+			await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, stream);
+		}
+		return Ok();
+	}
+
+	[HttpGet("mcp_files/{filename}"), Produces("application/octet-stream")]
+	public async Task<IActionResult> GetMCPFile(string filename)
+	{
+		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+
+		var file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
+		if (file is null)
+		{
+			return NotFound(new ErrorResponse() { ErrorMessage = "File not found" });
+		}
+
+		return new FileContentResult(file.RawContent, "application/octet-stream");
+	}
+
+	[HttpDelete("mcp_files/{filename}")]
+	public async Task<IActionResult> DeleteMCPFile(string filename)
+	{
+		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+
+		if (!IsAccessibleCloudStorageFile(admin.Account.Flags, filename))
+		{
+			return Unauthorized("You are not authorized to delete this file");
+		}
+
+		if (await cloudStorageService.DeleteFileAsync(EpicID.Empty, filename) != true)
+		{
+			return Forbid("Cannot delete file. Either this file is not deletable or something went wrong.");
+		}
+		return Ok();
+	}
+
+	#endregion
+
 
 	[NonAction]
 	private bool IsSpecialClientID(EpicID id)
@@ -467,7 +516,7 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	[NonAction]
-	private async Task<(Session Session, Account Account)> VerifyAdminAsync()
+	private async Task<(Session Session, Account Account)> VerifyAccessAsync(params AccountFlags[] aclAny)
 	{
 		if (User.Identity is not EpicUserIdentity user)
 		{
@@ -480,11 +529,46 @@ public sealed class AdminPanelController : ControllerBase
 			throw new UnauthorizedAccessException("User not found");
 		}
 
-		if (!account.Flags.HasFlag(AccountFlags.Admin) && !account.Flags.HasFlag(AccountFlags.Moderator))
+		var combinedAcl = aclAny.Aggregate((x, y) => x | y) | AccountFlags.Admin;
+
+		if (account.Flags.HasFlagAny(combinedAcl))
 		{
 			throw new UnauthorizedAccessException("User has insufficient privileges");
 		}
 
 		return (user.Session, account);
+	}
+
+	[NonAction]
+	private bool IsAccessibleCloudStorageFile(AccountFlags flags, string filename)
+	{
+		if (flags.HasFlag(AccountFlags.Admin))
+		{
+			return true;
+		}
+		if (flags.HasFlag(AccountFlags.ACL_CloudStorageAnnouncements))
+		{
+			if (filename == "UnrealTournmentMCPAnnouncement.json" || filename.StartsWith("news-"))
+			{
+				return true;
+			}
+		}
+		if (flags.HasFlag(AccountFlags.ACL_CloudStorageRulesets))
+		{
+			var allowedFilenames = new[] { "UTMCPPlaylists.json", "UnrealTournamentOnlineSettings.json", "UnrealTournmentMCPGameRulesets.json" };
+			if (allowedFilenames.Contains(filename))
+			{
+				return true;
+			}
+		}
+		if (flags.HasFlag(AccountFlags.ACL_CloudStorageChallenges))
+		{
+			if (filename == "UnrealTournmentMCPStorage.json")
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

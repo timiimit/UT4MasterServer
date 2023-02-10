@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
@@ -59,13 +60,13 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = AccountFlags.All, int skip = 0, int limit = 50)
+	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = AccountFlags.AllMask, int skip = 0, int limit = 50)
 	{
 		FilterDefinition<Account> filter = new ExpressionFilterDefinition<Account>(
 			account => account.Username.ToLower().Contains(usernameQuery.ToLower())
 		);
 
-		if (flagsMask != AccountFlags.All)
+		if (flagsMask != AccountFlags.AllMask)
 		{
 			filter &= Builders<Account>.Filter.BitsAnySet(x => x.Flags, (long)flagsMask);
 		}

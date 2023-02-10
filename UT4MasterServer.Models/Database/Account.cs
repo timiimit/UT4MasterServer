@@ -3,6 +3,7 @@ using UT4MasterServer.Common;
 
 namespace UT4MasterServer.Models.Database;
 using System.Text.Json.Serialization;
+using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Common.Helpers;
 
 [BsonIgnoreExtraElements]

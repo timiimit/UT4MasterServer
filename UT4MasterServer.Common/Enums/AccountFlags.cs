@@ -47,17 +47,17 @@ public enum AccountFlags
 	ACL_TrustedServers = 0x40,
 
 	/// <summary>
-	/// Gives privilege to edit cloud storage file "UnrealTournmentMCPAnnouncement.json" and add/edit/delete any file that starts with "news-".
+	/// Gives privilege to read any cloud storage file and to edit "UnrealTournmentMCPAnnouncement.json" and any file that starts with "news-".
 	/// </summary>
 	ACL_CloudStorageAnnouncements = 0x80,
 
 	/// <summary>
-	/// Gives privilege to edit cloud storage files "UTMCPPlaylists.json", "UnrealTournamentOnlineSettings.json" and "UnrealTournmentMCPGameRulesets.json".
+	/// Gives privilege to read any cloud storage file and edit cloud storage files "UTMCPPlaylists.json", "UnrealTournamentOnlineSettings.json" and "UnrealTournmentMCPGameRulesets.json".
 	/// </summary>
 	ACL_CloudStorageRulesets = 0x100,
 
 	/// <summary>
-	/// Gives privilege to edit cloud storage file "UnrealTournmentMCPStorage.json".
+	/// Gives privilege to read any cloud storage file and edit file "UnrealTournmentMCPStorage.json".
 	/// </summary>
 	ACL_CloudStorageChallenges = 0x200,
 
