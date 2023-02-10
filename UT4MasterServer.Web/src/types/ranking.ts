@@ -4,5 +4,5 @@ export interface IRanking {
   player: string;
   countryFlag: string;
   rating: number;
-  gamesPlayed: string;
+  gamesPlayed: number;
 }

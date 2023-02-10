@@ -144,4 +144,22 @@ public sealed class RatingsController : JsonAPIController
 
 		return Ok(response);
 	}
+
+	[HttpGet("ranking/{accountId}")]
+	public async Task<IActionResult> GetRanking(string ratingType, string accountId)
+	{
+		if (!Rating.AllowedRatingTypes.Contains(ratingType))
+		{
+			logger.LogError("Unsupported rating type requested: {RatingType}.", ratingType);
+			return BadRequest($"'{ratingType}' is not supported rating type.");
+		}
+
+		var selectedRanking = await ratingsService.GetSelectedRankingAsync(ratingType, EpicID.FromString(accountId));
+		if (selectedRanking == null)
+		{
+			return NotFound();
+		}
+
+		return Ok(selectedRanking);
+	}
 }

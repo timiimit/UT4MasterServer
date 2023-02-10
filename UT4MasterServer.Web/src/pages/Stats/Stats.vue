@@ -3,7 +3,7 @@
 
   <div class="form-group row">
     <div class="col-sm-6">
-      <LoadingPanel :status="accountsStatus">
+      <LoadingPanel :status="accountsStatus" auto-load @load="loadStats">
         <label for="accountId" class="col-sm-6 col-form-label">Account</label>
         <Autocomplete
           v-if="AccountStore.account"
@@ -62,19 +62,26 @@ import { IStatisticData } from '@/types/statistic-data';
 import Autocomplete from '@/components/Autocomplete.vue';
 import { AccountStore } from '@/stores/account-store';
 import AccountService from '@/services/account.service';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { statSections } from './data/statistics-config';
+import { getRouteParamStringValue } from '@/utils/utilities';
 
 const route = useRoute();
+const router = useRouter();
+
 const statsStatus = shallowRef(AsyncStatus.OK);
-const statWindow = shallowRef(StatisticWindow.AllTime);
 const stats = shallowRef<IStatisticData[]>([]);
 
 const accountsStatus = shallowRef(AsyncStatus.OK);
 const accountId = ref<string | undefined>(
-  route.params.accountId?.length
-    ? (route.params.accountId as string)
-    : undefined
+  getRouteParamStringValue(route.params, 'accountId', undefined)
+);
+const statWindow = shallowRef(
+  getRouteParamStringValue(
+    route.params,
+    'window',
+    StatisticWindow.AllTime
+  ) as StatisticWindow
 );
 const accounts = ref<IAccount[]>([]);
 const viewingAccount = computed(() =>
@@ -134,12 +141,18 @@ function handleParameterChange() {
   if (!accountId.value || !statWindow.value) {
     return;
   }
-  loadStats();
+  router.push({
+    name: 'Stats',
+    params: { accountId: accountId.value, window: statWindow.value }
+  });
 }
 
-function handleSelectAccount(account: IAccount) {
+function handleSelectAccount(account?: IAccount) {
   accountId.value = account?.id;
-  window.history.pushState({}, '', `/Stats/${account.id}`);
+  if (!account) {
+    stats.value = [];
+    return;
+  }
   handleParameterChange();
 }
 
@@ -162,6 +175,5 @@ async function setCurrentAccount() {
 
 onMounted(() => {
   setCurrentAccount();
-  loadStats();
 });
 </script>

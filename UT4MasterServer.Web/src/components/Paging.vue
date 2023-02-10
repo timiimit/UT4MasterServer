@@ -32,20 +32,24 @@ const props = defineProps({
   pageSize: {
     type: Number,
     default: 10
+  },
+  page: {
+    type: Number,
+    default: 0
   }
 });
 
 const emit = defineEmits(['update']);
 
+const currentPage = shallowRef(props.page);
 const pages = computed(() => Math.ceil(props.itemCount / props.pageSize));
 const start = computed(() => currentPage.value * props.pageSize);
 const end = computed(() => currentPage.value * props.pageSize + props.pageSize);
 const hasNext = computed(() => currentPage.value < pages.value - 1);
 const hasPrevious = computed(() => currentPage.value > 0);
-const currentPage = shallowRef(0);
 
 function emitUpdate() {
-  emit('update', start.value, end.value);
+  emit('update', start.value, end.value, currentPage.value);
 }
 
 function previousPage() {
@@ -65,10 +69,9 @@ function nextPage() {
 }
 
 watch(
-  () => props.itemCount,
+  () => props.page,
   () => {
-    // Reset to first page on item count change
-    currentPage.value = 0;
+    currentPage.value = props.page;
     emitUpdate();
   }
 );

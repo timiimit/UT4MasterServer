@@ -1,4 +1,5 @@
 import { Md5 } from 'ts-md5';
+import { RouteParams } from 'vue-router';
 
 export function isWellDefined(value: unknown) {
   return value !== undefined && value !== null;
@@ -50,4 +51,22 @@ export function isoDateTimeStringToLocalDateTime(
   return new Intl.DateTimeFormat('default', { dateStyle, timeStyle }).format(
     new Date(dateTime)
   );
+}
+
+export function getRouteParamStringValue(
+  params: RouteParams,
+  key: string,
+  defaultValue: string | undefined = undefined
+) {
+  const paramString = params[key];
+  return paramString?.length ? (paramString as string) : defaultValue;
+}
+
+export function getRouteParamNumberValue(
+  params: RouteParams,
+  key: string,
+  defaultValue: number
+) {
+  const paramString = params[key];
+  return paramString?.length ? +paramString : defaultValue;
 }

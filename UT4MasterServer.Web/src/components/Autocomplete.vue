@@ -30,7 +30,7 @@
       </div>
     </div>
     <button
-      v-if="searchText.length"
+      v-if="searchText.length && clearable"
       type="button"
       class="btn btn-primary btn-sm btn-smaller clear-button"
       @click="handleClear"
@@ -87,6 +87,10 @@ const props = defineProps({
   minSearchLength: {
     type: Number,
     default: 2
+  },
+  clearable: {
+    type: Boolean,
+    default: true
   }
 });
 
@@ -120,7 +124,7 @@ function handleBlur(event: FocusEvent) {
 function handleSelect(item?: any) {
   emit('select', item);
   menuOpen.value = false;
-  searchText.value = item[props.searchKey].toString();
+  searchText.value = item ? item[props.searchKey].toString() : '';
 }
 
 function handleClear() {
