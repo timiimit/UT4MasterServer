@@ -118,7 +118,7 @@ public class Account
 	{
 		get
 		{
-			return EnumHelpers.EnumToStrings(Flags);
+			return EnumHelpers.EnumToStrings(Flags).ToArray();
 		}
 	}
 

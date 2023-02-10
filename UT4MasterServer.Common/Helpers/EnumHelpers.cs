@@ -15,7 +15,7 @@ public static class EnumHelpers
 		return (Convert.ToUInt64(@this) & Convert.ToUInt64(other)) != 0;
 	}
 
-	public static string[] EnumToStrings<T>(T @enum) where T : struct, Enum
+	public static List<string> EnumToStrings<T>(T @enum) where T : struct, Enum
 	{
 		var result = new List<string>();
 		var allNames = Enum.GetNames<T>();
@@ -31,7 +31,7 @@ public static class EnumHelpers
 			}
 		}
 
-		return result.ToArray();
+		return result;
 	}
 
 	public static T StringsToEnum<T>(params string[] strings) where T : struct, Enum
@@ -53,9 +53,9 @@ public static class EnumHelpers
 		return (T)Enum.ToObject(typeof(T), ret);
 	}
 
-	public static T[] StringsToEnumArray<T>(params string[] strings) where T : struct, Enum
+	public static List<T> StringsToEnumArray<T>(params string[] strings) where T : struct, Enum
 	{
-		List<T> values = new List<T>();
+		var values = new List<T>();
 		var allNames = Enum.GetNames<T>();
 		var allValues = Enum.GetValues<T>();
 
@@ -67,10 +67,10 @@ public static class EnumHelpers
 			}
 		}
 
-		return values.ToArray();
+		return values;
 	}
 
-	public static T[] EnumFlagsToEnumArray<T>(T @enum) where T : struct, Enum
+	public static List<T> EnumFlagsToEnumArray<T>(T @enum) where T : struct, Enum
 	{
 		var result = new List<T>();
 		var allValues = Enum.GetValues<T>();
@@ -85,7 +85,7 @@ public static class EnumHelpers
 			}
 		}
 
-		return result.ToArray();
+		return result;
 	}
 
 	public static T EnumArrayToEnumFlags<T>(IEnumerable<T> enumArray) where T : struct, Enum
