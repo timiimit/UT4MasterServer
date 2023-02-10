@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
@@ -59,13 +60,13 @@ public sealed class AccountService
 		return await cursor.SingleOrDefaultAsync();
 	}
 
-	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = AccountFlags.All, int skip = 0, int limit = 50)
+	public async Task<PagedResponse<Account>> SearchAccountsAsync(string usernameQuery, AccountFlags flagsMask = (AccountFlags)~0, int skip = 0, int limit = 50)
 	{
 		FilterDefinition<Account> filter = new ExpressionFilterDefinition<Account>(
 			account => account.Username.ToLower().Contains(usernameQuery.ToLower())
 		);
 
-		if (flagsMask != AccountFlags.All)
+		if (flagsMask != (AccountFlags)~0)
 		{
 			filter &= Builders<Account>.Filter.BitsAnySet(x => x.Flags, (long)flagsMask);
 		}
@@ -121,7 +122,20 @@ public sealed class AccountService
 		await accountCollection.ReplaceOneAsync(user => user.ID == updatedAccount.ID, updatedAccount);
 	}
 
-	public async Task<AccountFlags> GetAccountFlagsAsync(EpicID accountID)
+	public async Task<Account?> GetAccountUsernameAndFlagsAsync(EpicID accountID)
+	{
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var options = new FindOptions<Account>()
+		{
+			Projection = Builders<Account>.Projection
+				.Include(x => x.Username)
+				.Include(x => x.Flags)
+		};
+		var result = await accountCollection.FindAsync(filter, options);
+		return await result.FirstOrDefaultAsync();
+	}
+
+	public async Task<AccountFlags?> GetAccountFlagsAsync(EpicID accountID)
 	{
 		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
 		var options = new FindOptions<Account>()
@@ -130,6 +144,11 @@ public sealed class AccountService
 		};
 		var result = await accountCollection.FindAsync(filter, options);
 		var account = await result.FirstOrDefaultAsync();
+		if (account is null)
+		{
+			return null;
+		}
+
 		return account.Flags;
 	}
 

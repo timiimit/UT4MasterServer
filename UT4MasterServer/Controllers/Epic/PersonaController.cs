@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Services.Scoped;
@@ -59,28 +61,17 @@ public sealed class PersonaController : JsonAPIController
 			request.Take = 50;
 		}
 
-		// TODO: duplicate code in AdminPanelController
-		AccountFlags flags;
+		AccountFlags flagsMask;
 		if (request.Roles != null && request.Roles.Length > 0)
 		{
-			var flagNamesAll = Enum.GetNames<AccountFlags>();
-			var flagValuesAll = Enum.GetValues<AccountFlags>();
-
-			flags = AccountFlags.None;
-			for (int i = 0; i < flagNamesAll.Length; i++)
-			{
-				if (request.Roles.Contains(flagNamesAll[i]))
-				{
-					flags |= flagValuesAll[i];
-				}
-			}
+			flagsMask = EnumHelpers.StringsToEnum<AccountFlags>(request.Roles);
 		}
 		else
 		{
-			flags = AccountFlags.All;
+			flagsMask = (AccountFlags)~0;
 		}
 
-		var result = await accountService.SearchAccountsAsync(request.Query, flags, request.Skip, request.Take);
+		var result = await accountService.SearchAccountsAsync(request.Query, flagsMask, request.Skip, request.Take);
 
 		if (request.IncludeRoles)
 		{
