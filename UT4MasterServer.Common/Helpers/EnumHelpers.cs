@@ -46,11 +46,11 @@ public static class EnumHelpers
 			{
 				var val = allValues[i];
 
-				ret |= (ulong)(object)val;
+				ret |= Convert.ToUInt64(val);
 			}
 		}
 
-		return (T)(object)ret;
+		return (T)Enum.ToObject(typeof(T), ret);
 	}
 
 	public static T[] StringsToEnumArray<T>(params string[] strings) where T : struct, Enum
@@ -93,8 +93,8 @@ public static class EnumHelpers
 		ulong ret = 0;
 		foreach (var enumValue in enumArray)
 		{
-			ret |= (ulong)(object)enumValue;
+			ret |= Convert.ToUInt64(enumValue);
 		}
-		return (T)(object)ret;
+		return (T)Enum.ToObject(typeof(T), ret);
 	}
 }

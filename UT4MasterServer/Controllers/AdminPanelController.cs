@@ -600,7 +600,7 @@ public sealed class AdminPanelController : ControllerBase
 
 		var combinedAcl = aclAny.Aggregate((x, y) => x | y) | AccountFlags.Admin;
 
-		if (account.Flags.HasFlagAny(combinedAcl))
+		if (!account.Flags.HasFlagAny(combinedAcl))
 		{
 			throw new UnauthorizedAccessException("User has insufficient privileges");
 		}
