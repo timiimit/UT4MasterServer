@@ -17,25 +17,68 @@ public sealed class SessionService
 	{
 		var session = new Session(EpicID.GenerateNew(), accountID, clientID, method);
 
-		bool isOnlyOneSessionAllowed =
-			method == SessionCreationMethod.Password ||
-			method == SessionCreationMethod.AuthorizationCode ||
-			method == SessionCreationMethod.ExchangeCode;
-
-		bool isInsertRequired = !isOnlyOneSessionAllowed;
-
-		if (isOnlyOneSessionAllowed)
+		// set number of allowed sessions
+		int maxNumberOfSessions;
+		bool limitSessionsPerClient;
+		switch (method)
 		{
-			// since _id field is immutable, we need to delete old entry
-
-			var filter = new ExpressionFilterDefinition<Session>(
-				x => x.AccountID == accountID &&
-				x.ClientID == clientID &&
-				x.CreationMethod == method);
-
-			await sessionCollection.DeleteManyAsync(filter);
+			case SessionCreationMethod.AuthorizationCode:
+			case SessionCreationMethod.Password:
+				maxNumberOfSessions = 5;
+				limitSessionsPerClient = false;
+				break;
+			case SessionCreationMethod.ClientCredentials:
+				maxNumberOfSessions = -1;
+				limitSessionsPerClient = true;
+				break;
+			case SessionCreationMethod.ExchangeCode:
+				maxNumberOfSessions = 1;
+				limitSessionsPerClient = true;
+				break;
+			default:
+				maxNumberOfSessions = 1;
+				limitSessionsPerClient = false;
+				break;
 		}
 
+		if (maxNumberOfSessions > 0)
+		{
+			// find sessions that should be deleted
+
+			var f = Builders<Session>.Filter;
+
+			var filter =
+				f.Eq(x => x.AccountID, accountID) &
+				f.Eq(x => x.CreationMethod, method);
+
+			if (limitSessionsPerClient)
+			{
+				filter &= f.Eq(x => x.ClientID, clientID);
+			}
+
+			var options = new FindOptions<Session>
+			{
+				// sort from newest to oldest
+				Sort = Builders<Session>.Sort.Descending(x => x.RefreshToken!.ExpirationTime),
+
+				// get only ID
+				Projection = Builders<Session>.Projection.Include(x => x.ID),
+
+				// skip those that are okay
+				Skip = maxNumberOfSessions
+			};
+
+			var cursor = await sessionCollection.FindAsync(filter, options);
+			var sessionsToDelete = await cursor.ToListAsync();
+
+			// delete excess sessions
+			if (sessionsToDelete.Count > 0)
+			{
+				await sessionCollection.DeleteManyAsync(f.In(x => x.ID, sessionsToDelete.Select(x => x.ID)));
+			}
+		}
+
+		// create new session
 		await sessionCollection.InsertOneAsync(session);
 
 		return session;
