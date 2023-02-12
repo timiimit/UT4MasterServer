@@ -3,21 +3,21 @@
     class="list-group-item list-group-item-action"
     @click.stop="toggleShowPlayers"
   >
-    <div class="match">
-      <h5>{{ match.name }}</h5>
+    <div class="server">
+      <h5>{{ server.name }}</h5>
       <div class="d-flex justify-content-between">
-        <div>{{ match.map }}</div>
-        <div>{{ match.playersOnline }} / {{ match.maxPlayers }} Players</div>
+        <div>{{ server.map }}</div>
+        <div>{{ server.playersOnline }} / {{ server.maxPlayers }} Players</div>
       </div>
       <div class="d-flex justify-content-between">
-        <div>{{ match.matchStateDisplay }}</div>
+        <div>{{ server.matchState }}</div>
         <div>
           Elapsed Time:
-          {{ toMinutesSeconds(match.duration) }}
+          {{ toMinutesSeconds(server.duration) }}
         </div>
       </div>
     </div>
-    <PlayersInMatch v-if="playersVisible" :player-ids="match?.publicPlayers" />
+    <PlayersInMatch v-if="playersVisible" :player-ids="server?.publicPlayers" />
   </div>
 </template>
 
@@ -37,11 +37,11 @@ import { PropType, shallowRef } from 'vue';
 import { toMinutesSeconds } from '@/utils/utilities';
 import PlayersInMatch from './PlayersInMatch.vue';
 import { SessionStore } from '@/stores/session-store';
-import { IMatch } from '../types/match';
+import { IServer } from '../types/server';
 
 defineProps({
-  match: {
-    type: Object as PropType<IMatch>,
+  server: {
+    type: Object as PropType<IServer>,
     required: true
   }
 });

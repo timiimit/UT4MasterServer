@@ -2,6 +2,7 @@
   <LoadingPanel :status="ServerStore.status">
     <div class="d-flex justify-content-center">
       <div class="col-md-9 col-sm-12">
+        <!-- Filters -->
         <div class="row mb-3">
           <div class="col-md-7 col-12">
             <input
@@ -21,7 +22,7 @@
                 value=""
               />
               <label class="form-check-label" for="hideEmpty">
-                Hide Empty Hubs
+                Hide Empty
               </label>
             </div>
           </div>
@@ -31,28 +32,64 @@
             <button
               class="btn btn-lg btn-icon"
               title="Refresh Servers"
-              @click="ServerStore.fetchGameServers"
+              @click="ServerStore.fetchAllServers"
             >
               <FontAwesomeIcon icon="fa-solid fa-arrows-rotate" />
             </button>
           </div>
         </div>
-        <div class="list-group">
-          <div class="list-group-item list-group-item-action active">Hubs</div>
-          <Hub v-for="hub in filteredHubs" :key="hub.id" :hub="hub" />
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              :class="{ active: activeTab === 'hubs' }"
+              role="tab"
+              @click="activeTab = 'hubs'"
+              >Hubs</a
+            >
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              :class="{ active: activeTab === 'servers' }"
+              role="tab"
+              @click="activeTab = 'servers'"
+              >Servers</a
+            >
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              :class="{ active: activeTab === 'quickPlay' }"
+              role="tab"
+              @click="activeTab = 'quickPlay'"
+              >Quick Play</a
+            >
+          </li>
+        </ul>
+        <div class="tab-content">
           <div
-            v-if="!ServerStore.hubs.length"
-            class="hub list-group-item list-group-item-action"
+            class="tab-pane fade"
+            :class="{ 'show active': activeTab === 'hubs' }"
+            role="tabpanel"
           >
-            <h5>No hubs online</h5>
+            <HubList :filter-text="filterText" :hide-empty="hideEmpty" />
           </div>
-        </div>
-        <div
-          v-if="filteredHubs.length !== ServerStore.hubs.length"
-          class="mt-2 d-flex justify-content-end"
-        >
-          Showing {{ filteredHubs.length }} of
-          {{ ServerStore.hubs.length }} hubs
+          <div
+            class="tab-pane fade"
+            :class="{ 'show active': activeTab === 'servers' }"
+            role="tabpanel"
+          >
+            <ServerList :filter-text="filterText" :hide-empty="hideEmpty" />
+          </div>
+          <div
+            class="tab-pane fade"
+            :class="{ 'show active': activeTab === 'quickPlay' }"
+            role="tabpanel"
+          >
+            <QuickPlayList :filter-text="filterText" :hide-empty="hideEmpty" />
+          </div>
         </div>
       </div>
     </div>
@@ -63,33 +100,40 @@
 #searchContainer {
   margin-bottom: 1rem;
 }
+
+.nav-tabs {
+  .nav-item {
+    a {
+      cursor: pointer;
+    }
+  }
+}
+
+.tab-content {
+  .tab-pane {
+    transition: all 0.4s ease-in-out;
+    &.fade {
+      opacity: 0;
+      display: none;
+      &.show {
+        display: block;
+        opacity: 1;
+      }
+    }
+  }
+}
 </style>
 
 <script lang="ts" setup>
-import { computed, shallowRef } from 'vue';
-import Hub from '@/pages/Servers/components/Hub.vue';
-import { ServerStore } from '@/stores/server-store';
+import { shallowRef } from 'vue';
 import LoadingPanel from '@/components/LoadingPanel.vue';
-import { orderBy } from 'lodash';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { ServerStore } from './stores/server.store';
+import HubList from './components/HubList.vue';
+import ServerList from './components/ServerList.vue';
+import QuickPlayList from './components/QuickPlayList.vue';
 
 const filterText = shallowRef('');
 const hideEmpty = shallowRef(true);
-const sortedHubs = computed(() =>
-  orderBy(
-    ServerStore.hubs,
-    ['attributes.UT_SERVERTRUSTLEVEL_i', 'totalPlayers'],
-    ['asc', 'desc']
-  )
-);
-const emptyHubs = computed(() =>
-  sortedHubs.value.filter((h) => !(h.totalPlayers === 0 && hideEmpty.value))
-);
-const filteredHubs = computed(() =>
-  emptyHubs.value.filter((h) =>
-    h.attributes.UT_SERVERNAME_s.toLocaleLowerCase().includes(
-      filterText.value.toLocaleLowerCase()
-    )
-  )
-);
+const activeTab = shallowRef('hubs');
 </script>
