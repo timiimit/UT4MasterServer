@@ -20,5 +20,7 @@ export enum ServerAttribute {
   playlist = 'PLAYLISTID_i',
   region = 'REGION_s',
   eloRangeStart = 'TEAMELO_i',
-  eloRangeEnd = 'TEAMELO2_i'
+  eloRangeEnd = 'TEAMELO2_i',
+  mutators = 'UU_MUTATORS_s',
+  customMatchNames = 'UU_CUSTOMMATCHNAMES_s'
 }

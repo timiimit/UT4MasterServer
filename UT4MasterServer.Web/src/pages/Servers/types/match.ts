@@ -11,4 +11,5 @@ export interface IMatch {
   maxPlayers: number;
   matchState: MatchState;
   matchStateDisplay: string;
+  mutators: string[];
 }

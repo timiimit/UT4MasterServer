@@ -16,6 +16,9 @@
           {{ toMinutesSeconds(match.duration) }}
         </div>
       </div>
+      <div v-if="match.mutators.length">
+        {{ match.mutators.join(', ') }}
+      </div>
     </div>
     <PlayersInMatch v-if="playersVisible" :player-ids="match?.publicPlayers" />
   </div>

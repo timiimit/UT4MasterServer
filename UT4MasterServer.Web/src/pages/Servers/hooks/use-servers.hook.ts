@@ -46,11 +46,27 @@ export function useServers() {
     );
   }
 
+  function mapCustomMatchNames(matchNames: string) {
+    const matchStrings = matchNames.split('\n');
+    const customMatchNames: Record<string, string> = {};
+    matchStrings.forEach((s) => {
+      const parts = s.split(':');
+      const guid = parts[0];
+      const name = parts[1];
+      customMatchNames[guid] = name;
+    });
+    return customMatchNames;
+  }
+
   function mapHub(response: IMatchmakingResponse): IHub {
     const hubGuid = response.attributes[ServerAttribute.hubGuid] as string;
+    const customMatchNamesString = response.attributes[
+      ServerAttribute.customMatchNames
+    ] as string;
+    const customMatchNames = mapCustomMatchNames(customMatchNamesString);
     const matches = ServerStore.allServers
       .filter((r) => hubMatchFilter(r, hubGuid))
-      .map(mapMatch);
+      .map((m) => mapMatch(m, customMatchNames));
     const playersInMatches = matches.reduce(
       (sum, m) => sum + m.playersOnline,
       0
@@ -63,17 +79,30 @@ export function useServers() {
       ] as GameServerTrust,
       // Hub.totalPlayers is the number of players in the lobby, doesn't include players in matches
       totalPlayers: response.totalPlayers + playersInMatches,
-      matches
+      matches,
+      customMatchNames: mapCustomMatchNames(customMatchNamesString)
     };
   }
 
-  function mapMatch(response: IMatchmakingResponse): IMatch {
+  function mapMatch(
+    response: IMatchmakingResponse,
+    customMatchNames: Record<string, string>
+  ): IMatch {
     const matchState = response.attributes[
       ServerAttribute.matchState
     ] as MatchState;
+
+    const mutatorsList = response.attributes[
+      ServerAttribute.mutators
+    ] as string;
+    const id = response.attributes[
+      ServerAttribute.serverInstanceGuid
+    ] as string;
     return {
-      id: response.attributes[ServerAttribute.serverInstanceGuid] as string,
-      name: response.attributes[ServerAttribute.serverName] as string,
+      id,
+      name:
+        customMatchNames[id] ??
+        (response.attributes[ServerAttribute.serverName] as string),
       gameType: response.attributes[ServerAttribute.gameType] as string,
       map: response.attributes[ServerAttribute.mapName] as string,
       matchState,
@@ -83,13 +112,14 @@ export function useServers() {
         ServerAttribute.playersOnline
       ] as number,
       duration: response.attributes[ServerAttribute.matchDuration] as number,
-      publicPlayers: response.publicPlayers
+      publicPlayers: response.publicPlayers,
+      mutators: mutatorsList?.split(',') ?? []
     };
   }
 
   function mapServer(response: IMatchmakingResponse): IServer {
     return {
-      ...mapMatch(response),
+      ...mapMatch(response, {}),
       serverTrustLevel: response.attributes[
         ServerAttribute.serverTrustLevel
       ] as GameServerTrust

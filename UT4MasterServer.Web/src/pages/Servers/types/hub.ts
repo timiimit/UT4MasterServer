@@ -7,4 +7,5 @@ export interface IHub {
   serverTrustLevel: GameServerTrust;
   matches: IMatch[];
   totalPlayers: number;
+  customMatchNames: Record<string, string>;
 }
