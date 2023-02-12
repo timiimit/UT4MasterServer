@@ -469,12 +469,14 @@ public sealed class AdminPanelController : ControllerBase
 			return BadRequest($"OwnerID {body.OwnerID} is not a valid account ID");
 		}
 
-		if (owner.Flags.HasFlag(AccountFlags.HubOwner))
+		if (!owner.Flags.HasFlag(AccountFlags.HubOwner))
 		{
 			return BadRequest($"Account specified with OwnerID {body.OwnerID} is not marked as HubOwner");
 		}
 
 		await trustedGameServerService.UpdateAsync(body);
+		await matchmakingService.UpdateTrustLevelAsync(body.ID, body.TrustLevel);
+
 		return Ok();
 	}
 
@@ -489,7 +491,6 @@ public sealed class AdminPanelController : ControllerBase
 			return BadRequest();
 
 		await trustedGameServerService.UpdateAsync(server);
-
 		await matchmakingService.UpdateTrustLevelAsync(server.ID, server.TrustLevel);
 
 		return Ok();

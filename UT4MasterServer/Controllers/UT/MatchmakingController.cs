@@ -75,17 +75,6 @@ public sealed class MatchmakingController : JsonAPIController
 		server.ServerAddress = ipClient.ToString();
 		server.Started = false;
 
-		var client = await clientService.GetAsync(server.OwningClientID);
-		if (client != null)
-		{
-			var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string;
-			if (serverName != client.Name)
-			{
-				logger.LogWarning("Client {ClientID} started server with name {ActualServerName} which differes from expected name {ExpectedServerName}. Denying server session creation.", client.ID, serverName, client.Name);
-				return BadRequest(new ErrorResponse($"ServerName has to be \"{client.Name}\". Please contact a master server admin to change this."));
-			}
-		}
-
 		GameServerTrust trust = GameServerTrust.Untrusted;
 		var trusted = await trustedGameServerService.GetAsync(server.OwningClientID);
 		if (trusted != null)
@@ -94,6 +83,26 @@ public sealed class MatchmakingController : JsonAPIController
 		}
 		server.Attributes.Set(GameServerAttributes.UT_SERVERTRUSTLEVEL_i, (int)trust);
 
+		if (trust != GameServerTrust.Untrusted)
+		{
+			var isGameInstance = (int?)server.Attributes.Get(GameServerAttributes.UT_GAMEINSTANCE_i) == 1;
+			if (!isGameInstance)
+			{
+				// Hubs/servers listed in server browser are required to have specific name
+				var client = await clientService.GetAsync(server.OwningClientID);
+				if (client == null)
+				{
+					throw new Exception("This should never happen");
+				}
+
+				var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string;
+				if (serverName != client.Name)
+				{
+					logger.LogWarning("Client {ClientID} started server with name {ActualServerName} which differes from expected name {ExpectedServerName}. Denying server session creation.", client.ID, serverName, client.Name);
+					return BadRequest(new ErrorResponse($"ServerName has to be \"{client.Name}\". Please contact a master server admin to change this."));
+				}
+			}
+		}
 
 
 		if (await matchmakingService.DoesExistWithSessionAsync(server.SessionID))
