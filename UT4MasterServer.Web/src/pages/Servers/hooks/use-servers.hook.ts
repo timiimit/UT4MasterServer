@@ -17,8 +17,7 @@ export function useServers() {
     return (
       r.attributes[ServerAttribute.gameInstance] !== 1 &&
       r.attributes[ServerAttribute.ranked] !== 1 &&
-      r.attributes[ServerAttribute.gameMode] ===
-        '/Script/UnrealTournament.UTLobbyGameMode'
+      r.attributes[ServerAttribute.gameMode] === GameMode.hub
     );
   }
 
@@ -26,8 +25,7 @@ export function useServers() {
     return (
       r.attributes[ServerAttribute.gameInstance] !== 1 &&
       r.attributes[ServerAttribute.ranked] !== 1 &&
-      r.attributes[ServerAttribute.gameMode] !==
-        '/Script/UnrealTournament.UTLobbyGameMode'
+      r.attributes[ServerAttribute.gameMode] !== GameMode.hub
     );
   }
 

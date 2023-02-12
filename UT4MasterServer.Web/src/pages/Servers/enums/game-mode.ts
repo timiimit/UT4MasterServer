@@ -4,5 +4,6 @@ export enum GameMode {
   deathmatch = '/Script/UnrealTournament.UTDMGameMode',
   ctf = '/Script/UnrealTournament.UTCTFGameMode',
   blitz = '/Script/UnrealTournament.UTFlagRunGame',
-  empty = 'EMPTY'
+  empty = 'EMPTY',
+  hub = '/Script/UnrealTournament.UTLobbyGameMode'
 }

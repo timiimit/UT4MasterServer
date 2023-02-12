@@ -5,5 +5,6 @@ export const gameModeMap: Record<GameMode, string> = {
   [GameMode.deathmatch]: 'Deathmatch',
   [GameMode.ctf]: 'Capture the Flag',
   [GameMode.blitz]: 'Blitz',
-  [GameMode.empty]: 'Empty'
+  [GameMode.empty]: 'Empty',
+  [GameMode.hub]: 'Hub'
 };

@@ -24,7 +24,6 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
       <div class="online d-flex text-white">
-        <!-- <div>Hubs Online: {{ hubs.length }}</div> -->
         <div>Matches In Progress: {{ matchesInProgress }}</div>
         <div>Players Online: {{ playersOnline }}</div>
       </div>
