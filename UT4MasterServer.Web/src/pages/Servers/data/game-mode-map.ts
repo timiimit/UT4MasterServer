@@ -6,5 +6,10 @@ export const gameModeMap: Record<GameMode, string> = {
   [GameMode.ctf]: 'Capture the Flag',
   [GameMode.blitz]: 'Blitz',
   [GameMode.empty]: 'Empty',
-  [GameMode.hub]: 'Hub'
+  [GameMode.hub]: 'Hub',
+  [GameMode.siege]: 'Siege',
+  [GameMode.teamDeathmatch]: 'Team Deathmatch',
+  [GameMode.showdown]: 'Showdown',
+  [GameMode.elimination]: 'Elimination',
+  [GameMode.bunnytrack]: 'Bunny Track'
 };

@@ -1,7 +1,17 @@
-// I don't think this is a complete list, but I couldn't locate one. Can be easily added to, and will default to the attribute value which is what it used to display.
 export enum MatchState {
+  playerIntro = 'PlayerIntro',
+  countdown = 'CountdownToBegin',
+  enteringOvertime = 'MatchEnteringOvertime',
+  overtime = 'MatchIsInOvertime',
+  mapVote = 'MapVoteHappening',
+  intermission = 'MatchIntermission',
+  exitingIntermission = 'MatchExitingIntermission',
+  rankedAbandon = 'MatchRankedAbandon',
+  waitingTravel = 'WaitingTravel',
+  enteringMap = 'EnteringMap',
   waiting = 'WaitingToStart',
   inProgress = 'InProgress',
-  intermission = 'MatchIntermission',
-  playerIntro = 'PlayerIntro'
+  waitingPostMatch = 'WaitingPostMatch',
+  leavingMap = 'LeavingMap',
+  aborted = 'Aborted'
 }
