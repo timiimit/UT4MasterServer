@@ -24,7 +24,6 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
       <div class="online d-flex text-white">
-        <div>Hubs Online: {{ ServerStore.hubs.length }}</div>
         <div>Matches In Progress: {{ matchesInProgress }}</div>
         <div>Players Online: {{ playersOnline }}</div>
       </div>
@@ -70,30 +69,51 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue';
-import { ServerStore } from '@/stores/server-store';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useServers } from '@/pages/Servers/hooks/use-servers.hook';
+import { ServerStore } from '@/pages/Servers/stores/server.store';
+import { MatchState } from '@/pages/Servers/enums/match-state';
 
 const pollTime = 30000;
 // Seems to be a bug with eslint ts parser version
 // eslint-disable-next-line no-undef
 const timer = shallowRef<NodeJS.Timer | undefined>(undefined);
 
+const { hubs, servers } = useServers();
+
 const playersOnline = computed(() => {
-  return ServerStore.hubs.reduce((sum, s) => sum + s.totalPlayers, 0);
+  const playersInHubs = hubs.value.reduce((sum, h) => sum + h.totalPlayers, 0);
+  const playersInServers = servers.value.reduce(
+    (sum, s) => sum + s.playersOnline,
+    0
+  );
+  // TODO: not sure how to determine players in quick play matches
+  //const playersInQuickplay = servers.value.reduce((sum, q) => sum + q.playersOnline, 0);
+  return playersInHubs + playersInServers;
 });
 
 const matchesInProgress = computed(() => {
-  return ServerStore.hubs.reduce(
+  const hubMatches = hubs.value.reduce(
     (sum, h) =>
       sum +
-      h.matches.filter((m) => m.attributes.UT_MATCHSTATE_s === 'InProgress')
-        .length,
+      h.matches.filter((m) => m.matchState === MatchState.inProgress).length,
     0
   );
+
+  const serverMatches = servers.value.filter(
+    (s) => s.matchState === MatchState.inProgress
+  ).length;
+
+  // TODO: not sure how we can determine match in progress for quick play yet
+  // const quickPlayMatches = quickPlayServers.value.filter(
+  //   (q) => q.matchState === MatchState.inProgress
+  // ).length;
+
+  return hubMatches + serverMatches;
 });
 
 function poll() {
-  ServerStore.fetchGameServers();
+  ServerStore.fetchAllServers();
 }
 
 function stopPolling() {
