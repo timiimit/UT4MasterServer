@@ -66,4 +66,10 @@ export default class AccountService extends HttpService {
       false
     );
   }
+
+  async activateAccount(email: string, guid: string) {
+    return await this.get<boolean>(
+      `${this.baseUrl}/activate?email=${email}&guid=${guid}`
+    );
+  }
 }
