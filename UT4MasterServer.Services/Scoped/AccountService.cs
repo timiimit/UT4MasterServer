@@ -210,7 +210,7 @@ public sealed class AccountService
 		{
 			Scheme = "https",
 			Host = applicationSettings.WebsiteDomain,
-			Path = "account/api/activate",
+			Path = "Activation",
 			Query = $"email={email}&guid={guid}"
 		};
 
