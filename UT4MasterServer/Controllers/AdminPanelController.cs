@@ -1,17 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Common.Helpers;
-using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Requests;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Helpers;
+using UT4MasterServer.Models;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Models.DTO.Requests;
+using UT4MasterServer.Models.DTO.Responses;
+using UT4MasterServer.Models.Responses;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
-using UT4MasterServer.Models.DTO.Responses;
-using UT4MasterServer.Models;
-using UT4MasterServer.Models.Responses;
-using Microsoft.Net.Http.Headers;
-using UT4MasterServer.Common.Enums;
-using System.Linq;
 
 namespace UT4MasterServer.Controllers;
 
@@ -30,8 +30,8 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
 	private readonly RatingsService ratingsService;
-
 	private readonly MatchmakingService matchmakingService;
+	private readonly AwsSesClient awsSesClient;
 
 	public AdminPanelController(
 		ILogger<AdminPanelController> logger,
@@ -44,7 +44,8 @@ public sealed class AdminPanelController : ControllerBase
 		ClientService clientService,
 		TrustedGameServerService trustedGameServerService,
 		RatingsService ratingsService,
-		MatchmakingService matchmakingService)
+		MatchmakingService matchmakingService,
+		AwsSesClient awsSesClient)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
@@ -57,6 +58,7 @@ public sealed class AdminPanelController : ControllerBase
 		this.trustedGameServerService = trustedGameServerService;
 		this.ratingsService = ratingsService;
 		this.matchmakingService = matchmakingService;
+		this.awsSesClient = awsSesClient;
 	}
 
 	#region Accounts
@@ -584,6 +586,13 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	#endregion
+
+	[HttpPost("send-email")]
+	public async Task<IActionResult> SendEmail([FromBody] SendEmailRequest sendEmailRequest)
+	{
+		await awsSesClient.SendTextEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
+		return Ok();
+	}
 
 	[NonAction]
 	private async Task<(Session Session, Account Account)> VerifyAccessAsync(params AccountFlags[] aclAny)
