@@ -72,7 +72,6 @@ public class Account
 	[BsonIgnoreIfNull]
 	public string? ActivationGuid { get; set; }
 
-	[BsonIgnoreIfDefault]
 	public AccountStatus Status { get; set; } = AccountStatus.PendingActivation;
 
 	[BsonIgnore]
