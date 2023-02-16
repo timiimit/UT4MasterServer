@@ -359,7 +359,15 @@ public sealed class AccountController : JsonAPIController
         logger.LogInformation($"Updated password for {user.Session.AccountID}");
 
         return Ok("Changed password successfully");
-    }
+	}
 
-    #endregion
+	[AllowAnonymous]
+	[HttpGet("activate")]
+	public async Task<IActionResult> ActivateAccount([FromQuery] string email, [FromQuery] string guid)
+	{
+		var activated = await accountService.ActivateAccountAsync(email, guid);
+		return Ok(activated);
+	}
+
+	#endregion
 }

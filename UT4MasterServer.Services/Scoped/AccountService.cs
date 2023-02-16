@@ -184,6 +184,26 @@ public sealed class AccountService
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
 
+	public async Task<bool> ActivateAccountAsync(string email, string guid)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+					 Builders<Account>.Filter.Eq(f => f.ActivationGuid, guid) &
+					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is not null)
+		{
+			var updateDefinition = Builders<Account>.Update
+				.Set(s => s.Status, AccountStatus.Active)
+				.Unset(u => u.ActivationGuid);
+			await accountCollection.UpdateOneAsync(filter, updateDefinition);
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private async Task SendActivationLinkAsync(string email, string guid)
 	{
 		UriBuilder uriBuilder = new()
