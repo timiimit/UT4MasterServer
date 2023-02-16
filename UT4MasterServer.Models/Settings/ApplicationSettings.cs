@@ -30,4 +30,9 @@ public sealed class ApplicationSettings
 	/// IP addresses of trusted proxy servers.
 	/// </summary>
 	public List<string> ProxyServers { get; set; } = new List<string>();
+
+	/// <summary>
+	/// No-reply email that will be used for activation links, reset password links, etc
+	/// </summary>
+	public string NoReplyEmail { get; set; } = string.Empty;
 }
