@@ -100,7 +100,8 @@ public static class Program
 			.AddScoped<TrustedGameServerService>()
 			.AddScoped<MatchmakingService>()
 			.AddScoped<StatisticsService>()
-			.AddScoped<RatingsService>();
+			.AddScoped<RatingsService>()
+			.AddScoped<AwsSesClient>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
