@@ -62,6 +62,7 @@ public static class Program
 		// load settings objects
 		builder.Services
 			.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"))
+			.Configure<AWSSettings>(builder.Configuration.GetSection("AWS"))
 			.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"))
 			.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptchaSettings"));
 
