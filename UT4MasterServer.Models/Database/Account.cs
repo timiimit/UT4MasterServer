@@ -69,6 +69,12 @@ public class Account
 	[BsonElement("Flags")]
 	public AccountFlags Flags { get; set; } = 0;
 
+	[BsonIgnoreIfNull]
+	public string? ActivationGuid { get; set; }
+
+	[BsonIgnoreIfDefault]
+	public AccountStatus Status { get; set; } = AccountStatus.PendingActivation;
+
 	[BsonIgnore]
 	public float Level
 	{
