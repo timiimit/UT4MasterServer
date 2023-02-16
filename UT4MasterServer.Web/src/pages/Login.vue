@@ -3,6 +3,12 @@
     <form @submit.prevent="logIn">
       <fieldset>
         <legend>Log In</legend>
+        <div
+          v-show="activationLinkSent"
+          class="alert alert-dismissible alert-success"
+        >
+          <div>Activation link sent to email.</div>
+        </div>
         <div class="form-group row">
           <label for="username" class="col-sm-12 col-form-label"
             >Username</label
@@ -85,6 +91,7 @@ import { SessionStore } from '@/stores/session-store';
 import { useRoute, useRouter } from 'vue-router';
 import { GrantType } from '@/enums/grant-type';
 import { validatePassword } from '@/utils/validation';
+import { getRouteParamBooleanValue } from '@/utils/utilities';
 
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
@@ -99,6 +106,12 @@ const authenticationService = new AuthenticationService();
 
 const router = useRouter();
 const route = useRoute();
+
+const activationLinkSent = getRouteParamBooleanValue(
+  route.params,
+  'activationLinkSent',
+  false
+);
 
 async function logIn() {
   try {

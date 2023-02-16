@@ -146,7 +146,10 @@ async function register() {
     };
     await accountService.register(formData);
     status.value = AsyncStatus.OK;
-    router.push('/Login');
+    router.push({
+      name: 'Login',
+      params: { activationLinkSent: 'true' }
+    });
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;
