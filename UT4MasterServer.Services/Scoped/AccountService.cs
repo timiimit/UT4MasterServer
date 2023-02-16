@@ -12,10 +12,17 @@ namespace UT4MasterServer.Services.Scoped;
 public sealed class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
+	private readonly ApplicationSettings applicationSettings;
+	private readonly AwsSesClient awsSesClient;
 
-	public AccountService(DatabaseContext dbContext, IOptions<ApplicationSettings> settings)
+	public AccountService(
+		DatabaseContext dbContext,
+		IOptions<ApplicationSettings> applicationSettings,
+		AwsSesClient awsSesClient)
 	{
+		this.applicationSettings = applicationSettings.Value;
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
+		this.awsSesClient = awsSesClient;
 	}
 
 	public async Task CreateIndexesAsync()
@@ -35,11 +42,15 @@ public sealed class AccountService
 		{
 			ID = EpicID.GenerateNew(),
 			Username = username,
-			Email = email
+			Email = email,
+			ActivationGuid = Guid.NewGuid().ToString(),
+			Status = AccountStatus.PendingActivation,
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
+
+		await SendActivationLinkAsync(email, newAccount.ActivationGuid);
 	}
 
 	public async Task<Account?> GetAccountByEmailAsync(string email)
@@ -172,5 +183,22 @@ public sealed class AccountService
 	{
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
-}
 
+	private async Task SendActivationLinkAsync(string email, string guid)
+	{
+		UriBuilder uriBuilder = new()
+		{
+			Scheme = "https",
+			Host = applicationSettings.WebsiteDomain,
+			Path = "account/api/activate",
+			Query = $"email={email}&guid={guid}"
+		};
+
+		var html = @$"
+			<p>Welcome to UT4 Master Server!</p>
+			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to activate your UT4 Master Server account.</p>
+		";
+
+		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Account Activation", html);
+	}
+}
