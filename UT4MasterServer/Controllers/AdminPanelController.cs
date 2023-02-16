@@ -587,10 +587,17 @@ public sealed class AdminPanelController : ControllerBase
 
 	#endregion
 
-	[HttpPost("send-email")]
-	public async Task<IActionResult> SendEmail([FromBody] SendEmailRequest sendEmailRequest)
+	[HttpPost("send-text-email")]
+	public async Task<IActionResult> SendTextEmail([FromBody] SendEmailRequest sendEmailRequest)
 	{
 		await awsSesClient.SendTextEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
+		return Ok();
+	}
+
+	[HttpPost("send-html-email")]
+	public async Task<IActionResult> SendHtmlEmail([FromBody] SendEmailRequest sendEmailRequest)
+	{
+		await awsSesClient.SendHTMLEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
 		return Ok();
 	}
 
