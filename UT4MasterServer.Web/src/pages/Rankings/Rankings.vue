@@ -144,7 +144,7 @@ const ratingTypeOptions = [
   { text: 'Team Deathmatch', value: RatingType.TDMSkillRating },
   { text: 'Capture the Flag', value: RatingType.CTFSkillRating },
   { text: 'Showdown', value: RatingType.ShowdownSkillRating },
-  { text: 'Flag Run', value: RatingType.FlagRunSkillRating }
+  { text: 'Blitz', value: RatingType.FlagRunSkillRating }
 ];
 
 async function loadRankings() {
