@@ -272,6 +272,7 @@ public sealed class AccountService
 		{
 			Scheme = applicationSettings.WebsiteScheme,
 			Host = applicationSettings.WebsiteDomain,
+			Port = applicationSettings.WebsitePort,
 			Path = "ResetPassword",
 			Query = $"accountId={accountID}&guid={guid}"
 		};

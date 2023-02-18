@@ -21,6 +21,11 @@ public sealed class ApplicationSettings
 	public string WebsiteDomain { get; set; } = string.Empty;
 
 	/// <summary>
+	/// Used for URL generation when sending activation link, reset links, etc.
+	/// </summary>
+	public int WebsitePort { get; set; } = -1;
+
+	/// <summary>
 	/// File containing a list of trusted proxy servers (one per line).
 	/// This file is loaded only once when program starts and it add values to <see cref="ProxyServers"/>.
 	/// </summary>
