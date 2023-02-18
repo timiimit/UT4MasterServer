@@ -89,6 +89,9 @@ public static class Program
 			}
 		});
 
+		// Microsoft services
+		builder.Services.AddMemoryCache();
+
 		// services whose instance is created per-request
 		builder.Services
 			.AddScoped<DatabaseContext>()
@@ -107,7 +110,8 @@ public static class Program
 		builder.Services
 			.AddSingleton<RuntimeInfoService>()
 			.AddSingleton<CodeService>()
-			.AddSingleton<MatchmakingWaitTimeEstimateService>();
+			.AddSingleton<MatchmakingWaitTimeEstimateService>()
+			.AddSingleton<RateLimitService>();
 
 		// hosted services
 		builder.Services
