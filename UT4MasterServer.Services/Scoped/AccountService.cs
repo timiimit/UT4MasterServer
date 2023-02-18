@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Exceptions;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
@@ -204,6 +205,27 @@ public sealed class AccountService
 		return false;
 	}
 
+	public async Task InitiateResetPasswordAsync(string email)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.Active);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Email not found or account in wrong status.");
+		}
+
+		var guid = Guid.NewGuid().ToString();
+
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.ResetLinkGUID, guid)
+			.Set(u => u.ResetLinkExpiration, DateTime.UtcNow.AddMinutes(5));
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+
+		await SendResetPasswordLinkAsync(email, guid);
+	}
+
 	private async Task SendActivationLinkAsync(string email, string guid)
 	{
 		UriBuilder uriBuilder = new()
@@ -220,5 +242,23 @@ public sealed class AccountService
 		";
 
 		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Account Activation", html);
+	}
+
+	private async Task SendResetPasswordLinkAsync(string email, string guid)
+	{
+		UriBuilder uriBuilder = new()
+		{
+			Scheme = "https",
+			Host = applicationSettings.WebsiteDomain,
+			Path = "ResetPassword",
+			Query = $"email={email}&guid={guid}"
+		};
+
+		var html = @$"
+			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to reset your password for UT4 Master Server account.</p>
+			<p>If you didn't initiate password reset, ignore this message.</p>
+		";
+
+		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Reset Password", html);
 	}
 }
