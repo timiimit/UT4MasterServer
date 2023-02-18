@@ -18,6 +18,24 @@ export default defineConfig(({ command, mode }) => {
     }
   } as UserConfig;
 
+  if (mode === 'production') {
+    if (!viteEnv.VITE_API_URL?.length) {
+      throw new Error(
+        'Missing environment variable VITE_API_URL required for production build.'
+      );
+    }
+    if (!viteEnv.VITE_BASIC_AUTH?.length) {
+      throw new Error(
+        'Missing environment variable VITE_BASIC_AUTH required for production build.'
+      );
+    }
+    if (!viteEnv.VITE_RECAPTCHA_SITE_KEY?.length) {
+      throw new Error(
+        'Missing environment variable VITE_RECAPTCHA_SITE_KEY required for production build.'
+      );
+    }
+  }
+
   if (command === 'serve') {
     viteConfig.server = {
       port: 8080

@@ -2,8 +2,10 @@
   <h1>Instructions for UT4 with UT4UU</h1>
   <p>
     Use these instructions if you have the
-    <a href="https://github.com/timiimit/UT4UU-Public/">UT4UU</a> plugin
-    installed.
+    <a href="https://github.com/timiimit/UT4UU-Public/" target="_blank"
+      >UT4UU</a
+    >
+    plugin installed.
   </p>
   <ol>
     <li>Open the game</li>
@@ -15,7 +17,7 @@
       In the
       <span style="font-style: italic">Master Server Domain</span> section,
       enter:
-      <CodeBlock>master-ut4.timiimit.com</CodeBlock>
+      <CodeBlock>{{ masterServerUrl }}</CodeBlock>
     </li>
     <li>Press APPLY in bottom right of the window</li>
     <li>Close the game</li>
@@ -43,4 +45,6 @@
 </template>
 <script setup lang="ts">
 import CodeBlock from '@/components/CodeBlock.vue';
+
+const masterServerUrl = __BACKEND_URL.split('//')[1];
 </script>
