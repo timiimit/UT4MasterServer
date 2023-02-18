@@ -115,6 +115,11 @@ export const routes: RouteRecordRaw[] = [
     beforeEnter: publicGuard
   },
   {
+    path: `/ResetPassword`,
+    component: async () => import('./pages/ResetPassword.vue'),
+    beforeEnter: publicGuard
+  },
+  {
     path: `/`,
     redirect: '/Login'
   },

@@ -11,6 +11,11 @@ public sealed class ApplicationSettings
 	public bool AllowPasswordGrantType { get; set; } = false;
 
 	/// <summary>
+	/// Used for URL generation when sending activation link, reset links, etc.
+	/// </summary>
+	public string WebsiteScheme { get; set; } = string.Empty;
+
+	/// <summary>
 	/// Used just to redirect users to correct domain when UT4UU is being used.
 	/// </summary>
 	public string WebsiteDomain { get; set; } = string.Empty;

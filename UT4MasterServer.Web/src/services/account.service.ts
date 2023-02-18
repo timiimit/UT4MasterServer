@@ -5,6 +5,7 @@ import { IChangePasswordRequest } from '@/types/change-password-request';
 import { IChangeUsernameRequest } from '@/types/change-username-request';
 import { IRegisterRequest } from '@/types/register-request';
 import { ISearchAccountsResponse } from '@/types/search-accounts-response';
+import { IResetPasswordRequest } from '@/types/reset-password';
 import HttpService from './http.service';
 
 export default class AccountService extends HttpService {
@@ -76,6 +77,15 @@ export default class AccountService extends HttpService {
   async initiateResetPassword(email: string) {
     return await this.get<string>(
       `${this.baseUrl}/initiate-reset-password?email=${email}`
+    );
+  }
+
+  async resetPassword(request: IResetPasswordRequest) {
+    return await this.post<unknown, IResetPasswordRequest>(
+      `${this.baseUrl}/reset-password`,
+      {
+        body: request
+      }
     );
   }
 }

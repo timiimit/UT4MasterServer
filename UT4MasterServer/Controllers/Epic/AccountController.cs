@@ -397,5 +397,14 @@ public sealed class AccountController : JsonAPIController
 		return Ok();
 	}
 
+	[AllowAnonymous]
+	[HttpPost("reset-password")]
+	public async Task<IActionResult> ResetPassword([FromForm] string accountID, [FromForm] string guid, [FromForm] string newPassword)
+	{
+		EpicID eid = EpicID.FromString(accountID);
+		await accountService.ResetPasswordAsync(eid, guid, newPassword);
+		return Ok();
+	}
+
 	#endregion
 }

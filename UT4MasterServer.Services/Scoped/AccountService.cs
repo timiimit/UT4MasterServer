@@ -223,7 +223,29 @@ public sealed class AccountService
 			.Set(u => u.ResetLinkExpiration, DateTime.UtcNow.AddMinutes(5));
 		await accountCollection.UpdateOneAsync(filter, updateDefinition);
 
-		await SendResetPasswordLinkAsync(email, guid);
+		await SendResetPasswordLinkAsync(email, account.ID, guid);
+	}
+
+	public async Task ResetPasswordAsync(EpicID accountID, string guid, string newPassword)
+	{
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID) &
+					 Builders<Account>.Filter.Eq(x => x.ResetLinkGUID, guid) &
+					 Builders<Account>.Filter.Gt(x => x.ResetLinkExpiration, DateTime.UtcNow);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Requested account not found or reset link expired.");
+		}
+
+		newPassword = PasswordHelper.GetPasswordHash(accountID, newPassword);
+
+		var filterForUpdate = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var update = Builders<Account>.Update
+			.Set(x => x.Password, newPassword)
+			.Unset(x => x.ResetLinkGUID)
+			.Unset(x => x.ResetLinkExpiration);
+		await accountCollection.UpdateOneAsync(filterForUpdate, update);
 	}
 
 	private async Task SendActivationLinkAsync(string email, string guid)
@@ -244,14 +266,14 @@ public sealed class AccountService
 		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Account Activation", html);
 	}
 
-	private async Task SendResetPasswordLinkAsync(string email, string guid)
+	private async Task SendResetPasswordLinkAsync(string email, EpicID accountID, string guid)
 	{
 		UriBuilder uriBuilder = new()
 		{
-			Scheme = "https",
+			Scheme = applicationSettings.WebsiteScheme,
 			Host = applicationSettings.WebsiteDomain,
 			Path = "ResetPassword",
-			Query = $"email={email}&guid={guid}"
+			Query = $"accountId={accountID}&guid={guid}"
 		};
 
 		var html = @$"
