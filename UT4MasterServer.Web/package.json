@@ -82,7 +82,6 @@
     },
     "globals": {
       "__BACKEND_URL": "readonly",
-      "__WEB_BASIC_AUTH": "readonly",
       "__RECAPTCHA_SITE_KEY": "readonly"
     }
   },
