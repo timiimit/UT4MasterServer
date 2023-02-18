@@ -185,19 +185,22 @@ public sealed class AccountController : JsonAPIController
     public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
     {
         var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
-        var httpClient = new HttpClient();
-        var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
-        if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
-        {
-            return Conflict("Recaptcha validation failed");
-        }
+		if (!string.IsNullOrWhiteSpace(reCaptchaSecret))
+		{
+			var httpClient = new HttpClient();
+			var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
+			if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
+			{
+				return Conflict("Recaptcha validation failed");
+			}
 
-        var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
-        var jsonData = JObject.Parse(jsonResponse);
-        if (jsonData["success"]?.ToObject<bool>() != true)
-        {
-            return Conflict("Recaptcha validation failed");
-        }
+			var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+			var jsonData = JObject.Parse(jsonResponse);
+			if (jsonData["success"]?.ToObject<bool>() != true)
+			{
+				return Conflict("Recaptcha validation failed");
+			}
+		}
 
         var account = await accountService.GetAccountAsync(username);
         if (account != null)
