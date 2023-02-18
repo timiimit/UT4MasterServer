@@ -12,9 +12,12 @@
           v-show="passwordChanged"
           class="alert alert-dismissible alert-success"
         >
-          <div>Password changed successfully.</div>
+          <div>
+            Password changed successfully. Click
+            <RouterLink to="/Login">here</RouterLink> to go to login page.
+          </div>
         </div>
-        <div class="form-group row">
+        <div v-show="!passwordChanged" class="form-group row">
           <label for="newPassword" class="col-sm-12 col-form-label"
             >New Password</label
           >
@@ -32,7 +35,7 @@
             <div class="invalid-feedback">New password is required</div>
           </div>
         </div>
-        <div class="form-group row">
+        <div v-show="!passwordChanged" class="form-group row">
           <label for="confirmNewPassword" class="col-sm-12 col-form-label"
             >Confirm New Password</label
           >
@@ -50,7 +53,7 @@
             <div class="invalid-feedback">Confirm new password is required</div>
           </div>
         </div>
-        <div class="form-group row">
+        <div v-show="!passwordChanged" class="form-group row">
           <div class="col-sm-12">
             <button
               type="submit"
