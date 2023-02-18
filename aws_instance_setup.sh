@@ -43,8 +43,21 @@ sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.
 # install certbot
 sudo yum install -y certbot python2-certbot-apache
 
-# now create ut4masterserver.conf in /etc/httpd/conf.d/ and put in the following:
-cat >ut4masterserver.conf << EOF
+# generate file with list of cloudflare proxy IPs
+curl https://www.cloudflare.com/ips-v4 > cloudflare_proxy_list.txt
+echo >> cloudflare_proxy_list.txt
+curl https://www.cloudflare.com/ips-v6 >> cloudflare_proxy_list.txt
+sudo cp cloudflare_proxy_list.txt /etc/httpd/proxy_list.txt
+rm cloudflare_proxy_list.txt
+
+
+# now create ut4master.conf in /etc/httpd/conf.d/ and put in the following:
+cat >ut4master.conf << EOF
+
+MaxRequestWorkers 16
+RemoteIPHeader CF-Connecting-IP
+RemoteIPTrustedProxyList proxy_list.txt
+
 <VirtualHost *:80>
     DocumentRoot "/var/www/html"
     ServerName "$WEBSITE_DOMAIN_NAME"
@@ -59,8 +72,8 @@ cat >ut4masterserver.conf << EOF
     ProxyPassReverse / http://127.0.0.1:5000/
 </VirtualHost>
 EOF
-sudo cp ut4masterserver.conf /etc/httpd/conf.d/ut4masterserver.conf
-rm ut4masterserver.conf
+sudo cp ut4master.conf /etc/httpd/conf.d/ut4master.conf
+rm ut4master.conf
 
 # make sure httpd (apache) daemon is running at all times
 sudo systemctl enable httpd & sudo systemctl restart httpd
