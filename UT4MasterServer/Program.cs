@@ -88,6 +88,17 @@ public static class Program
 			}
 		});
 
+		builder.Services.Configure<ReCaptchaSettings>(x =>
+		{
+			if (builder.Environment.IsProduction())
+			{
+				if (string.IsNullOrWhiteSpace(x.SecretKey) || string.IsNullOrWhiteSpace(x.SiteKey))
+				{
+					throw new Exception("Must specify ApplicationSettings.ReCaptchaSettings in production environment");
+				}
+			}
+		});
+
 		// services whose instance is created per-request
 		builder.Services
 			.AddScoped<DatabaseContext>()
