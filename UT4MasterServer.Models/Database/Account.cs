@@ -72,6 +72,12 @@ public class Account
 	[BsonIgnoreIfNull]
 	public string? ActivationGuid { get; set; }
 
+	[BsonIgnoreIfNull]
+	public string? ResetLinkGUID { get; set; }
+
+	[BsonIgnoreIfNull]
+	public DateTime? ResetLinkExpiration { get; set; }
+
 	public AccountStatus Status { get; set; } = AccountStatus.PendingActivation;
 
 	[BsonIgnore]
