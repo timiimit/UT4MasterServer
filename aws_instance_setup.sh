@@ -18,9 +18,12 @@ API_DOMAIN_NAME=
 CERTIFICATE_REGISTRATION_EMAIL=
 
 # everything will be stored in /app
-# optionally mount a separate volume here
 sudo mkdir /app
 sudo chown ec2-user:ec2-user /app
+
+# optionally mount a separate volume here
+#sudo mount /dev/nvme1n1p1 /app
+
 cd /app
 
 # install required packages
