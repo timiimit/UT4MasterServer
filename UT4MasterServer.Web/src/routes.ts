@@ -104,6 +104,11 @@ export const routes: RouteRecordRaw[] = [
     beforeEnter: publicGuard
   },
   {
+    path: `/ResendActivation`,
+    component: async () => import('./pages/ResendActivation.vue'),
+    beforeEnter: publicGuard
+  },
+  {
     name: 'Login',
     path: `/Login/:activationLinkSent?`,
     component: async () => import('./pages/Login.vue'),

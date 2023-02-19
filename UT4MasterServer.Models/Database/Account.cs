@@ -70,7 +70,10 @@ public class Account
 	public AccountFlags Flags { get; set; } = 0;
 
 	[BsonIgnoreIfNull]
-	public string? ActivationGuid { get; set; }
+	public string? ActivationLinkGUID { get; set; }
+
+	[BsonIgnoreIfNull]
+	public DateTime? ActivationLinkExpiration { get; set; }
 
 	[BsonIgnoreIfNull]
 	public string? ResetLinkGUID { get; set; }

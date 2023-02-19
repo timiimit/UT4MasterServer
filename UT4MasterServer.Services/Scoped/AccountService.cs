@@ -44,14 +44,14 @@ public sealed class AccountService
 			ID = EpicID.GenerateNew(),
 			Username = username,
 			Email = email,
-			ActivationGuid = Guid.NewGuid().ToString(),
+			ActivationLinkGUID = Guid.NewGuid().ToString(),
 			Status = AccountStatus.PendingActivation,
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
 
-		await SendActivationLinkAsync(email, newAccount.ActivationGuid);
+		await SendActivationLinkAsync(email, newAccount.ID, newAccount.ActivationLinkGUID);
 	}
 
 	public async Task<Account?> GetAccountByEmailAsync(string email)
@@ -110,6 +110,11 @@ public sealed class AccountService
 			account = await GetAccountByEmailAsync(username);
 			if (account == null)
 				return null;
+		}
+
+		if (account.Status == AccountStatus.PendingActivation)
+		{
+			throw new AccountNotActiveException("Account is pending activation. Check your email for activation link or resend it.");
 		}
 
 		return account;
@@ -188,7 +193,7 @@ public sealed class AccountService
 	public async Task<bool> ActivateAccountAsync(string email, string guid)
 	{
 		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
-					 Builders<Account>.Filter.Eq(f => f.ActivationGuid, guid) &
+					 Builders<Account>.Filter.Eq(f => f.ActivationLinkGUID, guid) &
 					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
 		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
 
@@ -196,13 +201,34 @@ public sealed class AccountService
 		{
 			var updateDefinition = Builders<Account>.Update
 				.Set(s => s.Status, AccountStatus.Active)
-				.Unset(u => u.ActivationGuid);
+				.Unset(u => u.ActivationLinkGUID);
 			await accountCollection.UpdateOneAsync(filter, updateDefinition);
 
 			return true;
 		}
 
 		return false;
+	}
+
+	public async Task ResendActivationLinkAsync(string email)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Email not found or account in wrong status.");
+		}
+
+		var activationGUID = Guid.NewGuid().ToString();
+
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.ActivationLinkGUID, activationGUID)
+			.Set(s => s.ActivationLinkExpiration, DateTime.UtcNow.AddMinutes(5));
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+
+		await SendActivationLinkAsync(email, account.ID, activationGUID);
 	}
 
 	public async Task InitiateResetPasswordAsync(string email)
@@ -248,14 +274,15 @@ public sealed class AccountService
 		await accountCollection.UpdateOneAsync(filterForUpdate, update);
 	}
 
-	private async Task SendActivationLinkAsync(string email, string guid)
+	private async Task SendActivationLinkAsync(string email, EpicID accountID, string guid)
 	{
 		UriBuilder uriBuilder = new()
 		{
-			Scheme = "https",
+			Scheme = applicationSettings.WebsiteScheme,
 			Host = applicationSettings.WebsiteDomain,
+			Port = applicationSettings.WebsitePort,
 			Path = "Activation",
-			Query = $"email={email}&guid={guid}"
+			Query = $"accountId={accountID}&guid={guid}"
 		};
 
 		var html = @$"

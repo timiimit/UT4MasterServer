@@ -74,6 +74,12 @@ export default class AccountService extends HttpService {
     );
   }
 
+  async resendActivationLink(email: string) {
+    return await this.get(
+      `${this.baseUrl}/resend-activation-link?email=${email}`
+    );
+  }
+
   async initiateResetPassword(email: string) {
     return await this.get<string>(
       `${this.baseUrl}/initiate-reset-password?email=${email}`

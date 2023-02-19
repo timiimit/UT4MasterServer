@@ -62,6 +62,20 @@ public sealed class ErrorsController : ControllerBase
 					});
 				}
 
+			case AccountNotActiveException accountNotActiveException:
+				{
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.accountpendingactivation",
+						ErrorMessage = accountNotActiveException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 401
+					};
+
+					logger.LogWarning(accountNotActiveException, "Account pending activation.");
+					return StatusCode(401, err);
+				}
+
 			case NotFoundException notFoundException:
 				{
 					var err = new ErrorResponse()

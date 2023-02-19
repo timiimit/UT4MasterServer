@@ -384,6 +384,23 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[AllowAnonymous]
+	[HttpGet("resend-activation-link")]
+	public async Task<IActionResult> ResendActivationLink([FromQuery] string email)
+	{
+		var clientIpAddress = GetClientIP(applicationSettings);
+		if (clientIpAddress == null)
+		{
+			logger.LogError("Could not determine IP Address of remote machine.");
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		rateLimitService.CheckRateLimit($"{nameof(ResendActivationLink)}-{clientIpAddress}");
+
+		await accountService.ResendActivationLinkAsync(email);
+		return Ok();
+	}
+
+	[AllowAnonymous]
 	[HttpGet("initiate-reset-password")]
 	public async Task<IActionResult> InitiateResetPassword([FromQuery] string email)
 	{
