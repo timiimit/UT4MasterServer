@@ -8,6 +8,16 @@ export interface HttpRequestOptions<T = unknown> {
   formData?: FormData;
 }
 
+export class HttpError {
+  code: number;
+  message: string;
+
+  constructor(code: number, message: string) {
+    this.code = code;
+    this.message = message;
+  }
+}
+
 export default class HttpService {
   private formEncode(request: object) {
     const form = new URLSearchParams();
@@ -52,12 +62,16 @@ export default class HttpService {
     const response = await fetch(url, fetchOptions);
 
     if (!response.ok) {
-      const error = await response.json().catch(() => {
-        console.debug('Unable to parse json response');
-      });
-      const errorMessage = error?.errorMessage ?? error;
+      const errorResponseJson = await response
+        .json()
+        .catch(() => console.debug('Unable to parse error response JSON'));
+      const errorResponseText = await response
+        .text()
+        .catch(() => console.debug('Unable to read error body.'));
+      const errorMessage = errorResponseJson?.errorMessage ?? errorResponseText;
+      const errorCode = errorResponseJson?.errorCode ?? response.status;
       const defaultErrorMessage = `HTTP request error - ${response.status}: ${response.statusText}`;
-      throw new Error(errorMessage ?? defaultErrorMessage);
+      throw new HttpError(errorCode, errorMessage ?? defaultErrorMessage);
     }
 
     const responseObj = await response.json().catch(() => {
