@@ -5,8 +5,8 @@
     @click="showMatches = !showMatches"
   >
     <div class="d-flex align-items-center justify-content-between">
-      <div class="server-name" :title="hub.attributes.UT_SERVERNAME_s">
-        {{ hub.attributes.UT_SERVERNAME_s }}
+      <div class="server-name" :title="hub.serverName">
+        {{ hub.serverName }}
       </div>
       <div class="text-info" title="Trusted Hub">
         <FontAwesomeIcon v-if="trustedHub" icon="fa-solid fa-certificate" />
@@ -42,14 +42,15 @@
 </style>
 
 <script setup lang="ts">
-import { IGameHub } from '@/types/game-server';
+import { GameServerTrust } from '@/enums/game-server-trust';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { PropType, shallowRef, computed } from 'vue';
+import { IHub } from '../types/hub';
 import MatchList from './MatchList.vue';
 
 const props = defineProps({
   hub: {
-    type: Object as PropType<IGameHub>,
+    type: Object as PropType<IHub>,
     required: true
   }
 });
@@ -57,8 +58,6 @@ const props = defineProps({
 const showMatches = shallowRef(false);
 
 const trustedHub = computed(
-  () =>
-    props.hub.attributes.UT_SERVERTRUSTLEVEL_i &&
-    props.hub.attributes.UT_SERVERTRUSTLEVEL_i < 2
+  () => props.hub.serverTrustLevel !== GameServerTrust.Untrusted
 );
 </script>

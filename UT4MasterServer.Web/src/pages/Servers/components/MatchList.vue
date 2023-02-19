@@ -23,13 +23,13 @@ div {
 </style>
 
 <script setup lang="ts">
-import { IGameHub } from '@/types/game-server';
 import { PropType } from 'vue';
+import { IHub } from '../types/hub';
 import Match from './Match.vue';
 
 defineProps({
   hub: {
-    type: Object as PropType<IGameHub>,
+    type: Object as PropType<IHub>,
     required: true
   }
 });

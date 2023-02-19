@@ -173,238 +173,207 @@ public sealed class AccountController : JsonAPIController
 			"dateAdded": "2018-01-17T18:58:39.831Z"
 		}]
 		*/
-		return Json("[]");
-	}
+        return Json("[]");
+    }
 
-	[HttpGet("epicdomains/ssodomains")]
-	[AllowAnonymous]
-	public IActionResult GetSSODomains()
-	{
-		logger.LogInformation(@"Get SSO domains");
+    [HttpGet("epicdomains/ssodomains")]
+    [AllowAnonymous]
+    public IActionResult GetSSODomains()
+    {
+        logger.LogInformation(@"Get SSO domains");
 
-		// epic responds with this: ["unrealengine.com","unrealtournament.com","fortnite.com","epicgames.com"]
+        // epic responds with this: ["unrealengine.com","unrealtournament.com","fortnite.com","epicgames.com"]
 
-		return Json("[]");
-	}
+        return Json("[]");
+    }
 
-	#endregion
+    #endregion
 
-	#region NON-EPIC API
+    #region NON-EPIC API
 
-	[HttpPost("create/account")]
-	[AllowAnonymous]
-	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
-	{
-		var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
-		var httpClient = new HttpClient();
-		var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
-		if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
+    [HttpPost("create/account")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
+    {
+        var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
+		if (!string.IsNullOrWhiteSpace(reCaptchaSecret))
 		{
-			return Conflict("Recaptcha validation failed");
-		}
-
-		var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
-		var jsonData = JObject.Parse(jsonResponse);
-		if (jsonData["success"]?.ToObject<bool>() != true)
-		{
-			return Conflict("Recaptcha validation failed");
-		}
-
-		var account = await accountService.GetAccountAsync(username);
-		if (account != null)
-		{
-			logger.LogInformation($"Could not register duplicate account: {username}");
-			return Conflict("Username already exists");
-		}
-
-		if (!ValidationHelper.ValidateUsername(username))
-		{
-			logger.LogInformation($"Entered an invalid username: {username}");
-			return Conflict("You have entered an invalid username");
-		}
-
-		email = email.ToLower();
-		account = await accountService.GetAccountByEmailAsync(email);
-		if (account != null)
-		{
-			logger.LogInformation($"Could not register duplicate email: {email}");
-			return Conflict("Email already exists");
-		}
-
-		if (!ValidationHelper.ValidateEmail(email))
-		{
-			logger.LogInformation($"Entered an invalid email format: {email}");
-			return Conflict("You have entered an invalid email address");
-		}
-
-		if (!ValidationHelper.ValidatePassword(password))
-		{
-			logger.LogInformation($"Entered password was in invalid format");
-			return Conflict("Unexpected password format");
-		}
-
-		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
-
-
-		logger.LogInformation($"Registered new user: {username}");
-
-		return Ok("Account created successfully");
-	}
-
-	[HttpPatch("update/username")]
-	public async Task<IActionResult> UpdateUsername([FromForm] string newUsername)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-		{
-			return Unauthorized();
-		}
-
-		if (!ValidationHelper.ValidateUsername(newUsername))
-		{
-			return ValidationProblem();
-		}
-
-		var matchingAccount = await accountService.GetAccountAsync(newUsername);
-		if (matchingAccount != null)
-		{
-			logger.LogInformation($"Change Username failed, already taken: {newUsername}");
-			return Conflict(new ErrorResponse()
+			var httpClient = new HttpClient();
+			var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
+			if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
 			{
-				ErrorMessage = $"Username already taken"
-			});
-		}
+				return Conflict("Recaptcha validation failed");
+			}
 
-		var account = await accountService.GetAccountAsync(user.Session.AccountID);
-		if (account == null)
-		{
-			return NotFound(new ErrorResponse()
+			var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+			var jsonData = JObject.Parse(jsonResponse);
+			if (jsonData["success"]?.ToObject<bool>() != true)
 			{
-				ErrorMessage = $"Failed to retrieve your account"
-			});
+				return Conflict("Recaptcha validation failed");
+			}
 		}
 
-		account.Username = newUsername;
-		await accountService.UpdateAccountAsync(account);
+        var account = await accountService.GetAccountAsync(username);
+        if (account != null)
+        {
+            logger.LogInformation($"Could not register duplicate account: {username}");
+            return Conflict("Username already exists");
+        }
 
-		logger.LogInformation($"Updated username for {user.Session.AccountID} to: {newUsername}");
+        if (!ValidationHelper.ValidateUsername(username))
+        {
+            logger.LogInformation($"Entered an invalid username: {username}");
+            return Conflict("You have entered an invalid username");
+        }
 
-		return Ok("Changed username successfully");
-	}
+        email = email.ToLower();
+        account = await accountService.GetAccountByEmailAsync(email);
+        if (account != null)
+        {
+            logger.LogInformation($"Could not register duplicate email: {email}");
+            return Conflict("Email already exists");
+        }
 
-	[HttpPatch("update/email")]
-	public async Task<IActionResult> UpdateEmail([FromForm] string newEmail)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-		{
-			return Unauthorized();
-		}
+        if (!ValidationHelper.ValidateEmail(email))
+        {
+            logger.LogInformation($"Entered an invalid email format: {email}");
+            return Conflict("You have entered an invalid email address");
+        }
 
-		newEmail = newEmail.ToLower();
-		if (!ValidationHelper.ValidateEmail(newEmail))
-		{
-			return ValidationProblem();
-		}
+        if (!ValidationHelper.ValidatePassword(password))
+        {
+            logger.LogInformation($"Entered password was in invalid format");
+            return Conflict("Unexpected password format");
+        }
 
-		var account = await accountService.GetAccountAsync(user.Session.AccountID);
-		if (account == null)
-		{
-			return NotFound(new ErrorResponse()
-			{
-				ErrorMessage = $"Failed to retrieve your account"
-			});
-		}
+        await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
 
-		account.Email = newEmail;
-		await accountService.UpdateAccountAsync(account);
 
-		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
+        logger.LogInformation($"Registered new user: {username}");
 
-		return Ok("Changed email successfully");
-	}
+        return Ok("Account created successfully");
+    }
 
-	[HttpPatch("update/password")]
-	public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-		{
-			throw new UnauthorizedAccessException();
-		}
+    [HttpPatch("update/username")]
+    public async Task<IActionResult> UpdateUsername([FromForm] string newUsername)
+    {
+        if (User.Identity is not EpicUserIdentity user)
+        {
+            return Unauthorized();
+        }
 
-		if (user.Session.ClientID != ClientIdentification.Launcher.ID)
-		{
-			throw new UnauthorizedAccessException("Password can only be changed from the website");
-		}
+        if (!ValidationHelper.ValidateUsername(newUsername))
+        {
+            return ValidationProblem();
+        }
 
-		// passwords should already be hashed, but check its length just in case
-		if (!ValidationHelper.ValidatePassword(newPassword))
-		{
-			return BadRequest(new ErrorResponse()
-			{
-				ErrorMessage = $"newPassword is not a SHA512 hash"
-			});
-		}
+        var matchingAccount = await accountService.GetAccountAsync(newUsername);
+        if (matchingAccount != null)
+        {
+            logger.LogInformation($"Change Username failed, already taken: {newUsername}");
+            return Conflict(new ErrorResponse()
+            {
+                ErrorMessage = $"Username already taken"
+            });
+        }
 
-		var account = await accountService.GetAccountAsync(user.Session.AccountID);
-		if (account == null)
-		{
-			return NotFound(new ErrorResponse()
-			{
-				ErrorMessage = $"Failed to retrieve your account"
-			});
-		}
+        var account = await accountService.GetAccountAsync(user.Session.AccountID);
+        if (account == null)
+        {
+            return NotFound(new ErrorResponse()
+            {
+                ErrorMessage = $"Failed to retrieve your account"
+            });
+        }
 
-		if (!account.CheckPassword(currentPassword, false))
-		{
-			return BadRequest(new ErrorResponse()
-			{
-				ErrorMessage = $"Current Password is invalid"
-			});
-		}
+        account.Username = newUsername;
+        await accountService.UpdateAccountAsync(account);
 
-		await accountService.UpdateAccountPasswordAsync(account.ID, newPassword);
+        logger.LogInformation($"Updated username for {user.Session.AccountID} to: {newUsername}");
 
-		// logout user to make sure they remember they changed password by being forced to log in again,
-		// as well as prevent anyone else from using this account after successful password change.
-		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
+        return Ok("Changed username successfully");
+    }
 
-		logger.LogInformation($"Updated password for {user.Session.AccountID}");
+    [HttpPatch("update/email")]
+    public async Task<IActionResult> UpdateEmail([FromForm] string newEmail)
+    {
+        if (User.Identity is not EpicUserIdentity user)
+        {
+            return Unauthorized();
+        }
 
-		return Ok("Changed password successfully");
-	}
+        newEmail = newEmail.ToLower();
+        if (!ValidationHelper.ValidateEmail(newEmail))
+        {
+            return ValidationProblem();
+        }
 
-	[AllowAnonymous]
-	[HttpGet("activate")]
-	public async Task<IActionResult> ActivateAccount([FromQuery] string email, [FromQuery] string guid)
-	{
-		var activated = await accountService.ActivateAccountAsync(email, guid);
-		return Ok(activated);
-	}
+        var account = await accountService.GetAccountAsync(user.Session.AccountID);
+        if (account == null)
+        {
+            return NotFound(new ErrorResponse()
+            {
+                ErrorMessage = $"Failed to retrieve your account"
+            });
+        }
 
-	[AllowAnonymous]
-	[HttpGet("initiate-reset-password")]
-	public async Task<IActionResult> InitiateResetPassword([FromQuery] string email)
-	{
-		var clientIpAddress = GetClientIP(applicationSettings);
-		if (clientIpAddress == null)
-		{
-			logger.LogError("Could not determine IP Address of remote machine.");
-			return StatusCode(StatusCodes.Status500InternalServerError);
-		}
+        account.Email = newEmail;
+        await accountService.UpdateAccountAsync(account);
 
-		rateLimitService.CheckRateLimit($"{nameof(InitiateResetPassword)}-{clientIpAddress}");
+        logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
 
-		await accountService.InitiateResetPasswordAsync(email);
-		return Ok();
-	}
+        return Ok("Changed email successfully");
+    }
 
-	[AllowAnonymous]
-	[HttpPost("reset-password")]
-	public async Task<IActionResult> ResetPassword([FromForm] string accountID, [FromForm] string guid, [FromForm] string newPassword)
-	{
-		EpicID eid = EpicID.FromString(accountID);
-		await accountService.ResetPasswordAsync(eid, guid, newPassword);
-		return Ok();
-	}
+    [HttpPatch("update/password")]
+    public async Task<IActionResult> UpdatePassword([FromForm] string currentPassword, [FromForm] string newPassword)
+    {
+        if (User.Identity is not EpicUserIdentity user)
+        {
+            throw new UnauthorizedAccessException();
+        }
 
-	#endregion
+        if (user.Session.ClientID != ClientIdentification.Launcher.ID)
+        {
+            throw new UnauthorizedAccessException("Password can only be changed from the website");
+        }
+
+        // passwords should already be hashed, but check its length just in case
+        if (!ValidationHelper.ValidatePassword(newPassword))
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                ErrorMessage = $"newPassword is not a SHA512 hash"
+            });
+        }
+
+        var account = await accountService.GetAccountAsync(user.Session.AccountID);
+        if (account == null)
+        {
+            return NotFound(new ErrorResponse()
+            {
+                ErrorMessage = $"Failed to retrieve your account"
+            });
+        }
+
+        if (!account.CheckPassword(currentPassword, false))
+        {
+            return BadRequest(new ErrorResponse()
+            {
+                ErrorMessage = $"Current Password is invalid"
+            });
+        }
+
+        await accountService.UpdateAccountPasswordAsync(account.ID, newPassword);
+
+        // logout user to make sure they remember they changed password by being forced to log in again,
+        // as well as prevent anyone else from using this account after successful password change.
+        await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, user.Session.AccountID, EpicID.Empty);
+
+        logger.LogInformation($"Updated password for {user.Session.AccountID}");
+
+        return Ok("Changed password successfully");
+    }
+
+    #endregion
 }

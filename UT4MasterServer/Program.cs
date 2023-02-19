@@ -88,6 +88,17 @@ public static class Program
 				// we ignore the fact that proxy list file was not found
 			}
 		});
+	
+		builder.Services.Configure<ReCaptchaSettings>(x =>
+		{
+			if (builder.Environment.IsProduction())
+			{
+				if (string.IsNullOrWhiteSpace(x.SecretKey) || string.IsNullOrWhiteSpace(x.SiteKey))
+				{
+					throw new Exception("Must specify ApplicationSettings.ReCaptchaSettings in production environment");
+				}
+			}
+		});
 
 		// Microsoft services
 		builder.Services.AddMemoryCache();
@@ -163,20 +174,36 @@ public static class Program
 
 		builder.Services.AddCors(options =>
 		{
-			options.AddPolicy(allowOriginsPolicy,
-							  policy =>
-							  {
-								  policy.WithOrigins("https://ut4.timiimit.com");
-								  policy.AllowAnyHeader();
-								  policy.AllowAnyMethod();
-							  });
-			options.AddPolicy(devAllowOriginsPolicy,
-							  policy =>
-							  {
-								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080", "http://localhost:80");
-								  policy.AllowAnyHeader();
-								  policy.AllowAnyMethod();
-							  });
+			if (builder.Environment.IsDevelopment())
+			{
+				options.AddPolicy(
+					devAllowOriginsPolicy,
+					policy =>
+					{
+						policy.WithOrigins("http://localhost:5001", "http://localhost:8080", "http://localhost:80");
+						policy.AllowAnyHeader();
+						policy.AllowAnyMethod();
+					}
+				);
+			}
+			else
+			{
+				var websiteDomain = builder.Configuration.GetSection("ApplicationSettings")["WebsiteDomain"];
+				if (string.IsNullOrWhiteSpace(websiteDomain))
+				{
+					throw new Exception("Must specify ApplicationSettings.WebsiteDomain in production environment");
+				}
+
+				options.AddPolicy(
+					allowOriginsPolicy,
+					policy =>
+					{
+						policy.WithOrigins($"https://{websiteDomain}");
+						policy.AllowAnyHeader();
+						policy.AllowAnyMethod();
+					}
+				);
+			}
 		});
 
 		var app = builder.Build();

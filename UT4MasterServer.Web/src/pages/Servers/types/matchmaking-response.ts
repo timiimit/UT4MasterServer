@@ -1,19 +1,7 @@
-export interface IGameServerAttributes {
-  UT_HUBGUID_s: string;
-  UT_SERVERINSTANCEGUID_s: string;
-  UT_SERVERNAME_s: string;
-  UT_SERVERMOTD_s: string;
-  UT_PLAYERONLINE_i: number;
-  UT_SPECTATORSONLINE_i: number;
-  UT_MAXPLAYERS_i: number;
-  GAMEMODE_s: string;
-  MAPNAME_s: string;
-  UT_MATCHSTATE_s: string;
-  UT_MATCHDURATION_i: number;
-  [key: string]: number | string | boolean | undefined | null;
-}
+import { SimpleType } from '@/types/simple-type';
+import { ServerAttribute } from '../enums/server-attribute';
 
-export interface IGameServer {
+export interface IMatchmakingResponse {
   id: string;
   ownerId: string;
   ownerName: string;
@@ -24,7 +12,7 @@ export interface IGameServer {
   openPublicPlayers: number;
   maxPrivatePlayers: number;
   openPrivatePlayers: number;
-  attributes: IGameServerAttributes;
+  attributes: Record<ServerAttribute | string, SimpleType>;
   publicPlayers: string[];
   privatePlayers: string[];
   totalPlayers: number;
@@ -39,8 +27,4 @@ export interface IGameServer {
   buildUniqueId: string;
   lastUpdated: string;
   started: boolean;
-}
-
-export interface IGameHub extends IGameServer {
-  matches: IGameServer[];
 }

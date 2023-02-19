@@ -407,3 +407,7 @@ FodyWeavers.xsd
 
 # ignore all database files
 db/
+
+# ignore production files
+appsettings.Production.json
+.env.production
