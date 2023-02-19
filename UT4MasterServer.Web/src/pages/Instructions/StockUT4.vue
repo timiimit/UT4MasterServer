@@ -19,22 +19,22 @@
       Append the following at the bottom of the file:
       <CodeBlock>
         [OnlineSubsystemMcp.BaseServiceMcp]<br />
-        Domain=master-ut4.timiimit.com<br />
+        Domain={{ masterServerUrl }}<br />
         Protocol=https<br />
         [OnlineSubsystemMcp.GameServiceMcp]<br />
-        Domain=master-ut4.timiimit.com<br />
+        Domain={{ masterServerUrl }}<br />
         Protocol=https<br />
         [OnlineSubsystemMcp.AccountServiceMcp]<br />
-        Domain=master-ut4.timiimit.com<br />
+        Domain={{ masterServerUrl }}<br />
         Protocol=https<br />
         [OnlineSubsystemMcp.OnlineFriendsMcp]<br />
-        Domain=master-ut4.timiimit.com<br />
+        Domain={{ masterServerUrl }}<br />
         Protocol=https<br />
         [OnlineSubsystemMcp.PersonaServiceMcp]<br />
-        Domain=master-ut4.timiimit.com<br />
+        Domain={{ masterServerUrl }}<br />
         Protocol=https<br />
         [OnlineSubsystemMcp.OnlineImageServiceMcp]<br />
-        Domain=master-ut4.timiimit.com<br />
+        Domain={{ masterServerUrl }}<br />
         Protocol=https<br />
       </CodeBlock>
     </li>
@@ -74,4 +74,6 @@
 </template>
 <script setup lang="ts">
 import CodeBlock from '@/components/CodeBlock.vue';
+
+const masterServerUrl = __BACKEND_URL.split('//')[1];
 </script>

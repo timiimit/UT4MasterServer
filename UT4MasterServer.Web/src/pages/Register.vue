@@ -62,7 +62,7 @@
             </div>
           </div>
         </div>
-        <div class="form-group row">
+        <div v-if="recaptchaSiteKey.length" class="form-group row">
           <VueRecaptcha
             :sitekey="recaptchaSiteKey"
             :load-recaptcha-script="true"
@@ -98,6 +98,7 @@ import { useRouter } from 'vue-router';
 import AccountService from '@/services/account.service';
 import { valid as vValid } from '@/directives/valid';
 import { VueRecaptcha } from 'vue-recaptcha';
+import { IRegisterRequest } from '@/types/register-request';
 
 const username = shallowRef('');
 const password = shallowRef('');
@@ -138,12 +139,14 @@ async function register() {
   }
   try {
     status.value = AsyncStatus.BUSY;
-    const formData = {
+    const formData: IRegisterRequest = {
       email: email.value,
       username: username.value,
-      password: CryptoJS.SHA512(password.value).toString(),
-      recaptchaToken: recaptchaToken.value
+      password: CryptoJS.SHA512(password.value).toString()
     };
+    if (recaptchaToken.value) {
+      formData.recaptchaToken = recaptchaToken.value;
+    }
     await accountService.register(formData);
     status.value = AsyncStatus.OK;
     router.push('/Login');
