@@ -9,6 +9,8 @@ import { AccountStore } from '@/stores/account-store';
 
 export default class AuthenticationService extends HttpService {
   private baseUrl = `${__BACKEND_URL}/account/api/oauth`;
+  private webBasicAuth =
+    'basic MzRhMDJjZjhmNDQxNGUyOWIxNTkyMTg3NmRhMzZmOWE6ZGFhZmJjY2M3Mzc3NDUwMzlkZmZlNTNkOTRmYzc2Y2Y=';
 
   async passwordLogin(request: ILoginRequest) {
     try {
@@ -17,7 +19,7 @@ export default class AuthenticationService extends HttpService {
         {
           body: request,
           headers: {
-            Authorization: `${__WEB_BASIC_AUTH}`
+            Authorization: `${this.webBasicAuth}`
           }
         }
       );
@@ -47,7 +49,7 @@ export default class AuthenticationService extends HttpService {
             grant_type: GrantType.RefreshToken
           },
           headers: {
-            Authorization: `${__WEB_BASIC_AUTH}`
+            Authorization: `${this.webBasicAuth}`
           }
         }
       );
