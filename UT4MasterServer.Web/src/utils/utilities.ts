@@ -70,12 +70,3 @@ export function getRouteParamNumberValue(
   const paramString = params[key];
   return paramString?.length ? +paramString : defaultValue;
 }
-
-export function getRouteParamBooleanValue(
-  params: RouteParams,
-  key: string,
-  defaultValue: boolean
-) {
-  const paramString = params[key];
-  return paramString?.length ? paramString === 'true' : defaultValue;
-}
