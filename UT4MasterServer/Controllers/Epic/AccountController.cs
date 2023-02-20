@@ -182,11 +182,16 @@ public sealed class AccountController : JsonAPIController
 
     [HttpPost("create/account")]
     [AllowAnonymous]
-    public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string recaptchaToken)
+    public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string? recaptchaToken)
     {
         var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
 		if (!string.IsNullOrWhiteSpace(reCaptchaSecret))
 		{
+			if (recaptchaToken is null)
+			{
+				return Conflict("Recaptcha token is missing");
+			}
+
 			var httpClient = new HttpClient();
 			var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
 			if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
