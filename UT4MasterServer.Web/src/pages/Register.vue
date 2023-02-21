@@ -100,13 +100,14 @@ import { valid as vValid } from '@/directives/valid';
 import { VueRecaptcha } from 'vue-recaptcha';
 import { IRegisterRequest } from '@/types/register-request';
 
+const recaptchaSiteKey = __RECAPTCHA_SITE_KEY;
 const username = shallowRef('');
 const password = shallowRef('');
 const email = shallowRef('');
 const status = shallowRef(AsyncStatus.OK);
 const emailValid = computed(() => validateEmail(email.value));
 const passwordValid = computed(() => validatePassword(password.value));
-const recaptchaValid = shallowRef(false);
+const recaptchaValid = shallowRef(!recaptchaSiteKey);
 const formValid = computed(
   () =>
     emailValid.value &&
@@ -116,7 +117,6 @@ const formValid = computed(
 );
 const errorMessage = shallowRef('Error registering account. Please try again.');
 const submitAttempted = shallowRef(false);
-const recaptchaSiteKey = __RECAPTCHA_SITE_KEY;
 const recaptchaToken = shallowRef<string | undefined>(undefined);
 
 const accountService = new AccountService();
