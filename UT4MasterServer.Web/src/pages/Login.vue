@@ -123,7 +123,8 @@ const route = useRoute();
 
 function parseQueryValues() {
   const { activationLinkSent: qActivationLinkSent } = route.query;
-  if (qActivationLinkSent?.toString() === 'true') {
+
+  if (qActivationLinkSent === 'true') {
     activationLinkSent.value = true;
   }
 }
