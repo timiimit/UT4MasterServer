@@ -63,7 +63,12 @@ async function resendActivationLink() {
   try {
     status.value = AsyncStatus.BUSY;
 
-    await accountService.resendActivationLink(email.value);
+    const formData = {
+      email: email.value
+    };
+
+    await accountService.resendActivationLink(formData);
+
     status.value = AsyncStatus.OK;
     activationLinkSent.value = true;
   } catch (err: unknown) {

@@ -390,8 +390,8 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[AllowAnonymous]
-	[HttpGet("resend-activation-link")]
-	public async Task<IActionResult> ResendActivationLink([FromQuery] string email)
+	[HttpPost("resend-activation-link")]
+	public async Task<IActionResult> ResendActivationLink([FromForm] string email)
 	{
 		var clientIpAddress = GetClientIP(applicationSettings);
 		if (clientIpAddress == null)

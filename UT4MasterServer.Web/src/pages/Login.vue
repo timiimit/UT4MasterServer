@@ -143,7 +143,8 @@ async function logIn() {
     router.push(redirectTo);
   } catch (err: unknown) {
     const error = err as HttpError;
-    if (error.code === 'ut4masterserver.accountpendingactivation') {
+    activationLinkSent.value = false;
+    if (error.code === 'ut4masterserver.errors.accountpendingactivation') {
       status.value = AsyncStatus.OK;
       accountPendingActivation.value = true;
     } else {

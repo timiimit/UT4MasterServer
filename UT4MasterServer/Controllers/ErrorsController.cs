@@ -80,13 +80,13 @@ public sealed class ErrorsController : ControllerBase
 				{
 					var err = new ErrorResponse()
 					{
-						ErrorCode = "ut4masterserver.accountpendingactivation",
+						ErrorCode = "ut4masterserver.errors.accountpendingactivation",
 						ErrorMessage = accountNotActiveException.Message,
 						MessageVars = Array.Empty<string>(),
 						NumericErrorCode = 401
 					};
 
-					logger.LogWarning(accountNotActiveException, "Account pending activation.");
+					logger.LogError(accountNotActiveException, "Account pending activation.");
 					return StatusCode(401, err);
 				}
 
