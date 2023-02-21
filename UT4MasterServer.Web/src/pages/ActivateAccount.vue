@@ -30,24 +30,21 @@ const accountService = new AccountService();
 async function activateAccount() {
   try {
     status.value = AsyncStatus.BUSY;
-    const { email, guid } = route.query;
+    const { accountId, guid } = route.query;
 
-    if (email?.toString() === '' || guid?.toString() === '') {
+    if (accountId?.toString() === '' || guid?.toString() === '') {
       status.value = AsyncStatus.ERROR;
       return;
     }
 
-    var result = await accountService.activateAccount(
-      email!.toString(),
-      guid!.toString()
-    );
+    const formData = {
+      accountId: accountId as string,
+      guid: guid as string
+    };
 
-    if (result) {
-      status.value = AsyncStatus.OK;
-      activated.value = true;
-    } else {
-      status.value = AsyncStatus.ERROR;
-    }
+    await accountService.activateAccount(formData);
+    status.value = AsyncStatus.OK;
+    activated.value = true;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;

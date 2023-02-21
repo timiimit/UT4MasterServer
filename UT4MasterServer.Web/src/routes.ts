@@ -99,8 +99,8 @@ export const routes: RouteRecordRaw[] = [
     beforeEnter: publicGuard
   },
   {
-    path: `/Activation`,
-    component: async () => import('./pages/Activation.vue'),
+    path: `/ActivateAccount`,
+    component: async () => import('./pages/ActivateAccount.vue'),
     beforeEnter: publicGuard
   },
   {

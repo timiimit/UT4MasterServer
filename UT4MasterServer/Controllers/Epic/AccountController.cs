@@ -381,11 +381,12 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[AllowAnonymous]
-	[HttpGet("activate")]
-	public async Task<IActionResult> ActivateAccount([FromQuery] string email, [FromQuery] string guid)
+	[HttpPost("activate-account")]
+	public async Task<IActionResult> ActivateAccount([FromForm] string accountID, [FromForm] string guid)
 	{
-		var activated = await accountService.ActivateAccountAsync(email, guid);
-		return Ok(activated);
+		EpicID eid = EpicID.FromString(accountID);
+		await accountService.ActivateAccountAsync(eid, guid);
+		return Ok();
 	}
 
 	[AllowAnonymous]

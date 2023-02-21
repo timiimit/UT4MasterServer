@@ -5,6 +5,7 @@ import { IChangePasswordRequest } from '@/types/change-password-request';
 import { IChangeUsernameRequest } from '@/types/change-username-request';
 import { IRegisterRequest } from '@/types/register-request';
 import { ISearchAccountsResponse } from '@/types/search-accounts-response';
+import { IActivateAccountRequest } from '@/types/activate-account-request';
 import { IResetPasswordRequest } from '@/types/reset-password';
 import HttpService from './http.service';
 
@@ -68,10 +69,10 @@ export default class AccountService extends HttpService {
     );
   }
 
-  async activateAccount(email: string, guid: string) {
-    return await this.get<boolean>(
-      `${this.baseUrl}/activate?email=${email}&guid=${guid}`
-    );
+  async activateAccount(request: IActivateAccountRequest) {
+    return await this.post(`${this.baseUrl}/activate-account`, {
+      body: request
+    });
   }
 
   async resendActivationLink(email: string) {

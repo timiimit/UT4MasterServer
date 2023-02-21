@@ -45,6 +45,7 @@ public sealed class AccountService
 			Username = username,
 			Email = email,
 			ActivationLinkGUID = Guid.NewGuid().ToString(),
+			ActivationLinkExpiration = DateTime.UtcNow.AddMinutes(5),
 			Status = AccountStatus.PendingActivation,
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
@@ -190,24 +191,24 @@ public sealed class AccountService
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
 
-	public async Task<bool> ActivateAccountAsync(string email, string guid)
+	public async Task ActivateAccountAsync(EpicID accountID, string guid)
 	{
-		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+		var filter = Builders<Account>.Filter.Eq(f => f.ID, accountID) &
 					 Builders<Account>.Filter.Eq(f => f.ActivationLinkGUID, guid) &
+					 Builders<Account>.Filter.Gt(x => x.ActivationLinkExpiration, DateTime.UtcNow) &
 					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
 		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
 
-		if (account is not null)
+		if (account is null)
 		{
-			var updateDefinition = Builders<Account>.Update
-				.Set(s => s.Status, AccountStatus.Active)
-				.Unset(u => u.ActivationLinkGUID);
-			await accountCollection.UpdateOneAsync(filter, updateDefinition);
-
-			return true;
+			throw new AccountActivationException("Account activation failed: requested account not found, activation link expired or account in a wrong status.");
 		}
 
-		return false;
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.Status, AccountStatus.Active)
+			.Unset(u => u.ActivationLinkGUID)
+			.Unset(u => u.ActivationLinkExpiration);
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
 	}
 
 	public async Task ResendActivationLinkAsync(string email)
@@ -281,7 +282,7 @@ public sealed class AccountService
 			Scheme = applicationSettings.WebsiteScheme,
 			Host = applicationSettings.WebsiteDomain,
 			Port = applicationSettings.WebsitePort,
-			Path = "Activation",
+			Path = "ActivateAccount",
 			Query = $"accountId={accountID}&guid={guid}"
 		};
 
