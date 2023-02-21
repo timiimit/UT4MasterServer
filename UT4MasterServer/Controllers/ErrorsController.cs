@@ -94,7 +94,7 @@ public sealed class ErrorsController : ControllerBase
 				{
 					var err = new ErrorResponse()
 					{
-						ErrorCode = "ut4masterserver.notfound",
+						ErrorCode = "ut4masterserver.errors.notfound",
 						ErrorMessage = notFoundException.Message,
 						MessageVars = Array.Empty<string>(),
 						NumericErrorCode = 404
@@ -108,7 +108,7 @@ public sealed class ErrorsController : ControllerBase
 				{
 					var err = new ErrorResponse()
 					{
-						ErrorCode = "ut4masterserver.ratelimitexceeded",
+						ErrorCode = "ut4masterserver.errors.ratelimitexceeded",
 						ErrorMessage = rateLimitExceededException.Message,
 						MessageVars = Array.Empty<string>(),
 						NumericErrorCode = 400
