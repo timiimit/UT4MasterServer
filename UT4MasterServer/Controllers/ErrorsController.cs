@@ -62,6 +62,20 @@ public sealed class ErrorsController : ControllerBase
 					});
 				}
 
+			case AccountActivationException accountActivationException:
+				{
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.accountactivation",
+						ErrorMessage = accountActivationException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 404
+					};
+
+					logger.LogError(accountActivationException, "Account activation failed.");
+					return StatusCode(404, err);
+				}
+
 			case AccountNotActiveException accountNotActiveException:
 				{
 					var err = new ErrorResponse()
