@@ -110,8 +110,8 @@ async function parseQueryValues() {
     return;
   }
 
-  accountId.value = qAccountId!.toString();
-  guid.value = qGuid!.toString();
+  accountId.value = qAccountId as string;
+  guid.value = qGuid as string;
 }
 
 async function resetPassword() {
