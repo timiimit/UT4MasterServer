@@ -1,3 +1,3 @@
-export interface IResendActivationLink {
+export interface IResendActivationLinkRequest {
   email: string;
 }
