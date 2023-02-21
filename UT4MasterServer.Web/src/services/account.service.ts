@@ -5,6 +5,10 @@ import { IChangePasswordRequest } from '@/types/change-password-request';
 import { IChangeUsernameRequest } from '@/types/change-username-request';
 import { IRegisterRequest } from '@/types/register-request';
 import { ISearchAccountsResponse } from '@/types/search-accounts-response';
+import { IActivateAccountRequest } from '@/types/activate-account-request';
+import { IResendActivationLinkRequest } from '@/types/resend-activation-link-request';
+import { IInitiateResetPasswordRequest } from '@/types/initiate-reset-password-request';
+import { IResetPasswordRequest } from '@/types/reset-password-request';
 import HttpService from './http.service';
 
 export default class AccountService extends HttpService {
@@ -64,6 +68,33 @@ export default class AccountService extends HttpService {
       `${this.personaBaseUrl}/accounts`,
       { body: ids },
       false
+    );
+  }
+
+  async activateAccount(request: IActivateAccountRequest) {
+    return await this.post(`${this.baseUrl}/activate-account`, {
+      body: request
+    });
+  }
+
+  async resendActivationLink(request: IResendActivationLinkRequest) {
+    return await this.post(`${this.baseUrl}/resend-activation-link`, {
+      body: request
+    });
+  }
+
+  async initiateResetPassword(request: IInitiateResetPasswordRequest) {
+    return await this.post(`${this.baseUrl}/initiate-reset-password`, {
+      body: request
+    });
+  }
+
+  async resetPassword(request: IResetPasswordRequest) {
+    return await this.post<unknown, IResetPasswordRequest>(
+      `${this.baseUrl}/reset-password`,
+      {
+        body: request
+      }
     );
   }
 }

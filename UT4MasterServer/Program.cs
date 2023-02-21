@@ -62,6 +62,7 @@ public static class Program
 		// load settings objects
 		builder.Services
 			.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"))
+			.Configure<AWSSettings>(builder.Configuration.GetSection("AWS"))
 			.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"))
 			.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptchaSettings"));
 
@@ -87,7 +88,7 @@ public static class Program
 				// we ignore the fact that proxy list file was not found
 			}
 		});
-
+	
 		builder.Services.Configure<ReCaptchaSettings>(x =>
 		{
 			if (builder.Environment.IsProduction())
@@ -98,6 +99,9 @@ public static class Program
 				}
 			}
 		});
+
+		// Microsoft services
+		builder.Services.AddMemoryCache();
 
 		// services whose instance is created per-request
 		builder.Services
@@ -110,13 +114,15 @@ public static class Program
 			.AddScoped<TrustedGameServerService>()
 			.AddScoped<MatchmakingService>()
 			.AddScoped<StatisticsService>()
-			.AddScoped<RatingsService>();
+			.AddScoped<RatingsService>()
+			.AddScoped<AwsSesClient>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
 			.AddSingleton<RuntimeInfoService>()
 			.AddSingleton<CodeService>()
-			.AddSingleton<MatchmakingWaitTimeEstimateService>();
+			.AddSingleton<MatchmakingWaitTimeEstimateService>()
+			.AddSingleton<RateLimitService>();
 
 		// hosted services
 		builder.Services

@@ -9,6 +9,8 @@ namespace UT4MasterServer.Controllers;
 [Route("api/errors")]
 public sealed class ErrorsController : ControllerBase
 {
+	private const string NotFoundError = "Not found.";
+	private const string BadRequestError = "Bad request.";
 	private const string InternalServerError = "Internal server error occurred.";
 	private const string UnauthorizedError = "Attempt to access resource without required authorization.";
 
@@ -32,33 +34,89 @@ public sealed class ErrorsController : ControllerBase
 			logger.LogError(InternalServerError);
 			return StatusCode(statusCode, message);
 		}
-		
+
 		switch (exception)
 		{
 			case InvalidEpicIDException invalidEpicIDException:
-			{
-				var err = new ErrorResponse()
 				{
-					ErrorCode = invalidEpicIDException.ErrorCode,
-					ErrorMessage = invalidEpicIDException.Message,
-					MessageVars = new string[] { invalidEpicIDException.ID },
-					NumericErrorCode = invalidEpicIDException.NumericErrorCode
-				};
+					var err = new ErrorResponse()
+					{
+						ErrorCode = invalidEpicIDException.ErrorCode,
+						ErrorMessage = invalidEpicIDException.Message,
+						MessageVars = new string[] { invalidEpicIDException.ID },
+						NumericErrorCode = invalidEpicIDException.NumericErrorCode
+					};
 
-				logger.LogError(exception, "Tried using {ID} as EpicID.", invalidEpicIDException.ID);
-				return StatusCode(400, err);
-			}
+					logger.LogError(exception, "Tried using {ID} as EpicID.", invalidEpicIDException.ID);
+					return StatusCode(400, err);
+				}
 
 			case UnauthorizedAccessException unauthorizedAccessException:
-			{
-				logger.LogWarning(exception, UnauthorizedError);
-				return StatusCode(401, new ErrorResponse()
 				{
-					ErrorCode = "com.epicgames.errors.unauthorized",
-					ErrorMessage = string.IsNullOrWhiteSpace(unauthorizedAccessException.Message) ? UnauthorizedError : unauthorizedAccessException.Message,
-					NumericErrorCode = 401
-				});
-			}
+					logger.LogWarning(exception, UnauthorizedError);
+					return StatusCode(401, new ErrorResponse()
+					{
+						ErrorCode = "com.epicgames.errors.unauthorized",
+						ErrorMessage = string.IsNullOrWhiteSpace(unauthorizedAccessException.Message) ? UnauthorizedError : unauthorizedAccessException.Message,
+						NumericErrorCode = 401
+					});
+				}
+
+			case AccountActivationException accountActivationException:
+				{
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.accountactivation",
+						ErrorMessage = accountActivationException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 404
+					};
+
+					logger.LogError(accountActivationException, "Account activation failed.");
+					return StatusCode(404, err);
+				}
+
+			case AccountNotActiveException accountNotActiveException:
+				{
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.accountpendingactivation",
+						ErrorMessage = accountNotActiveException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 401
+					};
+
+					logger.LogError(accountNotActiveException, "Account pending activation.");
+					return StatusCode(401, err);
+				}
+
+			case NotFoundException notFoundException:
+				{
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.notfound",
+						ErrorMessage = notFoundException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 404
+					};
+
+					logger.LogWarning(notFoundException, NotFoundError);
+					return StatusCode(404, err);
+				}
+
+			case RateLimitExceededException rateLimitExceededException:
+				{
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.ratelimitexceeded",
+						ErrorMessage = rateLimitExceededException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 400
+					};
+
+					logger.LogWarning(rateLimitExceededException, BadRequestError);
+					return StatusCode(400, err);
+				}
 		}
 
 		logger.LogError(exception, InternalServerError);

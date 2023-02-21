@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Exceptions;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
@@ -12,10 +13,17 @@ namespace UT4MasterServer.Services.Scoped;
 public sealed class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
+	private readonly ApplicationSettings applicationSettings;
+	private readonly AwsSesClient awsSesClient;
 
-	public AccountService(DatabaseContext dbContext, IOptions<ApplicationSettings> settings)
+	public AccountService(
+		DatabaseContext dbContext,
+		IOptions<ApplicationSettings> applicationSettings,
+		AwsSesClient awsSesClient)
 	{
+		this.applicationSettings = applicationSettings.Value;
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
+		this.awsSesClient = awsSesClient;
 	}
 
 	public async Task CreateIndexesAsync()
@@ -35,11 +43,16 @@ public sealed class AccountService
 		{
 			ID = EpicID.GenerateNew(),
 			Username = username,
-			Email = email
+			Email = email,
+			ActivationLinkGUID = Guid.NewGuid().ToString(),
+			ActivationLinkExpiration = DateTime.UtcNow.AddMinutes(5),
+			Status = AccountStatus.PendingActivation,
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
+
+		await SendActivationLinkAsync(email, newAccount.ID, newAccount.ActivationLinkGUID);
 	}
 
 	public async Task<Account?> GetAccountByEmailAsync(string email)
@@ -98,6 +111,11 @@ public sealed class AccountService
 			account = await GetAccountByEmailAsync(username);
 			if (account == null)
 				return null;
+		}
+
+		if (account.Status == AccountStatus.PendingActivation)
+		{
+			throw new AccountNotActiveException("Account is pending activation. Check your email for activation link or resend it.");
 		}
 
 		return account;
@@ -172,5 +190,126 @@ public sealed class AccountService
 	{
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
-}
 
+	public async Task ActivateAccountAsync(EpicID accountID, string guid)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.ID, accountID) &
+					 Builders<Account>.Filter.Eq(f => f.ActivationLinkGUID, guid) &
+					 Builders<Account>.Filter.Gt(x => x.ActivationLinkExpiration, DateTime.UtcNow) &
+					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new AccountActivationException("Account activation failed: requested account not found, activation link expired or account in a wrong status.");
+		}
+
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.Status, AccountStatus.Active)
+			.Unset(u => u.ActivationLinkGUID)
+			.Unset(u => u.ActivationLinkExpiration);
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+	}
+
+	public async Task ResendActivationLinkAsync(string email)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Email not found or account in a wrong status.");
+		}
+
+		var activationGUID = Guid.NewGuid().ToString();
+
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.ActivationLinkGUID, activationGUID)
+			.Set(s => s.ActivationLinkExpiration, DateTime.UtcNow.AddMinutes(5));
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+
+		await SendActivationLinkAsync(email, account.ID, activationGUID);
+	}
+
+	public async Task InitiateResetPasswordAsync(string email)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.Active);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Email not found or account in a wrong status.");
+		}
+
+		var guid = Guid.NewGuid().ToString();
+
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.ResetLinkGUID, guid)
+			.Set(u => u.ResetLinkExpiration, DateTime.UtcNow.AddMinutes(5));
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+
+		await SendResetPasswordLinkAsync(email, account.ID, guid);
+	}
+
+	public async Task ResetPasswordAsync(EpicID accountID, string guid, string newPassword)
+	{
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID) &
+					 Builders<Account>.Filter.Eq(x => x.ResetLinkGUID, guid) &
+					 Builders<Account>.Filter.Gt(x => x.ResetLinkExpiration, DateTime.UtcNow);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Requested account not found or reset link expired.");
+		}
+
+		newPassword = PasswordHelper.GetPasswordHash(accountID, newPassword);
+
+		var filterForUpdate = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var update = Builders<Account>.Update
+			.Set(x => x.Password, newPassword)
+			.Unset(x => x.ResetLinkGUID)
+			.Unset(x => x.ResetLinkExpiration);
+		await accountCollection.UpdateOneAsync(filterForUpdate, update);
+	}
+
+	private async Task SendActivationLinkAsync(string email, EpicID accountID, string guid)
+	{
+		UriBuilder uriBuilder = new()
+		{
+			Scheme = applicationSettings.WebsiteScheme,
+			Host = applicationSettings.WebsiteDomain,
+			Port = applicationSettings.WebsitePort,
+			Path = "ActivateAccount",
+			Query = $"accountId={accountID}&guid={guid}"
+		};
+
+		var html = @$"
+			<p>Welcome to UT4 Master Server!</p>
+			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to activate your UT4 Master Server account.</p>
+		";
+
+		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Account Activation", html);
+	}
+
+	private async Task SendResetPasswordLinkAsync(string email, EpicID accountID, string guid)
+	{
+		UriBuilder uriBuilder = new()
+		{
+			Scheme = applicationSettings.WebsiteScheme,
+			Host = applicationSettings.WebsiteDomain,
+			Port = applicationSettings.WebsitePort,
+			Path = "ResetPassword",
+			Query = $"accountId={accountID}&guid={guid}"
+		};
+
+		var html = @$"
+			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to reset your password for UT4 Master Server account.</p>
+			<p>If you didn't initiate password reset, ignore this message.</p>
+		";
+
+		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Reset Password", html);
+	}
+}

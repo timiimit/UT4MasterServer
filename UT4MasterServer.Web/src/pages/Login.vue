@@ -1,8 +1,25 @@
 <template>
-  <LoadingPanel :status="status" :error="errorMessage">
+  <LoadingPanel
+    :status="status"
+    :error="errorMessage"
+    auto-load
+    @load="parseQueryValues"
+  >
     <form @submit.prevent="logIn">
       <fieldset>
         <legend>Log In</legend>
+        <div>
+          <div v-show="activationLinkSent" class="alert alert-success">
+            <span>Activation link sent to email.</span>
+          </div>
+          <div v-show="accountPendingActivation" class="alert alert-danger">
+            <span>
+              Account is pending activation. Check your email for activation
+              link or click
+              <RouterLink to="/ResendActivation">here</RouterLink> to resend it.
+            </span>
+          </div>
+        </div>
         <div class="form-group row">
           <label for="username" class="col-sm-12 col-form-label"
             >Username</label
@@ -72,7 +89,8 @@
       </fieldset>
     </form>
   </LoadingPanel>
-  <RouterLink to="/Register">Create an account</RouterLink>
+  <RouterLink to="/Register">Create an account</RouterLink> |
+  <RouterLink to="/ForgotPassword">Forgot password</RouterLink>
 </template>
 
 <script setup lang="ts">
@@ -85,11 +103,14 @@ import { SessionStore } from '@/stores/session-store';
 import { useRoute, useRouter } from 'vue-router';
 import { GrantType } from '@/enums/grant-type';
 import { validatePassword } from '@/utils/validation';
+import { HttpError } from '@/services/http.service';
 
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
 const status = shallowRef(AsyncStatus.OK);
+const activationLinkSent = shallowRef(false);
+const accountPendingActivation = shallowRef(false);
 const formValid = computed(
   () => username.value && validatePassword(password.value)
 );
@@ -99,6 +120,14 @@ const authenticationService = new AuthenticationService();
 
 const router = useRouter();
 const route = useRoute();
+
+function parseQueryValues() {
+  const { activationLinkSent: qActivationLinkSent } = route.query;
+
+  if (qActivationLinkSent === 'true') {
+    activationLinkSent.value = true;
+  }
+}
 
 async function logIn() {
   try {
@@ -114,8 +143,15 @@ async function logIn() {
     const redirectTo = (route.query.redirect ?? 'Profile') as string;
     router.push(redirectTo);
   } catch (err: unknown) {
-    status.value = AsyncStatus.ERROR;
-    errorMessage.value = (err as Error)?.message;
+    const error = err as HttpError;
+    activationLinkSent.value = false;
+    if (error.code === 'ut4masterserver.errors.accountpendingactivation') {
+      status.value = AsyncStatus.OK;
+      accountPendingActivation.value = true;
+    } else {
+      status.value = AsyncStatus.ERROR;
+      errorMessage.value = error.message;
+    }
   }
 }
 </script>

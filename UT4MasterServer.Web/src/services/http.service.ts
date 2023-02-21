@@ -9,10 +9,10 @@ export interface HttpRequestOptions<T = unknown> {
 }
 
 export class HttpError {
-  code: number;
+  code: string;
   message: string;
 
-  constructor(code: number, message: string) {
+  constructor(code: string, message: string) {
     this.code = code;
     this.message = message;
   }
