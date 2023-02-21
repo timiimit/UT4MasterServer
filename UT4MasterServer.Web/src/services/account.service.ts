@@ -7,6 +7,7 @@ import { IRegisterRequest } from '@/types/register-request';
 import { ISearchAccountsResponse } from '@/types/search-accounts-response';
 import { IActivateAccountRequest } from '@/types/activate-account-request';
 import { IResendActivationLink } from '@/types/resend-activation-link-request';
+import { IInitiateResetPasswordRequest } from '@/types/initiate-reset-password-request';
 import { IResetPasswordRequest } from '@/types/reset-password';
 import HttpService from './http.service';
 
@@ -82,10 +83,10 @@ export default class AccountService extends HttpService {
     });
   }
 
-  async initiateResetPassword(email: string) {
-    return await this.get<string>(
-      `${this.baseUrl}/initiate-reset-password?email=${email}`
-    );
+  async initiateResetPassword(request: IInitiateResetPasswordRequest) {
+    return await this.post(`${this.baseUrl}/initiate-reset-password`, {
+      body: request
+    });
   }
 
   async resetPassword(request: IResetPasswordRequest) {

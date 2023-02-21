@@ -3,10 +3,7 @@
     <form @submit.prevent="initiateResetPassword">
       <fieldset>
         <legend>Forgot Password</legend>
-        <div
-          v-show="resetPasswordLinkSent"
-          class="alert alert-dismissible alert-success"
-        >
+        <div v-show="resetPasswordLinkSent" class="alert alert-success">
           <div>Reset password link sent to email.</div>
         </div>
         <div class="form-group row">
@@ -63,7 +60,12 @@ async function initiateResetPassword() {
   try {
     status.value = AsyncStatus.BUSY;
 
-    await accountService.initiateResetPassword(email.value);
+    const formData = {
+      email: email.value
+    };
+
+    await accountService.initiateResetPassword(formData);
+
     status.value = AsyncStatus.OK;
     resetPasswordLinkSent.value = true;
   } catch (err: unknown) {

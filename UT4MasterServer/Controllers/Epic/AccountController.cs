@@ -407,8 +407,8 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[AllowAnonymous]
-	[HttpGet("initiate-reset-password")]
-	public async Task<IActionResult> InitiateResetPassword([FromQuery] string email)
+	[HttpPost("initiate-reset-password")]
+	public async Task<IActionResult> InitiateResetPassword([FromForm] string email)
 	{
 		var clientIpAddress = GetClientIP(applicationSettings);
 		if (clientIpAddress == null)

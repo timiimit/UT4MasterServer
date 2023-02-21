@@ -240,7 +240,7 @@ public sealed class AccountService
 
 		if (account is null)
 		{
-			throw new NotFoundException("Email not found or account in wrong status.");
+			throw new NotFoundException("Email not found or account in a wrong status.");
 		}
 
 		var guid = Guid.NewGuid().ToString();
