@@ -8,7 +8,7 @@ import { ISearchAccountsResponse } from '@/types/search-accounts-response';
 import { IActivateAccountRequest } from '@/types/activate-account-request';
 import { IResendActivationLinkRequest } from '@/types/resend-activation-link-request';
 import { IInitiateResetPasswordRequest } from '@/types/initiate-reset-password-request';
-import { IResetPasswordRequest } from '@/types/reset-password';
+import { IResetPasswordRequest } from '@/types/reset-password-request';
 import HttpService from './http.service';
 
 export default class AccountService extends HttpService {
