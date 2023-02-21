@@ -30,16 +30,16 @@ const accountService = new AccountService();
 async function activateAccount() {
   try {
     status.value = AsyncStatus.BUSY;
-    const { accountId: qAccountId, guid: qGuid } = route.query;
+    const { accountId, guid } = route.query;
 
-    if (!qAccountId?.length || !qGuid?.length) {
+    if (!accountId?.length || !guid?.length) {
       status.value = AsyncStatus.ERROR;
       return;
     }
 
     const formData = {
-      accountId: qAccountId as string,
-      guid: qGuid as string
+      accountId: accountId as string,
+      guid: guid as string
     };
 
     await accountService.activateAccount(formData);

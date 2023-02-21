@@ -1,3 +1,4 @@
+import { ErrorCode } from '@/enums/error-code';
 import { SessionStore } from '@/stores/session-store';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -9,12 +10,14 @@ export interface HttpRequestOptions<T = unknown> {
 }
 
 export class HttpError {
-  code: string;
+  errorCode?: ErrorCode;
   message: string;
+  httpStatusCode?: number;
 
-  constructor(code: string, message: string) {
-    this.code = code;
+  constructor(message: string, errorCode?: ErrorCode, statusCode?: number) {
+    this.errorCode = errorCode;
     this.message = message;
+    this.httpStatusCode = statusCode;
   }
 }
 
@@ -68,10 +71,13 @@ export default class HttpService {
       const errorResponseText = await response
         .text()
         .catch(() => console.debug('Unable to read error body.'));
-      const errorMessage = errorResponseJson?.errorMessage ?? errorResponseText;
-      const errorCode = errorResponseJson?.errorCode ?? response.status;
-      const defaultErrorMessage = `HTTP request error - ${response.status}: ${response.statusText}`;
-      throw new HttpError(errorCode, errorMessage ?? defaultErrorMessage);
+      const errorMessage =
+        errorResponseJson?.errorMessage ??
+        errorResponseText ??
+        response.statusText;
+      const errorCode = errorResponseJson?.errorCode as ErrorCode;
+      const statusCode = response.status;
+      throw new HttpError(errorMessage, errorCode, statusCode);
     }
 
     const responseObj = await response.json().catch(() => {

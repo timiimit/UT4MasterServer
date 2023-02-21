@@ -104,6 +104,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { GrantType } from '@/enums/grant-type';
 import { validatePassword } from '@/utils/validation';
 import { HttpError } from '@/services/http.service';
+import { ErrorCode } from '@/enums/error-code';
 
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
@@ -145,7 +146,7 @@ async function logIn() {
   } catch (err: unknown) {
     const error = err as HttpError;
     activationLinkSent.value = false;
-    if (error.code === 'ut4masterserver.errors.accountpendingactivation') {
+    if (error.errorCode === ErrorCode.pendingActivation) {
       status.value = AsyncStatus.OK;
       accountPendingActivation.value = true;
     } else {

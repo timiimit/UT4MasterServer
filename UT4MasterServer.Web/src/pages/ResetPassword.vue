@@ -96,15 +96,10 @@ const formValid = computed(
 );
 const accountService = new AccountService();
 
-async function parseQueryValues() {
+function parseQueryValues() {
   const { accountId: qAccountId, guid: qGuid } = route.query;
 
-  if (
-    qAccountId === undefined ||
-    qGuid === undefined ||
-    qAccountId?.toString() === '' ||
-    qGuid?.toString() === ''
-  ) {
+  if (!qAccountId?.length || !qGuid?.length) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = 'Bad request';
     return;
