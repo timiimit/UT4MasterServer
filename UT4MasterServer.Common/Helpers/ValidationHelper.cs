@@ -109,7 +109,7 @@ public static class ValidationHelper
 			"boxmail.lol",
 			"nfstripss.com",
 			"dropjar.com",
-			"33mail.com"
+			"33mail.com",
 		};
 	}
 
