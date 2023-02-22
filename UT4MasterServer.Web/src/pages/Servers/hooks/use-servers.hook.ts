@@ -46,10 +46,10 @@ export function useServers() {
     );
   }
 
-  function mapCustomMatchNames(matchNames: string) {
-    const matchStrings = matchNames.split('\n');
+  function mapCustomMatchNames(matchNames?: string) {
+    const matchStrings = matchNames?.split('\n');
     const customMatchNames: Record<string, string> = {};
-    matchStrings.forEach((s) => {
+    matchStrings?.forEach((s) => {
       const parts = s.split(':');
       const guid = parts[0];
       const name = parts[1];
