@@ -115,7 +115,8 @@ public static class Program
 			.AddScoped<MatchmakingService>()
 			.AddScoped<StatisticsService>()
 			.AddScoped<RatingsService>()
-			.AddScoped<AwsSesClient>();
+			.AddScoped<AwsSesClient>()
+			.AddScoped<CleanupService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
