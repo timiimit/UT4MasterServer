@@ -47,10 +47,10 @@ public sealed class CleanupService
 			return;
 		}
 
-		await RemoveAccountAndRelatedDataAsync(nonActivatedAccountIds);
+		await RemoveAccountAndAssociatedDataAsync(nonActivatedAccountIds);
 	}
 
-	public async Task RemoveAccountAndRelatedDataAsync(List<EpicID> accountIDs)
+	public async Task RemoveAccountAndAssociatedDataAsync(List<EpicID> accountIDs)
 	{
 		foreach (var accountID in accountIDs)
 		{
