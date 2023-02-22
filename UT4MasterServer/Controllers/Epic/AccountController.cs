@@ -221,40 +221,40 @@ public sealed class AccountController : JsonAPIController
 		var account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate account: {username}");
+			logger.LogInformation("Could not register duplicate account: {Username}.", username);
 			return Conflict("Username already exists");
 		}
 
 		if (!ValidationHelper.ValidateUsername(username))
 		{
-			logger.LogInformation($"Entered an invalid username: {username}");
-			return Conflict("You have entered an invalid username");
+			logger.LogInformation("Entered an invalid username: {Username}.", username);
+			return BadRequest("You have entered an invalid username");
 		}
 
 		email = email.ToLower();
 		account = await accountService.GetAccountByEmailAsync(email);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate email: {email}");
+			logger.LogInformation("Entered an existing email: {Email}.", email);
 			return Conflict("Email already exists");
 		}
 
 		if (!ValidationHelper.ValidateEmail(email))
 		{
-			logger.LogInformation($"Entered an invalid email format: {email}");
-			return Conflict("You have entered an invalid email address");
+			logger.LogInformation("Entered an invalid email: {Email}.", email);
+			return BadRequest("You have entered an invalid email address");
 		}
 
 		if (!ValidationHelper.ValidatePassword(password))
 		{
-			logger.LogInformation($"Entered password was in invalid format");
-			return Conflict("Unexpected password format");
+			logger.LogInformation("Entered an invalid password.");
+			return BadRequest("You have entered an invalid password");
 		}
 
 		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
 
 
-		logger.LogInformation($"Registered new user: {username}");
+		logger.LogInformation("Registered new user: {Username}.", username);
 
 		return Ok("Account created successfully");
 	}
