@@ -6,6 +6,7 @@ public static class ValidationHelper
 {
 	private static readonly Regex regexEmail;
 	private static readonly List<string> disallowedUsernameWords;
+	private static readonly List<string> disallowedEmailDomains;
 
 	static ValidationHelper()
 	{
@@ -17,6 +18,99 @@ public static class ValidationHelper
 			"shit", "fuck", "bitch", "slut", "sex", "cum",
 			"nigger", "hitler", "nazi"
 		};
+		disallowedEmailDomains = new List<string>
+		{
+			"yopmail.com",
+			"maildrop.cc",
+			"dispostable.com",
+			"guerrillamail.com",
+			"mailinator.com",
+			"tempr.email",
+			"discard.email",
+			"discardmail.com",
+			"discardmail.de",
+			"spambog.com",
+			"spambog.de",
+			"spambog.ru",
+			"0815.ru",
+			"knol-power.nl",
+			"freundin.ru",
+			"smashmail.de",
+			"s0ny.net",
+			"1mail.x24hr.com",
+			"from.onmypc.info",
+			"now.mefound.com",
+			"mowgli.jungleheart.com",
+			"cr.cloudns.asia",
+			"tls.cloudns.asia",
+			"msft.cloudns.asia",
+			"b.cr.cloudns.asia",
+			"ssl.tls.cloudns.asia",
+			"sweetxxx.de",
+			"dvd.dns-cloud.net",
+			"dvd.dnsabr.com",
+			"bd.dns-cloud.net",
+			"yx.dns-cloud.net",
+			"shit.dns-cloud.net",
+			"shit.dnsabr.com",
+			"eu.dns-cloud.net",
+			"eu.dnsabr.com",
+			"asia.dnsabr.com",
+			"8.dnsabr.com",
+			"pw.8.dnsabr.com",
+			"mm.8.dnsabr.com",
+			"23.8.dnsabr.com",
+			"pw.epac.to",
+			"postheo.de",
+			"sexy.camdvr.org",
+			"888.dns-cloud.net",
+			"adult-work.info",
+			"trap-mail.de",
+			"m.cloudns.cl",
+			"t.woeishyang.com",
+			"pflege-schoene-haut.de",
+			"streamboost.xyz",
+			"okmail.p-e.kr",
+			"hotbird.giize.com",
+			"as10.dnsfree.com",
+			"mehr-bitcoin.de",
+			"a1b2.cloudns.ph",
+			"wacamole.soynashi.tk",
+			"temp69.email",
+			"secure.okay.email.safeds.tk",
+			"tajba.com",
+			"web.run.place",
+			"tempr-mail.line.pm",
+			"spam.ceo",
+			"healthydevelopimmune.com",
+			"infobisnisdigital.com",
+			"winayabeauty.com",
+			"nxyl.eu",
+			"edukansassu12a.cf",
+			"mail.checkermaker.me",
+			"mailcatch.com",
+			"emailondeck.com",
+			"mailnesia.com",
+			"superrito.com",
+			"armyspy.com",
+			"cuvox.de",
+			"dayrep.com",
+			"einrot.com",
+			"fleckens.hu",
+			"gustr.com",
+			"jourrapide.com",
+			"rhyta.com",
+			"superrito.com",
+			"teleworm.us",
+			"mintemail.com",
+			"bbitq.com",
+			"iucake.com",
+			"gufum.com",
+			"boxmail.lol",
+			"nfstripss.com",
+			"dropjar.com",
+			"33mail.com"
+		};
 	}
 
 	public static bool ValidateEmail(string email)
@@ -24,7 +118,14 @@ public static class ValidationHelper
 		if (email.Length < 6 || email.Length > 64)
 			return false;
 
-		return regexEmail.IsMatch(email);
+		if (!regexEmail.IsMatch(email))
+			return false;
+
+		var emailDomain = email.ToLower().Split('@')[1];
+		if (disallowedEmailDomains.Contains(emailDomain))
+			return false;
+
+		return true;
 	}
 
 	public static bool ValidateUsername(string username)
