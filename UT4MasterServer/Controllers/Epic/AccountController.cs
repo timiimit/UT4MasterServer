@@ -228,7 +228,7 @@ public sealed class AccountController : JsonAPIController
 		if (!ValidationHelper.ValidateUsername(username))
 		{
 			logger.LogInformation("Entered an invalid username: {Username}.", username);
-			return Conflict("You have entered an invalid username");
+			return BadRequest("You have entered an invalid username");
 		}
 
 		email = email.ToLower();
@@ -242,13 +242,13 @@ public sealed class AccountController : JsonAPIController
 		if (!ValidationHelper.ValidateEmail(email))
 		{
 			logger.LogInformation("Entered an invalid email: {Email}.", email);
-			return Conflict("You have entered an invalid email address");
+			return BadRequest("You have entered an invalid email address");
 		}
 
 		if (!ValidationHelper.ValidatePassword(password))
 		{
 			logger.LogInformation("Entered an invalid password.");
-			return Conflict("Unexpected password format");
+			return BadRequest("You have entered an invalid password");
 		}
 
 		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
