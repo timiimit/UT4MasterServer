@@ -42,11 +42,6 @@ public sealed class CleanupService
 	public async Task RemoveNonActivatedAccountsAsync()
 	{
 		var nonActivatedAccountIds = await accountService.GetNonActivatedAccountsAsync();
-		if (!nonActivatedAccountIds.Any())
-		{
-			return;
-		}
-
 		await RemoveAccountAndAssociatedDataAsync(nonActivatedAccountIds);
 	}
 
