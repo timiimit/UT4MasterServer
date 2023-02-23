@@ -66,6 +66,9 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 			if (deleteCount > 0)
 				logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
 
+			var cleanupService = scope.ServiceProvider.GetRequiredService<CleanupService>();
+			await cleanupService.RemoveNonActivatedAccountsAsync();
+
 			await DeleteOldStatisticsAsync(scope);
 			await MergeOldStatisticsAsync(scope);
 		});

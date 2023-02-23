@@ -191,6 +191,14 @@ public sealed class AccountService
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
 
+	public async Task<List<EpicID>> GetNonActivatedAccountsAsync()
+	{
+		var filter = Builders<Account>.Filter.Ne(f => f.Status, AccountStatus.Active) &
+					 Builders<Account>.Filter.Lt(f => f.LastLoginAt, DateTime.UtcNow.AddMonths(1));
+		var accountsIDs = await accountCollection.Find(filter).Project(p => p.ID).ToListAsync();
+		return accountsIDs;
+	}
+
 	public async Task ActivateAccountAsync(EpicID accountID, string guid)
 	{
 		var filter = Builders<Account>.Filter.Eq(f => f.ID, accountID) &
