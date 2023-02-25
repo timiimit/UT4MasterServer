@@ -46,7 +46,7 @@ public sealed class AccountService
 			Email = email,
 			ActivationLinkGUID = Guid.NewGuid().ToString(),
 			ActivationLinkExpiration = DateTime.UtcNow.AddMinutes(5),
-			Status = AccountStatus.PendingActivation,
+			Flags = ~AccountFlags.EmailVerified,
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
@@ -111,11 +111,6 @@ public sealed class AccountService
 			account = await GetAccountByEmailAsync(username);
 			if (account == null)
 				return null;
-		}
-
-		if (account.Status == AccountStatus.PendingActivation)
-		{
-			throw new AccountNotActiveException("Account is pending activation. Check your email for activation link or resend it.");
 		}
 
 		return account;

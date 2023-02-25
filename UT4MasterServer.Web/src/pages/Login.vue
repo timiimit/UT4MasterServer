@@ -12,13 +12,6 @@
           <div v-show="activationLinkSent" class="alert alert-success">
             <span>Activation link sent to email.</span>
           </div>
-          <div v-show="accountPendingActivation" class="alert alert-danger">
-            <span>
-              Account is pending activation. Check your email for activation
-              link or click
-              <RouterLink to="/ResendActivation">here</RouterLink> to resend it.
-            </span>
-          </div>
         </div>
         <div class="form-group row">
           <label for="username" class="col-sm-12 col-form-label"
@@ -104,14 +97,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { GrantType } from '@/enums/grant-type';
 import { validatePassword } from '@/utils/validation';
 import { HttpError } from '@/services/http.service';
-import { ErrorCode } from '@/enums/error-code';
 
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
 const status = shallowRef(AsyncStatus.OK);
 const activationLinkSent = shallowRef(false);
-const accountPendingActivation = shallowRef(false);
 const formValid = computed(
   () => username.value && validatePassword(password.value)
 );
@@ -146,13 +137,8 @@ async function logIn() {
   } catch (err: unknown) {
     const error = err as HttpError;
     activationLinkSent.value = false;
-    if (error.errorCode === ErrorCode.pendingActivation) {
-      status.value = AsyncStatus.OK;
-      accountPendingActivation.value = true;
-    } else {
-      status.value = AsyncStatus.ERROR;
-      errorMessage.value = error.message;
-    }
+    status.value = AsyncStatus.ERROR;
+    errorMessage.value = error.message;
   }
 }
 </script>
