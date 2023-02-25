@@ -187,8 +187,9 @@ public sealed class AccountService
 
 	public async Task<List<EpicID>> GetNonActivatedAccountsAsync()
 	{
-		var filter = Builders<Account>.Filter.Ne(f => f.Status, AccountStatus.Active) &
-					 Builders<Account>.Filter.Lt(f => f.LastLoginAt, DateTime.UtcNow.AddMonths(-1));
+		var filter = (Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
+					  Builders<Account>.Filter.Exists(f => f.Flags, false)) &
+					  Builders<Account>.Filter.Lt(f => f.LastLoginAt, DateTime.UtcNow.AddMonths(-1));
 		var accountsIDs = await accountCollection.Find(filter).Project(p => p.ID).ToListAsync();
 		return accountsIDs;
 	}
