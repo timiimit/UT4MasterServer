@@ -240,12 +240,12 @@ public sealed class AccountService
 	public async Task InitiateResetPasswordAsync(string email)
 	{
 		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
-					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.Active);
+					 Builders<Account>.Filter.BitsAnySet(f => f.Flags, (long)AccountFlags.EmailVerified);
 		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
 
 		if (account is null)
 		{
-			throw new NotFoundException("Email not found or account in a wrong status.");
+			throw new NotFoundException("Email not found or not verified.");
 		}
 
 		var guid = Guid.NewGuid().ToString();
