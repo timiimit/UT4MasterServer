@@ -46,7 +46,6 @@ public sealed class AccountService
 			Email = email,
 			ActivationLinkGUID = Guid.NewGuid().ToString(),
 			ActivationLinkExpiration = DateTime.UtcNow.AddMinutes(5),
-			Flags = ~AccountFlags.EmailVerified,
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
@@ -199,7 +198,8 @@ public sealed class AccountService
 		var filter = Builders<Account>.Filter.Eq(f => f.ID, accountID) &
 					 Builders<Account>.Filter.Eq(f => f.ActivationLinkGUID, guid) &
 					 Builders<Account>.Filter.Gt(x => x.ActivationLinkExpiration, DateTime.UtcNow) &
-					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
+					(Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
+					 Builders<Account>.Filter.Exists(f => f.Flags, false));
 		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
 
 		if (account is null)
@@ -208,7 +208,7 @@ public sealed class AccountService
 		}
 
 		var updateDefinition = Builders<Account>.Update
-			.Set(s => s.Status, AccountStatus.Active)
+			.BitwiseOr(s => s.Flags, AccountFlags.EmailVerified)
 			.Unset(u => u.ActivationLinkGUID)
 			.Unset(u => u.ActivationLinkExpiration);
 		await accountCollection.UpdateOneAsync(filter, updateDefinition);
