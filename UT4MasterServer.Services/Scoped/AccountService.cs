@@ -218,12 +218,13 @@ public sealed class AccountService
 	public async Task ResendActivationLinkAsync(string email)
 	{
 		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
-					 Builders<Account>.Filter.Eq(f => f.Status, AccountStatus.PendingActivation);
+					(Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
+					 Builders<Account>.Filter.Exists(f => f.Flags, false));
 		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
 
 		if (account is null)
 		{
-			throw new NotFoundException("Email not found or account in a wrong status.");
+			throw new NotFoundException("Email not found or already verified.");
 		}
 
 		var activationGUID = Guid.NewGuid().ToString();
