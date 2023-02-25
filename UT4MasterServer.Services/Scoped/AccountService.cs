@@ -185,7 +185,7 @@ public sealed class AccountService
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
 
-	public async Task<List<EpicID>> GetNonActivatedAccountsAsync()
+	public async Task<List<EpicID>> GetNonVerifiedAccountsAsync()
 	{
 		var filter = (Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
 					  Builders<Account>.Filter.Exists(f => f.Flags, false)) &
