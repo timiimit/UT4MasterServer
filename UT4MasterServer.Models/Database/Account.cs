@@ -81,8 +81,6 @@ public class Account
 	[BsonIgnoreIfNull]
 	public DateTime? ResetLinkExpiration { get; set; }
 
-	public AccountStatus Status { get; set; } = AccountStatus.PendingActivation;
-
 	[BsonIgnore]
 	public float Level
 	{
