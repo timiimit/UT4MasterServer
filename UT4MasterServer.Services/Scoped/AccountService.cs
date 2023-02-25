@@ -197,7 +197,7 @@ public sealed class AccountService
 	{
 		var filter = Builders<Account>.Filter.Eq(f => f.ID, accountID) &
 					 Builders<Account>.Filter.Eq(f => f.ActivationLinkGUID, guid) &
-					 Builders<Account>.Filter.Gt(x => x.ActivationLinkExpiration, DateTime.UtcNow) &
+					 Builders<Account>.Filter.Gt(f => f.ActivationLinkExpiration, DateTime.UtcNow) &
 					(Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
 					 Builders<Account>.Filter.Exists(f => f.Flags, false));
 		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
