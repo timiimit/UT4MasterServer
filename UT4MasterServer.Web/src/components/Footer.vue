@@ -68,16 +68,16 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, shallowRef } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useServers } from '@/pages/Servers/hooks/use-servers.hook';
 import { ServerStore } from '@/pages/Servers/stores/server.store';
 import { MatchState } from '@/pages/Servers/enums/match-state';
 
-const pollTime = 30000;
+//const pollTime = 30000;
 // Seems to be a bug with eslint ts parser version
 // eslint-disable-next-line no-undef
-const timer = shallowRef<NodeJS.Timer | undefined>(undefined);
+//const timer = shallowRef<NodeJS.Timer | undefined>(undefined);
 
 const { hubs, servers } = useServers();
 
@@ -112,41 +112,42 @@ const matchesInProgress = computed(() => {
   return hubMatches + serverMatches;
 });
 
-function poll() {
-  ServerStore.fetchAllServers();
-}
+// function poll() {
+//   ServerStore.fetchAllServers();
+// }
 
-function stopPolling() {
-  clearInterval(timer.value);
-  timer.value = undefined;
-}
+// function stopPolling() {
+//   clearInterval(timer.value);
+//   timer.value = undefined;
+// }
 
-function startPolling() {
-  if (timer.value) {
-    return;
-  }
-  timer.value = setInterval(poll, pollTime);
-}
+// function startPolling() {
+//   if (timer.value) {
+//     return;
+//   }
+//   timer.value = setInterval(poll, pollTime);
+// }
 
-function handleVisibilityChange() {
-  if (document.visibilityState === 'visible') {
-    startPolling();
-  } else {
-    stopPolling();
-  }
-}
+// function handleVisibilityChange() {
+//   if (document.visibilityState === 'visible') {
+//     startPolling();
+//   } else {
+//     stopPolling();
+//   }
+// }
 
 onMounted(() => {
-  poll();
-  startPolling();
-  window.onfocus = startPolling;
-  window.onblur = stopPolling;
-  document.addEventListener('visibilitychange', handleVisibilityChange);
+  ServerStore.fetchAllServers();
+
+  //startPolling();
+  //window.onfocus = startPolling;
+  //window.onblur = stopPolling;
+  //document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
 onUnmounted(() => {
-  window.onfocus = null;
-  window.onblur = null;
-  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  //window.onfocus = null;
+  //window.onblur = null;
+  //document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
