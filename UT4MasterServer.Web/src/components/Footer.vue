@@ -68,16 +68,11 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useServers } from '@/pages/Servers/hooks/use-servers.hook';
 import { ServerStore } from '@/pages/Servers/stores/server.store';
 import { MatchState } from '@/pages/Servers/enums/match-state';
-
-//const pollTime = 30000;
-// Seems to be a bug with eslint ts parser version
-// eslint-disable-next-line no-undef
-//const timer = shallowRef<NodeJS.Timer | undefined>(undefined);
 
 const { hubs, servers } = useServers();
 
@@ -112,42 +107,7 @@ const matchesInProgress = computed(() => {
   return hubMatches + serverMatches;
 });
 
-// function poll() {
-//   ServerStore.fetchAllServers();
-// }
-
-// function stopPolling() {
-//   clearInterval(timer.value);
-//   timer.value = undefined;
-// }
-
-// function startPolling() {
-//   if (timer.value) {
-//     return;
-//   }
-//   timer.value = setInterval(poll, pollTime);
-// }
-
-// function handleVisibilityChange() {
-//   if (document.visibilityState === 'visible') {
-//     startPolling();
-//   } else {
-//     stopPolling();
-//   }
-// }
-
 onMounted(() => {
   ServerStore.fetchAllServers();
-
-  //startPolling();
-  //window.onfocus = startPolling;
-  //window.onblur = stopPolling;
-  //document.addEventListener('visibilitychange', handleVisibilityChange);
-});
-
-onUnmounted(() => {
-  //window.onfocus = null;
-  //window.onblur = null;
-  //document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
