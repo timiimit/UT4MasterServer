@@ -11,10 +11,11 @@
           verificationLinkSent ||
           (verificationLinkGUID && !verificationLinkExpired)
         "
-        class="alert alert-success"
+        class="alert alert-warning"
       >
         <div>
-          Verification link sent. Check your email and then refresh the page.
+          Email is not verified. Verify email via verification link that was
+          sent to your email and then refresh the page.
         </div>
       </div>
       <div v-else class="alert alert-danger">
