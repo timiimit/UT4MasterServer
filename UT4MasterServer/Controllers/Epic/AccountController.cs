@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.DTO.Responses;
@@ -323,9 +324,13 @@ public sealed class AccountController : JsonAPIController
 		}
 
 		account.Email = newEmail;
+		account.Flags &= ~AccountFlags.EmailVerified;
+		account.VerificationLinkGUID = null;
+		account.VerificationLinkExpiration = null;
 		await accountService.UpdateAccountAsync(account);
+		await accountService.ResendVerificationLinkAsync(newEmail);
 
-		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
+		logger.LogInformation("Updated email for {AccountID} to: {Email}.", user.Session.AccountID, newEmail);
 
 		return Ok("Changed email successfully");
 	}
