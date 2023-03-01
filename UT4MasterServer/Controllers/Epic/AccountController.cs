@@ -381,17 +381,17 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[AllowAnonymous]
-	[HttpPost("activate-account")]
-	public async Task<IActionResult> ActivateAccount([FromForm] string accountID, [FromForm] string guid)
+	[HttpPost("verify-email")]
+	public async Task<IActionResult> VerifyEmail([FromForm] string accountID, [FromForm] string guid)
 	{
 		EpicID eid = EpicID.FromString(accountID);
-		await accountService.ActivateAccountAsync(eid, guid);
+		await accountService.VerifyEmailAsync(eid, guid);
 		return Ok();
 	}
 
 	[AllowAnonymous]
-	[HttpPost("resend-activation-link")]
-	public async Task<IActionResult> ResendActivationLink([FromForm] string email)
+	[HttpPost("resend-verification-link")]
+	public async Task<IActionResult> ResendVerificationLink([FromForm] string email)
 	{
 		var clientIpAddress = GetClientIP(applicationSettings);
 		if (clientIpAddress == null)
@@ -400,9 +400,9 @@ public sealed class AccountController : JsonAPIController
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
-		rateLimitService.CheckRateLimit($"{nameof(ResendActivationLink)}-{clientIpAddress}");
+		rateLimitService.CheckRateLimit($"{nameof(ResendVerificationLink)}-{clientIpAddress}");
 
-		await accountService.ResendActivationLinkAsync(email);
+		await accountService.ResendVerificationLinkAsync(email);
 		return Ok();
 	}
 

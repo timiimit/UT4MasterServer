@@ -44,14 +44,14 @@ public sealed class AccountService
 			ID = EpicID.GenerateNew(),
 			Username = username,
 			Email = email,
-			ActivationLinkGUID = Guid.NewGuid().ToString(),
-			ActivationLinkExpiration = DateTime.UtcNow.AddMinutes(5),
+			VerificationLinkGUID = Guid.NewGuid().ToString(),
+			VerificationLinkExpiration = DateTime.UtcNow.AddMinutes(5),
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
 
-		await SendActivationLinkAsync(email, newAccount.ID, newAccount.ActivationLinkGUID);
+		await SendVerificationLinkAsync(email, newAccount.ID, newAccount.VerificationLinkGUID);
 	}
 
 	public async Task<Account?> GetAccountByEmailAsync(string email)
@@ -194,28 +194,28 @@ public sealed class AccountService
 		return accountsIDs;
 	}
 
-	public async Task ActivateAccountAsync(EpicID accountID, string guid)
+	public async Task VerifyEmailAsync(EpicID accountID, string guid)
 	{
 		var filter = Builders<Account>.Filter.Eq(f => f.ID, accountID) &
-					 Builders<Account>.Filter.Eq(f => f.ActivationLinkGUID, guid) &
-					 Builders<Account>.Filter.Gt(f => f.ActivationLinkExpiration, DateTime.UtcNow) &
+					 Builders<Account>.Filter.Eq(f => f.VerificationLinkGUID, guid) &
+					 Builders<Account>.Filter.Gt(f => f.VerificationLinkExpiration, DateTime.UtcNow) &
 					(Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
 					 Builders<Account>.Filter.Exists(f => f.Flags, false));
 		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
 
 		if (account is null)
 		{
-			throw new AccountActivationException("Account activation failed: requested account not found, activation link expired or account in a wrong status.");
+			throw new AccountActivationException("Email verification failed: requested account not found, verification link not found or expired.");
 		}
 
 		var updateDefinition = Builders<Account>.Update
 			.BitwiseOr(s => s.Flags, AccountFlags.EmailVerified)
-			.Unset(u => u.ActivationLinkGUID)
-			.Unset(u => u.ActivationLinkExpiration);
+			.Unset(u => u.VerificationLinkGUID)
+			.Unset(u => u.VerificationLinkExpiration);
 		await accountCollection.UpdateOneAsync(filter, updateDefinition);
 	}
 
-	public async Task ResendActivationLinkAsync(string email)
+	public async Task ResendVerificationLinkAsync(string email)
 	{
 		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
 					(Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
@@ -230,11 +230,11 @@ public sealed class AccountService
 		var activationGUID = Guid.NewGuid().ToString();
 
 		var updateDefinition = Builders<Account>.Update
-			.Set(s => s.ActivationLinkGUID, activationGUID)
-			.Set(s => s.ActivationLinkExpiration, DateTime.UtcNow.AddMinutes(5));
+			.Set(s => s.VerificationLinkGUID, activationGUID)
+			.Set(s => s.VerificationLinkExpiration, DateTime.UtcNow.AddMinutes(5));
 		await accountCollection.UpdateOneAsync(filter, updateDefinition);
 
-		await SendActivationLinkAsync(email, account.ID, activationGUID);
+		await SendVerificationLinkAsync(email, account.ID, activationGUID);
 	}
 
 	public async Task InitiateResetPasswordAsync(string email)
@@ -280,23 +280,23 @@ public sealed class AccountService
 		await accountCollection.UpdateOneAsync(filterForUpdate, update);
 	}
 
-	private async Task SendActivationLinkAsync(string email, EpicID accountID, string guid)
+	private async Task SendVerificationLinkAsync(string email, EpicID accountID, string guid)
 	{
 		UriBuilder uriBuilder = new()
 		{
 			Scheme = applicationSettings.WebsiteScheme,
 			Host = applicationSettings.WebsiteDomain,
 			Port = applicationSettings.WebsitePort,
-			Path = "ActivateAccount",
+			Path = "VerifyEmail",
 			Query = $"accountId={accountID}&guid={guid}"
 		};
 
 		var html = @$"
 			<p>Welcome to UT4 Master Server!</p>
-			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to activate your UT4 Master Server account.</p>
+			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to verify your email.</p>
 		";
 
-		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Account Activation", html);
+		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Email Verification", html);
 	}
 
 	private async Task SendResetPasswordLinkAsync(string email, EpicID accountID, string guid)

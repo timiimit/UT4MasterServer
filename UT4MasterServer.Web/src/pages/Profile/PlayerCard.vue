@@ -8,12 +8,13 @@
     <div v-if="!emailVerified">
       <div
         v-if="
-          activationLinkSent || (activationLinkGUID && !activationLinkExpired)
+          verificationLinkSent ||
+          (verificationLinkGUID && !verificationLinkExpired)
         "
         class="alert alert-success"
       >
         <div>
-          Activation link sent. Check your email and then refresh the page.
+          Verification link sent. Check your email and then refresh the page.
         </div>
       </div>
       <div v-else class="alert alert-danger">
@@ -115,16 +116,16 @@ const status = shallowRef(AsyncStatus.OK);
 const emailVerified = computed(() =>
   AccountStore.account?.roles?.some((r) => r === Role.EmailVerified)
 );
-const activationLinkGUID = computed(
-  () => AccountStore.account?.activationLinkGUID
+const verificationLinkGUID = computed(
+  () => AccountStore.account?.verificationLinkGUID
 );
-const activationLinkExpired = computed(
+const verificationLinkExpired = computed(
   () =>
-    AccountStore.account?.activationLinkExpiration &&
-    new Date(AccountStore.account?.activationLinkExpiration).getTime() <
+    AccountStore.account?.verificationLinkExpiration &&
+    new Date(AccountStore.account?.verificationLinkExpiration).getTime() <
       Date.now()
 );
-const activationLinkSent = shallowRef(false);
+const verificationLinkSent = shallowRef(false);
 
 const accountService = new AccountService();
 
@@ -136,10 +137,10 @@ async function sendVerificationLink() {
       email: AccountStore.account?.email!
     };
 
-    await accountService.resendActivationLink(formData);
+    await accountService.resendVerificationLink(formData);
 
     status.value = AsyncStatus.OK;
-    activationLinkSent.value = true;
+    verificationLinkSent.value = true;
   } catch (err: unknown) {
     console.error('Error occurred while sending verification link:', err);
     status.value = AsyncStatus.ERROR;

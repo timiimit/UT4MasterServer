@@ -9,8 +9,8 @@
       <fieldset>
         <legend>Log In</legend>
         <div>
-          <div v-show="activationLinkSent" class="alert alert-success">
-            <span>Activation link sent to email.</span>
+          <div v-show="verificationLinkSent" class="alert alert-success">
+            <span>Verification link sent to email.</span>
           </div>
         </div>
         <div class="form-group row">
@@ -102,7 +102,7 @@ const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
 const status = shallowRef(AsyncStatus.OK);
-const activationLinkSent = shallowRef(false);
+const verificationLinkSent = shallowRef(false);
 const formValid = computed(
   () => username.value && validatePassword(password.value)
 );
@@ -114,10 +114,10 @@ const router = useRouter();
 const route = useRoute();
 
 function parseQueryValues() {
-  const { activationLinkSent: qActivationLinkSent } = route.query;
+  const { verificationLinkSent: qVerificationLinkSent } = route.query;
 
-  if (qActivationLinkSent === 'true') {
-    activationLinkSent.value = true;
+  if (qVerificationLinkSent === 'true') {
+    verificationLinkSent.value = true;
   }
 }
 
@@ -136,7 +136,7 @@ async function logIn() {
     router.push(redirectTo);
   } catch (err: unknown) {
     const error = err as HttpError;
-    activationLinkSent.value = false;
+    verificationLinkSent.value = false;
     status.value = AsyncStatus.ERROR;
     errorMessage.value = error.message;
   }
