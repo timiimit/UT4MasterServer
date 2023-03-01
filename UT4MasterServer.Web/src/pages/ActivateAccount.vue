@@ -7,8 +7,10 @@
   >
     <div v-show="activated" class="alert alert-dismissible alert-success">
       <div>
-        Account activated successfully. Click <a href="/Login">here</a> to go to
-        the login page.
+        Account activated successfully.
+        <span v-if="!SessionStore.isAuthenticated"
+          >Click <a href="/Login">here</a> to go to the login page.</span
+        >
       </div>
     </div>
   </LoadingPanel>
@@ -20,6 +22,7 @@ import { useRoute } from 'vue-router';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
 import AccountService from '@/services/account.service';
+import { SessionStore } from '@/stores/session-store';
 
 const status = shallowRef(AsyncStatus.OK);
 const errorMessage = shallowRef('Error occurred while activating account.');
