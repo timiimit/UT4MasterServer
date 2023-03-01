@@ -132,10 +132,12 @@ const accountService = new AccountService();
 
 async function sendVerificationLink() {
   try {
+    if (!AccountStore.account) return;
+
     status.value = AsyncStatus.BUSY;
 
     const formData = {
-      email: AccountStore.account?.email!
+      email: AccountStore.account.email
     };
 
     await accountService.resendVerificationLink(formData);
