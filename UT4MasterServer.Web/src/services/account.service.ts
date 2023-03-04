@@ -5,8 +5,8 @@ import { IChangePasswordRequest } from '@/types/change-password-request';
 import { IChangeUsernameRequest } from '@/types/change-username-request';
 import { IRegisterRequest } from '@/types/register-request';
 import { ISearchAccountsResponse } from '@/types/search-accounts-response';
-import { IActivateAccountRequest } from '@/types/activate-account-request';
-import { IResendActivationLinkRequest } from '@/types/resend-activation-link-request';
+import { IVerifyEmailRequest } from '@/types/verify-email-request';
+import { IResendVerificationLinkRequest } from '@/types/resend-verification-link-request';
 import { IInitiateResetPasswordRequest } from '@/types/initiate-reset-password-request';
 import { IResetPasswordRequest } from '@/types/reset-password-request';
 import HttpService from './http.service';
@@ -71,14 +71,14 @@ export default class AccountService extends HttpService {
     );
   }
 
-  async activateAccount(request: IActivateAccountRequest) {
-    return await this.post(`${this.baseUrl}/activate-account`, {
+  async verifyEmail(request: IVerifyEmailRequest) {
+    return await this.post(`${this.baseUrl}/verify-email`, {
       body: request
     });
   }
 
-  async resendActivationLink(request: IResendActivationLinkRequest) {
-    return await this.post(`${this.baseUrl}/resend-activation-link`, {
+  async resendVerificationLink(request: IResendVerificationLinkRequest) {
+    return await this.post(`${this.baseUrl}/resend-verification-link`, {
       body: request
     });
   }

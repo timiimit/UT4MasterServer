@@ -9,15 +9,8 @@
       <fieldset>
         <legend>Log In</legend>
         <div>
-          <div v-show="activationLinkSent" class="alert alert-success">
-            <span>Activation link sent to email.</span>
-          </div>
-          <div v-show="accountPendingActivation" class="alert alert-danger">
-            <span>
-              Account is pending activation. Check your email for activation
-              link or click
-              <RouterLink to="/ResendActivation">here</RouterLink> to resend it.
-            </span>
+          <div v-show="verificationLinkSent" class="alert alert-success">
+            <span>Verification link sent to email.</span>
           </div>
         </div>
         <div class="form-group row">
@@ -104,14 +97,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { GrantType } from '@/enums/grant-type';
 import { validatePassword } from '@/utils/validation';
 import { HttpError } from '@/services/http.service';
-import { ErrorCode } from '@/enums/error-code';
 
 const username = shallowRef(SessionStore.username ?? '');
 const password = shallowRef('');
 const saveUsername = shallowRef(SessionStore.saveUsername);
 const status = shallowRef(AsyncStatus.OK);
-const activationLinkSent = shallowRef(false);
-const accountPendingActivation = shallowRef(false);
+const verificationLinkSent = shallowRef(false);
 const formValid = computed(
   () => username.value && validatePassword(password.value)
 );
@@ -123,10 +114,10 @@ const router = useRouter();
 const route = useRoute();
 
 function parseQueryValues() {
-  const { activationLinkSent: qActivationLinkSent } = route.query;
+  const { verificationLinkSent: qVerificationLinkSent } = route.query;
 
-  if (qActivationLinkSent === 'true') {
-    activationLinkSent.value = true;
+  if (qVerificationLinkSent === 'true') {
+    verificationLinkSent.value = true;
   }
 }
 
@@ -145,14 +136,9 @@ async function logIn() {
     router.push(redirectTo);
   } catch (err: unknown) {
     const error = err as HttpError;
-    activationLinkSent.value = false;
-    if (error.errorCode === ErrorCode.pendingActivation) {
-      status.value = AsyncStatus.OK;
-      accountPendingActivation.value = true;
-    } else {
-      status.value = AsyncStatus.ERROR;
-      errorMessage.value = error.message;
-    }
+    verificationLinkSent.value = false;
+    status.value = AsyncStatus.ERROR;
+    errorMessage.value = error.message;
   }
 }
 </script>

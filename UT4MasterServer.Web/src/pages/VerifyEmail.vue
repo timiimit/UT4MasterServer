@@ -3,12 +3,14 @@
     :status="status"
     :error="errorMessage"
     auto-load
-    @load="activateAccount"
+    @load="verifyEmail"
   >
-    <div v-show="activated" class="alert alert-dismissible alert-success">
+    <div v-show="verified" class="alert alert-dismissible alert-success">
       <div>
-        Account activated successfully. Click <a href="/Login">here</a> to go to
-        the login page.
+        Email verified successfully.
+        <span v-if="!SessionStore.isAuthenticated"
+          >Click <a href="/Login">here</a> to go to the login page.</span
+        >
       </div>
     </div>
   </LoadingPanel>
@@ -20,14 +22,15 @@ import { useRoute } from 'vue-router';
 import LoadingPanel from '@/components/LoadingPanel.vue';
 import { AsyncStatus } from '@/types/async-status';
 import AccountService from '@/services/account.service';
+import { SessionStore } from '@/stores/session-store';
 
 const status = shallowRef(AsyncStatus.OK);
-const errorMessage = shallowRef('Error occurred while activating account.');
-const activated = shallowRef(false);
+const errorMessage = shallowRef('Error occurred while verifying email.');
+const verified = shallowRef(false);
 const route = useRoute();
 const accountService = new AccountService();
 
-async function activateAccount() {
+async function verifyEmail() {
   try {
     status.value = AsyncStatus.BUSY;
     const { accountId, guid } = route.query;
@@ -42,9 +45,10 @@ async function activateAccount() {
       guid: guid as string
     };
 
-    await accountService.activateAccount(formData);
+    await accountService.verifyEmail(formData);
+
     status.value = AsyncStatus.OK;
-    activated.value = true;
+    verified.value = true;
   } catch (err: unknown) {
     status.value = AsyncStatus.ERROR;
     errorMessage.value = (err as Error)?.message;

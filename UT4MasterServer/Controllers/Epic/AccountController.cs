@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.DTO.Responses;
@@ -323,9 +324,13 @@ public sealed class AccountController : JsonAPIController
 		}
 
 		account.Email = newEmail;
+		account.Flags &= ~AccountFlags.EmailVerified;
+		account.VerificationLinkGUID = null;
+		account.VerificationLinkExpiration = null;
 		await accountService.UpdateAccountAsync(account);
+		await accountService.ResendVerificationLinkAsync(newEmail);
 
-		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
+		logger.LogInformation("Updated email for {AccountID} to: {Email}.", user.Session.AccountID, newEmail);
 
 		return Ok("Changed email successfully");
 	}
@@ -381,17 +386,17 @@ public sealed class AccountController : JsonAPIController
 	}
 
 	[AllowAnonymous]
-	[HttpPost("activate-account")]
-	public async Task<IActionResult> ActivateAccount([FromForm] string accountID, [FromForm] string guid)
+	[HttpPost("verify-email")]
+	public async Task<IActionResult> VerifyEmail([FromForm] string accountID, [FromForm] string guid)
 	{
 		EpicID eid = EpicID.FromString(accountID);
-		await accountService.ActivateAccountAsync(eid, guid);
+		await accountService.VerifyEmailAsync(eid, guid);
 		return Ok();
 	}
 
 	[AllowAnonymous]
-	[HttpPost("resend-activation-link")]
-	public async Task<IActionResult> ResendActivationLink([FromForm] string email)
+	[HttpPost("resend-verification-link")]
+	public async Task<IActionResult> ResendVerificationLink([FromForm] string email)
 	{
 		var clientIpAddress = GetClientIP(applicationSettings);
 		if (clientIpAddress == null)
@@ -400,9 +405,9 @@ public sealed class AccountController : JsonAPIController
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
-		rateLimitService.CheckRateLimit($"{nameof(ResendActivationLink)}-{clientIpAddress}");
+		rateLimitService.CheckRateLimit($"{nameof(ResendVerificationLink)}-{clientIpAddress}");
 
-		await accountService.ResendActivationLinkAsync(email);
+		await accountService.ResendVerificationLinkAsync(email);
 		return Ok();
 	}
 

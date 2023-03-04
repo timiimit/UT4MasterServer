@@ -4,5 +4,6 @@ export enum Role {
   Moderator = 'Moderator',
   Developer = 'Developer',
   ContentCreator = 'ContentCreator',
-  HubOwner = 'HubOwner'
+  HubOwner = 'HubOwner',
+  EmailVerified = 'EmailVerified'
 }
