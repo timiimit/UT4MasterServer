@@ -39,10 +39,10 @@ public sealed class CleanupService
 		this.ratingsService = ratingsService;
 	}
 
-	public async Task RemoveNonActivatedAccountsAsync()
+	public async Task RemoveNonVerifiedAccountsAsync()
 	{
-		var nonActivatedAccountIds = await accountService.GetNonActivatedAccountsAsync();
-		await RemoveAccountAndAssociatedDataAsync(nonActivatedAccountIds);
+		var nonVerifiedAccountIds = await accountService.GetNonVerifiedAccountsAsync();
+		await RemoveAccountAndAssociatedDataAsync(nonVerifiedAccountIds);
 	}
 
 	public async Task RemoveAccountAndAssociatedDataAsync(List<EpicID> accountIDs)

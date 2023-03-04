@@ -70,18 +70,16 @@ public class Account
 	public AccountFlags Flags { get; set; } = 0;
 
 	[BsonIgnoreIfNull]
-	public string? ActivationLinkGUID { get; set; }
+	public string? VerificationLinkGUID { get; set; }
 
 	[BsonIgnoreIfNull]
-	public DateTime? ActivationLinkExpiration { get; set; }
+	public DateTime? VerificationLinkExpiration { get; set; }
 
 	[BsonIgnoreIfNull]
 	public string? ResetLinkGUID { get; set; }
 
 	[BsonIgnoreIfNull]
 	public DateTime? ResetLinkExpiration { get; set; }
-
-	public AccountStatus Status { get; set; } = AccountStatus.PendingActivation;
 
 	[BsonIgnore]
 	public float Level
