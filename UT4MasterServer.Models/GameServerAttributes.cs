@@ -7,6 +7,7 @@ public class GameServerAttributes
 	public const string UT_SERVERTRUSTLEVEL_i = "UT_SERVERTRUSTLEVEL_i";
 	public const string UT_SERVERNAME_s = "UT_SERVERNAME_s";
 	public const string GAMEMODE_s = "GAMEMODE_s";
+	public const string UT_RANKED_i = "UT_RANKED_i";
 	public const string UT_GAMEINSTANCE_i = "UT_GAMEINSTANCE_i";
 
 	public static readonly string[] UnownedAttributeNames = new[]

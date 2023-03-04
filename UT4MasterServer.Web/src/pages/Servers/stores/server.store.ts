@@ -16,6 +16,9 @@ export const ServerStore = {
   },
   async fetchAllServers() {
     try {
+      if (_status.value === AsyncStatus.BUSY) {
+        return;
+      }
       _status.value = AsyncStatus.BUSY;
       _allServers.value = await _serverService.getAllServers();
       _status.value = AsyncStatus.OK;
