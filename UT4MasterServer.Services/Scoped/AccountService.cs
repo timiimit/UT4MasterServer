@@ -7,6 +7,7 @@ using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services.Interfaces;
 
 namespace UT4MasterServer.Services.Scoped;
 
@@ -14,16 +15,16 @@ public sealed class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
 	private readonly ApplicationSettings applicationSettings;
-	private readonly AwsSesClient awsSesClient;
+	private readonly IEmailService emailService;
 
 	public AccountService(
 		DatabaseContext dbContext,
 		IOptions<ApplicationSettings> applicationSettings,
-		AwsSesClient awsSesClient)
+		IEmailService emailService)
 	{
 		this.applicationSettings = applicationSettings.Value;
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
-		this.awsSesClient = awsSesClient;
+		this.emailService = emailService;
 	}
 
 	public async Task CreateIndexesAsync()
@@ -296,7 +297,7 @@ public sealed class AccountService
 			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to verify your email.</p>
 		";
 
-		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Email Verification", html);
+		await emailService.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Email Verification", html);
 	}
 
 	private async Task SendResetPasswordLinkAsync(string email, EpicID accountID, string guid)
@@ -315,6 +316,6 @@ public sealed class AccountService
 			<p>If you didn't initiate password reset, ignore this message.</p>
 		";
 
-		await awsSesClient.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Reset Password", html);
+		await emailService.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Reset Password", html);
 	}
 }

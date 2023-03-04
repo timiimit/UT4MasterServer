@@ -10,6 +10,7 @@ using UT4MasterServer.Models.DTO.Request;
 using UT4MasterServer.Models.DTO.Requests;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Responses;
+using UT4MasterServer.Services.Interfaces;
 using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers;
@@ -27,7 +28,7 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly TrustedGameServerService trustedGameServerService;
 	private readonly MatchmakingService matchmakingService;
 	private readonly CleanupService cleanupService;
-	private readonly AwsSesClient awsSesClient;
+	private readonly IEmailService emailService;
 
 	public AdminPanelController(
 		ILogger<AdminPanelController> logger,
@@ -38,7 +39,7 @@ public sealed class AdminPanelController : ControllerBase
 		TrustedGameServerService trustedGameServerService,
 		MatchmakingService matchmakingService,
 		CleanupService cleanupService,
-		AwsSesClient awsSesClient)
+		IEmailService emailService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
@@ -48,7 +49,7 @@ public sealed class AdminPanelController : ControllerBase
 		this.trustedGameServerService = trustedGameServerService;
 		this.matchmakingService = matchmakingService;
 		this.cleanupService = cleanupService;
-		this.awsSesClient = awsSesClient;
+		this.emailService = emailService;
 	}
 
 	#region Accounts
@@ -571,14 +572,14 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPost("send-text-email")]
 	public async Task<IActionResult> SendTextEmail([FromBody] SendEmailRequest sendEmailRequest)
 	{
-		await awsSesClient.SendTextEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
+		await emailService.SendTextEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
 		return Ok();
 	}
 
 	[HttpPost("send-html-email")]
 	public async Task<IActionResult> SendHtmlEmail([FromBody] SendEmailRequest sendEmailRequest)
 	{
-		await awsSesClient.SendHTMLEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
+		await emailService.SendHTMLEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
 		return Ok();
 	}
 

@@ -15,6 +15,7 @@ using UT4MasterServer.Serializers.Json;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
 using UT4MasterServer.Services.Hosted;
+using UT4MasterServer.Services.Interfaces;
 
 namespace UT4MasterServer;
 
@@ -115,7 +116,7 @@ public static class Program
 			.AddScoped<MatchmakingService>()
 			.AddScoped<StatisticsService>()
 			.AddScoped<RatingsService>()
-			.AddScoped<AwsSesClient>()
+			.AddScoped<IEmailService, AwsSesClient>()
 			.AddScoped<CleanupService>();
 
 		// services whose instance is created once and are persistent
