@@ -5,10 +5,11 @@ using Microsoft.Extensions.Options;
 using System.Text.Json;
 using UT4MasterServer.Common.Exceptions;
 using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services.Interfaces;
 
 namespace UT4MasterServer.Services.Scoped;
 
-public sealed class AwsSesClient
+public sealed class AwsSesClient : IEmailService
 {
 	private readonly ILogger<AwsSesClient> _logger;
 	private readonly IAmazonSimpleEmailService _amazonSimpleEmailService;
