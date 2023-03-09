@@ -2,9 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Net;
-using System.Text.Json;
-using UT4MasterServer.Models;
-using UT4MasterServer.Other;
+using UT4MasterServer.Models.Settings;
 
 namespace UT4MasterServer.Controllers;
 
@@ -69,17 +67,17 @@ public class JsonAPIController : ControllerBase
 		return r;
 	}
 
-	[NonAction]
-	public JsonResult Json(object? content)
-	{
-		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } });
-	}
+	//[NonAction]
+	//public JsonResult Json(object? content)
+	//{
+	//	return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } });
+	//}
 
-	[NonAction]
-	public JsonResult Json(object? content, int status)
-	{
-		return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
-	}
+	//[NonAction]
+	//public JsonResult Json(object? content, int status)
+	//{
+	//	return new JsonResult(content, new JsonSerializerOptions() { Converters = { new EpicIDJsonConverter() } }) { StatusCode = status };
+	//}
 
 	[NonAction]
 	protected IPAddress? GetClientIP(IOptions<ApplicationSettings>? proxyInfo)
@@ -106,7 +104,11 @@ public class JsonAPIController : ControllerBase
 		// look through each instance of the header bottom-to-top
 		for (int hi = headers.Count - 1; hi >= 0; hi--)
 		{
-			string[] headerParts = headers[hi].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+			var header = headers[hi];
+			if (header == null)
+				continue;
+
+			string[] headerParts = header.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 			// look through each part of header from right-to-left
 			for (int i = headerParts.Length - 1; i >= 0; i--)

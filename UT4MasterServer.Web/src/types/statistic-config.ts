@@ -1,12 +1,12 @@
-import { Statistic } from "../enums/statistic";
+import { Statistic } from '@/enums/statistic';
 
 export interface IStatisticCard {
-    heading: string;
-    stats: Statistic[];
-    headingIcon?: string;
+  heading: string;
+  stats: Statistic[];
+  headingIcon?: string;
 }
 
 export interface IStatisticSection {
-    heading: string;
-    cards: IStatisticCard[];
+  heading: string;
+  cards: IStatisticCard[];
 }

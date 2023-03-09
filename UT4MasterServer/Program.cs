@@ -6,10 +6,15 @@ using System.Net;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Configuration;
 using UT4MasterServer.Formatters;
-using UT4MasterServer.Models;
-using UT4MasterServer.Other;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Common;
 using UT4MasterServer.Services;
-using UT4MasterServer.Settings;
+using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Serializers.Bson;
+using UT4MasterServer.Serializers.Json;
+using UT4MasterServer.Services.Scoped;
+using UT4MasterServer.Services.Singleton;
+using UT4MasterServer.Services.Hosted;
 
 namespace UT4MasterServer;
 
@@ -83,6 +88,17 @@ public static class Program
 			}
 		});
 
+		builder.Services.Configure<ReCaptchaSettings>(x =>
+		{
+			if (builder.Environment.IsProduction())
+			{
+				if (string.IsNullOrWhiteSpace(x.SecretKey) || string.IsNullOrWhiteSpace(x.SiteKey))
+				{
+					throw new Exception("Must specify ApplicationSettings.ReCaptchaSettings in production environment");
+				}
+			}
+		});
+
 		// services whose instance is created per-request
 		builder.Services
 			.AddScoped<DatabaseContext>()
@@ -93,10 +109,12 @@ public static class Program
 			.AddScoped<CloudStorageService>()
 			.AddScoped<TrustedGameServerService>()
 			.AddScoped<MatchmakingService>()
-			.AddScoped<StatisticsService>();
+			.AddScoped<StatisticsService>()
+			.AddScoped<RatingsService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
+			.AddSingleton<RuntimeInfoService>()
 			.AddSingleton<CodeService>()
 			.AddSingleton<MatchmakingWaitTimeEstimateService>();
 
@@ -114,6 +132,8 @@ public static class Program
 		{
 			builder.AddSerilog();
 		});
+
+		builder.Services.AddControllers();
 
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(config =>
@@ -143,25 +163,41 @@ public static class Program
 			});
 		});
 
-		var allowOriginsPolicy = "_ut4msOriginsPolicy";
-		var devAllowOriginsPolicy = "_ut4msDevOriginsPolicy";
+		const string allowOriginsPolicy = "_ut4msOriginsPolicy";
+		const string devAllowOriginsPolicy = "_ut4msDevOriginsPolicy";
 
 		builder.Services.AddCors(options =>
 		{
-			options.AddPolicy(allowOriginsPolicy,
-							  policy =>
-							  {
-								  policy.WithOrigins("https://ut4.timiimit.com");
-								  policy.AllowAnyHeader();
-								  policy.AllowAnyMethod();
-							  });
-			options.AddPolicy(devAllowOriginsPolicy,
-							  policy =>
-							  {
-								  policy.WithOrigins("http://localhost:5001", "http://localhost:8080", "http://localhost:80");
-								  policy.AllowAnyHeader();
-								  policy.AllowAnyMethod();
-							  });
+			if (builder.Environment.IsDevelopment())
+			{
+				options.AddPolicy(
+					devAllowOriginsPolicy,
+					policy =>
+					{
+						policy.WithOrigins("http://localhost:5001", "http://localhost:8080", "http://localhost:80");
+						policy.AllowAnyHeader();
+						policy.AllowAnyMethod();
+					}
+				);
+			}
+			else
+			{
+				var websiteDomain = builder.Configuration.GetSection("ApplicationSettings")["WebsiteDomain"];
+				if (string.IsNullOrWhiteSpace(websiteDomain))
+				{
+					throw new Exception("Must specify ApplicationSettings.WebsiteDomain in production environment");
+				}
+
+				options.AddPolicy(
+					allowOriginsPolicy,
+					policy =>
+					{
+						policy.WithOrigins($"https://{websiteDomain}");
+						policy.AllowAnyHeader();
+						policy.AllowAnyMethod();
+					}
+				);
+			}
 		});
 
 		var app = builder.Build();
