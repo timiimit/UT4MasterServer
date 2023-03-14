@@ -53,8 +53,12 @@ const sortedServers = computed(() =>
 const filteredServers = computed(() =>
   sortedServers.value
     .filter((s) => !(s.playersOnline === 0 && props.hideEmpty))
-    .filter((s) =>
-      s.name.toLocaleLowerCase().includes(props.filterText.toLocaleLowerCase())
+    .filter(
+      (s) =>
+        !s.name ||
+        s.name
+          .toLocaleLowerCase()
+          .includes(props.filterText.toLocaleLowerCase())
     )
 );
 </script>
