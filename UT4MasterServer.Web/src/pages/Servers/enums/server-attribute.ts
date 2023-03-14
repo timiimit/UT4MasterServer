@@ -19,8 +19,15 @@ export enum ServerAttribute {
   needs = 'NEEDS_i',
   playlist = 'PLAYLISTID_i',
   region = 'REGION_s',
-  eloRangeStart = 'TEAMELO_i',
-  eloRangeEnd = 'TEAMELO2_i',
+  targetElo = 'TEAMELO_i',
   mutators = 'UU_MUTATORS_s',
-  customMatchNames = 'UU_CUSTOMMATCHNAMES_s'
+  customMatchNames = 'UU_CUSTOMMATCHNAMES_s',
+  elapsedTime = 'UT_MATCHELAPSEDTIME_i',
+  uu = 'UU_i',
+  uuGameOptions = 'UU_GAMEOPTIONS_s',
+  uuForcedMutators = 'UU_FORCEDMUTATORS_s',
+  uuTeamSizes = 'UU_TEAMSIZES_s',
+  uuTeamScores = 'UU_TEAMSCORES_s',
+  uuServerFlags = 'UT_SERVERFLAGS_i',
+  uuSoloScores = 'UU_SOLOSCORES_s'
 }

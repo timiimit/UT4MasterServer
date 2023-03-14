@@ -1,6 +1,11 @@
 <template>
   <div class="list-group pt-2">
-    <Match v-for="match in hub.matches" :key="match.id" :match="match" />
+    <Match
+      v-for="match in hub.matches"
+      :key="match.id"
+      :match="match"
+      :hub="hub"
+    />
     <a
       v-if="!hub.matches.length"
       class="list-group-item list-group-item-action"

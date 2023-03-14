@@ -73,18 +73,25 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { useServers } from '@/pages/Servers/hooks/use-servers.hook';
 import { ServerStore } from '@/pages/Servers/stores/server.store';
 import { MatchState } from '@/pages/Servers/enums/match-state';
+import { useHubs } from '@/pages/Servers/hooks/use-hubs.hook';
+import { useQuickPlay } from '@/pages/Servers/hooks/use-quick-play.hook';
 
-const { hubs, servers } = useServers();
+const { hubs } = useHubs();
+const { servers } = useServers();
+const { quickPlayServers } = useQuickPlay();
 
 const playersOnline = computed(() => {
   const playersInHubs = hubs.value.reduce((sum, h) => sum + h.totalPlayers, 0);
   const playersInServers = servers.value.reduce(
-    (sum, s) => sum + s.playersOnline,
+    (sum, s) => sum + (s.playersOnline ?? 0),
     0
   );
-  // TODO: not sure how to determine players in quick play matches
-  //const playersInQuickplay = servers.value.reduce((sum, q) => sum + q.playersOnline, 0);
-  return playersInHubs + playersInServers;
+  const playersInQuickplay = quickPlayServers.value.reduce(
+    (sum, q) => sum + (q.playersOnline ?? 0),
+    0
+  );
+
+  return playersInHubs + playersInServers + playersInQuickplay;
 });
 
 const matchesInProgress = computed(() => {
@@ -99,12 +106,11 @@ const matchesInProgress = computed(() => {
     (s) => s.matchState === MatchState.inProgress
   ).length;
 
-  // TODO: not sure how we can determine match in progress for quick play yet
-  // const quickPlayMatches = quickPlayServers.value.filter(
-  //   (q) => q.matchState === MatchState.inProgress
-  // ).length;
+  const quickPlayMatches = quickPlayServers.value.filter(
+    (q) => q.matchState === MatchState.inProgress
+  ).length;
 
-  return hubMatches + serverMatches;
+  return hubMatches + serverMatches + quickPlayMatches;
 });
 
 onMounted(() => {

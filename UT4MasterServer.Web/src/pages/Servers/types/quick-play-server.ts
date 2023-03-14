@@ -1,10 +1,10 @@
 import { GameMode } from '../enums/game-mode';
+import { IMatch } from './match';
 
-export interface IQuickPlayServer {
+export interface IQuickPlayServer extends Partial<IMatch> {
   id: string;
   region: string;
   gameMode: GameMode;
   gameModeDisplay: string;
-  eloRangeStart?: number;
-  eloRangeEnd?: number;
+  targetElo?: number;
 }

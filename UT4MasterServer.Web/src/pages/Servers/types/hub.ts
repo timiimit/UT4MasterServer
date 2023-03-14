@@ -8,4 +8,6 @@ export interface IHub {
   matches: IMatch[];
   totalPlayers: number;
   customMatchNames: Record<string, string>;
+  uuInstalled: boolean;
+  forcedMutators: string[];
 }

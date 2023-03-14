@@ -23,7 +23,7 @@
 <script lang="ts" setup>
 import { orderBy } from 'lodash';
 import { computed } from 'vue';
-import { useServers } from '../hooks/use-servers.hook';
+import { useHubs } from '../hooks/use-hubs.hook';
 import Hub from './Hub.vue';
 
 const props = defineProps({
@@ -37,7 +37,7 @@ const props = defineProps({
   }
 });
 
-const { hubs } = useServers();
+const { hubs } = useHubs();
 
 const sortedHubs = computed(() =>
   orderBy(hubs.value, ['serverTrustLevel', 'totalPlayers'], ['asc', 'desc'])
@@ -46,10 +46,12 @@ const sortedHubs = computed(() =>
 const filteredHubs = computed(() =>
   sortedHubs.value
     .filter((h) => !(h.totalPlayers === 0 && props.hideEmpty))
-    .filter((h) =>
-      h.serverName
-        .toLocaleLowerCase()
-        .includes(props.filterText.toLocaleLowerCase())
+    .filter(
+      (h) =>
+        !h.serverName ||
+        h.serverName
+          .toLocaleLowerCase()
+          .includes(props.filterText.toLocaleLowerCase())
     )
 );
 </script>

@@ -14,7 +14,8 @@ import {
   faChevronLeft,
   faChevronRight,
   faArrowsRotate,
-  faShare
+  faShare,
+  faU
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add(faCopy);
@@ -31,5 +32,6 @@ library.add(faGithub);
 library.add(faDiscord);
 library.add(faArrowsRotate);
 library.add(faShare);
+library.add(faU);
 
 createApp(App).use(router).mount('#app');
