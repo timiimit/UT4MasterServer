@@ -16,6 +16,7 @@ export function useServers() {
       r.attributes[ServerAttribute.gameInstance] !== 1 &&
       r.attributes[ServerAttribute.serverInstanceGuid] ===
         r.attributes[ServerAttribute.hubGuid] &&
+      r.attributes[ServerAttribute.gameMode] !== 'EMPTY' &&
       !hubFilter(r)
     );
   }
