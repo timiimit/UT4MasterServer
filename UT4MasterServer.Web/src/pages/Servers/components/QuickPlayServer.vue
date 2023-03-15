@@ -4,10 +4,9 @@
       <h5>Quick Play {{ server.gameModeDisplay }}</h5>
       <div class="d-flex justify-content-between">
         <div><label>Region:</label>{{ server.region }}</div>
-        <div v-if="server.eloRangeStart">
-          <label>Elo Range:</label>
-          {{ server.eloRangeStart }} -
-          {{ server.eloRangeEnd }}
+        <div v-if="server.targetElo">
+          <label>Target Elo:</label>
+          {{ server.targetElo }}
         </div>
       </div>
     </div>

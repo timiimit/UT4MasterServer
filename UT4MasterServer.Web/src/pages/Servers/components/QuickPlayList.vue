@@ -34,7 +34,7 @@
 import { orderBy } from 'lodash';
 import { computed } from 'vue';
 import { GameMode } from '../enums/game-mode';
-import { useServers } from '../hooks/use-servers.hook';
+import { useQuickPlay } from '../hooks/use-quick-play.hook';
 import QuickPlayServer from './QuickPlayServer.vue';
 
 const props = defineProps({
@@ -48,7 +48,7 @@ const props = defineProps({
   }
 });
 
-const { quickPlayServers } = useServers();
+const { quickPlayServers } = useQuickPlay();
 
 const sortedServers = computed(() =>
   orderBy(quickPlayServers.value, 'playersOnline', 'desc')

@@ -14,16 +14,13 @@ export function objectHash(obj: unknown) {
 
 export function toMinutesSeconds(rawtime?: number) {
   if (!rawtime) {
-    return '00:00';
+    return '0:00';
   }
   const hours = Math.floor(rawtime / 3600);
   const minutes = Math.floor((rawtime - hours * 3600) / 60);
   const seconds = rawtime - hours * 3600 - minutes * 60;
-  let minutesString = `${minutes}`;
+  const minutesString = `${minutes}`;
   let secondsString = `${seconds}`;
-  if (minutes < 10) {
-    minutesString = '0' + minutes;
-  }
   if (seconds < 10) {
     secondsString = '0' + seconds;
   }
