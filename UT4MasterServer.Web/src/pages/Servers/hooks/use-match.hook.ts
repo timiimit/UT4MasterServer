@@ -42,6 +42,14 @@ export function useMatch() {
       ServerAttribute.uuForcedMutators
     ] as string;
     const forcedMutators = forcedMutatorsString?.split(',') ?? [];
+    const elapsedTimeRaw = response.attributes[
+      ServerAttribute.elapsedTime
+    ] as number;
+    const elapsedTimeAccurate = Math.round(
+      (Date.now() -
+        (new Date(response.lastUpdated).getTime() - elapsedTimeRaw * 1000)) /
+        1000
+    );
     return {
       id,
       name:
@@ -49,20 +57,14 @@ export function useMatch() {
         (response.attributes[ServerAttribute.serverName] as string),
       gameType: response.attributes[ServerAttribute.gameType] as string,
       map: response.attributes[ServerAttribute.mapName] as string,
-      matchState,
+      matchState: matchState,
       matchStateDisplay: matchStateMap[matchState] ?? matchState,
       maxPlayers: response.attributes[ServerAttribute.maxPlayers] as number,
       playersOnline: response.attributes[
         ServerAttribute.playersOnline
       ] as number,
       duration: response.attributes[ServerAttribute.matchDuration] as number,
-      elapsedTime: Math.round(
-        (Date.now() -
-          (new Date(response.lastUpdated).getTime() -
-            (response.attributes[ServerAttribute.elapsedTime] as number) *
-              1000)) /
-          1000
-      ),
+      elapsedTime: elapsedTimeRaw > 0 ? elapsedTimeAccurate : elapsedTimeRaw,
       publicPlayers: response.publicPlayers,
       mutators,
       gameMode,
