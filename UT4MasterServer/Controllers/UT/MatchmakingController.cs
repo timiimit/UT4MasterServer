@@ -95,7 +95,7 @@ public sealed class MatchmakingController : JsonAPIController
 					throw new Exception("This should never happen");
 				}
 
-				var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string;
+				var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string ?? string.Empty;
 				var isRanked = (int?)server.Attributes.Get(GameServerAttributes.UT_RANKED_i) == 1;
 				if (trust != GameServerTrust.Epic && !isRanked && serverName.Trim() != client.Name.Trim())
 				{
