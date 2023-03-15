@@ -14,8 +14,6 @@ export function useServers() {
   function serverFilter(r: IMatchmakingResponse) {
     return (
       r.attributes[ServerAttribute.gameInstance] !== 1 &&
-      r.attributes[ServerAttribute.serverInstanceGuid] ===
-        r.attributes[ServerAttribute.hubGuid] &&
       r.attributes[ServerAttribute.gameMode] !== 'EMPTY' &&
       !hubFilter(r)
     );
