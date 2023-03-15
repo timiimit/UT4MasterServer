@@ -42,8 +42,8 @@ public class GameServer
 #if DEBUG
 	[JsonPropertyName("UT4MS__LAST_KNOWN_MATCH_START_TIME__DEBUG_ONLY_VALUE")]
 #endif
-	[BsonElement("LastKnownMatchStartTime")]
-	public DateTime LastKnownMatchStartTime { get; set; } = DateTime.UtcNow;
+	[BsonElement("LastKnownMatchStartTime"), BsonIgnoreIfDefault]
+	public DateTime LastKnownMatchStartTime { get; set; } = default;
 
 #if DEBUG
 	[BsonElement("SessionAccessToken")]
@@ -220,12 +220,6 @@ public class GameServer
 		// Update custom properties
 		SessionID = update.SessionID;
 		OwningClientID = update.OwningClientID;
-
-		var matchDuration = (int?)update.Attributes.Get("UT_MATCHDURATION_i");
-		if (matchDuration is not null)
-		{
-			LastKnownMatchStartTime = DateTime.UtcNow - TimeSpan.FromSeconds(matchDuration.Value);
-		}
 	}
 
 	public JsonObject ToJson(bool isResponseToClient)
@@ -234,10 +228,6 @@ public class GameServer
 
 		// Do some preprocessing on attributes
 		var attrs = Attributes.ToJObject();
-		if (attrs["UT_MATCHSTATE_s"]?.ToString() == "InProgress" && attrs.ContainsKey("UT_MATCHDURATION_i"))
-		{
-			attrs["UT_MATCHDURATION_i"] = (int)(DateTime.UtcNow - LastKnownMatchStartTime).TotalSeconds;
-		}
 
 		// build json
 		var obj = new List<KeyValuePair<string, JsonNode?>>();
@@ -247,7 +237,6 @@ public class GameServer
 		obj.Add(new("UT4MS__SESSION_ID__DEBUG_ONLY_VALUE", SessionID.ToString()));
 		obj.Add(new("UT4MS__SESSION_TOKEN__DEBUG_ONLY_VALUE", SessionAccessToken));
 		obj.Add(new("UT4MS__OWNING_CLIENT_ID__DEBUG_ONLY_VALUE", OwningClientID.ToString()));
-		obj.Add(new("UT4MS__LAST_KNOWN_MATCH_START_TIME__DEBUG_ONLY_VALUE", LastKnownMatchStartTime.ToStringISO()));
 #endif
 		obj.Add(new("ownerId", OwnerID.ToString().ToUpper()));
 		obj.Add(new("ownerName", OwnerName));
