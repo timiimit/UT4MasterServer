@@ -56,7 +56,13 @@ export function useMatch() {
         ServerAttribute.playersOnline
       ] as number,
       duration: response.attributes[ServerAttribute.matchDuration] as number,
-      elapsedTime: response.attributes[ServerAttribute.elapsedTime] as number,
+      elapsedTime: Math.round(
+        (Date.now() -
+          (new Date(response.lastUpdated).getTime() -
+            (response.attributes[ServerAttribute.elapsedTime] as number) *
+              1000)) /
+          1000
+      ),
       publicPlayers: response.publicPlayers,
       mutators,
       gameMode,
