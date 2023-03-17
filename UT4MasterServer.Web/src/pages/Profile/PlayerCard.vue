@@ -5,6 +5,38 @@
 <template>
   <h1>Player Card</h1>
   <div v-if="AccountStore.account" class="row">
+    <div v-if="!emailVerified">
+      <div
+        v-if="
+          verificationLinkSent ||
+          (verificationLinkGUID && !verificationLinkExpired)
+        "
+        class="alert alert-warning"
+      >
+        <div>
+          Email is not verified. Verify email via verification link that was
+          sent to your email and then refresh the page.
+        </div>
+      </div>
+      <div v-else class="alert alert-danger">
+        <LoadingPanel
+          :status="status"
+          error="Error occurred while sending verification link!"
+        >
+          <div>
+            Email is not verified. Click
+            <button
+              type="button"
+              class="btn btn-link p-0"
+              @click="sendVerificationLink"
+            >
+              here
+            </button>
+            to send the verification link.
+          </div>
+        </LoadingPanel>
+      </div>
+    </div>
     <div class="col-sm-6">
       <table class="table table-hover">
         <tbody>
@@ -74,5 +106,47 @@ img.avatar {
 </style>
 
 <script lang="ts" setup>
+import { shallowRef, computed } from 'vue';
 import { AccountStore } from '@/stores/account-store';
+import AccountService from '@/services/account.service';
+import LoadingPanel from '@/components/LoadingPanel.vue';
+import { AsyncStatus } from '@/types/async-status';
+import { Role } from '@/enums/role';
+
+const status = shallowRef(AsyncStatus.OK);
+const emailVerified = computed(() =>
+  AccountStore.account?.roles?.some((r) => r === Role.EmailVerified)
+);
+const verificationLinkGUID = computed(
+  () => AccountStore.account?.verificationLinkGUID
+);
+const verificationLinkExpired = computed(
+  () =>
+    AccountStore.account?.verificationLinkExpiration &&
+    new Date(AccountStore.account?.verificationLinkExpiration).getTime() <
+      Date.now()
+);
+const verificationLinkSent = shallowRef(false);
+
+const accountService = new AccountService();
+
+async function sendVerificationLink() {
+  try {
+    if (!AccountStore.account) return;
+
+    status.value = AsyncStatus.BUSY;
+
+    const formData = {
+      email: AccountStore.account.email
+    };
+
+    await accountService.resendVerificationLink(formData);
+
+    status.value = AsyncStatus.OK;
+    verificationLinkSent.value = true;
+  } catch (err: unknown) {
+    console.error('Error occurred while sending verification link:', err);
+    status.value = AsyncStatus.ERROR;
+  }
+}
 </script>

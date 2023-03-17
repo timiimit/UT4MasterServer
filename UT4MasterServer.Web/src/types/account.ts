@@ -22,4 +22,6 @@ export interface IAccountExtended extends IAccountWithRoles {
   flags: number;
   level: number;
   levelStockLimited: number;
+  verificationLinkGUID: string;
+  verificationLinkExpiration: Date;
 }
