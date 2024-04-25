@@ -6,6 +6,7 @@ using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Database;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace UT4MasterServer.Controllers.Epic;
 
@@ -17,6 +18,8 @@ public sealed class CloudStorageController : JsonAPIController
 	private readonly CloudStorageService cloudStorageService;
 	private readonly MatchmakingService matchmakingService;
 	private readonly AccountService accountService;
+
+	private static FileExtensionContentTypeProvider contentTypeProvider = new();
 
 	public CloudStorageController(ILogger<CloudStorageController> logger,
 		CloudStorageService cloudStorageService,
@@ -35,8 +38,50 @@ public sealed class CloudStorageController : JsonAPIController
 		return BuildListResult(files);
 	}
 
-	[HttpGet("user/{id}/{filename}"), Produces("application/octet-stream")]
+	[HttpGet("user/{id}/{filename}")]
 	public async Task<IActionResult> GetUserFile(string id, string filename)
+	{
+		return await GetFile(id, filename);
+	}
+
+	[HttpPut("user/{id}/{filename}")]
+	public async Task<IActionResult> UpdateUserFile(string id, string filename)
+	{
+		if (User.Identity is not EpicUserIdentity user)
+			return Unauthorized();
+		var accountID = EpicID.FromString(id);
+		if (user.Session.AccountID != accountID)
+		{
+			// cannot modify other's files
+
+			// unless you are a game server with this player and are modifying this player's stats file
+			var isServerWithPlayer = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountID);
+			if (!isServerWithPlayer || filename != "stats.json")
+			{
+				return Unauthorized();
+			}
+		}
+
+		await cloudStorageService.UpdateFileAsync(accountID, filename, Request.Body);
+		return Ok();
+	}
+
+	[HttpGet("system")]
+	public async Task<IActionResult> ListSystemFiles()
+	{
+		var files = await cloudStorageService.ListFilesAsync(EpicID.Empty, true);
+		return BuildListResult(files);
+	}
+
+	[AllowAnonymous]
+	[HttpGet("system/{filename}")]
+	public async Task<IActionResult> GetSystemFile(string filename)
+	{
+		return await GetFile(EpicID.Empty.ToString(), filename);
+	}
+
+	[NonAction]
+	public async Task<IActionResult> GetFile(string id, string filename)
 	{
 		bool isStatsFile = filename == "stats.json";
 
@@ -81,43 +126,13 @@ public sealed class CloudStorageController : JsonAPIController
 			file.RawContent = tmp;
 		}
 
-		return new FileContentResult(file.RawContent, "application/octet-stream");
-	}
 
-	[HttpPut("user/{id}/{filename}")]
-	public async Task<IActionResult> UpdateUserFile(string id, string filename)
-	{
-		if (User.Identity is not EpicUserIdentity user)
-			return Unauthorized();
-		var accountID = EpicID.FromString(id);
-		if (user.Session.AccountID != accountID)
+		if (!contentTypeProvider.TryGetContentType(filename, out string? contentType))
 		{
-			// cannot modify other's files
-
-			// unless you are a game server with this player and are modifying this player's stats file
-			var isServerWithPlayer = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountID);
-			if (!isServerWithPlayer || filename != "stats.json")
-			{
-				return Unauthorized();
-			}
+			contentType = "application/octet-stream";
 		}
 
-		await cloudStorageService.UpdateFileAsync(accountID, filename, Request.Body);
-		return Ok();
-	}
-
-	[HttpGet("system")]
-	public async Task<IActionResult> ListSystemFiles()
-	{
-		var files = await cloudStorageService.ListFilesAsync(EpicID.Empty, true);
-		return BuildListResult(files);
-	}
-
-	[AllowAnonymous]
-	[HttpGet("system/{filename}"), Produces("application/octet-stream")]
-	public async Task<IActionResult> GetSystemFile(string filename)
-	{
-		return await GetUserFile(EpicID.Empty.ToString(), filename);
+		return File(file.RawContent, contentType);
 	}
 
 	[NonAction]
