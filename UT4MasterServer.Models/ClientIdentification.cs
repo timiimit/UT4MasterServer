@@ -29,7 +29,7 @@ public class ClientIdentification
 	{
 		if (authorization.TryDecodeBase64(out var parsedBytes))
 		{
-			string decoded = Encoding.UTF8.GetString(parsedBytes);
+			var decoded = Encoding.UTF8.GetString(parsedBytes);
 			var colon = decoded.IndexOf(':');
 			if (colon >= 0)
 			{
@@ -48,7 +48,7 @@ public class ClientIdentification
 
 	public ClientIdentification(EpicID id, string secret)
 	{
-		string auth = $"{id}:{secret}";
+		var auth = $"{id}:{secret}";
 		Authorization = Convert.ToBase64String(Encoding.UTF8.GetBytes(auth));
 		ID = id;
 		Secret = secret;

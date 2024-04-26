@@ -22,7 +22,7 @@ internal class Program
 		var serverTask = server.StartAsync(cts.Token);
 		while (true)
 		{
-			string? command = Console.ReadLine();
+			var command = Console.ReadLine();
 			if (command == null)
 			{
 				continue;

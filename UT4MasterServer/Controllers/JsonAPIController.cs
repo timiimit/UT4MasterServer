@@ -108,7 +108,7 @@ public class JsonAPIController : ControllerBase
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
 
 		// look through each instance of the header bottom-to-top
-		for (int hi = headers.Count - 1; hi >= 0; hi--)
+		for (var hi = headers.Count - 1; hi >= 0; hi--)
 		{
 			var header = headers[hi];
 			if (header == null)
@@ -119,7 +119,7 @@ public class JsonAPIController : ControllerBase
 			string[] headerParts = header.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 			// look through each part of header from right-to-left
-			for (int i = headerParts.Length - 1; i >= 0; i--)
+			for (var i = headerParts.Length - 1; i >= 0; i--)
 			{
 				// determine whether we trust last sender
 				if (ipAddress != null &&

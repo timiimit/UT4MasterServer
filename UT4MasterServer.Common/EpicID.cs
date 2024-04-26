@@ -47,9 +47,9 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 	{
 		// MongoDB driver seems to do a similar thing, except that
 		// it uses custom randomness generation with some pattern.
-		byte[] bytes = new byte[16];
+		var bytes = new byte[16];
 		r.GetBytes(bytes);
-		string? id = Convert.ToHexString(bytes).ToLower();
+		var id = Convert.ToHexString(bytes).ToLower();
 
 		return new EpicID(id);
 	}

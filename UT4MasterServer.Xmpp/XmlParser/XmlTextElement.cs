@@ -1,5 +1,3 @@
-﻿using System.Text;
-
 namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class XmlTextElement : XmlElement

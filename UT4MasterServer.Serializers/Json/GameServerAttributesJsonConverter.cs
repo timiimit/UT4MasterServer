@@ -13,7 +13,7 @@ public class GameServerAttributesJsonConverter : JsonConverter<GameServerAttribu
 	        return null;
         }
 
-        GameServerAttributes attribs = new GameServerAttributes();
+        var attribs = new GameServerAttributes();
 
         while (true)
         {

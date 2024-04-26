@@ -47,7 +47,7 @@ public sealed class CloudStorageController : JsonAPIController
 	[NonAction]
 	public async Task<IActionResult> GetFile(string id, string filename)
 	{
-		bool isStatsFile = filename == "stats.json";
+		var isStatsFile = filename == "stats.json";
 
 		var accountID = EpicID.FromString(id);
 		var file = await cloudStorageService.GetFileAsync(accountID, filename);
@@ -90,7 +90,7 @@ public sealed class CloudStorageController : JsonAPIController
 			file.RawContent = tmp;
 		}
 
-		if (!contentTypeProvider.TryGetContentType(filename, out string? contentType))
+		if (!contentTypeProvider.TryGetContentType(filename, out var contentType))
 		{
 			contentType = "application/octet-stream";
 		}

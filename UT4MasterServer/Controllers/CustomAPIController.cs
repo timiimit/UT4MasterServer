@@ -25,7 +25,7 @@ public sealed class CustomAPIController : JsonAPIController
 	{
 		var ip = GetClientIP(configuration);
 
-		StringBuilder sb = new StringBuilder();
+		var sb = new StringBuilder();
 
 		sb.AppendLine($"Direct IP Address: {HttpContext.Connection.RemoteIpAddress}");
 		sb.AppendLine($"Guessed IP Address: {ip}");

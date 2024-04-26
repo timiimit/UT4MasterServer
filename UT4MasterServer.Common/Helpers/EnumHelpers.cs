@@ -1,11 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using UT4MasterServer.Common.Enums;
-
 namespace UT4MasterServer.Common.Helpers;
 
 public static class EnumHelpers
@@ -21,7 +13,7 @@ public static class EnumHelpers
 		var allNames = Enum.GetNames<T>();
 		var allValues = Enum.GetValues<T>();
 
-		for (int i = 0; i < allNames.Length; i++)
+		for (var i = 0; i < allNames.Length; i++)
 		{
 			var val = allValues[i];
 
@@ -40,7 +32,7 @@ public static class EnumHelpers
 		var allValues = Enum.GetValues<T>();
 		ulong ret = 0;
 
-		for (int i = 0; i < allNames.Length; i++)
+		for (var i = 0; i < allNames.Length; i++)
 		{
 			if (strings.Contains(allNames[i]))
 			{
@@ -75,7 +67,7 @@ public static class EnumHelpers
 		var result = new List<T>();
 		var allValues = Enum.GetValues<T>();
 
-		for (int i = 0; i < allValues.Length; i++)
+		for (var i = 0; i < allValues.Length; i++)
 		{
 			var val = allValues[i];
 

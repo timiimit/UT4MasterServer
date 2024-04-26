@@ -57,7 +57,7 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
 	            break;
             }
 
-            string key = context.Reader.ReadName();
+            var key = context.Reader.ReadName();
 
             if (t == MongoDB.Bson.BsonType.String)
             {

@@ -53,7 +53,7 @@ public sealed class EntitlementController : JsonAPIController
     {
         // TODO: Permission: "Sorry your login does not posses the permissions 'entitlement:account:{id_from_param}:entitlements READ' needed to perform the requested operation"
 
-        EpicID eid = EpicID.FromString(id);
+        var eid = EpicID.FromString(id);
 
         List<EntitlementResponse> entitlements = new List<EntitlementResponse>();
         entitlements.Add(new EntitlementResponse("UnrealTournament", UTEntitlementID, eid));

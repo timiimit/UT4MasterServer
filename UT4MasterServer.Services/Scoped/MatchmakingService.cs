@@ -29,7 +29,7 @@ public sealed class MatchmakingService
 	public async Task<bool> DoesExistWithSessionAsync(EpicID sessionID)
 	{
 		var options = new CountOptions() { Limit = 1 };
-		long count = await serverCollection.CountDocumentsAsync(x => x.SessionID == sessionID, options);
+		var count = await serverCollection.CountDocumentsAsync(x => x.SessionID == sessionID, options);
 
 		return count > 0;
 	}
@@ -37,7 +37,7 @@ public sealed class MatchmakingService
 	public async Task<bool> DoesExistAsync(EpicID serverID)
 	{
 		var options = new CountOptions() { Limit = 1 };
-		long count = await serverCollection.CountDocumentsAsync(x => x.ID == serverID, options);
+		var count = await serverCollection.CountDocumentsAsync(x => x.ID == serverID, options);
 
 		return count > 0;
 	}

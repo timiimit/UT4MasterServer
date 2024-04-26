@@ -1,9 +1,8 @@
-﻿#define USE_LOCALHOST_TEST
+#define USE_LOCALHOST_TEST
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Requests;
@@ -77,7 +76,7 @@ public sealed class MatchmakingController : JsonAPIController
 		server.ServerAddress = ipClient.ToString();
 		server.Started = false;
 
-		GameServerTrust trust = GameServerTrust.Untrusted;
+		var trust = GameServerTrust.Untrusted;
 		var trusted = await trustedGameServerService.GetAsync(server.OwningClientID);
 		if (trusted != null)
 		{
@@ -196,7 +195,7 @@ public sealed class MatchmakingController : JsonAPIController
 			Unauthorized();
 		}
 
-		bool wasDeleted = await matchmakingService.RemoveAsync(EpicID.FromString(id));
+		var wasDeleted = await matchmakingService.RemoveAsync(EpicID.FromString(id));
 
 		// TODO: unknown actual responses but these seem to work
 
@@ -419,7 +418,7 @@ public sealed class MatchmakingController : JsonAPIController
 			return Unauthorized();
 		}
 
-		EpicID eid = EpicID.FromString(id);
+		var eid = EpicID.FromString(id);
 
 		if (!await matchmakingService.DoesExistAsync(eid))
 		{

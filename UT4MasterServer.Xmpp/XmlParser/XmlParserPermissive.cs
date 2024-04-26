@@ -1,6 +1,3 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using System.Xml.Linq;
-
 namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class XmlParserPermissive

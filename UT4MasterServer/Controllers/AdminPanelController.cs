@@ -11,7 +11,6 @@ using UT4MasterServer.Models;
 using UT4MasterServer.Models.Responses;
 using Microsoft.Net.Http.Headers;
 using UT4MasterServer.Common.Enums;
-using System.Linq;
 
 namespace UT4MasterServer.Controllers;
 

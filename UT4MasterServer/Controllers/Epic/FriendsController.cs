@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Models.Database;
@@ -45,14 +45,14 @@ public sealed class FriendsController : JsonAPIController
 
         var friends = await friendService.GetFriendsAsync(eid);
 
-        JArray arr = new JArray();
+        var arr = new JArray();
         foreach (var friend in friends)
         {
             var other = friend.Sender == eid ? friend.Receiver : friend.Sender;
             var status = friend.Status == FriendStatus.Accepted ? "ACCEPTED" : "PENDING";
             var direction = friend.Sender == eid ? "OUTBOUND" : "INBOUND";
 
-            JObject obj = new JObject();
+            var obj = new JObject();
             obj.Add("accountId", other.ToString());
             obj.Add("status", status);
             obj.Add("direction", direction);
@@ -127,7 +127,7 @@ public sealed class FriendsController : JsonAPIController
 
         var blockedUsers = await friendService.GetBlockedUsersAsync(eid);
 
-        JArray arr = new JArray();
+        var arr = new JArray();
         foreach (var blockedUser in blockedUsers)
         {
             arr.Add(blockedUser.Receiver.ToString());

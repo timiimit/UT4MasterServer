@@ -101,7 +101,7 @@ public class XmppConnection : IDisposable
 			return null;
 		}
 
-		Guid guid = Guid.NewGuid();
+		var guid = Guid.NewGuid();
 
 		Writer.ResponseStreamHeader(Server.Domain, guid.ToString());
 		Writer.Flush();
@@ -144,7 +144,7 @@ public class XmppConnection : IDisposable
 				return null;
 			}
 
-			string? username = AuthenticateStream();
+			var username = AuthenticateStream();
 			if (username is not null)
 			{
 				id = new JID(username, Server.Domain);
@@ -190,7 +190,7 @@ public class XmppConnection : IDisposable
 	{
 		await Task.Yield();
 
-		bool recievedPresenceOfFriends = false;
+		var recievedPresenceOfFriends = false;
 
 		while (!cancellationToken.IsCancellationRequested)
 		{
@@ -444,9 +444,9 @@ public class XmppConnection : IDisposable
 		// read content of <auth>
 		Reader.Read();
 
-		int authSeparatorIndex = 0;
+		var authSeparatorIndex = 0;
 		var bytes = Convert.FromBase64String(Reader.Value);
-		for (int i = 1; i < bytes.Length; i++)
+		for (var i = 1; i < bytes.Length; i++)
 		{
 			if (bytes[i] == 0)
 			{
@@ -463,8 +463,8 @@ public class XmppConnection : IDisposable
 			return null;
 		}
 
-		string username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
-		string password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
+		var username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
+		var password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
 
 		// TODO: validate credentials
 

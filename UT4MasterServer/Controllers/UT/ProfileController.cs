@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Controllers.Epic;
@@ -77,8 +77,8 @@ public sealed class ProfileController : JsonAPIController
 	        return Unauthorized();
         }
 
-        bool isRequestSentFromClient = clientKind.ToLower() == "client";
-        bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
+        var isRequestSentFromClient = clientKind.ToLower() == "client";
+        var isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
         // TODO: I think "rvn" is revision number and it represents index of profile change entry.
         // negative values probably mean index from back-to-front in array.
@@ -105,14 +105,14 @@ public sealed class ProfileController : JsonAPIController
 
         // actual response example is in <repo_root>/OldReferenceCode/Server.cs line 750
 
-        int revisionNumber = rvn + 1;
-        int commandRevision = rvn - 1;
+        var revisionNumber = rvn + 1;
+        var commandRevision = rvn - 1;
 
         JObject obj = new();
         obj.Add("profileRevision", revisionNumber);
         obj.Add("profileId", profileId);
         obj.Add("profileChangesBaseRevision", revisionNumber);
-        JArray profileChanges = new JArray();
+        var profileChanges = new JArray();
         // foreach {
         JObject profileChange = new();
         profileChange.Add("changeType", "fullProfileUpdate");
@@ -141,7 +141,7 @@ public sealed class ProfileController : JsonAPIController
             // guid probably represents the id of profile item
             // we don't really store obtained items, so we generate new id
             // each time
-            string profileItemGuid = Guid.NewGuid().ToString();
+            var profileItemGuid = Guid.NewGuid().ToString();
             items.Add(profileItemGuid, new JObject()
             {
                 { "templateId", "Item." + profileItem.item },
@@ -211,17 +211,17 @@ public sealed class ProfileController : JsonAPIController
 	        rvn = 1;
         }
 
-        int revisionNumber = rvn;
+        var revisionNumber = rvn;
 
-        JObject obj = JObject.Parse(await Request.Body.ReadAsStringAsync(1024));
-        string? avatar = obj["newAvatar"]?.ToObject<string>();
-        string? flag = obj["newFlag"]?.ToObject<string>();
+        var obj = JObject.Parse(await Request.Body.ReadAsStringAsync(1024));
+        var avatar = obj["newAvatar"]?.ToObject<string>();
+        var flag = obj["newFlag"]?.ToObject<string>();
 
         obj = new JObject();
         obj.Add("profileRevision", revisionNumber);
         obj.Add("profileId", "profile0");
         obj.Add("profileChangesBaseRevision", revisionNumber - 1);
-        JArray profileChanges = new JArray();
+        var profileChanges = new JArray();
         if (avatar != null || flag != null)
         {
             var acc = await accountService.GetAccountAsync(user.Session.AccountID);
@@ -277,8 +277,8 @@ public sealed class ProfileController : JsonAPIController
         var eid = EpicID.FromString(id);
 
         // only known to be sent by dedicated_server so far
-        bool isRequestSentFromClient = clientKind.ToLower() == "client";
-        bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
+        var isRequestSentFromClient = clientKind.ToLower() == "client";
+        var isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
         if (isRequestSentFromServer && user.Session.AccountID.IsEmpty)
         {
@@ -334,7 +334,7 @@ public sealed class ProfileController : JsonAPIController
         obj.Add("profileRevision", revisionNumber);
         obj.Add("profileId", "profile0");
         obj.Add("profileChangesBaseRevision", revisionNumber - 1);
-        JArray profileChanges = new JArray();
+        var profileChanges = new JArray();
         {
             acc.LastMatchAt = DateTime.UtcNow;
             profileChanges.Add(new JObject()
@@ -408,8 +408,8 @@ public sealed class ProfileController : JsonAPIController
         }
 
         // only known to be sent by client so far
-        bool isRequestSentFromClient = clientKind.ToLower() == "client";
-        bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
+        var isRequestSentFromClient = clientKind.ToLower() == "client";
+        var isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
         // this endpoint is kind of pointless. the actual stars are stored in cloudstorage progression file.
         // then whenever it is changed, it sends an update to master server.

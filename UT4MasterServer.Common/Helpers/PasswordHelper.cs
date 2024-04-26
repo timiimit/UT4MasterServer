@@ -9,7 +9,7 @@ public static class PasswordHelper
 	{
 		// we combine both accountID and password to create a hash.
 		// this way NO ONE can tell which users have the same password.
-		string combined = accountID + password;
+		var combined = accountID + password;
 
 		return GetPasswordHash(combined);
 	}

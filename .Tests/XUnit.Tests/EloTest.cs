@@ -31,18 +31,18 @@ public class EloTest
 	[InlineData(30, 2, 100, 1)]
 	private static void TestTeamEloBalancing(int gamesPerIteration, int playersPerTeam, int matchesWithSameTeams, int iterations)
 	{
-		int playersPerGame = playersPerTeam * 2;
-		int playerCount = gamesPerIteration * playersPerGame;
+		var playersPerGame = playersPerTeam * 2;
+		var playerCount = gamesPerIteration * playersPerGame;
 
 		// create initial players
 		Player[] players = new Player[playerCount];
-		for (int i = 0; i < playerCount; i++)
+		for (var i = 0; i < playerCount; i++)
 		{
 			players[i] = new Player();
 		}
 
 		// select different team `generations` times
-		for (int i = 0; i < iterations; i++)
+		for (var i = 0; i < iterations; i++)
 		{
 			// randomly shuffle player indices
 			var shuffledPlayerIndices = GetShuffledIndices(playerCount);
@@ -53,28 +53,28 @@ public class EloTest
 			var shuffledApproxPlayerRatings = shuffledPlayerIndices.Select(i => players[i].ApproxSkillRating).ToArray();
 
 			// play 1 game with each team
-			for (int j = 0; j < gamesPerIteration; j++)
+			for (var j = 0; j < gamesPerIteration; j++)
 			{
-				for (int k = 0; k < matchesWithSameTeams; k++)
+				for (var k = 0; k < matchesWithSameTeams; k++)
 				{
 					// pick an outcome based on aproximated skill
-					double expectedRatingsTeamA = shuffledApproxPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).Sum();
-					double expectedRatingsTeamB = shuffledApproxPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).Sum();
+					var expectedRatingsTeamA = shuffledApproxPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).Sum();
+					var expectedRatingsTeamB = shuffledApproxPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).Sum();
 
-					double outcome = expectedRatingsTeamA - expectedRatingsTeamB;
+					var outcome = expectedRatingsTeamA - expectedRatingsTeamB;
 
 					outcome = ((int)Math.Clamp(outcome, -1, 1)) * 0.5 + 0.5;
 
 					// create arrays with team ratings
-					double[] ratingsTeamA = shuffledPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).ToArray();
-					double[] ratingsTeamB = shuffledPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).ToArray();
+					var ratingsTeamA = shuffledPlayerRatings.Skip(j * playersPerGame).Take(playersPerTeam).ToArray();
+					var ratingsTeamB = shuffledPlayerRatings.Skip(j * playersPerGame + playersPerTeam).Take(playersPerTeam).ToArray();
 
 					// calculate new ratings
-					double[] expectedScoresA = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamA, ratingsTeamB);
-					double[] newRatingsA = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamA, expectedScoresA, outcome);
+					var expectedScoresA = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamA, ratingsTeamB);
+					var newRatingsA = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamA, expectedScoresA, outcome);
 
-					double[] expectedScoresB = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamB, ratingsTeamA);
-					double[] newRatingsB = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamB, expectedScoresB, 1 - outcome);
+					var expectedScoresB = EloTeamsCalculationHelper.GetExpectedScores(ratingsTeamB, ratingsTeamA);
+					var newRatingsB = EloTeamsCalculationHelper.GetNewRatings(ratingsTeamB, expectedScoresB, 1 - outcome);
 
 					// put team ratings back into main arrays
 					Array.Copy(newRatingsA, 0, shuffledPlayerRatings, j * playersPerGame, playersPerTeam);
@@ -83,16 +83,16 @@ public class EloTest
 			}
 
 			// update ratings in players
-			for (int j = 0; j < playerCount; j++)
+			for (var j = 0; j < playerCount; j++)
 			{
 				players[j].Rating = shuffledPlayerRatings[shuffledPlayerIndices[j]];
 			}
 		}
 
-		double avg = players.Select(x => x.Rating).Average();
-		double expectedAvg = players.Select(x => x.ApproxSkillRating).Average();
+		var avg = players.Select(x => x.Rating).Average();
+		var expectedAvg = players.Select(x => x.ApproxSkillRating).Average();
 
-		for (int i = 0; i < playerCount; i++)
+		for (var i = 0; i < playerCount; i++)
 		{
 			Assert.Equal(players[i].ApproxSkillRating, players[i].Rating, 20.0);
 		}

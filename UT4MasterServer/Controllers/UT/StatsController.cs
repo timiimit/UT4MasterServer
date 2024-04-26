@@ -78,7 +78,7 @@ public sealed class StatsController : JsonAPIController
 
         if (user.Session.AccountID != accountId)
         {
-            bool isMultiplayerMatch = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountId);
+            var isMultiplayerMatch = await matchmakingService.DoesClientOwnGameServerWithPlayerAsync(user.Session.ClientID, accountId);
 
             // NOTE: In debug we allow anyone to post stats for easier testing.
             //       Normally only trusted servers are allowed to post stats
@@ -89,7 +89,7 @@ public sealed class StatsController : JsonAPIController
 #endif
 
             var trusted = await trustedGameServerService.GetAsync(user.Session.ClientID);
-            bool isTrustedMatch = (int)(trusted?.TrustLevel ?? GameServerTrust.Untrusted) < 2;
+            var isTrustedMatch = (int)(trusted?.TrustLevel ?? GameServerTrust.Untrusted) < 2;
 
 #if !DEBUG
 			if (!isTrustedMatch)

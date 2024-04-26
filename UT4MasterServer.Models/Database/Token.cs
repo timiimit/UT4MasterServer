@@ -48,7 +48,7 @@ public class Token
 
 		// we could infer importance of length/security based on expiration
 
-		byte[] bytes = new byte[32];
+		var bytes = new byte[32];
 		r.GetBytes(bytes);
 
 		var tokenString = Convert.ToHexString(bytes).ToLower();

@@ -15,7 +15,7 @@ public sealed class FriendService
 
 	public async Task<bool> SendFriendRequestAsync(EpicID from, EpicID to)
 	{
-		bool friendRequestAccepted = false;
+		var friendRequestAccepted = false;
 
 		// check if there is already inbound request
 		var cursor = await friendCollection.FindAsync(x => x.Sender == to && x.Receiver == from && x.Status == FriendStatus.Pending);

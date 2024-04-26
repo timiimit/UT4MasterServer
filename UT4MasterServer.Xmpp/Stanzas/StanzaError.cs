@@ -83,10 +83,10 @@ public class StanzaError
         }
 
         // transform enum name to xml element name
-        string errorName = Condition.ToString();
-        StringBuilder sb = new StringBuilder();
+        var errorName = Condition.ToString();
+        var sb = new StringBuilder();
         sb.Append(char.ToLower(errorName[0]));
-        for (int i = 1; i < errorName.Length; i++)
+        for (var i = 1; i < errorName.Length; i++)
         {
             if (char.IsUpper(errorName[i]))
             {

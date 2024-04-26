@@ -77,7 +77,7 @@ public class Account
 			// calculation for levels over 50 from UT4UU - port from c++ to c# is untested
 			// find required xp per certain level here: https://docs.google.com/spreadsheets/d/1gvoxW2UMk8_O1E1emObkQNy1kzPOQ1Wmu0YvslMAwyE
 
-			ulong xp_in = (ulong)XP;
+			var xp_in = (ulong)XP;
 			if (xp_in < 50)
 			{
 				return 1;

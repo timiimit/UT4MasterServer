@@ -66,8 +66,8 @@ public class XmlElement : XmlNode
 			return $"<{Name}>";
 		}
 
-		StringBuilder sb = new StringBuilder($"<{Name}");
-		foreach (XmlAttribute attr in Attributes)
+		var sb = new StringBuilder($"<{Name}");
+		foreach (var attr in Attributes)
 		{
 			sb.Append($" {attr}");
 		}

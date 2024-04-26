@@ -43,7 +43,7 @@ public sealed class AccountController : JsonAPIController
         }
 
         // TODO: EPIC doesn't throw here if id is invalid (like 'abc'). Return this same ErrorResponse like for account_not_found
-        EpicID eid = EpicID.FromString(id);
+        var eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
         {
@@ -147,7 +147,7 @@ public sealed class AccountController : JsonAPIController
     [HttpGet("accounts/{id}/metadata")]
     public IActionResult GetMetadata(string id)
     {
-        EpicID eid = EpicID.FromString(id);
+        var eid = EpicID.FromString(id);
 
         logger.LogInformation($"Get metadata of {eid}");
 
@@ -158,7 +158,7 @@ public sealed class AccountController : JsonAPIController
     [HttpGet("public/account/{id}/externalAuths")]
     public IActionResult GetExternalAuths(string id)
     {
-        EpicID eid = EpicID.FromString(id);
+        var eid = EpicID.FromString(id);
 
         logger.LogInformation($"Get external auths of {eid}");
         // we don't really care about these, but structure for my github externalAuth is the following:

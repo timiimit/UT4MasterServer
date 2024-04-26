@@ -1,6 +1,5 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;

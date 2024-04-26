@@ -1,5 +1,3 @@
-﻿using UT4MasterServer.Common;
-
 namespace UT4MasterServer.Models.Settings;
 
 public sealed class XmppSettings

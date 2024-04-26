@@ -42,7 +42,7 @@ public class XmppWriter
 
 	public void OpenTag(string prefix, string localName)
 	{
-		string name = string.Empty;
+		var name = string.Empty;
 		if (prefix is not null)
 		{
 			name = prefix + ":";
@@ -71,7 +71,7 @@ public class XmppWriter
 
 	public void OpenTagNS(string prefix, string localName, string ns)
 	{
-		string name = string.Empty;
+		var name = string.Empty;
 		if (prefix is not null)
 		{
 			name = prefix + ":";

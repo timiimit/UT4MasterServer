@@ -75,7 +75,7 @@ public class GameServerAttributes
 	{
 		var attrs = new KeyValuePair<string, JsonNode?>[serverConfigs.Count];
 
-		int i = 0;
+		var i = 0;
 		foreach (var kvp in serverConfigs)
 		{
 			if (kvp.Key.EndsWith("_b"))

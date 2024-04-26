@@ -27,7 +27,7 @@ internal class DebugTextProxyStream : Stream
 
 	public override int Read(byte[] buffer, int offset, int count)
 	{
-		int ret = InnerStream.Read(buffer, offset, count);
+		var ret = InnerStream.Read(buffer, offset, count);
 		var s = Encoding.UTF8.GetString(buffer, offset, ret);
 		lock (InnerStream)
 		{

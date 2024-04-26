@@ -52,7 +52,7 @@ public sealed class SessionController : JsonAPIController
 	        return Unauthorized();
         }
 
-        EpicID clientID = user.Client.ID;
+        var clientID = user.Client.ID;
         Session? session = null;
         Account? account = null;
         switch (grantType)
@@ -196,7 +196,7 @@ public sealed class SessionController : JsonAPIController
             await accountService.UpdateAccountAsync(account);
         }
 
-        JObject obj = new JObject();
+        var obj = new JObject();
         obj.Add("access_token", session.AccessToken.Value);
         obj.Add("expires_in", session.AccessToken.ExpirationDurationInSeconds);
         obj.Add("expires_at", session.AccessToken.ExpirationTime.ToStringISO());
@@ -401,7 +401,7 @@ public sealed class SessionController : JsonAPIController
 		}
 		*/
 
-        string auth_method = user.Session.CreationMethod switch
+        var auth_method = user.Session.CreationMethod switch
         {
             SessionCreationMethod.AuthorizationCode => "authorization_code",
             SessionCreationMethod.ExchangeCode => "exchange_code",

@@ -30,7 +30,7 @@ public class DateTimeISOJsonConverter : JsonConverter<DateTime>
 
     public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
     {
-        string val = value.ToStringISO();
+        var val = value.ToStringISO();
         writer.WriteStringValue(val);
     }
 }

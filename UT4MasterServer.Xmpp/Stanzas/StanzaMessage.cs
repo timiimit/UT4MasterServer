@@ -87,10 +87,10 @@ public class StanzaMessage : Stanza
 				return new StanzaMessage() { ID = id, From = from, To = to, Error = stanzaError };
 			}
 
-			TypeAttributeValues typeAttribute = TypeAttributeValues.Normal;
+			var typeAttribute = TypeAttributeValues.Normal;
 			var typeNames = Enum.GetNames<TypeAttributeValues>();
 			var typeValues = Enum.GetValues<TypeAttributeValues>();
-			for (int i = 0; i < typeNames.Length; i++)
+			for (var i = 0; i < typeNames.Length; i++)
 			{
 				if (type == typeNames[i].ToLower())
 				{
@@ -106,7 +106,7 @@ public class StanzaMessage : Stanza
 			}
 
 			reader.Read();
-			string body = reader.Value;
+			var body = reader.Value;
 
 			reader.Read();
 			if (reader.Name != "body" || reader.NodeType != XmlNodeType.EndElement)

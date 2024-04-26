@@ -99,7 +99,7 @@ public class XmlScanner
 
 	public int NextChar(int currentState, char c)
 	{
-		int nextState = stateMachine.NextChar(currentState, c);
+		var nextState = stateMachine.NextChar(currentState, c);
 
 		if (nextState >= 0)
 		{
