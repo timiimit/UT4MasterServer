@@ -1,4 +1,4 @@
-﻿using UT4MasterServer.Services;
+using UT4MasterServer.Services;
 
 namespace XUnit.Tests;
 
@@ -35,7 +35,7 @@ public class EloTest
 		var playerCount = gamesPerIteration * playersPerGame;
 
 		// create initial players
-		Player[] players = new Player[playerCount];
+		var players = new Player[playerCount];
 		for (var i = 0; i < playerCount; i++)
 		{
 			players[i] = new Player();
