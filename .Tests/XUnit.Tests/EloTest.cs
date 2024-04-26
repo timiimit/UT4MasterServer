@@ -29,7 +29,7 @@ public class EloTest
 	[InlineData(10, 1, 1000, 3)]
 	[InlineData(10, 2, 100, 100)]
 	[InlineData(30, 2, 100, 1)]
-	private static void TestTeamEloBalancing(int gamesPerIteration, int playersPerTeam, int matchesWithSameTeams, int iterations)
+	public static void TestTeamEloBalancing(int gamesPerIteration, int playersPerTeam, int matchesWithSameTeams, int iterations)
 	{
 		var playersPerGame = playersPerTeam * 2;
 		var playerCount = gamesPerIteration * playersPerGame;
@@ -46,7 +46,7 @@ public class EloTest
 		{
 			// randomly shuffle player indices
 			var shuffledPlayerIndices = GetShuffledIndices(playerCount);
-			var unshuffledPlayerIndices = GetUnshuffledIndices(shuffledPlayerIndices);
+			//var unshuffledPlayerIndices = GetUnshuffledIndices(shuffledPlayerIndices);
 
 			// get shuffled player ratings
 			var shuffledPlayerRatings = shuffledPlayerIndices.Select(i => players[i].Rating).ToArray();
