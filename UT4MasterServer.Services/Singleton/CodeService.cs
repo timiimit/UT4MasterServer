@@ -51,7 +51,7 @@ public sealed class CodeService
 					return null;
 				}
 
-				var ret = codes[i];
+				Code? ret = codes[i];
 				codes.RemoveAt(i);
 				return ret;
 			}

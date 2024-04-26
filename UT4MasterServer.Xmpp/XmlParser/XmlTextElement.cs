@@ -2,8 +2,8 @@ namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class XmlTextElement : XmlElement
 {
-    public XmlTextElement(string value) : base("<TEXT>")
-    {
+	public XmlTextElement(string value) : base("<TEXT>")
+	{
 		this.value = value;
 	}
 

@@ -50,30 +50,30 @@ public sealed class MatchmakingService
 
 	public async Task<bool> UpdateAsync(GameServer server)
 	{
-		var result = await serverCollection.ReplaceOneAsync(x => x.ID == server.ID, server);
+		ReplaceOneResult? result = await serverCollection.ReplaceOneAsync(x => x.ID == server.ID, server);
 
 		return result.IsAcknowledged;
 	}
 
 	public async Task UpdateTrustLevelAsync(EpicID clientID, GameServerTrust trustLevel)
 	{
-		var filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
-		var update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERTRUSTLEVEL_i}", trustLevel);
+		FilterDefinition<GameServer>? filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
+		UpdateDefinition<GameServer>? update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERTRUSTLEVEL_i}", trustLevel);
 
-		var result = await serverCollection.UpdateOneAsync(filter, update);
+		UpdateResult? result = await serverCollection.UpdateOneAsync(filter, update);
 	}
 
 	public async Task UpdateServerNameAsync(EpicID clientID, string serverName)
 	{
-		var filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
-		var update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERNAME_s}", serverName);
+		FilterDefinition<GameServer>? filter = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
+		UpdateDefinition<GameServer>? update = Builders<GameServer>.Update.Set($"{nameof(GameServer.Attributes)}.{GameServerAttributes.UT_SERVERNAME_s}", serverName);
 
-		var result = await serverCollection.UpdateOneAsync(filter, update);
+		UpdateResult? result = await serverCollection.UpdateOneAsync(filter, update);
 	}
 
 	public async Task<bool> RemoveAsync(EpicID serverID)
 	{
-		var result = await serverCollection.DeleteOneAsync(x => x.ID == serverID);
+		DeleteResult? result = await serverCollection.DeleteOneAsync(x => x.ID == serverID);
 		if (!result.IsAcknowledged)
 		{
 			return false;
@@ -84,14 +84,14 @@ public sealed class MatchmakingService
 
 	public async Task<GameServer?> GetAsync(EpicID id)
 	{
-		var cursor = await serverCollection.FindAsync(x => x.ID == id);
+		IAsyncCursor<GameServer>? cursor = await serverCollection.FindAsync(x => x.ID == id);
 		return await cursor.FirstOrDefaultAsync();
 	}
 
 	public async Task<List<GameServer>> ListAsync(GameServerFilterRequest inputFilter)
 	{
 		// Begin removing stale GameServers
-		var taskStaleRemoval = RemoveAllStaleAsync();
+		Task<int>? taskStaleRemoval = RemoveAllStaleAsync();
 
 		// Build BsonDocument representing Find filter
 		var doc = new BsonDocument();
@@ -116,7 +116,7 @@ public sealed class MatchmakingService
 			doc.Add(new BsonElement(nameof(GameServer.BuildUniqueID), inputFilter.BuildUniqueId));
 		}
 
-		foreach (var condition in inputFilter.Criteria)
+		foreach (GameServerAttributeCriteria? condition in inputFilter.Criteria)
 		{
 			// TODO: use skipped conditions to query dynamic value and sort results
 			//       (UTMatchmakingGather.cpp - search for SETTING_NEEDSSORT)
@@ -186,8 +186,8 @@ public sealed class MatchmakingService
 		// Wait for stale GameServer removal to finish
 		await taskStaleRemoval;
 
-		var cursor = await serverCollection.FindAsync(filter, options);
-		var ret = await cursor.ToListAsync();
+		IAsyncCursor<GameServer>? cursor = await serverCollection.FindAsync(filter, options);
+		List<GameServer>? ret = await cursor.ToListAsync();
 
 		if (inputFilter.OpenPlayersRequired != null)
 		{
@@ -202,7 +202,7 @@ public sealed class MatchmakingService
 
 	public async Task<int> RemoveAllStaleAsync()
 	{
-		var now = DateTime.UtcNow; // Use the same value for all checks in this call
+		DateTime now = DateTime.UtcNow; // Use the same value for all checks in this call
 
 		// Start removing stale servers only after some time has passed.
 		// This allows game servers from before our reboot to send a heartbeat again and continue operating normally.
@@ -211,7 +211,7 @@ public sealed class MatchmakingService
 			return 0;
 		}
 
-		var result = await serverCollection.DeleteManyAsync(
+		DeleteResult? result = await serverCollection.DeleteManyAsync(
 			Builders<GameServer>.Filter.Lt(x => x.LastUpdated, now - StaleAfter)
 		);
 
@@ -225,9 +225,9 @@ public sealed class MatchmakingService
 	[Obsolete("SessionID can change without our knowledge while the match is going on. Consider using DoesClientOwnGameServerWithPlayerAsync instead.")]
 	public async Task<bool> DoesSessionOwnGameServerWithPlayerAsync(EpicID sessionID, EpicID accountID)
 	{
-		var filterSession = Builders<GameServer>.Filter.Eq(x => x.SessionID, sessionID);
-		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
-		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
+		FilterDefinition<GameServer>? filterSession = Builders<GameServer>.Filter.Eq(x => x.SessionID, sessionID);
+		FilterDefinition<GameServer>? filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
+		FilterDefinition<GameServer>? filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
 		var options = new CountOptions()
 		{
 			Limit = 1
@@ -239,9 +239,9 @@ public sealed class MatchmakingService
 
 	public async Task<bool> DoesClientOwnGameServerWithPlayerAsync(EpicID clientID, EpicID accountID)
 	{
-		var filterSession = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
-		var filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
-		var filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
+		FilterDefinition<GameServer>? filterSession = Builders<GameServer>.Filter.Eq(x => x.OwningClientID, clientID);
+		FilterDefinition<GameServer>? filterPrivatePlayers = Builders<GameServer>.Filter.AnyEq(x => x.PrivatePlayers, accountID);
+		FilterDefinition<GameServer>? filterPublicPlayers = Builders<GameServer>.Filter.AnyEq(x => x.PublicPlayers, accountID);
 		var options = new CountOptions()
 		{
 			Limit = 1

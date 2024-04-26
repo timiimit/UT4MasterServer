@@ -49,23 +49,23 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 	{
 		Task.Run(async () =>
 		{
-			using var scope = services.CreateScope();
+			using IServiceScope? scope = services.CreateScope();
 
-			var sessionService = scope.ServiceProvider.GetRequiredService<SessionService>();
+			SessionService? sessionService = scope.ServiceProvider.GetRequiredService<SessionService>();
 			var deleteCount = await sessionService.RemoveAllExpiredSessionsAsync();
 			if (deleteCount > 0)
 			{
 				logger.LogInformation("Background task deleted {DeleteCount} expired sessions.", deleteCount);
 			}
 
-			var codeService = scope.ServiceProvider.GetRequiredService<CodeService>();
+			CodeService? codeService = scope.ServiceProvider.GetRequiredService<CodeService>();
 			deleteCount = await codeService.RemoveAllExpiredCodesAsync();
 			if (deleteCount > 0)
 			{
 				logger.LogInformation("Background task deleted {DeleteCount} expired codes.", deleteCount);
 			}
 
-			var matchmakingService = scope.ServiceProvider.GetRequiredService<MatchmakingService>();
+			MatchmakingService? matchmakingService = scope.ServiceProvider.GetRequiredService<MatchmakingService>();
 			deleteCount = await matchmakingService.RemoveAllStaleAsync();
 			if (deleteCount > 0)
 			{
@@ -90,13 +90,13 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 	/// </summary>
 	private async Task DeleteOldStatisticsAsync(IServiceScope scope)
 	{
-		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.DeleteOldStatisticsTimeZone));
+		DateTimeOffset currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.DeleteOldStatisticsTimeZone));
 		if (currentTime.Hour == statisticsSettings.DeleteOldStatisticsHour &&
 		   (!lastDateDeleteOldStatisticsExecuted.HasValue || lastDateDeleteOldStatisticsExecuted.Value.Date != currentTime.Date))
 		{
 			lastDateDeleteOldStatisticsExecuted = currentTime.Date;
 
-			var statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
+			StatisticsService? statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
 			await statisticsService.DeleteOldStatisticsAsync(statisticsSettings.DeleteOldStatisticsBeforeDays, false);
 		}
 	}
@@ -106,13 +106,13 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 	/// </summary>
 	private async Task MergeOldStatisticsAsync(IServiceScope scope)
 	{
-		var currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.MergeOldStatisticsTimeZone));
+		DateTimeOffset currentTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(statisticsSettings.MergeOldStatisticsTimeZone));
 		if (currentTime.Hour == statisticsSettings.MergeOldStatisticsHour &&
 		   (!lastDateMergeOldStatisticsExecuted.HasValue || lastDateMergeOldStatisticsExecuted.Value.Date != currentTime.Date))
 		{
 			lastDateMergeOldStatisticsExecuted = currentTime.Date;
 
-			var statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
+			StatisticsService? statisticsService = scope.ServiceProvider.GetRequiredService<StatisticsService>();
 			await statisticsService.MergeOldStatisticsAsync();
 		}
 	}

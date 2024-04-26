@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System.Text.Json;
 using UT4MasterServer.Common;
@@ -26,9 +26,9 @@ public sealed class RatingsService
 
 	public async Task CreateIndexesAsync()
 	{
-		var indexAccountId = new IndexKeysDefinitionBuilder<Rating>().Ascending(f => f.AccountID);
-		var indexRatingType = new IndexKeysDefinitionBuilder<Rating>().Ascending(f => f.RatingType);
-		var indexesCombined = new IndexKeysDefinitionBuilder<Rating>().Combine(new[] { indexAccountId, indexRatingType });
+		IndexKeysDefinition<Rating>? indexAccountId = new IndexKeysDefinitionBuilder<Rating>().Ascending(f => f.AccountID);
+		IndexKeysDefinition<Rating>? indexRatingType = new IndexKeysDefinitionBuilder<Rating>().Ascending(f => f.RatingType);
+		IndexKeysDefinition<Rating>? indexesCombined = new IndexKeysDefinitionBuilder<Rating>().Combine(new[] { indexAccountId, indexRatingType });
 
 		var createIndexModel = new CreateIndexModel<Rating>(indexesCombined, new CreateIndexOptions() { Unique = true });
 		await ratingsCollection.Indexes.CreateOneAsync(createIndexModel);
@@ -36,16 +36,16 @@ public sealed class RatingsService
 
 	public async Task<MMRBulkResponse> GetRatingsAsync(EpicID accountID, MMRBulkRequest mmrBulk)
 	{
-		var ratingTypes = mmrBulk.RatingTypes.Intersect(Rating.AllowedRatingTypes);
-		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
-					 Builders<Rating>.Filter.In(f => f.RatingType, ratingTypes);
-		var ratings = await ratingsCollection.Find(filter).ToListAsync();
+		IEnumerable<string>? ratingTypes = mmrBulk.RatingTypes.Intersect(Rating.AllowedRatingTypes);
+		FilterDefinition<Rating>? filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
+										   Builders<Rating>.Filter.In(f => f.RatingType, ratingTypes);
+		List<Rating>? ratings = await ratingsCollection.Find(filter).ToListAsync();
 
 		var result = new MMRBulkResponse();
 
 		foreach (var ratingType in mmrBulk.RatingTypes)
 		{
-			var rating = ratings.FirstOrDefault(f => f.RatingType == ratingType);
+			Rating? rating = ratings.FirstOrDefault(f => f.RatingType == ratingType);
 
 			result.RatingTypes.Add(ratingType);
 			if (rating is not null)
@@ -65,9 +65,9 @@ public sealed class RatingsService
 
 	public async Task<MMRRatingResponse> GetRatingAsync(EpicID accountID, string ratingType)
 	{
-		var filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
-					 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
-		var rating = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
+		FilterDefinition<Rating>? filter = Builders<Rating>.Filter.Eq(f => f.AccountID, accountID) &
+										   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
+		Rating? rating = await ratingsCollection.Find(filter).FirstOrDefaultAsync();
 
 		var result = new MMRRatingResponse()
 		{
@@ -88,17 +88,17 @@ public sealed class RatingsService
 	{
 		try
 		{
-			var accountIds = ratingTeam.Members
+			EpicID[]? accountIds = ratingTeam.Members
 				.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 				.Select(s => EpicID.FromString(s.AccountID))
 				.ToArray();
-			var filter = Builders<Rating>.Filter.In(f => f.AccountID, accountIds) &
-						 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
-			var ratings = await ratingsCollection.Find(filter).ToListAsync();
+			FilterDefinition<Rating>? filter = Builders<Rating>.Filter.In(f => f.AccountID, accountIds) &
+											   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
+			List<Rating>? ratings = await ratingsCollection.Find(filter).ToListAsync();
 
 			List<int> ratingValues = new();
 
-			foreach (var member in ratingTeam.Members.Where(w => !w.IsBot))
+			foreach (RatingTeam.Member? member in ratingTeam.Members.Where(w => !w.IsBot))
 			{
 				var ratingValue = ratings
 					.Where(w => w.AccountID == EpicID.FromString(member.AccountID))
@@ -120,15 +120,15 @@ public sealed class RatingsService
 
 	public async Task<RankingsResponse?> GetSelectedRankingAsync(string ratingType, EpicID accountID)
 	{
-		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
-					 Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
-		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
+		FilterDefinition<Rating>? filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
+										   Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
+		SortDefinition<Rating>? sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
 		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
-		var ratings = await ratingsCollection.Find(filter)
+		List<Rating>? ratings = await ratingsCollection.Find(filter)
 			.Sort(sort)
 			.ToListAsync();
 
-		var selectedRating = ratings.FirstOrDefault(r => r.AccountID == accountID);
+		Rating? selectedRating = ratings.FirstOrDefault(r => r.AccountID == accountID);
 
 		if(selectedRating == null)
 		{
@@ -137,9 +137,9 @@ public sealed class RatingsService
 
 		var rank = ratings.IndexOf(selectedRating) + 1;
 
-		var filterAccount = Builders<Account>.Filter.Eq(f => f.ID, accountID);
-		var accountCursor = await accountsCollection.FindAsync(filterAccount);
-		var account = await accountCursor.SingleOrDefaultAsync();
+		FilterDefinition<Account>? filterAccount = Builders<Account>.Filter.Eq(f => f.ID, accountID);
+		IAsyncCursor<Account>? accountCursor = await accountsCollection.FindAsync(filterAccount);
+		Account? account = await accountCursor.SingleOrDefaultAsync();
 
 		return new RankingsResponse()
 		{
@@ -154,18 +154,18 @@ public sealed class RatingsService
 
 	public async Task<PagedResponse<RankingsResponse>> GetRankingsAsync(string ratingType, int skip, int limit)
 	{
-		var filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
-					 Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
-		var sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
+		FilterDefinition<Rating>? filter = Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType) &
+										   Builders<Rating>.Filter.Gte(f => f.GamesPlayed, 10);
+		SortDefinition<Rating>? sort = Builders<Rating>.Sort.Descending(s => s.RatingValue).Descending(s => s.GamesPlayed);
 		var ratingsCount = await ratingsCollection.Find(filter).CountDocumentsAsync();
-		var ratings = await ratingsCollection.Find(filter)
+		List<Rating>? ratings = await ratingsCollection.Find(filter)
 			.Sort(sort)
 			.Skip(skip)
 			.Limit(limit)
 			.ToListAsync();
 
-		var accountIds = ratings.Select(s => s.AccountID);
-		var filterAccounts = Builders<Account>.Filter.In(f => f.ID, accountIds);
+		IEnumerable<EpicID>? accountIds = ratings.Select(s => s.AccountID);
+		FilterDefinition<Account>? filterAccounts = Builders<Account>.Filter.In(f => f.ID, accountIds);
 		var accounts = await accountsCollection
 			.Find(filterAccounts)
 			.Project(p => new { p.ID, p.Username, p.CountryFlag })
@@ -208,11 +208,11 @@ public sealed class RatingsService
 	{
 		try
 		{
-			var redTeamAccountIds = ratingMatch.RedTeam.Members
+			EpicID[]? redTeamAccountIds = ratingMatch.RedTeam.Members
 				.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 				.Select(s => EpicID.FromString(s.AccountID))
 				.ToArray();
-			var blueTeamAccountIds = ratingMatch.BlueTeam.Members
+			EpicID[]? blueTeamAccountIds = ratingMatch.BlueTeam.Members
 				.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 				.Select(s => EpicID.FromString(s.AccountID))
 				.ToArray();
@@ -246,9 +246,9 @@ public sealed class RatingsService
 					break;
 			}
 
-			var filter = Builders<Rating>.Filter.In(f => f.AccountID, redTeamAccountIds.Union(blueTeamAccountIds)) &
-						 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
-			var playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
+			FilterDefinition<Rating>? filter = Builders<Rating>.Filter.In(f => f.AccountID, redTeamAccountIds.Union(blueTeamAccountIds)) &
+											   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
+			List<Rating>? playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
 
 			var redTeamCurrentRatings = new double[redTeamPlayersCount];
 			var blueTeamCurrentRatings = new double[blueTeamPlayersCount];
@@ -284,9 +284,9 @@ public sealed class RatingsService
 
 			for (var i = 0; i < redTeamAccountIds.Length; i++)
 			{
-				var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, redTeamAccountIds[i]) &
-								   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
-				var updateDefinition = Builders<Rating>.Update
+				FilterDefinition<Rating>? updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, redTeamAccountIds[i]) &
+														 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
+				UpdateDefinition<Rating>? updateDefinition = Builders<Rating>.Update
 					.Set(s => s.RatingType, ratingMatch.RatingType)
 					.Set(s => s.RatingValue, (int)(redTeamNewRatings[i] * Rating.Precision))
 					.Inc(i => i.GamesPlayed, 1);
@@ -295,9 +295,9 @@ public sealed class RatingsService
 
 			for (var i = 0; i < blueTeamAccountIds.Length; i++)
 			{
-				var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, blueTeamAccountIds[i]) &
-								   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
-				var updateDefinition = Builders<Rating>.Update
+				FilterDefinition<Rating>? updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, blueTeamAccountIds[i]) &
+														 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
+				UpdateDefinition<Rating>? updateDefinition = Builders<Rating>.Update
 					.Set(s => s.RatingType, ratingMatch.RatingType)
 					.Set(s => s.RatingValue, (int)(blueTeamNewRatings[i] * Rating.Precision))
 					.Inc(i => i.GamesPlayed, 1);
@@ -317,7 +317,7 @@ public sealed class RatingsService
 	{
 		try
 		{
-			var playersAccountIds = ratingMatch.RedTeam.Members
+			EpicID[]? playersAccountIds = ratingMatch.RedTeam.Members
 				.Where(w => !w.IsBot && !string.IsNullOrWhiteSpace(w.AccountID))
 				.OrderByDescending(o => o.Score)
 				.Select(s => EpicID.FromString(s.AccountID))
@@ -328,9 +328,9 @@ public sealed class RatingsService
 				return;
 			}
 
-			var filter = Builders<Rating>.Filter.In(f => f.AccountID, playersAccountIds) &
-			             Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
-			var playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
+			FilterDefinition<Rating>? filter = Builders<Rating>.Filter.In(f => f.AccountID, playersAccountIds) &
+											   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
+			List<Rating>? playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
 
 			var currentRatings = new double[playersCount];
 			for (var i = 0; i < playersCount; i++)
@@ -345,9 +345,9 @@ public sealed class RatingsService
 			var bulkWriteModelList = new List<UpdateOneModel<Rating>>();
 			for (var i = 0; i < playersCount; i++)
 			{
-				var updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, playersAccountIds[i]) &
-								   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
-				var updateDefinition = Builders<Rating>.Update
+				FilterDefinition<Rating>? updateFilter = Builders<Rating>.Filter.Eq(f => f.AccountID, playersAccountIds[i]) &
+														 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
+				UpdateDefinition<Rating>? updateDefinition = Builders<Rating>.Update
 					.Set(s => s.RatingType, ratingMatch.RatingType)
 					.Set(s => s.RatingValue, (int)(newRatings[i] * Rating.Precision))
 					.Inc(i => i.GamesPlayed, 1);

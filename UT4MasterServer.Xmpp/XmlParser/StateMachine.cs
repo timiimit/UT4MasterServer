@@ -87,7 +87,7 @@ public class StateMachine<T>
 			return -1;
 		}
 
-		foreach (var condition in automata[currentState])
+		foreach (StateCondition? condition in automata[currentState])
 		{
 			var nextState = CheckCondition(currentState, value, condition);
 			if (nextState >= 0)

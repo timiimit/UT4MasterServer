@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace UT4MasterServer.Xmpp.XmlParser;
 
@@ -49,7 +49,7 @@ public class XmlElement : XmlNode
 		}
 	}
 
-    public XmlElement(string name) : base(name)
+	public XmlElement(string name) : base(name)
 	{
 		value = null;
 		parent = null;
@@ -67,7 +67,7 @@ public class XmlElement : XmlNode
 		}
 
 		var sb = new StringBuilder($"<{Name}");
-		foreach (var attr in Attributes)
+		foreach (XmlAttribute? attr in Attributes)
 		{
 			sb.Append($" {attr}");
 		}

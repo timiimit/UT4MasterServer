@@ -206,7 +206,7 @@ public class XmppConnection : IDisposable
 			}
 			else if (Reader.Name == "message")
 			{
-				var stanza = await StanzaMessage.ReadAsync(Reader, cancellationToken);
+				StanzaMessage? stanza = await StanzaMessage.ReadAsync(Reader, cancellationToken);
 				if (stanza is not null)
 				{
 					stanza = new StanzaMessage
@@ -222,7 +222,7 @@ public class XmppConnection : IDisposable
 			}
 			else if (Reader.Name == "presence")
 			{
-				var stanza = await StanzaPresence.ReadAsync(Reader, cancellationToken);
+				StanzaPresence? stanza = await StanzaPresence.ReadAsync(Reader, cancellationToken);
 				if (stanza is not null)
 				{
 					Show = stanza.Show;
@@ -250,7 +250,7 @@ public class XmppConnection : IDisposable
 				// ill-formed xml. try to keep connection alive
 			}
 
-			var readTask = Reader.ReadAsync();
+			Task<bool>? readTask = Reader.ReadAsync();
 
 			bool didReadNewData;
 			do
@@ -268,14 +268,14 @@ public class XmppConnection : IDisposable
 		var dequeuedStanzas = new List<Stanza>();
 		lock (writer)
 		{
-			foreach (var stanza in QueuedStanzas)
+			foreach (Stanza? stanza in QueuedStanzas)
 			{
 				dequeuedStanzas.Add(stanza);
 			}
 			QueuedStanzas.Clear();
 		}
 
-		foreach (var stanza in dequeuedStanzas)
+		foreach (Stanza? stanza in dequeuedStanzas)
 		{
 			await Writer.StanzaAsync(stanza, cancellationToken);
 #if DEBUG

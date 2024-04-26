@@ -79,7 +79,7 @@ public class StanzaPresence : Stanza
 			var type = reader.GetAttribute("type");
 			if (type == "error")
 			{
-				var stanzaError = await StanzaError.ReadAsync(reader, cancellationToken);
+				StanzaError? stanzaError = await StanzaError.ReadAsync(reader, cancellationToken);
 				if (stanzaError is null)
 				{
 					return null;
@@ -94,7 +94,7 @@ public class StanzaPresence : Stanza
 				return new StanzaPresence() { From = JID.Parse(from), Error = stanzaError };
 			}
 
-			var show = ShowElementValues.Available;
+			ShowElementValues show = ShowElementValues.Available;
 			var status = string.Empty;
 
 			await reader.ReadAsync();

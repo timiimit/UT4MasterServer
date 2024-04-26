@@ -39,7 +39,7 @@ public class XmppServer
 		{
 			while (!cancellationToken.IsCancellationRequested)
 			{
-				var tcpConnection = await listener.AcceptTcpClientAsync(cancellationToken);
+				TcpClient? tcpConnection = await listener.AcceptTcpClientAsync(cancellationToken);
 				_ = OnConnectionAcceptedAsync(tcpConnection, cancellationToken);
 			}
 		}
@@ -58,7 +58,7 @@ public class XmppServer
 
 		lock (connections)
 		{
-			foreach (var connection in connections)
+			foreach (XmppConnection? connection in connections)
 			{
 				if (connection.ID.Equals(message.To))
 				{
@@ -75,7 +75,7 @@ public class XmppServer
 
 		lock (connections)
 		{
-			foreach (var connection in connections)
+			foreach (XmppConnection? connection in connections)
 			{
 				if (connection.ID.Equals(presence.From))
 				{
@@ -94,7 +94,7 @@ public class XmppServer
 	{
 		await Task.Yield();
 
-		foreach (var c in connections)
+		foreach (XmppConnection? c in connections)
 		{
 			if (ReferenceEquals(c, connection))
 			{
@@ -132,7 +132,7 @@ public class XmppServer
 
 		lock (connections)
 		{
-			foreach (var connection in connections)
+			foreach (XmppConnection? connection in connections)
 			{
 				if (connection.ID.Equals(jid))
 				{

@@ -56,7 +56,7 @@ public class XmppWriter
 	{
 		if (elements.Count > 0)
 		{
-			var top = elements.Peek();
+			StackNode? top = elements.Peek();
 			if (!top.HasOpenTagEnded)
 			{
 				OpenTagEnd();
@@ -85,7 +85,7 @@ public class XmppWriter
 	{
 		if (elements.Count > 0)
 		{
-			var top = elements.Peek();
+			StackNode? top = elements.Peek();
 			if (!top.HasOpenTagEnded)
 			{
 				OpenTagEnd();
@@ -101,7 +101,7 @@ public class XmppWriter
 
 	public void OpenTagEnd()
 	{
-		var top = elements.Peek();
+		StackNode? top = elements.Peek();
 		if (!top.HasOpenTagEnded)
 		{
 			w.Write('>');
@@ -126,7 +126,7 @@ public class XmppWriter
 
 	public void CloseTag()
 	{
-		var top = elements.Pop();
+		StackNode? top = elements.Pop();
 		if (!top.HasOpenTagEnded)
 		{
 			w.Write("/>");

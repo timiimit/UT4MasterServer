@@ -19,7 +19,7 @@ internal class Program
 		var cert = new X509Certificate2("../../../Certs/master-ut4.pfx", "");
 
 		var server = new XmppServer("master-ut4.timiimit.com", cert);
-		var serverTask = server.StartAsync(cts.Token);
+		Task? serverTask = server.StartAsync(cts.Token);
 		while (true)
 		{
 			var command = Console.ReadLine();
@@ -38,7 +38,7 @@ internal class Program
 			{
 				if (commandParts[1] == "message")
 				{
-					var connection = await server.FindConnectionAsync(JID.Parse(commandParts[2]));
+					XmppConnection? connection = await server.FindConnectionAsync(JID.Parse(commandParts[2]));
 					if (connection == null)
 					{
 						Console.WriteLine("Could not find connection for '{JID}'.", commandParts[2]);

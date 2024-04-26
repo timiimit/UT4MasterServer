@@ -40,7 +40,7 @@ public class GameServerAttributes
 
 	public void Update(GameServerAttributes other)
 	{
-		foreach (var attribute in other.serverConfigs)
+		foreach (KeyValuePair<string, object> attribute in other.serverConfigs)
 		{
 			if (UnownedAttributeNames.Contains(attribute.Key))
 			{
@@ -76,7 +76,7 @@ public class GameServerAttributes
 		var attrs = new KeyValuePair<string, JsonNode?>[serverConfigs.Count];
 
 		var i = 0;
-		foreach (var kvp in serverConfigs)
+		foreach (KeyValuePair<string, object> kvp in serverConfigs)
 		{
 			if (kvp.Key.EndsWith("_b"))
 			{

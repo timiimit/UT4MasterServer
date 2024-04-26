@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using Serilog.Enrichers;
 
 namespace UT4MasterServer.Configuration;

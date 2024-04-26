@@ -126,7 +126,7 @@ public class XmlParserPermissive
 						Current = Current.Parent;
 					}
 				}
-				var old = Current;
+				XmlElement? old = Current;
 				Current = new XmlElement("#UNKNOWN") { Parent = old };
 				old.Elements.Add(Current);
 

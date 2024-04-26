@@ -26,7 +26,7 @@ public sealed class MatchmakingWaitTimeEstimateService
 		Clean();
 
 		List<WaitTimeEstimateResponse> waitTimes = new List<WaitTimeEstimateResponse>();
-		foreach (var estimate in estimates)
+		foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> estimate in estimates)
 		{
 			if (estimate.Value.Count <= 0)
 			{
@@ -42,9 +42,9 @@ public sealed class MatchmakingWaitTimeEstimateService
 
 	private void Clean()
 	{
-		var now = DateTime.UtcNow;
+		DateTime now = DateTime.UtcNow;
 		List<string> modesToRemove = new List<string>();
-		foreach (var mode in estimates)
+		foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> mode in estimates)
 		{
 			mode.Value.RemoveAll(x => now > x.DeleteTime);
 			if (mode.Value.Count <= 0)

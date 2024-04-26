@@ -17,7 +17,7 @@ public sealed class StatisticBaseInputFormatter : InputFormatter
 
 		var rawValue = await reader.ReadToEndAsync();
 
-		var newObject = JsonSerializer.Deserialize<StatisticBase>(rawValue[..^1]);
+		StatisticBase? newObject = JsonSerializer.Deserialize<StatisticBase>(rawValue[..^1]);
 
 		return InputFormatterResult.Success(newObject);
 	}

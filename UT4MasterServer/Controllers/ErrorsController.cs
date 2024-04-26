@@ -24,8 +24,8 @@ public sealed class ErrorsController : ControllerBase
 		var message = InternalServerError;
 		var statusCode = 500;
 
-		var exceptionHandlerFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
-		var exception = exceptionHandlerFeature?.Error;
+		IExceptionHandlerPathFeature? exceptionHandlerFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+		Exception? exception = exceptionHandlerFeature?.Error;
 
 		if (exception is null)
 		{

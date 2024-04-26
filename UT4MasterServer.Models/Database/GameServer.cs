@@ -227,7 +227,7 @@ public class GameServer
 		// TODO: Get rid of dynamic json
 
 		// Do some preprocessing on attributes
-		var attrs = Attributes.ToJObject();
+		JsonObject? attrs = Attributes.ToJObject();
 
 		// build json
 		var obj = new List<KeyValuePair<string, JsonNode?>>();
@@ -249,13 +249,13 @@ public class GameServer
 		obj.Add(new("openPrivatePlayers", MaxPrivatePlayers - PrivatePlayers.Count));
 		obj.Add(new("attributes", attrs));
 		var arr = new JsonArray();
-		foreach (var player in PublicPlayers)
+		foreach (EpicID player in PublicPlayers)
 		{
 			arr.Add(JsonValue.Create(player.ToString()));
 		}
 		obj.Add(new("publicPlayers", arr));
 		arr = new JsonArray();
-		foreach (var player in PrivatePlayers)
+		foreach (EpicID player in PrivatePlayers)
 		{
 			arr.Add(JsonValue.Create(player.ToString()));
 		}
