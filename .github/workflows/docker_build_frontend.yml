@@ -3,16 +3,16 @@ name: Build Frontend Docker Image
 on:
   pull_request:
     paths:
-      - 'UT4MasterServer.Web/**'
-      - '.github/workflows/docker_build_frontend.yml'
+      - "UT4MasterServer.Web/**"
+      - ".github/workflows/docker_build_frontend.yml"
       # ignored paths
-      - '!*.md'
+      - "!*.md"
   push:
     paths:
-      - 'UT4MasterServer.Web/**'
-      - '.github/workflows/docker_build_frontend.yml'
+      - "UT4MasterServer.Web/**"
+      - ".github/workflows/docker_build_frontend.yml"
       # ignored paths
-      - '!*.md'
+      - "!*.md"
 
 env:
   IMAGE_NAME: ut4masterserver-web
@@ -21,7 +21,7 @@ jobs:
   build-frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build Frontend Docker Image
         run: docker build --pull -t ${{ env.IMAGE_NAME }} -f ./UT4MasterServer.Web/.docker/Development.Dockerfile ./UT4MasterServer.Web/
       - name: Clean Up

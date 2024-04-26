@@ -13,7 +13,7 @@
         <div>{{ server.matchState }}</div>
         <div>
           Elapsed Time:
-          {{ toMinutesSeconds(server.duration) }}
+          {{ toMinutesSeconds(server.elapsedTime) }}
         </div>
       </div>
     </div>
