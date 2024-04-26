@@ -19,7 +19,7 @@ public sealed class CloudStorageController : JsonAPIController
 	private readonly MatchmakingService matchmakingService;
 	private readonly AccountService accountService;
 
-	private static FileExtensionContentTypeProvider contentTypeProvider = new();
+	private static readonly FileExtensionContentTypeProvider contentTypeProvider = new();
 
 	public CloudStorageController(ILogger<CloudStorageController> logger,
 		CloudStorageService cloudStorageService,
