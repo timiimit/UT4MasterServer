@@ -24,7 +24,9 @@ internal class Program
 		{
 			string? command = Console.ReadLine();
 			if (command == null)
+			{
 				continue;
+			}
 
 			string[] commandParts = command.Split(' ');
 

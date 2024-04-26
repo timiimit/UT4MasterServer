@@ -102,7 +102,10 @@ public sealed class CloudStorageController : JsonAPIController
 	public async Task<IActionResult> UpdateUserFile(string id, string filename)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
+
 		var accountID = EpicID.FromString(id);
 		if (user.Session.AccountID != accountID)
 		{
@@ -145,6 +148,7 @@ public sealed class CloudStorageController : JsonAPIController
 			{
 				fileResponse.DoNotCache = false;
 			}
+
 			arr.Add(fileResponse);
 		}
 

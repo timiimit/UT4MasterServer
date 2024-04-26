@@ -47,7 +47,9 @@ public sealed class CodeService
 			{
 				int i = codes.FindIndex(x => x.Token.Value == code && x.Kind == kind);
 				if (i == -1)
+				{
 					return null;
+				}
 
 				var ret = codes[i];
 				codes.RemoveAt(i);

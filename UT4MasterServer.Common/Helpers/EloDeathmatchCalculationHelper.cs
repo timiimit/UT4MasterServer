@@ -20,7 +20,11 @@ public static class EloDeathmatchCalculationHelper
 		{
 			for (int j = 0; j < playersCount; j++)
 			{
-				if (i == j) continue;
+				if (i == j)
+				{
+					continue;
+				}
+
 				expectedScores[i] += (1.0 / (1.0 + Math.Pow(10.0, (currentRatings[j] - currentRatings[i]) / AverageRatingDifference))) / (playersCount * (playersCount - 1) / 2.0);
 			}
 		}

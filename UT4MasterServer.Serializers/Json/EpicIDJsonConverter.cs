@@ -9,11 +9,15 @@ public class EpicIDJsonConverter : JsonConverter<EpicID>
     public override EpicID Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (typeToConvert != typeof(string) && typeToConvert != typeof(EpicID))
-            return EpicID.Empty;
+        {
+	        return EpicID.Empty;
+        }
 
         var str = reader.GetString();
         if (str == null)
-            return EpicID.Empty;
+        {
+	        return EpicID.Empty;
+        }
 
         return EpicID.FromString(str);
     }

@@ -48,7 +48,9 @@ public sealed class SessionController : JsonAPIController
 		[FromForm(Name = "password")] string? password)
     {
         if (User.Identity is not EpicClientIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         EpicID clientID = user.Client.ID;
         Session? session = null;
@@ -61,7 +63,9 @@ public sealed class SessionController : JsonAPIController
                     {
                         var codeAuth = await codeService.TakeCodeAsync(CodeKind.Authorization, code);
                         if (codeAuth != null)
-                            session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
+                        {
+	                        session = await sessionService.CreateSessionAsync(codeAuth.AccountID, clientID, SessionCreationMethod.AuthorizationCode);
+                        }
                     }
                     else
                     {
@@ -76,7 +80,9 @@ public sealed class SessionController : JsonAPIController
                         // TODO: Check if user has permission and return "Sorry your login does not posses the permissions 'account:oauth:exchangeTokenCode CREATE' needed to perform the requested operation"
                         var codeExchange = await codeService.TakeCodeAsync(CodeKind.Exchange, exchangeCode);
                         if (codeExchange != null)
-                            session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
+                        {
+	                        session = await sessionService.CreateSessionAsync(codeExchange.AccountID, clientID, SessionCreationMethod.ExchangeCode);
+                        }
                     }
                     else
                     {
@@ -178,7 +184,10 @@ public sealed class SessionController : JsonAPIController
         }
 
         if (account == null)
-            account = await accountService.GetAccountAsync(session.AccountID);
+        {
+	        account = await accountService.GetAccountAsync(session.AccountID);
+        }
+
         logger.LogInformation($"User '{account?.ToString() ?? EpicID.Empty.ToString()}' was authorized via {grantType}");
 
         if (account != null)
@@ -227,7 +236,9 @@ public sealed class SessionController : JsonAPIController
     public async Task<IActionResult> CreateExchangeCode()
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         /* TODO: Check if user has permission and return:
 		{
@@ -246,10 +257,12 @@ public sealed class SessionController : JsonAPIController
 
         var code = await codeService.CreateCodeAsync(CodeKind.Exchange, user.Session.AccountID, user.Session.ClientID);
         if (code == null)
-            return BadRequest(new ErrorResponse()
-            {
-                ErrorName = "cannot_create_exchangecode" // TODO: find proper response
-            });
+        {
+	        return BadRequest(new ErrorResponse()
+	        {
+		        ErrorName = "cannot_create_exchangecode" // TODO: find proper response
+	        });
+        }
 
         var obj = new JObject();
         obj.Add("expiresInSeconds", code.Token.ExpirationDurationInSeconds);
@@ -262,11 +275,15 @@ public sealed class SessionController : JsonAPIController
     public async Task<IActionResult> CreateAuthorizationCode()
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         var authCode = await codeService.CreateCodeAsync(CodeKind.Authorization, user.Session.AccountID, user.Session.ClientID);
         if (authCode == null)
-            return BadRequest();
+        {
+	        return BadRequest();
+        }
 
         logger.LogInformation($"Created authorization code: {authCode.Token}");
 
@@ -284,7 +301,9 @@ public sealed class SessionController : JsonAPIController
     public async Task<IActionResult> KillSession(string accessToken)
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         // TODO: Check if session exists and return ErrorResponse: "Sorry we could not find the auth session 'myAuthSessionFromURL'"
 
@@ -303,7 +322,9 @@ public sealed class SessionController : JsonAPIController
     public async Task<IActionResult> KillSessions([FromQuery] string killType)
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         switch (killType.ToUpper())
         {
@@ -354,7 +375,9 @@ public sealed class SessionController : JsonAPIController
     public async Task<IActionResult> Verify()
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         // no refresh needed, but we should respond with this:
         /*

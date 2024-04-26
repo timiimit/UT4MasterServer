@@ -10,7 +10,10 @@ public class XmlNode
 		get
 		{
 			if (string.IsNullOrEmpty(Prefix))
+			{
 				return LocalName;
+			}
+
 			return $"{Prefix}:{LocalName}";
 		}
 

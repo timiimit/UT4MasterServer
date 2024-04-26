@@ -79,9 +79,15 @@ public class Account
 
 			ulong xp_in = (ulong)XP;
 			if (xp_in < 50)
+			{
 				return 1;
+			}
+
 			if (xp_in < 150)
+			{
 				return 2;
+			}
+
 			// note: req to next level, so element 0 is XP required for level 1
 			ulong xp = 0;
 			ulong Increment = 50;
@@ -128,7 +134,9 @@ public class Account
 		if (Password != PasswordHelper.GetPasswordHash(ID, password))
 		{
 			if (!allowPasswordGrant)
+			{
 				return false;
+			}
 
 			// when user uses the website, password is never transmitted to us, only it's hash.
 			// when user logs into the game via the stock in-game login window, password IS transmitted to us.
@@ -139,7 +147,9 @@ public class Account
 
 			// hash the password with account id
 			if (Password != PasswordHelper.GetPasswordHash(ID, password))
+			{
 				return false;
+			}
 		}
 		return true;
 	}

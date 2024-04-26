@@ -33,7 +33,9 @@ public class XmlElement : XmlNode
 		get
 		{
 			if (value == null)
+			{
 				return string.Empty;
+			}
 
 			return value;
 		}
@@ -60,7 +62,9 @@ public class XmlElement : XmlNode
 	public override string ToString()
 	{
 		if (Attributes.Count == 0)
+		{
 			return $"<{Name}>";
+		}
 
 		StringBuilder sb = new StringBuilder($"<{Name}");
 		foreach (XmlAttribute attr in Attributes)

@@ -76,7 +76,9 @@ public sealed class AdminPanelController : ControllerBase
 
 		var flags = await accountService.GetAccountFlagsAsync(EpicID.FromString(accountID));
 		if (flags == null)
+		{
 			return NotFound();
+		}
 
 		var result = EnumHelpers.EnumToStrings(flags.Value);
 		return Ok(result);
@@ -91,7 +93,9 @@ public sealed class AdminPanelController : ControllerBase
 
 		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
+		{
 			return NotFound();
+		}
 
 		var flagsOld = EnumHelpers.EnumFlagsToEnumArray(account.Flags);
 		var adminFlags = admin.Account.Flags;
@@ -351,7 +355,9 @@ public sealed class AdminPanelController : ControllerBase
 
 		var client = await clientService.GetAsync(EpicID.FromString(id));
 		if (client == null)
+		{
 			return NotFound();
+		}
 
 		return Ok(client);
 	}
@@ -488,7 +494,9 @@ public sealed class AdminPanelController : ControllerBase
 		var eid = EpicID.FromString(id);
 
 		if (eid != server.ID)
+		{
 			return BadRequest();
+		}
 
 		await trustedGameServerService.UpdateAsync(server);
 		await matchmakingService.UpdateTrustLevelAsync(server.ID, server.TrustLevel);

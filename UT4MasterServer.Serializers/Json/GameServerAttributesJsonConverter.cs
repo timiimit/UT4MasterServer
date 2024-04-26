@@ -9,7 +9,9 @@ public class GameServerAttributesJsonConverter : JsonConverter<GameServerAttribu
     public override GameServerAttributes? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
-            return null;
+        {
+	        return null;
+        }
 
         GameServerAttributes attribs = new GameServerAttributes();
 
@@ -18,17 +20,25 @@ public class GameServerAttributesJsonConverter : JsonConverter<GameServerAttribu
             reader.Read();
 
             if (reader.TokenType == JsonTokenType.EndObject)
-                return attribs;
+            {
+	            return attribs;
+            }
 
             if (reader.TokenType != JsonTokenType.PropertyName)
-                return null;
+            {
+	            return null;
+            }
 
             var attributeName = reader.GetString();
             if (attributeName == null)
-                return null;
+            {
+	            return null;
+            }
 
             if (!reader.Read())
-                return null;
+            {
+	            return null;
+            }
 
             if (reader.TokenType == JsonTokenType.String)
             {
@@ -62,11 +72,17 @@ public class GameServerAttributesJsonConverter : JsonConverter<GameServerAttribu
 
             writer.WritePropertyName(key);
             if (val is string valString)
-                writer.WriteStringValue(valString);
+            {
+	            writer.WriteStringValue(valString);
+            }
             else if (val is int valInt)
-                writer.WriteNumberValue(valInt);
+            {
+	            writer.WriteNumberValue(valInt);
+            }
             else if (val is bool valBool)
-                writer.WriteBooleanValue(valBool);
+            {
+	            writer.WriteBooleanValue(valBool);
+            }
         }
         writer.WriteEndObject();
     }

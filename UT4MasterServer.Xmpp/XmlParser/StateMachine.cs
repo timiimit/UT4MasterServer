@@ -83,7 +83,9 @@ public class StateMachine<T>
 	public int NextChar(int currentState, T value)
 	{
 		if (!automata.ContainsKey(currentState))
+		{
 			return -1;
+		}
 
 		foreach (var condition in automata[currentState])
 		{

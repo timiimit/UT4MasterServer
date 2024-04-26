@@ -75,7 +75,9 @@ public sealed class MatchmakingService
 	{
 		var result = await serverCollection.DeleteOneAsync(x => x.ID == serverID);
 		if (!result.IsAcknowledged)
+		{
 			return false;
+		}
 
 		return result.DeletedCount > 0;
 	}
@@ -119,7 +121,9 @@ public sealed class MatchmakingService
 			// TODO: use skipped conditions to query dynamic value and sort results
 			//       (UTMatchmakingGather.cpp - search for SETTING_NEEDSSORT)
 			if (condition.Key == "NEEDS" || condition.Key == "NEEDSSORT")
+			{
 				continue;
+			}
 
 			string? comparisonKeyword = null;
 			switch (condition.Type)
@@ -144,11 +148,17 @@ public sealed class MatchmakingService
 
 			BsonElement? compElem = null;
 			if (condition.Value.ValueKind == JsonValueKind.String)
+			{
 				compElem = new BsonElement(comparisonKeyword, condition.Value.GetString());
+			}
 			else if (condition.Value.ValueKind == JsonValueKind.Number)
+			{
 				compElem = new BsonElement(comparisonKeyword, condition.Value.GetInt32());
+			}
 			else if (condition.Value.ValueKind == JsonValueKind.True || condition.Value.ValueKind == JsonValueKind.False)
+			{
 				compElem = new BsonElement(comparisonKeyword, condition.Value.GetBoolean());
+			}
 
 			if (compElem != null)
 			{
@@ -160,7 +170,9 @@ public sealed class MatchmakingService
 		// Limit number of results. if request retrieves more results,
 		// then caller should make filter more strict.
 		if (inputFilter.MaxResults > 100)
+		{
 			inputFilter.MaxResults = 100;
+		}
 
 		var options = new FindOptions<GameServer>()
 		{
@@ -195,7 +207,9 @@ public sealed class MatchmakingService
 		// Start removing stale servers only after some time has passed.
 		// This allows game servers from before our reboot to send a heartbeat again and continue operating normally.
 		if (runtimeInfoService.StartupTime > now - StaleAfter * 2)
+		{
 			return 0;
+		}
 
 		var result = await serverCollection.DeleteManyAsync(
 			Builders<GameServer>.Filter.Lt(x => x.LastUpdated, now - StaleAfter)

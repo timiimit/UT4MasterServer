@@ -73,7 +73,9 @@ public sealed class ProfileController : JsonAPIController
         [FromQuery] int rvn)
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         bool isRequestSentFromClient = clientKind.ToLower() == "client";
         bool isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
@@ -85,7 +87,9 @@ public sealed class ProfileController : JsonAPIController
         var jsonBody = JObject.Parse(body);
 
         if (rvn == -1)
-            rvn = 1;
+        {
+	        rvn = 1;
+        }
 
         // game sends empty json object as body
         if (!(isRequestSentFromClient || isRequestSentFromServer) | profileId != "profile0" || !JToken.DeepEquals(jsonBody, JObject.Parse("{}")))
@@ -95,7 +99,9 @@ public sealed class ProfileController : JsonAPIController
 
         var account = await accountService.GetAccountAsync(EpicID.FromString(id));
         if (account == null)
-            return NotFound();
+        {
+	        return NotFound();
+        }
 
         // actual response example is in <repo_root>/OldReferenceCode/Server.cs line 750
 
@@ -127,7 +133,9 @@ public sealed class ProfileController : JsonAPIController
         {
 #if (!DEBUG) || (DEBUG && true)
             if (account.Level < profileItem.requiredLevel)
-                continue;
+            {
+	            continue;
+            }
 #endif
 
             // guid probably represents the id of profile item
@@ -187,15 +195,21 @@ public sealed class ProfileController : JsonAPIController
     public async Task<IActionResult> SetAvatarAndFlag(string id, string clientKind, [FromQuery] string profileId, [FromQuery] int rvn)
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         if (user.Session.AccountID != EpicID.FromString(id))
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         // TODO: Permission: "Sorry your login does not posses the permissions 'ut:profile:{id_from_params}:commands ALL' needed to perform the requested operation"
 
         if (rvn == -1)
-            rvn = 1;
+        {
+	        rvn = 1;
+        }
 
         int revisionNumber = rvn;
 
@@ -256,7 +270,9 @@ public sealed class ProfileController : JsonAPIController
     public async Task<IActionResult> GrantXP(string id, string clientKind, [FromQuery] string profileId, [FromQuery] int rvn, [FromBody] GrantXPRequest body)
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         var eid = EpicID.FromString(id);
 
@@ -279,7 +295,9 @@ public sealed class ProfileController : JsonAPIController
 
         var acc = await accountService.GetAccountAsync(eid);
         if (acc == null)
-            return NotFound();
+        {
+	        return NotFound();
+        }
 
 
         const double maxXPPerHour = 500.0;
@@ -306,7 +324,10 @@ public sealed class ProfileController : JsonAPIController
         var prevLevel = acc.LevelStockLimited;
 
         if (rvn == -1)
-            rvn = 1;
+        {
+	        rvn = 1;
+        }
+
         var revisionNumber = rvn;
 
         var obj = new JObject();
@@ -377,10 +398,14 @@ public sealed class ProfileController : JsonAPIController
     public async Task<IActionResult> SetStars(string id, string clientKind, [FromQuery] string profileId, [FromQuery] string rvn, [FromBody] SetStarsRequest body)
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         if (user.Session.AccountID != EpicID.FromString(id))
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         // only known to be sent by client so far
         bool isRequestSentFromClient = clientKind.ToLower() == "client";
@@ -391,7 +416,9 @@ public sealed class ProfileController : JsonAPIController
 
         var account = await accountService.GetAccountAsync(user.Session.AccountID);
         if (account == null)
-            return BadRequest();
+        {
+	        return BadRequest();
+        }
 
         account.GoldStars = body.NewGoldStars;
         account.BlueStars = body.NewBlueStars;

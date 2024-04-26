@@ -116,7 +116,9 @@ public class XmppConnection : IDisposable
 			if (!IsStreamEncrypted)
 			{
 				if (!EncryptStreamSSL())
+				{
 					return null;
+				}
 
 				goto LABEL_StreamStart;
 			}
@@ -124,17 +126,23 @@ public class XmppConnection : IDisposable
 		else if (Reader.Name == "compress")
 		{
 			if (IsStreamCompressed)
+			{
 				return null;
+			}
 
 			if (!CompressStreamZLib())
+			{
 				return null;
+			}
 
 			goto LABEL_StreamStart;
 		}
 		else if (Reader.Name == "auth")
 		{
 			if (IsStreamAuthenticated)
+			{
 				return null;
+			}
 
 			string? username = AuthenticateStream();
 			if (username is not null)
@@ -429,7 +437,9 @@ public class XmppConnection : IDisposable
 	{
 		var mechanism = Reader.GetAttribute("mechanism");
 		if (mechanism != "PLAIN")
+		{
 			return null;
+		}
 
 		// read content of <auth>
 		Reader.Read();
@@ -449,7 +459,9 @@ public class XmppConnection : IDisposable
 		Reader.Read();
 
 		if (authSeparatorIndex <= 0)
+		{
 			return null;
+		}
 
 		string username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
 		string password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));

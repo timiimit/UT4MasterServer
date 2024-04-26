@@ -22,7 +22,9 @@ public static class ValidationHelper
 	public static bool ValidateEmail(string email)
 	{
 		if (email.Length < 6 || email.Length > 64)
+		{
 			return false;
+		}
 
 		return regexEmail.IsMatch(email);
 	}
@@ -30,20 +32,26 @@ public static class ValidationHelper
 	public static bool ValidateUsername(string username)
 	{
 		if (username.Length < 3 || username.Length > 32)
+		{
 			return false;
+		}
 
 		username = username.ToLower();
 
 		// try to prevent impersonation of authority
 		if (username == "admin" || username == "administrator" || username == "system")
+		{
 			return false;
+		}
 
 		// there's no way to prevent people from getting highly creative.
 		// we just try some minimal filtering for now...
 		foreach (var word in disallowedUsernameWords)
 		{
 			if (username.Contains(word))
+			{
 				return false;
+			}
 		}
 		return true;
 	}
@@ -52,10 +60,14 @@ public static class ValidationHelper
 	{
 		// we are expecting password to be SHA512 hash (64 bytes) in hex string form (128 chars)
 		if (password.Length != 128)
+		{
 			return false;
+		}
 
 		if (!password.IsHexString())
+		{
 			return false;
+		}
 
 		return true;
 	}

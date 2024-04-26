@@ -79,7 +79,9 @@ public class XmppServer
 			foreach (var connection in connections)
 			{
 				if (connection.ID.Equals(presence.From))
+				{
 					continue;
+				}
 
 				// TODO: only send presence to friends
 				connection.QueueStanza(presence);
@@ -96,7 +98,9 @@ public class XmppServer
 		foreach (var c in connections)
 		{
 			if (ReferenceEquals(c, connection))
+			{
 				continue;
+			}
 
 			// TODO: check if connection is a friend
 			var presenceProbe = new StanzaPresence()
@@ -132,7 +136,9 @@ public class XmppServer
 			foreach (var connection in connections)
 			{
 				if (connection.ID.Equals(jid))
+				{
 					return connection;
+				}
 			}
 		}
 
@@ -150,7 +156,9 @@ public class XmppServer
 		Console.WriteLine("Client connected");
 
 		if (cancellationToken.IsCancellationRequested)
+		{
 			return;
+		}
 
 		XmppConnection? connection = null;
 		try
