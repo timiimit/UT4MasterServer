@@ -211,14 +211,14 @@ public sealed class AdminPanelController : ControllerBase
 
 				if (AccountFlagsHelper.IsACLFlag(flags))
 				{
-					return Unauthorized($"Cannot change password of an account with ACL flag");
+					return Unauthorized("Cannot change password of an account with ACL flag");
 				}
 			}
 
 			// passwords should already be hashed, but check its length just in case
 			if (!ValidationHelper.ValidatePassword(body.NewPassword))
 			{
-				return BadRequest($"newPassword is not a SHA512 hash");
+				return BadRequest("newPassword is not a SHA512 hash");
 			}
 
 			if (account.Email != body.Email)
@@ -228,7 +228,7 @@ public sealed class AdminPanelController : ControllerBase
 
 			if (body.IAmSure != true)
 			{
-				return BadRequest($"'iAmSure' was not 'true'");
+				return BadRequest("'iAmSure' was not 'true'");
 			}
 
 			await accountService.UpdateAccountPasswordAsync(account.ID, body.NewPassword);
@@ -287,7 +287,7 @@ public sealed class AdminPanelController : ControllerBase
 
 					if (AccountFlagsHelper.IsACLFlag(account.Flags))
 					{
-						return Unauthorized($"Cannot delete account with ACL flag");
+						return Unauthorized("Cannot delete account with ACL flag");
 					}
 				}
 				else // if (admin.Account.Flags.HasFlag(AccountFlags.ACL_Maintenance))

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
@@ -244,7 +244,7 @@ public sealed class AccountController : JsonAPIController
 
         if (!ValidationHelper.ValidatePassword(password))
         {
-            logger.LogInformation($"Entered password was in invalid format");
+            logger.LogInformation("Entered password was in invalid format");
             return Conflict("Unexpected password format");
         }
 
@@ -275,7 +275,7 @@ public sealed class AccountController : JsonAPIController
             logger.LogInformation($"Change Username failed, already taken: {newUsername}");
             return Conflict(new ErrorResponse()
             {
-                ErrorMessage = $"Username already taken"
+                ErrorMessage = "Username already taken"
             });
         }
 
@@ -284,7 +284,7 @@ public sealed class AccountController : JsonAPIController
         {
             return NotFound(new ErrorResponse()
             {
-                ErrorMessage = $"Failed to retrieve your account"
+                ErrorMessage = "Failed to retrieve your account"
             });
         }
 
@@ -315,7 +315,7 @@ public sealed class AccountController : JsonAPIController
         {
             return NotFound(new ErrorResponse()
             {
-                ErrorMessage = $"Failed to retrieve your account"
+                ErrorMessage = "Failed to retrieve your account"
             });
         }
 
@@ -345,7 +345,7 @@ public sealed class AccountController : JsonAPIController
         {
             return BadRequest(new ErrorResponse()
             {
-                ErrorMessage = $"newPassword is not a SHA512 hash"
+                ErrorMessage = "newPassword is not a SHA512 hash"
             });
         }
 
@@ -354,7 +354,7 @@ public sealed class AccountController : JsonAPIController
         {
             return NotFound(new ErrorResponse()
             {
-                ErrorMessage = $"Failed to retrieve your account"
+                ErrorMessage = "Failed to retrieve your account"
             });
         }
 
@@ -362,7 +362,7 @@ public sealed class AccountController : JsonAPIController
         {
             return BadRequest(new ErrorResponse()
             {
-                ErrorMessage = $"Current Password is invalid"
+                ErrorMessage = "Current Password is invalid"
             });
         }
 

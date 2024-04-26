@@ -167,7 +167,7 @@ public sealed class SessionController : JsonAPIController
 
         if (session == null)
         {
-            var message = $"Invalid credentials";
+            var message = "Invalid credentials";
             logger.LogError(message);
 
             // TODO: Find proper response
