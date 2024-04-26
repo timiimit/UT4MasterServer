@@ -162,7 +162,7 @@ public static class Program
 							Id = HttpAuthorization.BearerScheme,
 						}
 					},
-					new string[] { }
+					Array.Empty<string>()
 				},
 			});
 		});
