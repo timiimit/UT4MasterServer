@@ -130,7 +130,7 @@ public sealed class RatingsService
 
 		Rating? selectedRating = ratings.FirstOrDefault(r => r.AccountID == accountID);
 
-		if(selectedRating == null)
+		if (selectedRating == null)
 		{
 			return null;
 		}
@@ -353,6 +353,7 @@ public sealed class RatingsService
 					.Inc(i => i.GamesPlayed, 1);
 				bulkWriteModelList.Add(new UpdateOneModel<Rating>(updateFilter, updateDefinition) { IsUpsert = true });
 			}
+
 			await ratingsCollection.BulkWriteAsync(bulkWriteModelList);
 		}
 		catch (Exception ex)

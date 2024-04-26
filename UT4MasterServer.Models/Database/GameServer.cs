@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using UT4MasterServer.Common;
@@ -81,7 +81,7 @@ public class GameServer
 
 	[BsonElement("MaxPrivatePlayers")]
 	[JsonPropertyName("maxPrivatePlayers")]
-	public int MaxPrivatePlayers { get; set; } = 0;
+	public int MaxPrivatePlayers { get; set; }
 
 	[BsonIgnore]
 	[JsonPropertyName("openPrivatePlayers")]
@@ -117,11 +117,11 @@ public class GameServer
 
 	[BsonElement("UsesStats")]
 	[JsonPropertyName("usesStats")]
-	public bool UsesStats { get; set; } = false;
+	public bool UsesStats { get; set; }
 
 	[BsonElement("UsesPresence")]
 	[JsonPropertyName("usesPresence")]
-	public bool UsesPresence { get; set; } = false;
+	public bool UsesPresence { get; set; }
 
 	[BsonElement("AllowInvites")]
 	[JsonPropertyName("allowInvites")]
@@ -133,7 +133,7 @@ public class GameServer
 
 	[BsonElement("AllowJoinViaPresenceFriendsOnly")]
 	[JsonPropertyName("allowJoinViaPresenceFriendsOnly")]
-	public bool AllowJoinViaPresenceFriendsOnly { get; set; } = false;
+	public bool AllowJoinViaPresenceFriendsOnly { get; set; }
 
 	[BsonElement("BuildUniqueID")]
 	[JsonPropertyName("buildUniqueId")]

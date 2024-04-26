@@ -1,4 +1,4 @@
-﻿using System.Security;
+using System.Security;
 using UT4MasterServer.Xmpp.Stanzas;
 
 namespace UT4MasterServer.Xmpp;
@@ -8,7 +8,7 @@ public class XmppWriter
 	private class StackNode
 	{
 		public string Name { get; set; } = string.Empty;
-		public bool HasOpenTagEnded { get; set; } = false;
+		public bool HasOpenTagEnded { get; set; }
 
 		public StackNode(string name)
 		{
@@ -16,8 +16,8 @@ public class XmppWriter
 		}
 	}
 
-	TextWriter w;
-	Stack<StackNode> elements;
+	private readonly TextWriter w;
+	private readonly Stack<StackNode> elements;
 
 	public XmppWriter(TextWriter writer)
 	{

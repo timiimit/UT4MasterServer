@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Xmpp;
+namespace UT4MasterServer.Xmpp;
 
 public class XmppReader
 {
@@ -13,10 +13,10 @@ public class XmppReader
 		}
 	}
 
-	TextReader r;
-	Stack<Node> elements;
-	char[] rawBuffer;
-	Memory<char> buffer;
+	private TextReader r;
+	private Stack<Node> elements;
+	private char[] rawBuffer;
+	private Memory<char> buffer;
 
 	public XmppReader(TextReader reader)
 	{

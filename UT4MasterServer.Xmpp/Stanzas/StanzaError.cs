@@ -130,8 +130,8 @@ public class StanzaError
 
 			reader.Read();
 
-			var condition = reader.Name;
 			// TODO: parse condition
+			//var condition = reader.Name;
 
 			// skip any unhandled or application-specific errors
 			while (reader.Depth > 3)

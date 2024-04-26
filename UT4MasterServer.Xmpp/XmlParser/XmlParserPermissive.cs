@@ -109,7 +109,7 @@ public class XmlParserPermissive
 
 	private ParsingState parsingState = 0;
 	private XmlToken lastOpenType;
-	private bool hasExitedCurrent = false;
+	private bool hasExitedCurrent;
 
 	public int ProcessNextLexem(XmlLexem lexem)
 	{

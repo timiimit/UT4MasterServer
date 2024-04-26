@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace UT4MasterServer.Xmpp.XmlParser;
 
@@ -19,11 +19,11 @@ public enum XmlToken
 
 public class XmlScanner
 {
-	CharStateMachine stateMachine;
-	Dictionary<int, XmlToken> stateToToken;
-	StringBuilder lexem;
-	int line;
-	int column;
+	private CharStateMachine stateMachine;
+	private Dictionary<int, XmlToken> stateToToken;
+	private StringBuilder lexem;
+	private int line;
+	private int column;
 
 	public XmlLexem? LastLexem { get; private set; }
 

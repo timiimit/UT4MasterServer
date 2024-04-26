@@ -42,13 +42,13 @@ public class JsonAPIController : ControllerBase
 	[NonAction]
 	public ContentResult Json(JToken content)
 	{
-		return Json(content.ToString(Newtonsoft.Json.Formatting.None));
+		return Json(content.ToString(Formatting.None));
 	}
 
 	[NonAction]
 	public ContentResult Json(JToken content, int status)
 	{
-		ContentResult? r = Json(content.ToString(Newtonsoft.Json.Formatting.None));
+		ContentResult? r = Json(content.ToString(Formatting.None));
 		r.StatusCode = status;
 		return r;
 	}
@@ -56,14 +56,14 @@ public class JsonAPIController : ControllerBase
 	[NonAction]
 	public ContentResult Json(JToken content, bool humanReadable)
 	{
-		Formatting formatting = humanReadable ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+		Formatting formatting = humanReadable ? Formatting.Indented : Formatting.None;
 		return Json(content.ToString(formatting));
 	}
 
 	[NonAction]
 	public ContentResult Json(JToken content, int status, bool humanReadable)
 	{
-		Formatting formatting = humanReadable ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+		Formatting formatting = humanReadable ? Formatting.Indented : Formatting.None;
 		ContentResult? r = Json(content.ToString(formatting));
 		r.StatusCode = status;
 		return r;
@@ -141,7 +141,7 @@ public class JsonAPIController : ControllerBase
 		return ipAddress;
 	}
 
-	private bool IsTrustedMachine(IOptions<ApplicationSettings> proxyInfo, IPAddress ip)
+	private static bool IsTrustedMachine(IOptions<ApplicationSettings> proxyInfo, IPAddress ip)
 	{
 		foreach (var trustedProxyString in proxyInfo.Value.ProxyServers)
 		{

@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 
 namespace UT4MasterServer.Models.Database;
@@ -29,7 +29,7 @@ public class Session
 	public Token AccessToken { get; set; }
 
 	[BsonElement("RefreshToken"), BsonDefaultValue(null), BsonIgnoreIfDefault]
-	public Token? RefreshToken { get; set; } = null;
+	public Token? RefreshToken { get; set; }
 
 	[BsonElement("CreationMethod")]
 	public SessionCreationMethod CreationMethod { get; set; }

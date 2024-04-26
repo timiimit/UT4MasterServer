@@ -10,7 +10,7 @@ public class XmppServer
 	private TcpListener listener;
 	private List<XmppConnection> connections;
 
-	private DateTimeOffset lastAcceptTime = default;
+	private DateTimeOffset lastAcceptTime;
 	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
 
 	public string Domain { get; private set; }

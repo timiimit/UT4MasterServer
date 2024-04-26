@@ -30,7 +30,7 @@ public sealed class PersonaController : JsonAPIController
 	[HttpGet("public/account/lookup")]
 	public async Task<IActionResult> AccountLookup([FromQuery(Name = "q")] string query)
 	{
-		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
 		}

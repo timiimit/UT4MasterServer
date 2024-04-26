@@ -300,7 +300,6 @@ public sealed class ProfileController : JsonAPIController
 			return NotFound();
 		}
 
-
 		const double maxXPPerHour = 500.0;
 		var hoursSinceLastMatch = (DateTime.UtcNow - acc.LastMatchAt).TotalHours;
 
@@ -318,8 +317,6 @@ public sealed class ProfileController : JsonAPIController
 				acc.ToString(), body.XPAmount, hoursSinceLastMatch, maxEarnableXP);
 			body.XPAmount = (int)maxEarnableXP;
 		}
-
-
 
 		var prevXP = acc.XP;
 		var prevLevel = acc.LevelStockLimited;
@@ -409,8 +406,8 @@ public sealed class ProfileController : JsonAPIController
 		}
 
 		// only known to be sent by client so far
-		var isRequestSentFromClient = clientKind.ToLower() == "client";
-		var isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
+		//var isRequestSentFromClient = clientKind.ToLower() == "client";
+		//var isRequestSentFromServer = clientKind.ToLower() == "dedicated_server";
 
 		// this endpoint is kind of pointless. the actual stars are stored in cloudstorage progression file.
 		// then whenever it is changed, it sends an update to master server.

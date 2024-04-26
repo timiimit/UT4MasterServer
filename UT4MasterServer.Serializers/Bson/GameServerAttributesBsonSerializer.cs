@@ -43,7 +43,7 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
 	{
 		var result = new GameServerAttributes();
 
-		if (context.Reader.CurrentBsonType != MongoDB.Bson.BsonType.Document)
+		if (context.Reader.CurrentBsonType != BsonType.Document)
 		{
 			throw new FormatException("Cannot deserialize into GameServerAttributes");
 		}
@@ -53,22 +53,22 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
 		while (true)
 		{
 			BsonType t = context.Reader.ReadBsonType();
-			if (t == MongoDB.Bson.BsonType.EndOfDocument)
+			if (t == BsonType.EndOfDocument)
 			{
 				break;
 			}
 
 			var key = context.Reader.ReadName();
 
-			if (t == MongoDB.Bson.BsonType.String)
+			if (t == BsonType.String)
 			{
 				result.Set(key, context.Reader.ReadString());
 			}
-			else if (t == MongoDB.Bson.BsonType.Int32)
+			else if (t == BsonType.Int32)
 			{
 				result.Set(key, context.Reader.ReadInt32());
 			}
-			else if (t == MongoDB.Bson.BsonType.Boolean)
+			else if (t == BsonType.Boolean)
 			{
 				result.Set(key, context.Reader.ReadBoolean());
 			}
@@ -77,7 +77,6 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
 				throw new FormatException("Cannot deserialize into GameServerAttributes");
 			}
 		}
-
 
 		context.Reader.ReadEndDocument();
 

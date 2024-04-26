@@ -1,7 +1,5 @@
-﻿using System.IO.Compression;
 using System.Net.Security;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using UT4MasterServer.Xmpp.Stanzas;
@@ -37,9 +35,9 @@ public class XmppConnection : IDisposable
 	public XmlReader Reader => reader;
 	public XmppWriter Writer => writer;
 
-	public bool IsStreamEncrypted { get; private set; } = false;
-	public bool IsStreamCompressed { get; private set; } = false;
-	public bool IsStreamAuthenticated { get; private set; } = false;
+	public bool IsStreamEncrypted { get; private set; }
+	public bool IsStreamCompressed { get; private set; }
+	public bool IsStreamAuthenticated { get; private set; }
 	public Queue<Stanza> QueuedStanzas { get; private set; }
 
 	public XmppConnection(XmppServer server, Stream stream)
@@ -294,8 +292,8 @@ public class XmppConnection : IDisposable
 
 		var id = Reader.GetAttribute("id");
 		var type = Reader.GetAttribute("type");
-		var from = Reader.GetAttribute("from");
-		var to = Reader.GetAttribute("to");
+		//var from = Reader.GetAttribute("from");
+		//var to = Reader.GetAttribute("to");
 
 		Writer.OpenTag("iq");
 
@@ -425,12 +423,12 @@ public class XmppConnection : IDisposable
 		Writer.Flush();
 
 		throw new NotImplementedException();
-		SetStream(new ZLibStream(Stream, CompressionMode.Decompress, true));
+		/*SetStream(new ZLibStream(Stream, CompressionMode.Decompress, true));
 		IsStreamCompressed = true;
 
 		// restart stream
 		Console.WriteLine("Client enabled zlib compression");
-		return true;
+		return true;*/
 	}
 
 	private string? AuthenticateStream()
@@ -464,7 +462,7 @@ public class XmppConnection : IDisposable
 		}
 
 		var username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
-		var password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
+		//var password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
 
 		// TODO: validate credentials
 
@@ -526,16 +524,6 @@ public class XmppConnection : IDisposable
 			}
 		}
 		Writer.CloseTag();
-	}
-
-	private X509Certificate SSLCertificateSelectionCallback(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate? remoteCertificate, string[] acceptableIssuers)
-	{
-		return localCertificates[0];
-	}
-
-	private static bool SSLCertificateValidationCallback(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
-	{
-		return true;
 	}
 
 	protected virtual void Dispose(bool disposing)

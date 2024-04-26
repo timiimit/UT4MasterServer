@@ -22,7 +22,6 @@ public class CharStateMachine : StateMachine<char>
 		automata[fromState].Add(new StateConditionRanges(toState, ranges));
 	}
 
-
 	protected override int CheckCondition(int currentState, char value, StateCondition condition)
 	{
 		if (condition is StateConditionRanges ranges)

@@ -1,10 +1,10 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 
 namespace UT4MasterServer.Models.Database;
 using System.Text.Json.Serialization;
-using UT4MasterServer.Common.Enums;
-using UT4MasterServer.Common.Helpers;
+using Common.Enums;
+using Common.Helpers;
 
 [BsonIgnoreExtraElements]
 public class Account
@@ -89,7 +89,7 @@ public class Account
 			}
 
 			// note: req to next level, so element 0 is XP required for level 1
-			ulong xp = 0;
+			ulong xp;
 			ulong Increment = 50;
 			ulong Step = 50;
 			xp = Step;

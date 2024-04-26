@@ -1,10 +1,10 @@
-﻿using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.X509Certificates;
 
 namespace UT4MasterServer.Xmpp;
 
 internal class Program
 {
-	static async Task Main(string[] args)
+	private static async Task Main(string[] args)
 	{
 		//XmlParser.XmlScanner scanner = new();
 		//XmlParser.XmlParserPermissive parsers = new(scanner, File.OpenText("../../../example.xml"));

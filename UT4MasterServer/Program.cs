@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
@@ -98,7 +99,7 @@ public static class Program
 			{
 				if (string.IsNullOrWhiteSpace(x.SecretKey) || string.IsNullOrWhiteSpace(x.SiteKey))
 				{
-					throw new Exception("Must specify ApplicationSettings.ReCaptchaSettings in production environment");
+					throw new ConfigurationErrorsException("Must specify ApplicationSettings.ReCaptchaSettings in production environment");
 				}
 			}
 		});
@@ -189,7 +190,7 @@ public static class Program
 				var websiteDomain = builder.Configuration.GetSection("ApplicationSettings")["WebsiteDomain"];
 				if (string.IsNullOrWhiteSpace(websiteDomain))
 				{
-					throw new Exception("Must specify ApplicationSettings.WebsiteDomain in production environment");
+					throw new ConfigurationErrorsException("Must specify ApplicationSettings.WebsiteDomain in production environment");
 				}
 
 				options.AddPolicy(
