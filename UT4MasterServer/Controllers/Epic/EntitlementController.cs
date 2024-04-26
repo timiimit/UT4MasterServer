@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Common;
 
@@ -38,7 +38,7 @@ public sealed class EntitlementController : JsonAPIController
         cosmeticEntitlementIDs.Add("91afa66fbf744726af33dba391657296"); // BP_Round_HelmetLeader & BP_Round_HelmetGoggles
         cosmeticEntitlementIDs.Add("9a1ad6c3c10e438f9602c14ad1b67bfa"); // BP_CardboardHat_Leader & BP_CardboardHat
         cosmeticEntitlementIDs.Add("8747335f79dd4bec8ddc03214c307950"); // BP_BaseballHat_Leader & BP_BaseballHat
-                                                                        //cosmeticEntitlementIDS.Add("527E7E209F4142F8835BA696919E2BEC"); // BP_Char_Oct2015, broken character that we don't want people to have
+        //cosmeticEntitlementIDS.Add("527E7E209F4142F8835BA696919E2BEC"); // BP_Char_Oct2015, broken character that we don't want people to have
 
         // TODO: find a way to include halloween cosmetics, they seem to be handled differently in the game
     }
