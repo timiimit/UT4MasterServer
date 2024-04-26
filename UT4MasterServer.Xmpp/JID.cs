@@ -13,10 +13,14 @@ public class JID
 		get
 		{
 			if (string.IsNullOrEmpty(Username))
+			{
 				return Domain; // When username is empty so is Resource
+			}
 
 			if (string.IsNullOrEmpty(Resource))
+			{
 				return $"{Username}@{Domain}"; // Domain must always be set
+			}
 
 			return $"{Username}@{Domain}/{Resource}";
 		}
@@ -27,7 +31,9 @@ public class JID
 		get
 		{
 			if (string.IsNullOrEmpty(Username))
+			{
 				return Domain; // When username is empty, so is Resource
+			}
 
 			return $"{Username}@{Domain}"; // Domain must always be set
 		}
@@ -56,7 +62,9 @@ public class JID
 	public static JID Parse(string? jidString)
 	{
 		if (jidString == null)
+		{
 			return new JID(string.Empty);
+		}
 
 		var at = jidString.IndexOf('@');
 		if (at < 0)
@@ -84,13 +92,19 @@ public class JID
 	public override bool Equals(object? obj)
 	{
 		if (obj == null)
+		{
 			return false;
+		}
 
 		if (obj is not JID jid)
+		{
 			return false;
+		}
 
 		if (HasResource && jid.HasResource)
+		{
 			return Full == jid.Full;
+		}
 
 		return Bare == jid.Bare;
 	}

@@ -50,7 +50,9 @@ public class StanzaMessage : Stanza
 	public static async Task<StanzaMessage?> ReadAsync(XmlReader reader, CancellationToken cancellationToken)
 	{
 		if (reader.Name != "message")
+		{
 			return null;
+		}
 
 		await Task.Yield();
 
@@ -59,7 +61,9 @@ public class StanzaMessage : Stanza
 			var id = reader.GetAttribute("id") ?? string.Empty;
 			var to = JID.Parse(reader.GetAttribute("to"));
 			if (!to.IsValid)
+			{
 				return null;
+			}
 
 			// allow a missing 'from' attribute because we will replace existing
 			// one anyway so people cannot spoof origin of a message.
@@ -70,11 +74,15 @@ public class StanzaMessage : Stanza
 			{
 				var stanzaError = await StanzaError.ReadAsync(reader, cancellationToken);
 				if (stanzaError == null)
+				{
 					return null;
+				}
 
 				reader.Read();
 				if (reader.Name != "message" || reader.NodeType != XmlNodeType.EndElement)
+				{
 					return null;
+				}
 
 				return new StanzaMessage() { ID = id, From = from, To = to, Error = stanzaError };
 			}
@@ -93,18 +101,24 @@ public class StanzaMessage : Stanza
 
 			reader.Read();
 			if (reader.Name != "body")
+			{
 				return null;
+			}
 
 			reader.Read();
 			string body = reader.Value;
 
 			reader.Read();
 			if (reader.Name != "body" || reader.NodeType != XmlNodeType.EndElement)
+			{
 				return null;
+			}
 
 			reader.Read();
 			if (reader.Name != "message" || reader.NodeType != XmlNodeType.EndElement)
+			{
 				return null;
+			}
 
 			return new StanzaMessage() { ID = id, Type = typeAttribute, From = from, To = to, Body = body };
 		}

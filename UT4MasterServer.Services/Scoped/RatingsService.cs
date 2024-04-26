@@ -218,7 +218,10 @@ public sealed class RatingsService
 				.ToArray();
 			int redTeamPlayersCount = redTeamAccountIds.Length;
 			int blueTeamPlayersCount = blueTeamAccountIds.Length;
-			if (redTeamPlayersCount < 1 || blueTeamPlayersCount < 1) return;
+			if (redTeamPlayersCount < 1 || blueTeamPlayersCount < 1)
+			{
+				return;
+			}
 
 			double redTeamActualScore = 1;
 			double blueTeamActualScore = 0;
@@ -320,10 +323,13 @@ public sealed class RatingsService
 				.Select(s => EpicID.FromString(s.AccountID))
 				.ToArray();
 			int playersCount = playersAccountIds.Length;
-			if (playersCount < 2) return;
+			if (playersCount < 2)
+			{
+				return;
+			}
 
 			var filter = Builders<Rating>.Filter.In(f => f.AccountID, playersAccountIds) &
-						 Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
+			             Builders<Rating>.Filter.Eq(f => f.RatingType, ratingMatch.RatingType);
 			var playersCurrentRatings = await ratingsCollection.Find(filter).ToListAsync();
 
 			double[] currentRatings = new double[playersCount];

@@ -16,11 +16,17 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
             var val = value.Get(key);
 
             if (val is string valString)
-                context.Writer.WriteString(key, valString);
+            {
+	            context.Writer.WriteString(key, valString);
+            }
             else if (val is int valInt)
-                context.Writer.WriteInt32(key, valInt);
+            {
+	            context.Writer.WriteInt32(key, valInt);
+            }
             else if (val is bool valBool)
-                context.Writer.WriteBoolean(key, valBool);
+            {
+	            context.Writer.WriteBoolean(key, valBool);
+            }
             else
             {
                 // Other kv-pairs are ignored because they are invalid
@@ -37,7 +43,9 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
         var result = new GameServerAttributes();
 
         if (context.Reader.CurrentBsonType != MongoDB.Bson.BsonType.Document)
-            throw new FormatException("Cannot deserialize into GameServerAttributes");
+        {
+	        throw new FormatException("Cannot deserialize into GameServerAttributes");
+        }
 
         context.Reader.ReadStartDocument();
 
@@ -45,18 +53,28 @@ public class GameServerAttributesBsonSerializer : SerializerBase<GameServerAttri
         {
             var t = context.Reader.ReadBsonType();
             if (t == MongoDB.Bson.BsonType.EndOfDocument)
-                break;
+            {
+	            break;
+            }
 
             string key = context.Reader.ReadName();
 
             if (t == MongoDB.Bson.BsonType.String)
-                result.Set(key, context.Reader.ReadString());
+            {
+	            result.Set(key, context.Reader.ReadString());
+            }
             else if (t == MongoDB.Bson.BsonType.Int32)
-                result.Set(key, context.Reader.ReadInt32());
+            {
+	            result.Set(key, context.Reader.ReadInt32());
+            }
             else if (t == MongoDB.Bson.BsonType.Boolean)
-                result.Set(key, context.Reader.ReadBoolean());
+            {
+	            result.Set(key, context.Reader.ReadBoolean());
+            }
             else
-                throw new FormatException("Cannot deserialize into GameServerAttributes");
+            {
+	            throw new FormatException("Cannot deserialize into GameServerAttributes");
+            }
         }
 
 

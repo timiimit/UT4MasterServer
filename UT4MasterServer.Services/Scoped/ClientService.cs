@@ -38,7 +38,9 @@ public sealed class ClientService
 		var options = new ReplaceOptions() { IsUpsert = true };
 		var result = await collection.ReplaceOneAsync(x => x.ID == client.ID, client, options);
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return result.ModifiedCount == 1;
 	}
@@ -67,7 +69,9 @@ public sealed class ClientService
 	{
 		var result = await collection.DeleteOneAsync(x => x.ID == id);
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return result.DeletedCount > 0;
 	}

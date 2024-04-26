@@ -114,7 +114,9 @@ public sealed class SessionService
 		);
 		var session = await cursor.SingleOrDefaultAsync();
 		if (session == null)
+		{
 			return null;
+		}
 
 		session.Refresh();
 		await UpdateSessionAsync(session);
@@ -154,7 +156,10 @@ public sealed class SessionService
 
 		var result = await sessionCollection.DeleteManyAsync(expiredRefreshToken & expiredAccessToken);
 		if (result.IsAcknowledged)
+		{
 			return (int)result.DeletedCount;
+		}
+
 		return -1;
 	}
 
@@ -163,10 +168,14 @@ public sealed class SessionService
 	private async Task<Session?> InvalidateExpiredSession(Session? session)
 	{
 		if (session == null)
+		{
 			return null;
+		}
 
 		if (!session.HasExpired)
+		{
 			return session;
+		}
 
 		await sessionCollection.DeleteOneAsync(s => s.AccessToken == session.AccessToken);
 		return null;

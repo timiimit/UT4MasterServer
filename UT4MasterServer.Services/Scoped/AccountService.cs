@@ -97,7 +97,9 @@ public sealed class AccountService
 		{
 			account = await GetAccountByEmailAsync(username);
 			if (account == null)
+			{
 				return null;
+			}
 		}
 
 		return account;

@@ -84,16 +84,22 @@ public class JsonAPIController : ControllerBase
 	{
 		var ipAddress = HttpContext.Connection.RemoteIpAddress;
 		if (ipAddress == null)
+		{
 			return null;
+		}
 
 		// if we have no proxy info, we can only trust the actual ip
 		if (proxyInfo == null)
+		{
 			return ipAddress;
+		}
 
 		// if we don't know the header that proxy is supposed to use,
 		// we can only trust the actual ip
 		if (string.IsNullOrWhiteSpace(proxyInfo.Value.ProxyClientIPHeader))
+		{
 			return ipAddress;
+		}
 
 		// get all instances of specified header
 		var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
@@ -106,7 +112,9 @@ public class JsonAPIController : ControllerBase
 		{
 			var header = headers[hi];
 			if (header == null)
+			{
 				continue;
+			}
 
 			string[] headerParts = header.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
@@ -136,10 +144,14 @@ public class JsonAPIController : ControllerBase
 		foreach (var trustedProxyString in proxyInfo.Value.ProxyServers)
 		{
 			if (!IPAddress.TryParse(trustedProxyString, out var trustedProxy))
+			{
 				continue;
+			}
 
 			if (trustedProxy.Equals(ip))
+			{
 				return true;
+			}
 		}
 		return false;
 	}

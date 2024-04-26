@@ -43,7 +43,9 @@ public class GameServerAttributes
 		foreach (var attribute in other.serverConfigs)
 		{
 			if (UnownedAttributeNames.Contains(attribute.Key))
+			{
 				continue;
+			}
 
 			SetDirect(attribute.Key, attribute.Value);
 		}
@@ -57,7 +59,10 @@ public class GameServerAttributes
 	public object? Get(string key)
 	{
 		if (!Contains(key))
+		{
 			return null;
+		}
+
 		return serverConfigs[key];
 	}
 
@@ -96,14 +101,20 @@ public class GameServerAttributes
 		if (value != null)
 		{
 			if (serverConfigs.ContainsKey(key))
+			{
 				serverConfigs[key] = value;
+			}
 			else
+			{
 				serverConfigs.Add(key, value);
+			}
 		}
 		else
 		{
 			if (serverConfigs.ContainsKey(key))
+			{
 				serverConfigs.Remove(key);
+			}
 		}
 	}
 }

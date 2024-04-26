@@ -6,6 +6,7 @@ using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Database;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace UT4MasterServer.Controllers.Epic;
 
@@ -17,6 +18,8 @@ public sealed class CloudStorageController : JsonAPIController
 	private readonly CloudStorageService cloudStorageService;
 	private readonly MatchmakingService matchmakingService;
 	private readonly AccountService accountService;
+
+	private static readonly FileExtensionContentTypeProvider contentTypeProvider = new();
 
 	public CloudStorageController(ILogger<CloudStorageController> logger,
 		CloudStorageService cloudStorageService,
@@ -35,8 +38,14 @@ public sealed class CloudStorageController : JsonAPIController
 		return BuildListResult(files);
 	}
 
-	[HttpGet("user/{id}/{filename}"), Produces("application/octet-stream")]
+	[HttpGet("user/{id}/{filename}")]
 	public async Task<IActionResult> GetUserFile(string id, string filename)
+	{
+		return await GetFile(id, filename);
+	}
+
+	[NonAction]
+	public async Task<IActionResult> GetFile(string id, string filename)
 	{
 		bool isStatsFile = filename == "stats.json";
 
@@ -81,14 +90,22 @@ public sealed class CloudStorageController : JsonAPIController
 			file.RawContent = tmp;
 		}
 
-		return new FileContentResult(file.RawContent, "application/octet-stream");
+		if (!contentTypeProvider.TryGetContentType(filename, out string? contentType))
+		{
+			contentType = "application/octet-stream";
+		}
+
+		return File(file.RawContent, contentType);
 	}
 
 	[HttpPut("user/{id}/{filename}")]
 	public async Task<IActionResult> UpdateUserFile(string id, string filename)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
+
 		var accountID = EpicID.FromString(id);
 		if (user.Session.AccountID != accountID)
 		{
@@ -114,10 +131,10 @@ public sealed class CloudStorageController : JsonAPIController
 	}
 
 	[AllowAnonymous]
-	[HttpGet("system/{filename}"), Produces("application/octet-stream")]
+	[HttpGet("system/{filename}")]
 	public async Task<IActionResult> GetSystemFile(string filename)
 	{
-		return await GetUserFile(EpicID.Empty.ToString(), filename);
+		return await GetFile(EpicID.Empty.ToString(), filename);
 	}
 
 	[NonAction]
@@ -131,6 +148,7 @@ public sealed class CloudStorageController : JsonAPIController
 			{
 				fileResponse.DoNotCache = false;
 			}
+
 			arr.Add(fileResponse);
 		}
 

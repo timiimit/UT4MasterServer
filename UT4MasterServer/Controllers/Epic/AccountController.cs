@@ -38,27 +38,33 @@ public sealed class AccountController : JsonAPIController
     public async Task<IActionResult> GetAccount(string id)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         // TODO: EPIC doesn't throw here if id is invalid (like 'abc'). Return this same ErrorResponse like for account_not_found
         EpicID eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for account {id}");
 
         var account = await accountService.GetAccountAsync(eid);
         if (account == null)
-            return NotFound(new ErrorResponse
-            {
-                ErrorCode = "errors.com.epicgames.account.account_not_found",
-                ErrorMessage = $"Sorry, we couldn't find an account for {id}",
-                MessageVars = new[] { id },
-                NumericErrorCode = 18007,
-                OriginatingService = "com.epicgames.account.public",
-                Intent = "prod",
-            });
+        {
+	        return NotFound(new ErrorResponse
+	        {
+		        ErrorCode = "errors.com.epicgames.account.account_not_found",
+		        ErrorMessage = $"Sorry, we couldn't find an account for {id}",
+		        MessageVars = new[] { id },
+		        NumericErrorCode = 18007,
+		        OriginatingService = "com.epicgames.account.public",
+		        Intent = "prod",
+	        });
+        }
 
         var obj = new JObject();
         obj.Add("id", account.ID.ToString());
@@ -89,7 +95,9 @@ public sealed class AccountController : JsonAPIController
     public async Task<IActionResult> GetAccounts([FromQuery(Name = "accountId")] List<string> accountIDs)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         if (accountIDs.Count == 0 || accountIDs.Count > 100)
         {

@@ -258,7 +258,10 @@ public sealed class StatisticsService
 
 		var statistics = await statisticsCollection.Find(filter).ToListAsync();
 
-		if (!statistics.Any()) return;
+		if (!statistics.Any())
+		{
+			return;
+		}
 
 		var statisticsGrouped = statistics
 			.GroupBy(g => new { g.AccountID, g.CreatedAt.Date })
@@ -411,7 +414,10 @@ public sealed class StatisticsService
 		{
 			foreach (var element in statisticBase.ToBsonDocument().Elements)
 			{
-				if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower())) continue;
+				if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower()))
+				{
+					continue;
+				}
 
 				var value = element.Value.ToInt64();
 
@@ -630,7 +636,9 @@ public sealed class StatisticsService
 	{
 		var result = await statisticsCollection.DeleteManyAsync(x => x.AccountID == accountID);
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return result.DeletedCount;
 	}

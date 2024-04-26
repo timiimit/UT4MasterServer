@@ -78,7 +78,9 @@ public sealed class CloudStorageService
 		{
 			// for now we only care about specific files
 			if (!IsCommonUserFileFilename(filename))
+			{
 				return;
+			}
 		}
 
 		var buffer = await dataStream.ReadAsBytesAsync(1024 * 1024);
@@ -132,11 +134,15 @@ public sealed class CloudStorageService
 	public async Task<bool?> DeleteFileAsync(EpicID accountID, string filename)
 	{
 		if (accountID.IsEmpty && IsCommonSystemFileFilename(filename))
+		{
 			return false;
+		}
 
 		var result = await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return result.DeletedCount > 0;
 	}
@@ -145,7 +151,9 @@ public sealed class CloudStorageService
 	{
 		var result = await cloudStorageCollection.DeleteManyAsync(GetFilter(accountID));
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return (int)result.DeletedCount;
 	}

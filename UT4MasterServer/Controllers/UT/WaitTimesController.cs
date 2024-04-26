@@ -26,7 +26,9 @@ public sealed class WaitTimesController : JsonAPIController
     public IActionResult QuickplayWaitEstimate()
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         return Ok(service.GetWaitTimes());
     }
@@ -35,7 +37,9 @@ public sealed class WaitTimesController : JsonAPIController
     public IActionResult QuickplayWaitReport(string ratingType, double timeWaited)
     {
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         service.AddWaitTime(ratingType, timeWaited);
 

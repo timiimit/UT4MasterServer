@@ -72,7 +72,9 @@ public sealed class StatsController : JsonAPIController
         var accountId = EpicID.FromString(id);
 
         if (User.Identity is not EpicUserIdentity user)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         if (user.Session.AccountID != accountId)
         {

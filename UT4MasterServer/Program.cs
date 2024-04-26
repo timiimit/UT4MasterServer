@@ -69,7 +69,9 @@ public static class Program
 		{
 			// handle proxy list loading
 			if (string.IsNullOrWhiteSpace(x.ProxyServersFile))
+			{
 				return;
+			}
 
 			try
 			{
@@ -77,7 +79,9 @@ public static class Program
 				foreach (var proxy in proxies)
 				{
 					if (!IPAddress.TryParse(proxy, out var ip))
+					{
 						continue;
+					}
 
 					x.ProxyServers.Add(ip.ToString());
 				}

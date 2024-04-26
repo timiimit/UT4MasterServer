@@ -29,7 +29,9 @@ public sealed class MatchmakingWaitTimeEstimateService
 		foreach (var estimate in estimates)
 		{
 			if (estimate.Value.Count <= 0)
+			{
 				continue;
+			}
 
 			var estimatedModeWait = estimate.Value.Average(x => x.WaitTime);
 			waitTimes.Add(new WaitTimeEstimateResponse(estimate.Key, estimatedModeWait, estimate.Value.Count));
@@ -46,7 +48,9 @@ public sealed class MatchmakingWaitTimeEstimateService
 		{
 			mode.Value.RemoveAll(x => now > x.DeleteTime);
 			if (mode.Value.Count <= 0)
+			{
 				modesToRemove.Add(mode.Key);
+			}
 		}
 
 		foreach (var mode in modesToRemove)

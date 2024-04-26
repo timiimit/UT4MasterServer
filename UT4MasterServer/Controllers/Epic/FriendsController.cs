@@ -30,12 +30,16 @@ public sealed class FriendsController : JsonAPIController
     public async Task<IActionResult> GetFriends(string id, [FromQuery] bool? includePending)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         var eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
-            return Json("[]", StatusCodes.Status401Unauthorized);
+        {
+	        return Json("[]", StatusCodes.Status401Unauthorized);
+        }
 
         // TODO: Check permission: "Sorry your login does not posses the permission 'friends:{id_from_parameter} READ' needed to perform the requested operation"
 
@@ -64,12 +68,16 @@ public sealed class FriendsController : JsonAPIController
     public async Task<ActionResult> SendFriendRequest(string id, string friendID)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         var eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
-            return Json("[]", StatusCodes.Status401Unauthorized);
+        {
+	        return Json("[]", StatusCodes.Status401Unauthorized);
+        }
 
         await friendService.SendFriendRequestAsync(eid, EpicID.FromString(friendID));
 
@@ -80,12 +88,16 @@ public sealed class FriendsController : JsonAPIController
     public async Task<ActionResult> RemoveFriend(string id, string friendID)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         var eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
-            return Json("[]", StatusCodes.Status401Unauthorized);
+        {
+	        return Json("[]", StatusCodes.Status401Unauthorized);
+        }
 
         await friendService.CancelFriendRequestAsync(eid, EpicID.FromString(friendID));
 
@@ -100,12 +112,16 @@ public sealed class FriendsController : JsonAPIController
     public async Task<IActionResult> GetBlockedAccounts(string id)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Json("[]", StatusCodes.Status401Unauthorized);
+        {
+	        return Json("[]", StatusCodes.Status401Unauthorized);
+        }
 
         var eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
-            return Json("[]", StatusCodes.Status401Unauthorized);
+        {
+	        return Json("[]", StatusCodes.Status401Unauthorized);
+        }
 
         // TODO: Check permission: "Sorry your login does not posses the permission 'blockList:{id_from_parameter} READ' needed to perform the requested operation"
 
@@ -123,12 +139,16 @@ public sealed class FriendsController : JsonAPIController
     public async Task<ActionResult> BlockAccount(string id, string friendID)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         var eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
-            return Json("[]", StatusCodes.Status401Unauthorized);
+        {
+	        return Json("[]", StatusCodes.Status401Unauthorized);
+        }
 
         await friendService.BlockAccountAsync(eid, EpicID.FromString(friendID));
 
@@ -139,12 +159,16 @@ public sealed class FriendsController : JsonAPIController
     public async Task<ActionResult> UnblockAccount(string id, string friendID)
     {
         if (User.Identity is not EpicUserIdentity authenticatedUser)
-            return Unauthorized();
+        {
+	        return Unauthorized();
+        }
 
         var eid = EpicID.FromString(id);
 
         if (eid != authenticatedUser.Session.AccountID)
-            return Json("[]", StatusCodes.Status401Unauthorized);
+        {
+	        return Json("[]", StatusCodes.Status401Unauthorized);
+        }
 
         await friendService.UnblockAccountAsync(eid, EpicID.FromString(friendID));
 

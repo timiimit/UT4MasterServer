@@ -116,11 +116,15 @@ public class StanzaError
         try
         {
             if (reader.Name != "error" || reader.NodeType != XmlNodeType.Element)
-                return null;
+            {
+	            return null;
+            }
 
             var type = reader.GetAttribute("type");
             if (type == null)
-                return null;
+            {
+	            return null;
+            }
 
             // TODO: parse type
 
@@ -136,7 +140,9 @@ public class StanzaError
             }
 
             if (reader.Name != "error" || reader.NodeType != XmlNodeType.EndElement)
-                return null;
+            {
+	            return null;
+            }
 
             return new StanzaError(ConditionValues.BadRequest);
         }
