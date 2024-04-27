@@ -104,12 +104,9 @@ public sealed class MatchmakingService
 			// exclude stale GameServers that haven't been removed from db yet
 			doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument("$gt", DateTime.UtcNow - StaleAfter)));
 		}
-		else
-		{
-			// master server just started running. we don't know the status of servers.
-			// assume everyone in db is still live and serve them to clients.
-		}
 
+		// master server just started running. we don't know the status of servers.
+		// assume everyone in db is still live and serve them to clients.
 		// include GameServers whose BuildUniqueId matches criteria
 		if (inputFilter.BuildUniqueId != null)
 		{
@@ -219,6 +216,7 @@ public sealed class MatchmakingService
 		{
 			return (int)result.DeletedCount;
 		}
+
 		return -1;
 	}
 

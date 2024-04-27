@@ -47,6 +47,7 @@ public class XmppWriter
 		{
 			name = prefix + ":";
 		}
+
 		name += localName;
 
 		OpenTag(name);
@@ -76,6 +77,7 @@ public class XmppWriter
 		{
 			name = prefix + ":";
 		}
+
 		name += localName;
 
 		OpenTag(name);
@@ -116,6 +118,7 @@ public class XmppWriter
 		{
 			w.Write($"{prefix}:");
 		}
+
 		w.Write($"{name}=\"{value}\"");
 	}
 

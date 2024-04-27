@@ -12,6 +12,7 @@ namespace UT4MasterServer.Serializers.Bson;
 public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationConfigurable<EpicIDSerializer>
 {
 	#region static
+
 	private static readonly StringSerializer __instance = new StringSerializer();
 
 	// public static properties
@@ -19,6 +20,7 @@ public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationCon
 	/// Gets a cached instance of a default string serializer.
 	/// </summary>
 	public static StringSerializer Instance => __instance;
+
 	#endregion
 
 	// private fields
@@ -139,10 +141,8 @@ public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationCon
 		{
 			return this;
 		}
-		else
-		{
-			return new EpicIDSerializer(representation);
-		}
+
+		return new EpicIDSerializer(representation);
 	}
 
 	// explicit interface implementations

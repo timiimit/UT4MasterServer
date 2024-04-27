@@ -24,9 +24,11 @@ public class XmppConnection : IDisposable
 			{
 				throw new InvalidOperationException();
 			}
+
 			return id;
 		}
 	}
+
 	public StanzaPresence.ShowElementValues Show { get; set; }
 	public string Status { get; set; }
 
@@ -90,7 +92,7 @@ public class XmppConnection : IDisposable
 	{
 		await Task.Yield();
 
-	LABEL_StreamStart:
+		LABEL_StreamStart:
 
 		await Reader.ReadAsync();
 		await Reader.ReadAsync();
@@ -148,11 +150,9 @@ public class XmppConnection : IDisposable
 				id = new JID(username, Server.Domain);
 				goto LABEL_StreamStart;
 			}
-			else
-			{
-				// TODO: send error
-				return null;
-			}
+
+			// TODO: send error
+			return null;
 		}
 		else
 		{
@@ -175,10 +175,8 @@ public class XmppConnection : IDisposable
 
 				return guid;
 			}
-			else
-			{
-				return null;
-			}
+
+			return null;
 		}
 
 		return null;
@@ -243,11 +241,8 @@ public class XmppConnection : IDisposable
 					}
 				}
 			}
-			else
-			{
-				// ill-formed xml. try to keep connection alive
-			}
 
+			// ill-formed xml. try to keep connection alive
 			Task<bool>? readTask = Reader.ReadAsync();
 
 			bool didReadNewData;
@@ -256,8 +251,7 @@ public class XmppConnection : IDisposable
 				await HandleQueuedAsync(cancellationToken);
 
 				didReadNewData = readTask.Wait(50, cancellationToken);
-			}
-			while (!didReadNewData);
+			} while (!didReadNewData);
 		}
 	}
 
@@ -270,6 +264,7 @@ public class XmppConnection : IDisposable
 			{
 				dequeuedStanzas.Add(stanza);
 			}
+
 			QueuedStanzas.Clear();
 		}
 
@@ -395,7 +390,8 @@ public class XmppConnection : IDisposable
 
 	private bool EncryptStreamSSL()
 	{
-		Writer.OpenTagNS("proceed", "urn:ietf:params:xml:ns:xmpp-tls"); Writer.CloseTag();
+		Writer.OpenTagNS("proceed", "urn:ietf:params:xml:ns:xmpp-tls");
+		Writer.CloseTag();
 		Writer.Flush();
 
 		var tmp = new SslStream(Stream, true); //, SSLCertificateValidation, SSLCertificateSelection, EncryptionPolicy.AllowNoEncryption);
@@ -414,12 +410,14 @@ public class XmppConnection : IDisposable
 			// failed to authenticate. continue to close the stream.
 			Console.WriteLine(ex.ToString());
 		}
+
 		return false;
 	}
 
 	private bool CompressStreamZLib()
 	{
-		Writer.OpenTagNS("compressed", "http://jabber.org/protocol/compress"); Writer.CloseTag();
+		Writer.OpenTagNS("compressed", "http://jabber.org/protocol/compress");
+		Writer.CloseTag();
 		Writer.Flush();
 
 		throw new NotImplementedException();
@@ -488,16 +486,19 @@ public class XmppConnection : IDisposable
 				{
 					Writer.StringTag("mechanism", "PLAIN");
 				}
+
 				Writer.CloseTag();
 			}
 
-			Writer.OpenTagNS("ver", "urn:xmpp:features:rosterver"); Writer.CloseTag();
+			Writer.OpenTagNS("ver", "urn:xmpp:features:rosterver");
+			Writer.CloseTag();
 
 			if (!IsStreamEncrypted)
 			{
 				Writer.OpenTagNS("starttls", "urn:ietf:params:xml:ns:xmpp-tls");
 				{
-					Writer.OpenTag("required"); Writer.CloseTag();
+					Writer.OpenTag("required");
+					Writer.CloseTag();
 				}
 				Writer.CloseTag();
 			}
@@ -514,13 +515,16 @@ public class XmppConnection : IDisposable
 
 			if (IsStreamEncrypted && !IsStreamAuthenticated)
 			{
-				Writer.OpenTagNS("auth", "http://jabber.org/features/iq-auth"); Writer.CloseTag();
+				Writer.OpenTagNS("auth", "http://jabber.org/features/iq-auth");
+				Writer.CloseTag();
 			}
 
 			if (IsStreamAuthenticated)
 			{
-				Writer.OpenTagNS("bind", "urn:ietf:params:xml:ns:xmpp-bind"); Writer.CloseTag();
-				Writer.OpenTagNS("session", "urn:ietf:params:xml:ns:xmpp-session"); Writer.CloseTag();
+				Writer.OpenTagNS("bind", "urn:ietf:params:xml:ns:xmpp-bind");
+				Writer.CloseTag();
+				Writer.OpenTagNS("session", "urn:ietf:params:xml:ns:xmpp-session");
+				Writer.CloseTag();
 			}
 		}
 		Writer.CloseTag();

@@ -125,6 +125,7 @@ public class XmlParserPermissive
 						Current = Current.Parent;
 					}
 				}
+
 				XmlElement? old = Current;
 				Current = new XmlElement("#UNKNOWN") { Parent = old };
 				old.Elements.Add(Current);
@@ -133,19 +134,19 @@ public class XmlParserPermissive
 				lastOpenType = lexem.Token;
 				return 0;
 			}
-			else if (lexem.Token == XmlToken.OpenEnd)
+
+			if (lexem.Token == XmlToken.OpenEnd)
 			{
 				hasExitedCurrent = true;
 				parsingState = ParsingState.ElementEnd;
 				return 0;
 			}
-			else
-			{
-				Current.Elements.Add(new XmlTextElement(lexem.Value));
-				return 0;
-			}
+
+			Current.Elements.Add(new XmlTextElement(lexem.Value));
+			return 0;
 		}
-		else if (parsingState == ParsingState.Name)
+
+		if (parsingState == ParsingState.Name)
 		{
 			if (lexem.Token == XmlToken.Name)
 			{
@@ -162,15 +163,18 @@ public class XmlParserPermissive
 				parsingState = ParsingState.AttributeEquals;
 				return 0;
 			}
+
 			if (lexem.Token == XmlToken.Close || lexem.Token == XmlToken.CloseProcInst)
 			{
 				if (lastOpenType == XmlToken.OpenProcInst)
 				{
 					hasExitedCurrent = true;
 				}
+
 				parsingState = 0;
 				return 1;
 			}
+
 			if (lexem.Token == XmlToken.CloseEmpty)
 			{
 				hasExitedCurrent = true;

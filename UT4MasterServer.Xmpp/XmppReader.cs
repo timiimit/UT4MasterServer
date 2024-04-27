@@ -28,13 +28,10 @@ public class XmppReader
 
 	private void ParseXml(Span<char> data)
 	{
-
 	}
-
 
 	public async Task InitialStreamHeaderAsync(CancellationToken cancellationToken)
 	{
 		var readCount = await r.ReadBlockAsync(buffer, cancellationToken);
-
 	}
 }

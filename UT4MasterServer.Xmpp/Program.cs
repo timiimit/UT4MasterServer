@@ -34,7 +34,8 @@ internal class Program
 			{
 				break;
 			}
-			else if (commandParts[0] == "send")
+
+			if (commandParts[0] == "send")
 			{
 				if (commandParts[1] == "message")
 				{
@@ -53,6 +54,7 @@ internal class Program
 				}
 			}
 		}
+
 		cts.Cancel();
 		serverTask.Wait();
 	}
