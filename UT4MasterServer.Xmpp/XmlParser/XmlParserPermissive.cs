@@ -67,7 +67,6 @@ public class XmlParserPermissive
 						// smallest unit of meaning has been read
 						if (scanner.LastLexem == null)
 						{
-							// LastLexem should never be null here
 							throw new InvalidOperationException("LastLexem should never be null.");
 						}
 

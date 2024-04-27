@@ -92,7 +92,7 @@ public class XmppConnection : IDisposable
 	{
 		await Task.Yield();
 
-		LABEL_StreamStart:
+	LABEL_StreamStart:
 
 		await Reader.ReadAsync();
 		await Reader.ReadAsync();
@@ -251,7 +251,8 @@ public class XmppConnection : IDisposable
 				await HandleQueuedAsync(cancellationToken);
 
 				didReadNewData = readTask.Wait(50, cancellationToken);
-			} while (!didReadNewData);
+			}
+			while (!didReadNewData);
 		}
 	}
 
