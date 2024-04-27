@@ -241,8 +241,12 @@ public class XmppConnection : IDisposable
 					}
 				}
 			}
+			// ReSharper disable once RedundantIfElseBlock
+			else
+			{
+				// ill-formed xml. try to keep connection alive
+			}
 
-			// ill-formed xml. try to keep connection alive
 			Task<bool>? readTask = Reader.ReadAsync();
 
 			bool didReadNewData;
