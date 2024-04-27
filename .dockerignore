@@ -30,5 +30,5 @@ README.md
 ./OldReferenceCode
 ./Files
 ./db*
-**/logs
-**/Logs
+**/[Ll]og
+**/[Ll]ogs
