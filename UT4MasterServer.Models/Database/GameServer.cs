@@ -1,13 +1,10 @@
-using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Helpers;
 
 namespace UT4MasterServer.Models.Database;
-
-
-
 
 public class GameServer
 {
@@ -253,12 +250,14 @@ public class GameServer
 		{
 			arr.Add(JsonValue.Create(player.ToString()));
 		}
+
 		obj.Add(new("publicPlayers", arr));
 		arr = new JsonArray();
 		foreach (EpicID player in PrivatePlayers)
 		{
 			arr.Add(JsonValue.Create(player.ToString()));
 		}
+
 		obj.Add(new("privatePlayers", arr));
 		obj.Add(new("totalPlayers", PublicPlayers.Count + PrivatePlayers.Count));
 		obj.Add(new("allowJoinInProgress", AllowJoinInProgress));

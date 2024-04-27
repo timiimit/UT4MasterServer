@@ -2,9 +2,9 @@ namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class XmlParserPermissive
 {
-	private XmlScanner scanner;
+	private readonly XmlScanner scanner;
 
-	private char[] buffer;
+	private readonly char[] buffer;
 	private int bufferIndex;
 	private int bufferReadCount;
 	private int scannerState;
@@ -14,7 +14,6 @@ public class XmlParserPermissive
 	public XmlElement Root { get; private set; }
 	public TextReader Reader { get; private set; }
 	public XmlElement Current { get; private set; }
-
 
 	public XmlParserPermissive(XmlScanner scanner, TextReader reader)
 	{

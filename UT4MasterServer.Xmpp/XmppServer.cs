@@ -7,8 +7,8 @@ namespace UT4MasterServer.Xmpp;
 
 public class XmppServer
 {
-	private TcpListener listener;
-	private List<XmppConnection> connections;
+	private readonly TcpListener listener;
+	private readonly List<XmppConnection> connections;
 
 	private DateTimeOffset lastAcceptTime;
 	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
@@ -49,7 +49,6 @@ public class XmppServer
 
 			listener.Stop();
 		}
-
 	}
 
 	public async Task<bool> SendMessageAsync(StanzaMessage message)
@@ -66,6 +65,7 @@ public class XmppServer
 				}
 			}
 		}
+
 		return true;
 	}
 
@@ -167,6 +167,7 @@ public class XmppServer
 			{
 				connections.Add(connection);
 			}
+
 			await connection.HandleXmppStreamAsync(cancellationToken);
 		}
 		catch (Exception ex)

@@ -13,10 +13,10 @@ public class XmppReader
 		}
 	}
 
-	private TextReader r;
+	private readonly TextReader r;
 	private Stack<Node> elements;
-	private char[] rawBuffer;
-	private Memory<char> buffer;
+	private readonly char[] rawBuffer;
+	private readonly Memory<char> buffer;
 
 	public XmppReader(TextReader reader)
 	{

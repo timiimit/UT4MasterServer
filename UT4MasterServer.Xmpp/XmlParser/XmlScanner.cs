@@ -19,9 +19,9 @@ public enum XmlToken
 
 public class XmlScanner
 {
-	private CharStateMachine stateMachine;
-	private Dictionary<int, XmlToken> stateToToken;
-	private StringBuilder lexem;
+	private readonly CharStateMachine stateMachine;
+	private readonly Dictionary<int, XmlToken> stateToToken;
+	private readonly StringBuilder lexem;
 	private int line;
 	private int column;
 

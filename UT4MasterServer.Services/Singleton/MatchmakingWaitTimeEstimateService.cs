@@ -4,7 +4,7 @@ namespace UT4MasterServer.Services.Singleton;
 
 public sealed class MatchmakingWaitTimeEstimateService
 {
-	private Dictionary<string, List<(DateTime DeleteTime, double WaitTime)>> estimates;
+	private readonly Dictionary<string, List<(DateTime DeleteTime, double WaitTime)>> estimates;
 	private static readonly TimeSpan RelevantReportTimeDuration = TimeSpan.FromMinutes(1);
 
 	public MatchmakingWaitTimeEstimateService()

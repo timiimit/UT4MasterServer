@@ -98,7 +98,7 @@ public class EloTest
 		}
 	}
 
-	private static Random r = new Random();
+	private static readonly Random r = new Random();
 
 	private static int[] GetShuffledIndices(int count)
 	{
