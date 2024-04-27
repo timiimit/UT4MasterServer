@@ -33,7 +33,7 @@ public class StanzaError
 
 	private readonly ConditionValues condition;
 
-	public ConditionValues Condition { get => condition; }
+	public ConditionValues Condition => condition;
 
 	public StanzaError(ConditionValues condition)
 	{

@@ -62,10 +62,7 @@ public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationCon
 	/// <value>
 	/// The representation.
 	/// </value>
-	public BsonType Representation
-	{
-		get { return _representation; }
-	}
+	public BsonType Representation => _representation;
 
 	// public methods
 	/// <summary>

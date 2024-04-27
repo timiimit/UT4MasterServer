@@ -41,10 +41,7 @@ public class XmlElement : XmlNode
 		}
 	}
 
-	public int Depth
-	{
-		get { return depth; }
-	}
+	public int Depth => depth;
 
 	public XmlElement(string name) : base(name)
 	{

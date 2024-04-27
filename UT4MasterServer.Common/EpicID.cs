@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Security.Cryptography;
 using UT4MasterServer.Common.Helpers;
@@ -15,13 +15,7 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 	public string ID { get; set; }
 
 	[BsonIgnore]
-	public bool IsEmpty
-	{
-		get
-		{
-			return string.IsNullOrWhiteSpace(ID) || ID == Empty.ID;
-		}
-	}
+	public bool IsEmpty => string.IsNullOrWhiteSpace(ID) || ID == Empty.ID;
 
 	private EpicID(string id)
 	{
@@ -54,10 +48,7 @@ public struct EpicID : IComparable<EpicID>, IEquatable<EpicID>, IConvertible, IB
 		return new EpicID(id);
 	}
 
-	public static EpicID Empty
-	{
-		get { return new EpicID("00000000000000000000000000000000"); }
-	}
+	public static EpicID Empty => new("00000000000000000000000000000000");
 
 	public static bool operator ==(EpicID lhs, EpicID rhs)
 	{

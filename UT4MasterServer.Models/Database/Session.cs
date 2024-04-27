@@ -78,8 +78,5 @@ public class Session
 		}
 	}
 
-	public bool HasExpired
-	{
-		get { return AccessToken.HasExpired; }
-	}
+	public bool HasExpired => AccessToken.HasExpired;
 }

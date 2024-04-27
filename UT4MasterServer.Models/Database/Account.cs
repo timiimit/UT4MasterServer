@@ -120,13 +120,7 @@ public class Account
 	public int LevelStockLimited => Math.Min(50, (int)Level);
 
 	[BsonIgnore]
-	public string[]? Roles
-	{
-		get
-		{
-			return EnumHelpers.EnumToStrings(Flags).ToArray();
-		}
-	}
+	public string[]? Roles => EnumHelpers.EnumToStrings(Flags).ToArray();
 
 	public bool CheckPassword(string password, bool allowPasswordGrant)
 	{
