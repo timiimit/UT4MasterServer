@@ -27,5 +27,8 @@ README.md
 # Our rules
 
 **/.github
-OldReferenceCode/**
-Files/Engine.ini
+./OldReferenceCode
+./Files
+./db*
+**/[Ll]og
+**/[Ll]ogs
