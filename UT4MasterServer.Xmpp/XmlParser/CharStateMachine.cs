@@ -34,6 +34,7 @@ public class CharStateMachine : StateMachine<char>
 				}
 			}
 		}
+
 		return base.CheckCondition(currentState, value, condition);
 	}
 }

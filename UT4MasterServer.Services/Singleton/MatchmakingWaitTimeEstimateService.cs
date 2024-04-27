@@ -18,6 +18,7 @@ public sealed class MatchmakingWaitTimeEstimateService
 		{
 			estimates.Add(mode, new List<(DateTime, double)>());
 		}
+
 		estimates[mode].Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
 	}
 
@@ -25,7 +26,7 @@ public sealed class MatchmakingWaitTimeEstimateService
 	{
 		Clean();
 
-		List<WaitTimeEstimateResponse> waitTimes = new List<WaitTimeEstimateResponse>();
+		var waitTimes = new List<WaitTimeEstimateResponse>();
 		foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> estimate in estimates)
 		{
 			if (estimate.Value.Count <= 0)
@@ -43,7 +44,7 @@ public sealed class MatchmakingWaitTimeEstimateService
 	private void Clean()
 	{
 		DateTime now = DateTime.UtcNow;
-		List<string> modesToRemove = new List<string>();
+		var modesToRemove = new List<string>();
 		foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> mode in estimates)
 		{
 			mode.Value.RemoveAll(x => now > x.DeleteTime);

@@ -28,7 +28,7 @@ internal class Program
 				continue;
 			}
 
-			string[] commandParts = command.Split(' ');
+			var commandParts = command.Split(' ');
 
 			if (command == "exit")
 			{

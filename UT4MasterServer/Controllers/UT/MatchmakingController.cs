@@ -1,19 +1,19 @@
 #define USE_LOCALHOST_TEST
 
 using System.Net;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Models;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Requests;
-using UT4MasterServer.Models.Settings;
-using UT4MasterServer.Common;
-using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Models.DTO.Responses;
-using UT4MasterServer.Common.Enums;
-using System.Text.Json.Nodes;
-using UT4MasterServer.Models;
+using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers.UT;
 
@@ -94,7 +94,7 @@ public sealed class MatchmakingController : JsonAPIController
 				Client? client = await clientService.GetAsync(server.OwningClientID);
 				if (client == null)
 				{
-					throw new Exception("This should never happen");
+					throw new InvalidOperationException("Client with the specified ID was not found.");
 				}
 
 				var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string ?? string.Empty;
@@ -106,7 +106,6 @@ public sealed class MatchmakingController : JsonAPIController
 				}
 			}
 		}
-
 
 		if (await matchmakingService.DoesExistWithSessionAsync(server.SessionID))
 		{

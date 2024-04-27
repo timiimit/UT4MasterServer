@@ -105,8 +105,8 @@ public class EloTest
 		return Enumerable.Range(0, count).OrderBy(c => r.Next()).ToArray();
 	}
 
-	private static int[] GetUnshuffledIndices(int[] shuffled)
+	/*private static int[] GetUnshuffledIndices(int[] shuffled)
 	{
 		return Enumerable.Range(0, shuffled.Length).OrderBy(c => shuffled[c]).ToArray();
-	}
+	}*/
 }

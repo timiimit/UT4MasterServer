@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Xmpp.XmlParser;
+namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class StateMachine<T>
 {
@@ -77,6 +77,7 @@ public class StateMachine<T>
 				return exact.NextState;
 			}
 		}
+
 		return -1;
 	}
 

@@ -38,19 +38,26 @@ public class XmlScanner
 
 	private void DefineGrammar()
 	{
-		stateMachine.AddGraph(0, 1, '<'); AddFinal(1, XmlToken.Open);
-		stateMachine.AddGraph(1, 2, '/'); AddFinal(2, XmlToken.OpenEnd);
-		stateMachine.AddGraph(1, 3, '?'); AddFinal(3, XmlToken.OpenProcInst);
+		stateMachine.AddGraph(0, 1, '<');
+		AddFinal(1, XmlToken.Open);
+		stateMachine.AddGraph(1, 2, '/');
+		AddFinal(2, XmlToken.OpenEnd);
+		stateMachine.AddGraph(1, 3, '?');
+		AddFinal(3, XmlToken.OpenProcInst);
 
-		stateMachine.AddGraph(0, 4, '>'); AddFinal(4, XmlToken.Close);
+		stateMachine.AddGraph(0, 4, '>');
+		AddFinal(4, XmlToken.Close);
 
 		stateMachine.AddGraph(0, 5, '/');
-		stateMachine.AddGraph(5, 6, '>'); AddFinal(6, XmlToken.CloseEmpty);
+		stateMachine.AddGraph(5, 6, '>');
+		AddFinal(6, XmlToken.CloseEmpty);
 
 		stateMachine.AddGraph(0, 7, '?');
-		stateMachine.AddGraph(7, 8, '>'); AddFinal(8, XmlToken.CloseProcInst);
+		stateMachine.AddGraph(7, 8, '>');
+		AddFinal(8, XmlToken.CloseProcInst);
 
-		stateMachine.AddGraph(0, 9, '='); AddFinal(9, XmlToken.Equal);
+		stateMachine.AddGraph(0, 9, '=');
+		AddFinal(9, XmlToken.Equal);
 
 		// STRING - should supposedly be "normalized" before parsed
 
@@ -113,9 +120,9 @@ public class XmlScanner
 			{
 				column++;
 			}
+
 			return nextState;
 		}
-
 
 		try
 		{

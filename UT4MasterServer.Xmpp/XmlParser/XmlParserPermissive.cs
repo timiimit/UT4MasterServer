@@ -65,11 +65,10 @@ public class XmlParserPermissive
 					else if (scannerState == 0)
 					{
 						// smallest unit of meaning has been read
-
 						if (scanner.LastLexem == null)
 						{
 							// LastLexem should never be null here
-							throw new NullReferenceException();
+							throw new InvalidOperationException("LastLexem should never be null.");
 						}
 
 						var result = ProcessNextLexem(scanner.LastLexem);
@@ -94,7 +93,6 @@ public class XmlParserPermissive
 			}
 		}
 	}
-
 
 	private enum ParsingState
 	{

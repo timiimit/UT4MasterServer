@@ -1,4 +1,4 @@
-﻿using System.Xml;
+using System.Xml;
 
 namespace UT4MasterServer.Xmpp.Stanzas;
 
@@ -27,7 +27,7 @@ public class StanzaIq : Stanza
 		await Task.Yield();
 		throw new NotImplementedException();
 
-		writer.OpenTag("iq");
+		/*writer.OpenTag("iq");
 		writer.Attribute("id", ID);
 		if (Error == null)
 		{
@@ -62,7 +62,7 @@ public class StanzaIq : Stanza
 				await Error.WriteAsync(writer, cancellationToken);
 			}
 		}
-		writer.CloseTag();
+		writer.CloseTag();*/
 	}
 
 	public static async Task<StanzaMessage?> ReadAsync(XmlReader reader, CancellationToken cancellationToken)

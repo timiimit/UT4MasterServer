@@ -43,10 +43,7 @@ public class XmlElement : XmlNode
 
 	public int Depth
 	{
-		get
-		{
-			return depth;
-		}
+		get { return depth; }
 	}
 
 	public XmlElement(string name) : base(name)
@@ -71,6 +68,7 @@ public class XmlElement : XmlNode
 		{
 			sb.Append($" {attr}");
 		}
+
 		sb.Append('>');
 		return sb.ToString();
 	}

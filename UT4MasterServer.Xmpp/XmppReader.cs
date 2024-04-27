@@ -14,24 +14,24 @@ public class XmppReader
 	}
 
 	private readonly TextReader r;
-	private Stack<Node> elements;
+	//private readonly Stack<Node> elements;
 	private readonly char[] rawBuffer;
 	private readonly Memory<char> buffer;
 
 	public XmppReader(TextReader reader)
 	{
 		r = reader;
-		elements = new Stack<Node>();
+		//elements = new Stack<Node>();
 		rawBuffer = new char[1024];
 		buffer = new Memory<char>(rawBuffer, 0, rawBuffer.Length);
 	}
 
-	private void ParseXml(Span<char> data)
+	/*private void ParseXml(Span<char> data)
 	{
 	}
 
 	public async Task InitialStreamHeaderAsync(CancellationToken cancellationToken)
 	{
 		var readCount = await r.ReadBlockAsync(buffer, cancellationToken);
-	}
+	}*/
 }
