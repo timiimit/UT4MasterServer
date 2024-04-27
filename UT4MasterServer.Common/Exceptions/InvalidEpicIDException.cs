@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 
 namespace UT4MasterServer.Common.Exceptions;
 
@@ -32,10 +32,7 @@ public class InvalidEpicIDException : Exception
 
 	public override void GetObjectData(SerializationInfo info, StreamingContext context)
 	{
-		if (info == null)
-		{
-			throw new ArgumentNullException(nameof(info));
-		}
+		ArgumentNullException.ThrowIfNull(info);
 
 		info.AddValue(nameof(ID), ID);
 		info.AddValue(nameof(NumericErrorCode), NumericErrorCode);

@@ -83,12 +83,12 @@ public class StateMachine<T>
 
 	public int NextChar(int currentState, T value)
 	{
-		if (!automata.ContainsKey(currentState))
+		if (!automata.TryGetValue(currentState, out List<StateCondition>? automaton))
 		{
 			return -1;
 		}
 
-		foreach (StateCondition? condition in automata[currentState])
+		foreach (StateCondition? condition in automaton)
 		{
 			var nextState = CheckCondition(currentState, value, condition);
 			if (nextState >= 0)

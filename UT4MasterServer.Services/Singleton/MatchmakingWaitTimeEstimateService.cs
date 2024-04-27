@@ -14,12 +14,13 @@ public sealed class MatchmakingWaitTimeEstimateService
 
 	public void AddWaitTime(string mode, double seconds)
 	{
-		if (!estimates.ContainsKey(mode))
+		if (!estimates.TryGetValue(mode, out List<(DateTime DeleteTime, double WaitTime)>? estimateValue))
 		{
-			estimates.Add(mode, new List<(DateTime, double)>());
+			estimateValue = new List<(DateTime, double)>();
+			estimates.Add(mode, estimateValue);
 		}
 
-		estimates[mode].Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
+		estimateValue.Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
 	}
 
 	public List<WaitTimeEstimateResponse> GetWaitTimes()

@@ -126,12 +126,12 @@ public class XmlScanner
 
 		try
 		{
-			if (!stateToToken.ContainsKey(currentState))
+			if (!stateToToken.TryGetValue(currentState, out XmlToken xmlToken))
 			{
 				return -1;
 			}
 
-			LastLexem = new XmlLexem { Token = stateToToken[currentState], Value = lexem.ToString(), Line = line, Column = column };
+			LastLexem = new XmlLexem { Token = xmlToken, Value = lexem.ToString(), Line = line, Column = column };
 			return 0;
 		}
 		finally
