@@ -13,12 +13,12 @@ public static class EloDeathmatchCalculationHelper
 
 	public static double[] GetExpectedScores(double[] currentRatings)
 	{
-		int playersCount = currentRatings.Length;
-		double[] expectedScores = new double[playersCount];
+		var playersCount = currentRatings.Length;
+		var expectedScores = new double[playersCount];
 
-		for (int i = 0; i < playersCount; i++)
+		for (var i = 0; i < playersCount; i++)
 		{
-			for (int j = 0; j < playersCount; j++)
+			for (var j = 0; j < playersCount; j++)
 			{
 				if (i == j)
 				{
@@ -34,9 +34,9 @@ public static class EloDeathmatchCalculationHelper
 
 	public static double[] GetLineralyDistributedRelativeScores(int playersCount)
 	{
-		double[] lineralyDistributedScores = new double[playersCount];
+		var lineralyDistributedScores = new double[playersCount];
 
-		for (int i = 0; i < playersCount; i++)
+		for (var i = 0; i < playersCount; i++)
 		{
 			var playersPlace = i + 1;
 			lineralyDistributedScores[i] = (playersCount - playersPlace) / (playersCount * (playersCount - 1) / 2.0);
@@ -47,10 +47,10 @@ public static class EloDeathmatchCalculationHelper
 
 	public static double[] GetNewRatings(double[] currentRatings, double[] expectedScores, double[] relativeScores)
 	{
-		int playersCount = currentRatings.Length;
-		double[] newRatings = new double[playersCount];
+		var playersCount = currentRatings.Length;
+		var newRatings = new double[playersCount];
 
-		for (int i = 0; i < playersCount; i++)
+		for (var i = 0; i < playersCount; i++)
 		{
 			newRatings[i] = Math.Round(currentRatings[i] + KRating * (playersCount - 1) * (relativeScores[i] - expectedScores[i]), 2);
 		}

@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
+using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using UT4MasterServer.Common;
@@ -10,143 +11,140 @@ namespace UT4MasterServer.Serializers.Bson;
 /// </summary>
 public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationConfigurable<EpicIDSerializer>
 {
-    #region static
-    private static readonly StringSerializer __instance = new StringSerializer();
+	#region static
 
-    // public static properties
-    /// <summary>
-    /// Gets a cached instance of a default string serializer.
-    /// </summary>
-    public static StringSerializer Instance => __instance;
-    #endregion
+	private static readonly StringSerializer __instance = new StringSerializer();
 
-    // private fields
-    private readonly BsonType _representation;
+	// public static properties
+	/// <summary>
+	/// Gets a cached instance of a default string serializer.
+	/// </summary>
+	public static StringSerializer Instance => __instance;
 
-    // constructors
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StringSerializer"/> class.
-    /// </summary>
-    public EpicIDSerializer() : this(BsonType.String)
-    {
-    }
+	#endregion
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StringSerializer"/> class.
-    /// </summary>
-    /// <param name="representation">The representation.</param>
-    public EpicIDSerializer(BsonType representation)
-    {
-        switch (representation)
-        {
-            case BsonType.ObjectId:
-            case BsonType.String:
-            case BsonType.Symbol:
-                break;
+	// private fields
+	private readonly BsonType _representation;
 
-            default:
-                var message = string.Format("{0} is not a valid representation for a EpicIDSerializer.", representation);
-                throw new ArgumentException(message);
-        }
+	// constructors
+	/// <summary>
+	/// Initializes a new instance of the <see cref="StringSerializer"/> class.
+	/// </summary>
+	public EpicIDSerializer() : this(BsonType.String)
+	{
+	}
 
-        _representation = representation;
-    }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="StringSerializer"/> class.
+	/// </summary>
+	/// <param name="representation">The representation.</param>
+	public EpicIDSerializer(BsonType representation)
+	{
+		switch (representation)
+		{
+			case BsonType.ObjectId:
+			case BsonType.String:
+			case BsonType.Symbol:
+				break;
 
-    // public properties
-    /// <summary>
-    /// Gets the representation.
-    /// </summary>
-    /// <value>
-    /// The representation.
-    /// </value>
-    public BsonType Representation
-    {
-        get { return _representation; }
-    }
+			default:
+				var message = string.Format("{0} is not a valid representation for a EpicIDSerializer.", representation);
+				throw new ArgumentException(message);
+		}
 
-    // public methods
-    /// <summary>
-    /// Deserializes a value.
-    /// </summary>
-    /// <param name="context">The deserialization context.</param>
-    /// <param name="args">The deserialization args.</param>
-    /// <returns>A deserialized value.</returns>
-    public override EpicID Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-    {
-        var bsonReader = context.Reader;
+		_representation = representation;
+	}
 
-        var bsonType = bsonReader.GetCurrentBsonType();
-        switch (bsonType)
-        {
-            case BsonType.ObjectId:
-                if (_representation == BsonType.ObjectId)
-                {
-                    return EpicID.FromString(bsonReader.ReadObjectId().ToString());
-                }
+	// public properties
+	/// <summary>
+	/// Gets the representation.
+	/// </summary>
+	/// <value>
+	/// The representation.
+	/// </value>
+	public BsonType Representation => _representation;
 
-                goto default;
+	// public methods
+	/// <summary>
+	/// Deserializes a value.
+	/// </summary>
+	/// <param name="context">The deserialization context.</param>
+	/// <param name="args">The deserialization args.</param>
+	/// <returns>A deserialized value.</returns>
+	public override EpicID Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+	{
+		IBsonReader? bsonReader = context.Reader;
 
-            case BsonType.String:
-                return EpicID.FromString(bsonReader.ReadString());
+		BsonType bsonType = bsonReader.GetCurrentBsonType();
+		switch (bsonType)
+		{
+			case BsonType.ObjectId:
+				if (_representation == BsonType.ObjectId)
+				{
+					return EpicID.FromString(bsonReader.ReadObjectId().ToString());
+				}
 
-            case BsonType.Symbol:
-                return EpicID.FromString(bsonReader.ReadSymbol());
+				goto default;
 
-            default:
-                throw CreateCannotDeserializeFromBsonTypeException(bsonType);
-        }
-    }
+			case BsonType.String:
+				return EpicID.FromString(bsonReader.ReadString());
 
-    /// <summary>
-    /// Serializes a value.
-    /// </summary>
-    /// <param name="context">The serialization context.</param>
-    /// <param name="args">The serialization args.</param>
-    /// <param name="value">The object.</param>
-    public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, EpicID value)
-    {
-        var bsonWriter = context.Writer;
+			case BsonType.Symbol:
+				return EpicID.FromString(bsonReader.ReadSymbol());
 
-        switch (_representation)
-        {
-            case BsonType.ObjectId:
-                bsonWriter.WriteObjectId(ObjectId.Parse(value.ID));
-                break;
+			default:
+				throw CreateCannotDeserializeFromBsonTypeException(bsonType);
+		}
+	}
 
-            case BsonType.String:
-                bsonWriter.WriteString(value.ID);
-                break;
+	/// <summary>
+	/// Serializes a value.
+	/// </summary>
+	/// <param name="context">The serialization context.</param>
+	/// <param name="args">The serialization args.</param>
+	/// <param name="value">The object.</param>
+	public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, EpicID value)
+	{
+		IBsonWriter? bsonWriter = context.Writer;
 
-            case BsonType.Symbol:
-                bsonWriter.WriteSymbol(value.ID);
-                break;
+		switch (_representation)
+		{
+			case BsonType.ObjectId:
+				bsonWriter.WriteObjectId(ObjectId.Parse(value.ID));
+				break;
 
-            default:
-                var message = string.Format("'{0}' is not a valid String representation.", _representation);
-                throw new BsonSerializationException(message);
-        }
-    }
+			case BsonType.String:
+				bsonWriter.WriteString(value.ID);
+				break;
 
-    /// <summary>
-    /// Returns a serializer that has been reconfigured with the specified representation.
-    /// </summary>
-    /// <param name="representation">The representation.</param>
-    /// <returns>The reconfigured serializer.</returns>
-    public EpicIDSerializer WithRepresentation(BsonType representation)
-    {
-        if (representation == _representation)
-        {
-            return this;
-        }
-        else
-        {
-            return new EpicIDSerializer(representation);
-        }
-    }
+			case BsonType.Symbol:
+				bsonWriter.WriteSymbol(value.ID);
+				break;
 
-    // explicit interface implementations
-    IBsonSerializer IRepresentationConfigurable.WithRepresentation(BsonType representation)
-    {
-        return WithRepresentation(representation);
-    }
+			default:
+				var message = string.Format("'{0}' is not a valid String representation.", _representation);
+				throw new BsonSerializationException(message);
+		}
+	}
+
+	/// <summary>
+	/// Returns a serializer that has been reconfigured with the specified representation.
+	/// </summary>
+	/// <param name="representation">The representation.</param>
+	/// <returns>The reconfigured serializer.</returns>
+	public EpicIDSerializer WithRepresentation(BsonType representation)
+	{
+		if (representation == _representation)
+		{
+			return this;
+		}
+
+		return new EpicIDSerializer(representation);
+	}
+
+	// explicit interface implementations
+	IBsonSerializer IRepresentationConfigurable.WithRepresentation(BsonType representation)
+	{
+		return WithRepresentation(representation);
+	}
 }

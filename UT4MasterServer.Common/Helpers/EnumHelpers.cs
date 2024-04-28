@@ -1,11 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using UT4MasterServer.Common.Enums;
-
 namespace UT4MasterServer.Common.Helpers;
 
 public static class EnumHelpers
@@ -19,11 +11,11 @@ public static class EnumHelpers
 	{
 		var result = new List<string>();
 		var allNames = Enum.GetNames<T>();
-		var allValues = Enum.GetValues<T>();
+		T[]? allValues = Enum.GetValues<T>();
 
-		for (int i = 0; i < allNames.Length; i++)
+		for (var i = 0; i < allNames.Length; i++)
 		{
-			var val = allValues[i];
+			T val = allValues[i];
 
 			if (@enum.HasFlag(val))
 			{
@@ -37,14 +29,14 @@ public static class EnumHelpers
 	public static T StringsToEnum<T>(params string[] strings) where T : struct, Enum
 	{
 		var allNames = Enum.GetNames<T>();
-		var allValues = Enum.GetValues<T>();
+		T[]? allValues = Enum.GetValues<T>();
 		ulong ret = 0;
 
-		for (int i = 0; i < allNames.Length; i++)
+		for (var i = 0; i < allNames.Length; i++)
 		{
 			if (strings.Contains(allNames[i]))
 			{
-				var val = allValues[i];
+				T val = allValues[i];
 
 				ret |= Convert.ToUInt64(val);
 			}
@@ -57,7 +49,7 @@ public static class EnumHelpers
 	{
 		var values = new List<T>();
 		var allNames = Enum.GetNames<T>();
-		var allValues = Enum.GetValues<T>();
+		T[]? allValues = Enum.GetValues<T>();
 
 		for (var i = 0; i < allNames.Length; i++)
 		{
@@ -73,11 +65,11 @@ public static class EnumHelpers
 	public static List<T> EnumFlagsToEnumArray<T>(T @enum) where T : struct, Enum
 	{
 		var result = new List<T>();
-		var allValues = Enum.GetValues<T>();
+		T[]? allValues = Enum.GetValues<T>();
 
-		for (int i = 0; i < allValues.Length; i++)
+		for (var i = 0; i < allValues.Length; i++)
 		{
-			var val = allValues[i];
+			T val = allValues[i];
 
 			if (@enum.HasFlag(val))
 			{
@@ -91,7 +83,7 @@ public static class EnumHelpers
 	public static T EnumArrayToEnumFlags<T>(IEnumerable<T> enumArray) where T : struct, Enum
 	{
 		ulong ret = 0;
-		foreach (var enumValue in enumArray)
+		foreach (T enumValue in enumArray)
 		{
 			ret |= Convert.ToUInt64(enumValue);
 		}

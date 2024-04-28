@@ -1,7 +1,5 @@
-﻿using System.IO.Compression;
 using System.Net.Security;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 using UT4MasterServer.Xmpp.Stanzas;
@@ -26,9 +24,11 @@ public class XmppConnection : IDisposable
 			{
 				throw new InvalidOperationException();
 			}
+
 			return id;
 		}
 	}
+
 	public StanzaPresence.ShowElementValues Show { get; set; }
 	public string Status { get; set; }
 
@@ -37,9 +37,9 @@ public class XmppConnection : IDisposable
 	public XmlReader Reader => reader;
 	public XmppWriter Writer => writer;
 
-	public bool IsStreamEncrypted { get; private set; } = false;
-	public bool IsStreamCompressed { get; private set; } = false;
-	public bool IsStreamAuthenticated { get; private set; } = false;
+	public bool IsStreamEncrypted { get; private set; }
+	public bool IsStreamCompressed { get; private set; }
+	public bool IsStreamAuthenticated { get; private set; }
 	public Queue<Stanza> QueuedStanzas { get; private set; }
 
 	public XmppConnection(XmppServer server, Stream stream)
@@ -101,7 +101,7 @@ public class XmppConnection : IDisposable
 			return null;
 		}
 
-		Guid guid = Guid.NewGuid();
+		var guid = Guid.NewGuid();
 
 		Writer.ResponseStreamHeader(Server.Domain, guid.ToString());
 		Writer.Flush();
@@ -144,17 +144,15 @@ public class XmppConnection : IDisposable
 				return null;
 			}
 
-			string? username = AuthenticateStream();
+			var username = AuthenticateStream();
 			if (username is not null)
 			{
 				id = new JID(username, Server.Domain);
 				goto LABEL_StreamStart;
 			}
-			else
-			{
-				// TODO: send error
-				return null;
-			}
+
+			// TODO: send error
+			return null;
 		}
 		else
 		{
@@ -177,10 +175,8 @@ public class XmppConnection : IDisposable
 
 				return guid;
 			}
-			else
-			{
-				return null;
-			}
+
+			return null;
 		}
 
 		return null;
@@ -190,7 +186,7 @@ public class XmppConnection : IDisposable
 	{
 		await Task.Yield();
 
-		bool recievedPresenceOfFriends = false;
+		var recievedPresenceOfFriends = false;
 
 		while (!cancellationToken.IsCancellationRequested)
 		{
@@ -206,7 +202,7 @@ public class XmppConnection : IDisposable
 			}
 			else if (Reader.Name == "message")
 			{
-				var stanza = await StanzaMessage.ReadAsync(Reader, cancellationToken);
+				StanzaMessage? stanza = await StanzaMessage.ReadAsync(Reader, cancellationToken);
 				if (stanza is not null)
 				{
 					stanza = new StanzaMessage
@@ -222,7 +218,7 @@ public class XmppConnection : IDisposable
 			}
 			else if (Reader.Name == "presence")
 			{
-				var stanza = await StanzaPresence.ReadAsync(Reader, cancellationToken);
+				StanzaPresence? stanza = await StanzaPresence.ReadAsync(Reader, cancellationToken);
 				if (stanza is not null)
 				{
 					Show = stanza.Show;
@@ -245,12 +241,13 @@ public class XmppConnection : IDisposable
 					}
 				}
 			}
+			// ReSharper disable once RedundantIfElseBlock
 			else
 			{
 				// ill-formed xml. try to keep connection alive
 			}
 
-			var readTask = Reader.ReadAsync();
+			Task<bool>? readTask = Reader.ReadAsync();
 
 			bool didReadNewData;
 			do
@@ -268,14 +265,15 @@ public class XmppConnection : IDisposable
 		var dequeuedStanzas = new List<Stanza>();
 		lock (writer)
 		{
-			foreach (var stanza in QueuedStanzas)
+			foreach (Stanza? stanza in QueuedStanzas)
 			{
 				dequeuedStanzas.Add(stanza);
 			}
+
 			QueuedStanzas.Clear();
 		}
 
-		foreach (var stanza in dequeuedStanzas)
+		foreach (Stanza? stanza in dequeuedStanzas)
 		{
 			await Writer.StanzaAsync(stanza, cancellationToken);
 #if DEBUG
@@ -294,8 +292,8 @@ public class XmppConnection : IDisposable
 
 		var id = Reader.GetAttribute("id");
 		var type = Reader.GetAttribute("type");
-		var from = Reader.GetAttribute("from");
-		var to = Reader.GetAttribute("to");
+		//var from = Reader.GetAttribute("from");
+		//var to = Reader.GetAttribute("to");
 
 		Writer.OpenTag("iq");
 
@@ -397,7 +395,8 @@ public class XmppConnection : IDisposable
 
 	private bool EncryptStreamSSL()
 	{
-		Writer.OpenTagNS("proceed", "urn:ietf:params:xml:ns:xmpp-tls"); Writer.CloseTag();
+		Writer.OpenTagNS("proceed", "urn:ietf:params:xml:ns:xmpp-tls");
+		Writer.CloseTag();
 		Writer.Flush();
 
 		var tmp = new SslStream(Stream, true); //, SSLCertificateValidation, SSLCertificateSelection, EncryptionPolicy.AllowNoEncryption);
@@ -416,21 +415,23 @@ public class XmppConnection : IDisposable
 			// failed to authenticate. continue to close the stream.
 			Console.WriteLine(ex.ToString());
 		}
+
 		return false;
 	}
 
 	private bool CompressStreamZLib()
 	{
-		Writer.OpenTagNS("compressed", "http://jabber.org/protocol/compress"); Writer.CloseTag();
+		Writer.OpenTagNS("compressed", "http://jabber.org/protocol/compress");
+		Writer.CloseTag();
 		Writer.Flush();
 
 		throw new NotImplementedException();
-		SetStream(new ZLibStream(Stream, CompressionMode.Decompress, true));
+		/*SetStream(new ZLibStream(Stream, CompressionMode.Decompress, true));
 		IsStreamCompressed = true;
 
 		// restart stream
 		Console.WriteLine("Client enabled zlib compression");
-		return true;
+		return true;*/
 	}
 
 	private string? AuthenticateStream()
@@ -444,9 +445,9 @@ public class XmppConnection : IDisposable
 		// read content of <auth>
 		Reader.Read();
 
-		int authSeparatorIndex = 0;
+		var authSeparatorIndex = 0;
 		var bytes = Convert.FromBase64String(Reader.Value);
-		for (int i = 1; i < bytes.Length; i++)
+		for (var i = 1; i < bytes.Length; i++)
 		{
 			if (bytes[i] == 0)
 			{
@@ -463,8 +464,8 @@ public class XmppConnection : IDisposable
 			return null;
 		}
 
-		string username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
-		string password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
+		var username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
+		//var password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
 
 		// TODO: validate credentials
 
@@ -490,16 +491,19 @@ public class XmppConnection : IDisposable
 				{
 					Writer.StringTag("mechanism", "PLAIN");
 				}
+
 				Writer.CloseTag();
 			}
 
-			Writer.OpenTagNS("ver", "urn:xmpp:features:rosterver"); Writer.CloseTag();
+			Writer.OpenTagNS("ver", "urn:xmpp:features:rosterver");
+			Writer.CloseTag();
 
 			if (!IsStreamEncrypted)
 			{
 				Writer.OpenTagNS("starttls", "urn:ietf:params:xml:ns:xmpp-tls");
 				{
-					Writer.OpenTag("required"); Writer.CloseTag();
+					Writer.OpenTag("required");
+					Writer.CloseTag();
 				}
 				Writer.CloseTag();
 			}
@@ -516,26 +520,19 @@ public class XmppConnection : IDisposable
 
 			if (IsStreamEncrypted && !IsStreamAuthenticated)
 			{
-				Writer.OpenTagNS("auth", "http://jabber.org/features/iq-auth"); Writer.CloseTag();
+				Writer.OpenTagNS("auth", "http://jabber.org/features/iq-auth");
+				Writer.CloseTag();
 			}
 
 			if (IsStreamAuthenticated)
 			{
-				Writer.OpenTagNS("bind", "urn:ietf:params:xml:ns:xmpp-bind"); Writer.CloseTag();
-				Writer.OpenTagNS("session", "urn:ietf:params:xml:ns:xmpp-session"); Writer.CloseTag();
+				Writer.OpenTagNS("bind", "urn:ietf:params:xml:ns:xmpp-bind");
+				Writer.CloseTag();
+				Writer.OpenTagNS("session", "urn:ietf:params:xml:ns:xmpp-session");
+				Writer.CloseTag();
 			}
 		}
 		Writer.CloseTag();
-	}
-
-	private X509Certificate SSLCertificateSelectionCallback(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate? remoteCertificate, string[] acceptableIssuers)
-	{
-		return localCertificates[0];
-	}
-
-	private static bool SSLCertificateValidationCallback(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
-	{
-		return true;
 	}
 
 	protected virtual void Dispose(bool disposing)
@@ -550,6 +547,16 @@ public class XmppConnection : IDisposable
 			disposedValue = true;
 		}
 	}
+
+	/*private X509Certificate SSLCertificateSelectionCallback(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate? remoteCertificate, string[] acceptableIssuers)
+	{
+		return localCertificates[0];
+	}
+
+	private static bool SSLCertificateValidationCallback(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
+	{
+		return true;
+	}*/
 
 	public void Dispose()
 	{

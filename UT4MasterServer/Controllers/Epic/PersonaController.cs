@@ -5,6 +5,7 @@ using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Requests;
 using UT4MasterServer.Services.Scoped;
 
@@ -29,12 +30,12 @@ public sealed class PersonaController : JsonAPIController
 	[HttpGet("public/account/lookup")]
 	public async Task<IActionResult> AccountLookup([FromQuery(Name = "q")] string query)
 	{
-		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		if (User.Identity is not EpicUserIdentity)
 		{
 			return Unauthorized();
 		}
 
-		var account = await accountService.GetAccountAsync(query);
+		Account? account = await accountService.GetAccountAsync(query);
 		if (account == null)
 		{
 			return BadRequest();
@@ -75,7 +76,7 @@ public sealed class PersonaController : JsonAPIController
 			flagsMask = (AccountFlags)~0;
 		}
 
-		var result = await accountService.SearchAccountsAsync(request.Query, flagsMask, request.Skip, request.Take);
+		PagedResponse<Account>? result = await accountService.SearchAccountsAsync(request.Query, flagsMask, request.Skip, request.Take);
 
 		if (request.IncludeRoles)
 		{
@@ -113,7 +114,7 @@ public sealed class PersonaController : JsonAPIController
 
 		logger.LogInformation("{AccountId} is looking for account {id}", authenticatedUser.Session.AccountID, id);
 
-		var account = await accountService.GetAccountAsync(eid);
+		Account? account = await accountService.GetAccountAsync(eid);
 		if (account == null)
 		{
 			return NotFound();
@@ -131,8 +132,8 @@ public sealed class PersonaController : JsonAPIController
 			return Unauthorized();
 		}
 
-		var eIds = ids.Distinct().Select(x => EpicID.FromString(x));
-		var accounts = await accountService.GetAccountsAsync(eIds);
+		IEnumerable<EpicID>? eIds = ids.Distinct().Select(x => EpicID.FromString(x));
+		IEnumerable<Account>? accounts = await accountService.GetAccountsAsync(eIds);
 		logger.LogInformation("{AccountId} is looking for limited accounts by ID", authenticatedUser.Session.AccountID);
 
 		return Ok(accounts.Select((account) => new { account.ID, account.Username }));

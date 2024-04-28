@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace UT4MasterServer.Xmpp;
 
@@ -12,7 +12,7 @@ internal class DebugTextProxyStream : Stream
 
 	public Stream InnerStream { get; private set; }
 
-	private bool leaveOpen;
+	private readonly bool leaveOpen;
 
 	public DebugTextProxyStream(Stream innerStream, bool leaveOpen = false)
 	{
@@ -27,7 +27,7 @@ internal class DebugTextProxyStream : Stream
 
 	public override int Read(byte[] buffer, int offset, int count)
 	{
-		int ret = InnerStream.Read(buffer, offset, count);
+		var ret = InnerStream.Read(buffer, offset, count);
 		var s = Encoding.UTF8.GetString(buffer, offset, ret);
 		lock (InnerStream)
 		{

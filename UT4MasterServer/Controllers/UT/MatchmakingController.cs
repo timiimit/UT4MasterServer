@@ -1,19 +1,19 @@
-﻿#define USE_LOCALHOST_TEST
+#define USE_LOCALHOST_TEST
 
+using System.Net;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Models;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Requests;
-using UT4MasterServer.Models.Settings;
-using UT4MasterServer.Common;
-using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Models.DTO.Responses;
-using UT4MasterServer.Common.Enums;
-using System.Text.Json.Nodes;
-using UT4MasterServer.Models;
+using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers.UT;
 
@@ -55,7 +55,7 @@ public sealed class MatchmakingController : JsonAPIController
 			return Unauthorized();
 		}
 
-		var ipClient = GetClientIP(configuration);
+		IPAddress? ipClient = GetClientIP(configuration);
 		if (ipClient == null)
 		{
 			logger.LogError("Could not determine IP Address of remote machine.");
@@ -78,7 +78,7 @@ public sealed class MatchmakingController : JsonAPIController
 		server.Started = false;
 
 		GameServerTrust trust = GameServerTrust.Untrusted;
-		var trusted = await trustedGameServerService.GetAsync(server.OwningClientID);
+		TrustedGameServer? trusted = await trustedGameServerService.GetAsync(server.OwningClientID);
 		if (trusted != null)
 		{
 			trust = trusted.TrustLevel;
@@ -91,10 +91,10 @@ public sealed class MatchmakingController : JsonAPIController
 			if (!isGameInstance)
 			{
 				// Hubs/servers listed in server browser are required to have specific name
-				var client = await clientService.GetAsync(server.OwningClientID);
+				Client? client = await clientService.GetAsync(server.OwningClientID);
 				if (client == null)
 				{
-					throw new Exception("This should never happen");
+					throw new InvalidOperationException("Client with the specified ID was not found.");
 				}
 
 				var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string ?? string.Empty;
@@ -106,7 +106,6 @@ public sealed class MatchmakingController : JsonAPIController
 				}
 			}
 		}
-
 
 		if (await matchmakingService.DoesExistWithSessionAsync(server.SessionID))
 		{
@@ -137,7 +136,7 @@ public sealed class MatchmakingController : JsonAPIController
 		updatedServer.SessionID = user.Session.ID;
 		updatedServer.OwningClientID = user.Session.ClientID;
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
 		{
 			return UnknownSessionId(id);
@@ -166,7 +165,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
 		{
 			return UnknownSessionId(id);
@@ -185,7 +184,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
 		{
 			return UnknownSessionId(id);
@@ -196,7 +195,7 @@ public sealed class MatchmakingController : JsonAPIController
 			Unauthorized();
 		}
 
-		bool wasDeleted = await matchmakingService.RemoveAsync(EpicID.FromString(id));
+		var wasDeleted = await matchmakingService.RemoveAsync(EpicID.FromString(id));
 
 		// TODO: unknown actual responses but these seem to work
 
@@ -228,7 +227,7 @@ public sealed class MatchmakingController : JsonAPIController
 			return Unauthorized();
 		}
 
-		var server = await matchmakingService.GetAsync(EpicID.FromString(id));
+		GameServer? server = await matchmakingService.GetAsync(EpicID.FromString(id));
 		if (server == null)
 		{
 			return UnknownSessionId(id);
@@ -282,7 +281,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
 		{
 			return NoContent();
@@ -294,7 +293,7 @@ public sealed class MatchmakingController : JsonAPIController
 		}
 
 		// handle player list update
-		foreach (var player in serverOnlyWithPlayers.PublicPlayers)
+		foreach (EpicID player in serverOnlyWithPlayers.PublicPlayers)
 		{
 			if (!server.PublicPlayers.Where(x => x == player).Any())
 			{
@@ -305,7 +304,7 @@ public sealed class MatchmakingController : JsonAPIController
 				server.PrivatePlayers.Remove(player);
 			}
 		}
-		foreach (var player in serverOnlyWithPlayers.PrivatePlayers)
+		foreach (EpicID player in serverOnlyWithPlayers.PrivatePlayers)
 		{
 			if (!server.PrivatePlayers.Where(x => x == player).Any())
 			{
@@ -330,7 +329,7 @@ public sealed class MatchmakingController : JsonAPIController
 			return Unauthorized();
 		}
 
-		var server = await matchmakingService.GetAsync(EpicID.FromString(id));
+		GameServer? server = await matchmakingService.GetAsync(EpicID.FromString(id));
 		if (server == null)
 		{
 			return UnknownSessionId(id);
@@ -341,7 +340,7 @@ public sealed class MatchmakingController : JsonAPIController
 			Unauthorized();
 		}
 
-		foreach (var player in players)
+		foreach (EpicID player in players)
 		{
 			server.PublicPlayers.Remove(player);
 			server.PrivatePlayers.Remove(player);
@@ -365,7 +364,7 @@ public sealed class MatchmakingController : JsonAPIController
 			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
 
-		var servers = await matchmakingService.ListAsync(filter);
+		List<GameServer>? servers = await matchmakingService.ListAsync(filter);
 
 		//var list = new GameServer[]
 		//{
@@ -380,7 +379,7 @@ public sealed class MatchmakingController : JsonAPIController
 		//};
 
 		var arr = new JsonArray();
-		foreach (var server in servers)
+		foreach (GameServer? server in servers)
 		{
 #if DEBUG && USE_LOCALHOST_TEST
 			server.ServerAddress = "127.0.0.1";
@@ -419,7 +418,7 @@ public sealed class MatchmakingController : JsonAPIController
 			return Unauthorized();
 		}
 
-		EpicID eid = EpicID.FromString(id);
+		var eid = EpicID.FromString(id);
 
 		if (!await matchmakingService.DoesExistAsync(eid))
 		{
@@ -461,7 +460,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
 		{
 			return UnknownSessionId(id);

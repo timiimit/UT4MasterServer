@@ -36,7 +36,7 @@ public sealed class ClientService
 	public async Task<bool?> UpdateAsync(Client client)
 	{
 		var options = new ReplaceOptions() { IsUpsert = true };
-		var result = await collection.ReplaceOneAsync(x => x.ID == client.ID, client, options);
+		ReplaceOneResult? result = await collection.ReplaceOneAsync(x => x.ID == client.ID, client, options);
 		if (!result.IsAcknowledged)
 		{
 			return null;
@@ -48,26 +48,26 @@ public sealed class ClientService
 	public async Task<Client?> GetAsync(EpicID id)
 	{
 		var options = new FindOptions<Client>() { Limit = 1 };
-		var cursor = await collection.FindAsync(x => x.ID == id, options);
+		IAsyncCursor<Client>? cursor = await collection.FindAsync(x => x.ID == id, options);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<List<Client>> GetManyAsync(IEnumerable<EpicID> ids)
 	{
-		var filter = Builders<Client>.Filter.In(x => x.ID, ids);
-		var cursor = await collection.FindAsync(filter);
+		FilterDefinition<Client>? filter = Builders<Client>.Filter.In(x => x.ID, ids);
+		IAsyncCursor<Client>? cursor = await collection.FindAsync(filter);
 		return await cursor.ToListAsync();
 	}
 
 	public async Task<List<Client>> ListAsync()
 	{
-		var cursor = await collection.FindAsync(x => true);
+		IAsyncCursor<Client>? cursor = await collection.FindAsync(x => true);
 		return await cursor.ToListAsync();
 	}
 
 	public async Task<bool?> RemoveAsync(EpicID id)
 	{
-		var result = await collection.DeleteOneAsync(x => x.ID == id);
+		DeleteResult? result = await collection.DeleteOneAsync(x => x.ID == id);
 		if (!result.IsAcknowledged)
 		{
 			return null;

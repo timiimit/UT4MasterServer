@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace UT4MasterServer.Xmpp.XmlParser;
 
@@ -41,15 +41,9 @@ public class XmlElement : XmlNode
 		}
 	}
 
-	public int Depth
-	{
-		get
-		{
-			return depth;
-		}
-	}
+	public int Depth => depth;
 
-    public XmlElement(string name) : base(name)
+	public XmlElement(string name) : base(name)
 	{
 		value = null;
 		parent = null;
@@ -66,11 +60,12 @@ public class XmlElement : XmlNode
 			return $"<{Name}>";
 		}
 
-		StringBuilder sb = new StringBuilder($"<{Name}");
-		foreach (XmlAttribute attr in Attributes)
+		var sb = new StringBuilder($"<{Name}");
+		foreach (XmlAttribute? attr in Attributes)
 		{
 			sb.Append($" {attr}");
 		}
+
 		sb.Append('>');
 		return sb.ToString();
 	}

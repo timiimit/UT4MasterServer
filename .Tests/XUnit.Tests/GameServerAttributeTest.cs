@@ -1,6 +1,10 @@
-﻿namespace XUnit.Tests;
+/*
+using System.Text;
+using System.Text.Json;
+using UT4MasterServer.Models;
 
-#if false
+namespace XUnit.Tests;
+
 public class GameServerAttributeTest
 {
 	public static TheoryData<object?, object?, bool, bool, bool> TestCases = new()
@@ -46,16 +50,24 @@ public class GameServerAttributeTest
 	[MemberData(nameof(TestCases))]
 	public void TestAttributesNonNull(object? attrValue, object? compareValue, bool expectedEq, bool expectedLt, bool expectedLte)
 	{
-		var jsonElem = CreateJsonElement(compareValue);
-		GameServerAttributes gsa = new GameServerAttributes();
+		JsonElement jsonElem = CreateJsonElement(compareValue);
+		var gsa = new GameServerAttributes();
 		if (attrValue is string attrValueString)
+		{
 			gsa.Set("key", attrValueString);
+		}
 		else if (attrValue is int attrValueInt)
+		{
 			gsa.Set("key", attrValueInt);
+		}
 		else if (attrValue is bool attrValueBool)
+		{
 			gsa.Set("key", attrValueBool);
+		}
 		else
+		{
 			Assert.Fail("undesired test case");
+		}
 
 		Assert.Equal(expectedEq, gsa.Eq("key", jsonElem));
 		Assert.Equal(expectedLt, gsa.Lt("key", jsonElem));
@@ -66,8 +78,8 @@ public class GameServerAttributeTest
 	[MemberData(nameof(TestCasesNull))]
 	public void TestAttributesNull(object? compareValue, bool expectedEq, bool expectedLt, bool expectedLte)
 	{
-		var jsonElem = CreateJsonElement(compareValue);
-		GameServerAttributes gsa = new GameServerAttributes();
+		JsonElement jsonElem = CreateJsonElement(compareValue);
+		var gsa = new GameServerAttributes();
 		gsa.Set("key", null as string);
 		Assert.Equal(expectedEq, gsa.Eq("key", jsonElem));
 		Assert.Equal(expectedLt, gsa.Lt("key", jsonElem));
@@ -88,15 +100,25 @@ public class GameServerAttributeTest
 	{
 		StringBuilder sb = new();
 		if (obj is null)
+		{
 			sb.Append("null");
+		}
 		else if (obj is string objString)
+		{
 			sb.Append($"\"{objString}\"");
+		}
 		else if (obj is int objInt)
+		{
 			sb.Append(objInt.ToString());
+		}
 		else if (obj is bool objBool)
+		{
 			sb.Append(objBool ? "true" : "false");
+		}
 		else
+		{
 			Assert.Fail("undesired test case");
+		}
 
 		var utf8 = Encoding.UTF8.GetBytes(sb.ToString());
 
@@ -104,4 +126,4 @@ public class GameServerAttributeTest
 		return JsonElement.ParseValue(ref jsonReader);
 	}
 }
-#endif
+*/

@@ -45,9 +45,9 @@ public sealed class SessionService
 		{
 			// find sessions that should be deleted
 
-			var f = Builders<Session>.Filter;
+			FilterDefinitionBuilder<Session>? f = Builders<Session>.Filter;
 
-			var filter =
+			FilterDefinition<Session>? filter =
 				f.Eq(x => x.AccountID, accountID) &
 				f.Eq(x => x.CreationMethod, method);
 
@@ -68,8 +68,8 @@ public sealed class SessionService
 				Skip = maxNumberOfSessions
 			};
 
-			var cursor = await sessionCollection.FindAsync(filter, options);
-			var sessionsToDelete = await cursor.ToListAsync();
+			IAsyncCursor<Session>? cursor = await sessionCollection.FindAsync(filter, options);
+			List<Session>? sessionsToDelete = await cursor.ToListAsync();
 
 			// delete excess sessions
 			if (sessionsToDelete.Count > 0)
@@ -86,7 +86,7 @@ public sealed class SessionService
 
 	public async Task<Session?> GetSessionAsync(EpicID account, EpicID client)
 	{
-		var cursor = await sessionCollection.FindAsync(s =>
+		IAsyncCursor<Session>? cursor = await sessionCollection.FindAsync(s =>
 			s.AccountID == account &&
 			s.ClientID == client
 		);
@@ -95,13 +95,13 @@ public sealed class SessionService
 
 	public async Task<Session?> GetSessionAsync(EpicID id)
 	{
-		var cursor = await sessionCollection.FindAsync(s => s.ID == id);
+		IAsyncCursor<Session>? cursor = await sessionCollection.FindAsync(s => s.ID == id);
 		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
 	public async Task<Session?> GetSessionAsync(string accessToken)
 	{
-		var cursor = await sessionCollection.FindAsync(s =>
+		IAsyncCursor<Session>? cursor = await sessionCollection.FindAsync(s =>
 			s.AccessToken.Value == accessToken
 		);
 		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
@@ -109,10 +109,10 @@ public sealed class SessionService
 
 	public async Task<Session?> RefreshSessionAsync(string refreshToken)
 	{
-		var cursor = await sessionCollection.FindAsync(s =>
+		IAsyncCursor<Session>? cursor = await sessionCollection.FindAsync(s =>
 			s.RefreshToken!.Value == refreshToken
 		);
-		var session = await cursor.SingleOrDefaultAsync();
+		Session? session = await cursor.SingleOrDefaultAsync();
 		if (session == null)
 		{
 			return null;
@@ -145,16 +145,16 @@ public sealed class SessionService
 
 	public async Task<int> RemoveAllExpiredSessionsAsync()
 	{
-		var now = DateTime.UtcNow;
+		DateTime now = DateTime.UtcNow;
 
-		var expiredRefreshToken =
+		FilterDefinition<Session>? expiredRefreshToken =
 			Builders<Session>.Filter.Exists(x => x.RefreshToken, false) |
 			Builders<Session>.Filter.Lt(x => x.RefreshToken!.ExpirationTime, now);
 
-		var expiredAccessToken =
+		FilterDefinition<Session>? expiredAccessToken =
 			Builders<Session>.Filter.Lt(x => x.AccessToken.ExpirationTime, now);
 
-		var result = await sessionCollection.DeleteManyAsync(expiredRefreshToken & expiredAccessToken);
+		DeleteResult? result = await sessionCollection.DeleteManyAsync(expiredRefreshToken & expiredAccessToken);
 		if (result.IsAcknowledged)
 		{
 			return (int)result.DeletedCount;

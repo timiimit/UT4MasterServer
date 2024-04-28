@@ -42,7 +42,7 @@ public sealed class RatingsController : JsonAPIController
 			logger.LogWarning("Unsupported rating types requested: {RatingTypes}. Account: {AccountID}.", string.Join(", ", unsupportedRatingTypes), accountId);
 		}
 
-		var result = await ratingsService.GetRatingsAsync(accountId, ratings);
+		MMRBulkResponse? result = await ratingsService.GetRatingsAsync(accountId, ratings);
 
 		return Ok(result);
 	}
@@ -60,7 +60,7 @@ public sealed class RatingsController : JsonAPIController
 			logger.LogWarning("Unsupported rating type requested: {RatingType}. Account: {AccountID}.", ratingType, accountId);
 		}
 
-		var result = await ratingsService.GetRatingAsync(accountId, ratingType);
+		MMRRatingResponse? result = await ratingsService.GetRatingAsync(accountId, ratingType);
 
 		return Ok(result);
 	}
@@ -101,7 +101,7 @@ public sealed class RatingsController : JsonAPIController
 			return BadRequest(new ErrorResponse($"'{ratingType}' is not supported rating type."));
 		}
 
-		var response = await ratingsService.GetAverageTeamRatingAsync(ratingType, ratingTeam);
+		RatingResponse? response = await ratingsService.GetAverageTeamRatingAsync(ratingType, ratingTeam);
 
 		return Ok(response);
 	}
@@ -125,7 +125,7 @@ public sealed class RatingsController : JsonAPIController
 			return Unauthorized();
 		}
 
-		var trustedServer = await trustedGameServerService.GetAsync(user.Session.ClientID);
+		TrustedGameServer? trustedServer = await trustedGameServerService.GetAsync(user.Session.ClientID);
 
 		if (trustedServer is null || trustedServer.TrustLevel == Common.Enums.GameServerTrust.Untrusted)
 		{
@@ -154,7 +154,7 @@ public sealed class RatingsController : JsonAPIController
 			return BadRequest($"'{ratingType}' is not supported rating type.");
 		}
 
-		var response = await ratingsService.GetRankingsAsync(ratingType, skip, limit);
+		PagedResponse<RankingsResponse>? response = await ratingsService.GetRankingsAsync(ratingType, skip, limit);
 
 		return Ok(response);
 	}
@@ -168,7 +168,7 @@ public sealed class RatingsController : JsonAPIController
 			return BadRequest($"'{ratingType}' is not supported rating type.");
 		}
 
-		var selectedRanking = await ratingsService.GetSelectedRankingAsync(ratingType, EpicID.FromString(accountId));
+		RankingsResponse? selectedRanking = await ratingsService.GetSelectedRankingAsync(ratingType, EpicID.FromString(accountId));
 		if (selectedRanking == null)
 		{
 			return NotFound();

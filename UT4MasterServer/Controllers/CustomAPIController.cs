@@ -1,8 +1,10 @@
 
+using System.Net;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 using UT4MasterServer.Controllers.UT;
 using UT4MasterServer.Models.Settings;
 using UT4MasterServer.Services.Scoped;
@@ -23,9 +25,9 @@ public sealed class CustomAPIController : JsonAPIController
 	[HttpGet("api/ShowMyInfo")]
 	public IActionResult ShowMyInfo()
 	{
-		var ip = GetClientIP(configuration);
+		IPAddress? ip = GetClientIP(configuration);
 
-		StringBuilder sb = new StringBuilder();
+		var sb = new StringBuilder();
 
 		sb.AppendLine($"Direct IP Address: {HttpContext.Connection.RemoteIpAddress}");
 		sb.AppendLine($"Guessed IP Address: {ip}");
@@ -36,14 +38,14 @@ public sealed class CustomAPIController : JsonAPIController
 
 		sb.AppendLine();
 		sb.AppendLine("Query URL Parameters:");
-		foreach (var parameter in HttpContext.Request.Query)
+		foreach (KeyValuePair<string, StringValues> parameter in HttpContext.Request.Query)
 		{
 			sb.AppendLine($"{parameter.Key}={parameter.Value}");
 		}
 
 		sb.AppendLine();
 		sb.AppendLine("Request Headers:");
-		foreach (var header in HttpContext.Request.Headers)
+		foreach (KeyValuePair<string, StringValues> header in HttpContext.Request.Headers)
 		{
 			foreach (var headerInstance in header.Value)
 			{

@@ -72,7 +72,7 @@ public class StanzaMessage : Stanza
 			var type = reader.GetAttribute("type");
 			if (type == "error")
 			{
-				var stanzaError = await StanzaError.ReadAsync(reader, cancellationToken);
+				StanzaError? stanzaError = await StanzaError.ReadAsync(reader, cancellationToken);
 				if (stanzaError == null)
 				{
 					return null;
@@ -89,8 +89,8 @@ public class StanzaMessage : Stanza
 
 			TypeAttributeValues typeAttribute = TypeAttributeValues.Normal;
 			var typeNames = Enum.GetNames<TypeAttributeValues>();
-			var typeValues = Enum.GetValues<TypeAttributeValues>();
-			for (int i = 0; i < typeNames.Length; i++)
+			TypeAttributeValues[]? typeValues = Enum.GetValues<TypeAttributeValues>();
+			for (var i = 0; i < typeNames.Length; i++)
 			{
 				if (type == typeNames[i].ToLower())
 				{
@@ -106,7 +106,7 @@ public class StanzaMessage : Stanza
 			}
 
 			reader.Read();
-			string body = reader.Value;
+			var body = reader.Value;
 
 			reader.Read();
 			if (reader.Name != "body" || reader.NodeType != XmlNodeType.EndElement)

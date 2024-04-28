@@ -15,11 +15,11 @@ public sealed class FriendService
 
 	public async Task<bool> SendFriendRequestAsync(EpicID from, EpicID to)
 	{
-		bool friendRequestAccepted = false;
+		var friendRequestAccepted = false;
 
 		// check if there is already inbound request
-		var cursor = await friendCollection.FindAsync(x => x.Sender == to && x.Receiver == from && x.Status == FriendStatus.Pending);
-		var friend = await cursor.FirstOrDefaultAsync();
+		IAsyncCursor<FriendRequest>? cursor = await friendCollection.FindAsync(x => x.Sender == to && x.Receiver == from && x.Status == FriendStatus.Pending);
+		FriendRequest? friend = await cursor.FirstOrDefaultAsync();
 		if (friend != null && friend.Status == FriendStatus.Pending)
 		{
 			// "to" already sent "from" a friend request, accept it
@@ -50,7 +50,7 @@ public sealed class FriendService
 
 	public async Task<bool> CancelFriendRequestAsync(EpicID accountID, EpicID acceptsFrom)
 	{
-		var result = await friendCollection.DeleteOneAsync(x =>
+		DeleteResult? result = await friendCollection.DeleteOneAsync(x =>
 			(x.Sender == accountID && x.Receiver == acceptsFrom ||
 			 x.Sender == acceptsFrom && x.Receiver == accountID) &&
 			x.Status != FriendStatus.Blocked);
@@ -80,7 +80,7 @@ public sealed class FriendService
 
 	public async Task<bool> UnblockAccountAsync(EpicID accountID, EpicID unblockedAccount)
 	{
-		var result = await friendCollection.DeleteOneAsync(x =>
+		DeleteResult? result = await friendCollection.DeleteOneAsync(x =>
 			x.Sender == accountID &&
 			x.Receiver == unblockedAccount &&
 			x.Status == FriendStatus.Blocked);
@@ -91,7 +91,7 @@ public sealed class FriendService
 	public async Task<List<FriendRequest>> GetFriendsAsync(EpicID accountID)
 	{
 		// get both pending and accepted friend requests
-		var cursor = await friendCollection.FindAsync(x =>
+		IAsyncCursor<FriendRequest>? cursor = await friendCollection.FindAsync(x =>
 			(x.Sender == accountID || x.Receiver == accountID) &&
 			x.Status != FriendStatus.Blocked);
 		return await cursor.ToListAsync();
@@ -99,7 +99,7 @@ public sealed class FriendService
 
 	public async Task<List<FriendRequest>> GetBlockedUsersAsync(EpicID accountID)
 	{
-		var cursor = await friendCollection.FindAsync(x =>
+		IAsyncCursor<FriendRequest>? cursor = await friendCollection.FindAsync(x =>
 			x.Sender == accountID &&
 			x.Status == FriendStatus.Blocked);
 		return await cursor.ToListAsync();

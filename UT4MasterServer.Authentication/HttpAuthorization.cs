@@ -25,7 +25,7 @@ public class HttpAuthorization
 			return;
 		}
 
-		int space = authorizationHeader.IndexOf(' ');
+		var space = authorizationHeader.IndexOf(' ');
 		if (space == -1)
 		{
 			Value = authorizationHeader;

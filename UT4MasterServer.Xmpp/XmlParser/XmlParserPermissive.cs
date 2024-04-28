@@ -1,13 +1,10 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using System.Xml.Linq;
-
 namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class XmlParserPermissive
 {
-	private XmlScanner scanner;
+	private readonly XmlScanner scanner;
 
-	private char[] buffer;
+	private readonly char[] buffer;
 	private int bufferIndex;
 	private int bufferReadCount;
 	private int scannerState;
@@ -17,7 +14,6 @@ public class XmlParserPermissive
 	public XmlElement Root { get; private set; }
 	public TextReader Reader { get; private set; }
 	public XmlElement Current { get; private set; }
-
 
 	public XmlParserPermissive(XmlScanner scanner, TextReader reader)
 	{
@@ -69,11 +65,9 @@ public class XmlParserPermissive
 					else if (scannerState == 0)
 					{
 						// smallest unit of meaning has been read
-
 						if (scanner.LastLexem == null)
 						{
-							// LastLexem should never be null here
-							throw new NullReferenceException();
+							throw new InvalidOperationException("LastLexem should never be null.");
 						}
 
 						var result = ProcessNextLexem(scanner.LastLexem);
@@ -99,7 +93,6 @@ public class XmlParserPermissive
 		}
 	}
 
-
 	private enum ParsingState
 	{
 		ElementStart,
@@ -112,7 +105,7 @@ public class XmlParserPermissive
 
 	private ParsingState parsingState = 0;
 	private XmlToken lastOpenType;
-	private bool hasExitedCurrent = false;
+	private bool hasExitedCurrent;
 
 	public int ProcessNextLexem(XmlLexem lexem)
 	{
@@ -129,7 +122,8 @@ public class XmlParserPermissive
 						Current = Current.Parent;
 					}
 				}
-				var old = Current;
+
+				XmlElement? old = Current;
 				Current = new XmlElement("#UNKNOWN") { Parent = old };
 				old.Elements.Add(Current);
 
@@ -137,19 +131,19 @@ public class XmlParserPermissive
 				lastOpenType = lexem.Token;
 				return 0;
 			}
-			else if (lexem.Token == XmlToken.OpenEnd)
+
+			if (lexem.Token == XmlToken.OpenEnd)
 			{
 				hasExitedCurrent = true;
 				parsingState = ParsingState.ElementEnd;
 				return 0;
 			}
-			else
-			{
-				Current.Elements.Add(new XmlTextElement(lexem.Value));
-				return 0;
-			}
+
+			Current.Elements.Add(new XmlTextElement(lexem.Value));
+			return 0;
 		}
-		else if (parsingState == ParsingState.Name)
+
+		if (parsingState == ParsingState.Name)
 		{
 			if (lexem.Token == XmlToken.Name)
 			{
@@ -166,15 +160,18 @@ public class XmlParserPermissive
 				parsingState = ParsingState.AttributeEquals;
 				return 0;
 			}
+
 			if (lexem.Token == XmlToken.Close || lexem.Token == XmlToken.CloseProcInst)
 			{
 				if (lastOpenType == XmlToken.OpenProcInst)
 				{
 					hasExitedCurrent = true;
 				}
+
 				parsingState = 0;
 				return 1;
 			}
+
 			if (lexem.Token == XmlToken.CloseEmpty)
 			{
 				hasExitedCurrent = true;

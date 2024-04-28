@@ -4,7 +4,7 @@ namespace UT4MasterServer.Services.Singleton;
 
 public sealed class MatchmakingWaitTimeEstimateService
 {
-	private Dictionary<string, List<(DateTime DeleteTime, double WaitTime)>> estimates;
+	private readonly Dictionary<string, List<(DateTime DeleteTime, double WaitTime)>> estimates;
 	private static readonly TimeSpan RelevantReportTimeDuration = TimeSpan.FromMinutes(1);
 
 	public MatchmakingWaitTimeEstimateService()
@@ -14,19 +14,21 @@ public sealed class MatchmakingWaitTimeEstimateService
 
 	public void AddWaitTime(string mode, double seconds)
 	{
-		if (!estimates.ContainsKey(mode))
+		if (!estimates.TryGetValue(mode, out List<(DateTime DeleteTime, double WaitTime)>? estimateValue))
 		{
-			estimates.Add(mode, new List<(DateTime, double)>());
+			estimateValue = new List<(DateTime, double)>();
+			estimates.Add(mode, estimateValue);
 		}
-		estimates[mode].Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
+
+		estimateValue.Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
 	}
 
 	public List<WaitTimeEstimateResponse> GetWaitTimes()
 	{
 		Clean();
 
-		List<WaitTimeEstimateResponse> waitTimes = new List<WaitTimeEstimateResponse>();
-		foreach (var estimate in estimates)
+		var waitTimes = new List<WaitTimeEstimateResponse>();
+		foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> estimate in estimates)
 		{
 			if (estimate.Value.Count <= 0)
 			{
@@ -42,9 +44,9 @@ public sealed class MatchmakingWaitTimeEstimateService
 
 	private void Clean()
 	{
-		var now = DateTime.UtcNow;
-		List<string> modesToRemove = new List<string>();
-		foreach (var mode in estimates)
+		DateTime now = DateTime.UtcNow;
+		var modesToRemove = new List<string>();
+		foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> mode in estimates)
 		{
 			mode.Value.RemoveAll(x => now > x.DeleteTime);
 			if (mode.Value.Count <= 0)

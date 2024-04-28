@@ -13,11 +13,11 @@ public static class EloTeamsCalculationHelper
 
 	public static double[] GetExpectedScores(double[] ratingsA, double[] ratingsB)
 	{
-		int teamASize = ratingsA.Length;
-		double ratingsBAverage = ratingsB.Average();
-		double[] expectedScores = new double[teamASize];
+		var teamASize = ratingsA.Length;
+		var ratingsBAverage = ratingsB.Average();
+		var expectedScores = new double[teamASize];
 
-		for (int i = 0; i < teamASize; i++)
+		for (var i = 0; i < teamASize; i++)
 		{
 			expectedScores[i] = 1.0 / (1.0 + Math.Pow(10.0, (ratingsBAverage - ratingsA[i]) / AverageRatingDifference));
 		}
@@ -27,10 +27,10 @@ public static class EloTeamsCalculationHelper
 
 	public static double[] GetNewRatings(double[] currentRatings, double[] expectedScores, double actualScore)
 	{
-		int teamSize = currentRatings.Length;
-		double[] newRatings = new double[teamSize];
+		var teamSize = currentRatings.Length;
+		var newRatings = new double[teamSize];
 
-		for (int i = 0; i < teamSize; i++)
+		for (var i = 0; i < teamSize; i++)
 		{
 			newRatings[i] = Math.Round(currentRatings[i] + KRating * (actualScore - expectedScores[i]), 2);
 		}

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Services.Singleton;
 
@@ -13,36 +13,36 @@ namespace UT4MasterServer.Controllers.UT;
 [Produces("application/json")]
 public sealed class WaitTimesController : JsonAPIController
 {
-    private readonly MatchmakingWaitTimeEstimateService service;
+	private readonly MatchmakingWaitTimeEstimateService service;
 
-    public WaitTimesController(
-        ILogger<WaitTimesController> logger,
-        MatchmakingWaitTimeEstimateService service) : base(logger)
-    {
-        this.service = service;
-    }
+	public WaitTimesController(
+		ILogger<WaitTimesController> logger,
+		MatchmakingWaitTimeEstimateService service) : base(logger)
+	{
+		this.service = service;
+	}
 
-    [HttpGet("estimate")]
-    public IActionResult QuickplayWaitEstimate()
-    {
-        if (User.Identity is not EpicUserIdentity user)
-        {
-	        return Unauthorized();
-        }
+	[HttpGet("estimate")]
+	public IActionResult QuickplayWaitEstimate()
+	{
+		if (User.Identity is not EpicUserIdentity)
+		{
+			return Unauthorized();
+		}
 
-        return Ok(service.GetWaitTimes());
-    }
+		return Ok(service.GetWaitTimes());
+	}
 
-    [HttpGet("report/{ratingType}/{timeWaited}")]
-    public IActionResult QuickplayWaitReport(string ratingType, double timeWaited)
-    {
-        if (User.Identity is not EpicUserIdentity user)
-        {
-	        return Unauthorized();
-        }
+	[HttpGet("report/{ratingType}/{timeWaited}")]
+	public IActionResult QuickplayWaitReport(string ratingType, double timeWaited)
+	{
+		if (User.Identity is not EpicUserIdentity)
+		{
+			return Unauthorized();
+		}
 
-        service.AddWaitTime(ratingType, timeWaited);
+		service.AddWaitTime(ratingType, timeWaited);
 
-        return NoContent();
-    }
+		return NoContent();
+	}
 }

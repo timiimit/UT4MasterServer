@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Primitives;
+using UT4MasterServer.Models.Database;
 using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Authentication;
@@ -22,14 +24,14 @@ public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationS
 
 	protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
 	{
-		var authorizationHeader = Request.Headers[HttpAuthorization.AuthorizationHeader];
+		StringValues authorizationHeader = Request.Headers[HttpAuthorization.AuthorizationHeader];
 		var authorization = new HttpAuthorization(authorizationHeader);
 		if (!authorization.IsBearer)
 		{
 			return AuthenticateResult.Fail("unexpected scheme");
 		}
 
-		var session = await sessionService.GetSessionAsync(authorization.Value);
+		Session? session = await sessionService.GetSessionAsync(authorization.Value);
 		if (session == null)
 		{
 			const string errMessage = "invalid token";

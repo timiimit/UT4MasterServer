@@ -1,4 +1,4 @@
-﻿using System.Security;
+using System.Security;
 using UT4MasterServer.Xmpp.Stanzas;
 
 namespace UT4MasterServer.Xmpp;
@@ -8,7 +8,7 @@ public class XmppWriter
 	private class StackNode
 	{
 		public string Name { get; set; } = string.Empty;
-		public bool HasOpenTagEnded { get; set; } = false;
+		public bool HasOpenTagEnded { get; set; }
 
 		public StackNode(string name)
 		{
@@ -16,8 +16,8 @@ public class XmppWriter
 		}
 	}
 
-	TextWriter w;
-	Stack<StackNode> elements;
+	private readonly TextWriter w;
+	private readonly Stack<StackNode> elements;
 
 	public XmppWriter(TextWriter writer)
 	{
@@ -42,11 +42,12 @@ public class XmppWriter
 
 	public void OpenTag(string prefix, string localName)
 	{
-		string name = string.Empty;
+		var name = string.Empty;
 		if (prefix is not null)
 		{
 			name = prefix + ":";
 		}
+
 		name += localName;
 
 		OpenTag(name);
@@ -56,7 +57,7 @@ public class XmppWriter
 	{
 		if (elements.Count > 0)
 		{
-			var top = elements.Peek();
+			StackNode? top = elements.Peek();
 			if (!top.HasOpenTagEnded)
 			{
 				OpenTagEnd();
@@ -71,11 +72,12 @@ public class XmppWriter
 
 	public void OpenTagNS(string prefix, string localName, string ns)
 	{
-		string name = string.Empty;
+		var name = string.Empty;
 		if (prefix is not null)
 		{
 			name = prefix + ":";
 		}
+
 		name += localName;
 
 		OpenTag(name);
@@ -85,7 +87,7 @@ public class XmppWriter
 	{
 		if (elements.Count > 0)
 		{
-			var top = elements.Peek();
+			StackNode? top = elements.Peek();
 			if (!top.HasOpenTagEnded)
 			{
 				OpenTagEnd();
@@ -101,7 +103,7 @@ public class XmppWriter
 
 	public void OpenTagEnd()
 	{
-		var top = elements.Peek();
+		StackNode? top = elements.Peek();
 		if (!top.HasOpenTagEnded)
 		{
 			w.Write('>');
@@ -116,6 +118,7 @@ public class XmppWriter
 		{
 			w.Write($"{prefix}:");
 		}
+
 		w.Write($"{name}=\"{value}\"");
 	}
 
@@ -126,7 +129,7 @@ public class XmppWriter
 
 	public void CloseTag()
 	{
-		var top = elements.Pop();
+		StackNode? top = elements.Pop();
 		if (!top.HasOpenTagEnded)
 		{
 			w.Write("/>");

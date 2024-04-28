@@ -1,13 +1,10 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Helpers;
 
 namespace UT4MasterServer.Models.Database;
-
-
-
 
 public class GameServer
 {
@@ -81,7 +78,7 @@ public class GameServer
 
 	[BsonElement("MaxPrivatePlayers")]
 	[JsonPropertyName("maxPrivatePlayers")]
-	public int MaxPrivatePlayers { get; set; } = 0;
+	public int MaxPrivatePlayers { get; set; }
 
 	[BsonIgnore]
 	[JsonPropertyName("openPrivatePlayers")]
@@ -117,11 +114,11 @@ public class GameServer
 
 	[BsonElement("UsesStats")]
 	[JsonPropertyName("usesStats")]
-	public bool UsesStats { get; set; } = false;
+	public bool UsesStats { get; set; }
 
 	[BsonElement("UsesPresence")]
 	[JsonPropertyName("usesPresence")]
-	public bool UsesPresence { get; set; } = false;
+	public bool UsesPresence { get; set; }
 
 	[BsonElement("AllowInvites")]
 	[JsonPropertyName("allowInvites")]
@@ -133,7 +130,7 @@ public class GameServer
 
 	[BsonElement("AllowJoinViaPresenceFriendsOnly")]
 	[JsonPropertyName("allowJoinViaPresenceFriendsOnly")]
-	public bool AllowJoinViaPresenceFriendsOnly { get; set; } = false;
+	public bool AllowJoinViaPresenceFriendsOnly { get; set; }
 
 	[BsonElement("BuildUniqueID")]
 	[JsonPropertyName("buildUniqueId")]
@@ -227,7 +224,7 @@ public class GameServer
 		// TODO: Get rid of dynamic json
 
 		// Do some preprocessing on attributes
-		var attrs = Attributes.ToJObject();
+		JsonObject? attrs = Attributes.ToJObject();
 
 		// build json
 		var obj = new List<KeyValuePair<string, JsonNode?>>();
@@ -249,16 +246,18 @@ public class GameServer
 		obj.Add(new("openPrivatePlayers", MaxPrivatePlayers - PrivatePlayers.Count));
 		obj.Add(new("attributes", attrs));
 		var arr = new JsonArray();
-		foreach (var player in PublicPlayers)
+		foreach (EpicID player in PublicPlayers)
 		{
 			arr.Add(JsonValue.Create(player.ToString()));
 		}
+
 		obj.Add(new("publicPlayers", arr));
 		arr = new JsonArray();
-		foreach (var player in PrivatePlayers)
+		foreach (EpicID player in PrivatePlayers)
 		{
 			arr.Add(JsonValue.Create(player.ToString()));
 		}
+
 		obj.Add(new("privatePlayers", arr));
 		obj.Add(new("totalPlayers", PublicPlayers.Count + PrivatePlayers.Count));
 		obj.Add(new("allowJoinInProgress", AllowJoinInProgress));

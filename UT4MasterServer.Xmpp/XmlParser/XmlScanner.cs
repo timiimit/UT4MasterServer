@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace UT4MasterServer.Xmpp.XmlParser;
 
@@ -19,11 +19,11 @@ public enum XmlToken
 
 public class XmlScanner
 {
-	CharStateMachine stateMachine;
-	Dictionary<int, XmlToken> stateToToken;
-	StringBuilder lexem;
-	int line;
-	int column;
+	private readonly CharStateMachine stateMachine;
+	private readonly Dictionary<int, XmlToken> stateToToken;
+	private readonly StringBuilder lexem;
+	private int line;
+	private int column;
 
 	public XmlLexem? LastLexem { get; private set; }
 
@@ -38,19 +38,26 @@ public class XmlScanner
 
 	private void DefineGrammar()
 	{
-		stateMachine.AddGraph(0, 1, '<'); AddFinal(1, XmlToken.Open);
-		stateMachine.AddGraph(1, 2, '/'); AddFinal(2, XmlToken.OpenEnd);
-		stateMachine.AddGraph(1, 3, '?'); AddFinal(3, XmlToken.OpenProcInst);
+		stateMachine.AddGraph(0, 1, '<');
+		AddFinal(1, XmlToken.Open);
+		stateMachine.AddGraph(1, 2, '/');
+		AddFinal(2, XmlToken.OpenEnd);
+		stateMachine.AddGraph(1, 3, '?');
+		AddFinal(3, XmlToken.OpenProcInst);
 
-		stateMachine.AddGraph(0, 4, '>'); AddFinal(4, XmlToken.Close);
+		stateMachine.AddGraph(0, 4, '>');
+		AddFinal(4, XmlToken.Close);
 
 		stateMachine.AddGraph(0, 5, '/');
-		stateMachine.AddGraph(5, 6, '>'); AddFinal(6, XmlToken.CloseEmpty);
+		stateMachine.AddGraph(5, 6, '>');
+		AddFinal(6, XmlToken.CloseEmpty);
 
 		stateMachine.AddGraph(0, 7, '?');
-		stateMachine.AddGraph(7, 8, '>'); AddFinal(8, XmlToken.CloseProcInst);
+		stateMachine.AddGraph(7, 8, '>');
+		AddFinal(8, XmlToken.CloseProcInst);
 
-		stateMachine.AddGraph(0, 9, '='); AddFinal(9, XmlToken.Equal);
+		stateMachine.AddGraph(0, 9, '=');
+		AddFinal(9, XmlToken.Equal);
 
 		// STRING - should supposedly be "normalized" before parsed
 
@@ -99,7 +106,7 @@ public class XmlScanner
 
 	public int NextChar(int currentState, char c)
 	{
-		int nextState = stateMachine.NextChar(currentState, c);
+		var nextState = stateMachine.NextChar(currentState, c);
 
 		if (nextState >= 0)
 		{
@@ -113,18 +120,18 @@ public class XmlScanner
 			{
 				column++;
 			}
+
 			return nextState;
 		}
 
-
 		try
 		{
-			if (!stateToToken.ContainsKey(currentState))
+			if (!stateToToken.TryGetValue(currentState, out XmlToken xmlToken))
 			{
 				return -1;
 			}
 
-			LastLexem = new XmlLexem { Token = stateToToken[currentState], Value = lexem.ToString(), Line = line, Column = column };
+			LastLexem = new XmlLexem { Token = xmlToken, Value = lexem.ToString(), Line = line, Column = column };
 			return 0;
 		}
 		finally

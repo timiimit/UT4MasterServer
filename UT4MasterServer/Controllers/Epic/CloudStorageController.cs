@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
-using UT4MasterServer.Services.Scoped;
-using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Database;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.StaticFiles;
+using UT4MasterServer.Models.DTO.Responses;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers.Epic;
 
@@ -34,7 +34,7 @@ public sealed class CloudStorageController : JsonAPIController
 	[HttpGet("user/{id}")]
 	public async Task<IActionResult> ListUserFiles(string id)
 	{
-		var files = await cloudStorageService.ListFilesAsync(EpicID.FromString(id), false);
+		List<CloudFile> files = await cloudStorageService.ListFilesAsync(EpicID.FromString(id), false);
 		return BuildListResult(files);
 	}
 
@@ -47,10 +47,10 @@ public sealed class CloudStorageController : JsonAPIController
 	[NonAction]
 	public async Task<IActionResult> GetFile(string id, string filename)
 	{
-		bool isStatsFile = filename == "stats.json";
+		var isStatsFile = filename == "stats.json";
 
 		var accountID = EpicID.FromString(id);
-		var file = await cloudStorageService.GetFileAsync(accountID, filename);
+		CloudFile? file = await cloudStorageService.GetFileAsync(accountID, filename);
 		if (file == null)
 		{
 			if (!isStatsFile)
@@ -68,8 +68,8 @@ public sealed class CloudStorageController : JsonAPIController
 
 			// Send a fake response in order to fix #109 (which is a game bug)
 			var playerName = "New Player";
-			var playerID = EpicID.Empty;
-			var account = await accountService.GetAccountAsync(accountID);
+			EpicID playerID = EpicID.Empty;
+			Account? account = await accountService.GetAccountAsync(accountID);
 			if (account != null)
 			{
 				playerName = account.Username;
@@ -90,7 +90,7 @@ public sealed class CloudStorageController : JsonAPIController
 			file.RawContent = tmp;
 		}
 
-		if (!contentTypeProvider.TryGetContentType(filename, out string? contentType))
+		if (!contentTypeProvider.TryGetContentType(filename, out var contentType))
 		{
 			contentType = "application/octet-stream";
 		}
@@ -126,7 +126,7 @@ public sealed class CloudStorageController : JsonAPIController
 	[HttpGet("system")]
 	public async Task<IActionResult> ListSystemFiles()
 	{
-		var files = await cloudStorageService.ListFilesAsync(EpicID.Empty, true);
+		List<CloudFile> files = await cloudStorageService.ListFilesAsync(EpicID.Empty, true);
 		return BuildListResult(files);
 	}
 
@@ -141,7 +141,7 @@ public sealed class CloudStorageController : JsonAPIController
 	private IActionResult BuildListResult(IEnumerable<CloudFile> files)
 	{
 		var arr = new List<CloudFileResponse>();
-		foreach (var file in files)
+		foreach (CloudFile file in files)
 		{
 			var fileResponse = new CloudFileResponse(file);
 			if (file.AccountID.IsEmpty)

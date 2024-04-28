@@ -11,7 +11,6 @@ using UT4MasterServer.Models;
 using UT4MasterServer.Models.Responses;
 using Microsoft.Net.Http.Headers;
 using UT4MasterServer.Common.Enums;
-using System.Linq;
 
 namespace UT4MasterServer.Controllers;
 
@@ -74,36 +73,36 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
-		var flags = await accountService.GetAccountFlagsAsync(EpicID.FromString(accountID));
+		AccountFlags? flags = await accountService.GetAccountFlagsAsync(EpicID.FromString(accountID));
 		if (flags == null)
 		{
 			return NotFound();
 		}
 
-		var result = EnumHelpers.EnumToStrings(flags.Value);
+		List<string>? result = EnumHelpers.EnumToStrings(flags.Value);
 		return Ok(result);
 	}
 
 	[HttpPut("flags/{accountID}")]
 	public async Task<IActionResult> SetAccountFlags(string accountID, [FromBody] string[] flagNames)
 	{
-		var admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
+		(Session Session, Account Account) admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
-		var flags = EnumHelpers.StringsToEnumArray<AccountFlags>(flagNames);
+		List<AccountFlags>? flags = EnumHelpers.StringsToEnumArray<AccountFlags>(flagNames);
 
-		var account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
+		Account? account = await accountService.GetAccountAsync(EpicID.FromString(accountID));
 		if (account == null)
 		{
 			return NotFound();
 		}
 
-		var flagsOld = EnumHelpers.EnumFlagsToEnumArray(account.Flags);
-		var adminFlags = admin.Account.Flags;
+		List<AccountFlags>? flagsOld = EnumHelpers.EnumFlagsToEnumArray(account.Flags);
+		AccountFlags adminFlags = admin.Account.Flags;
 
-		var flagsAdded = EnumHelpers.EnumArrayToEnumFlags(flags.Where(x => !flagsOld.Contains(x)));
-		var flagsRemoved = EnumHelpers.EnumArrayToEnumFlags(flagsOld.Where(x => !flags.Contains(x)));
+		AccountFlags flagsAdded = EnumHelpers.EnumArrayToEnumFlags(flags.Where(x => !flagsOld.Contains(x)));
+		AccountFlags flagsRemoved = EnumHelpers.EnumArrayToEnumFlags(flagsOld.Where(x => !flags.Contains(x)));
 
-		var logLevel = LogLevel.Warning;
+		LogLevel logLevel = LogLevel.Warning;
 
 		try
 		{
@@ -182,16 +181,16 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpPatch("change_password/{id}")]
 	public async Task<IActionResult> ChangePassword(string id, [FromBody] AdminPanelChangePasswordRequest body)
 	{
-		var admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
+		(Session Session, Account Account) admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsLow, AccountFlags.ACL_AccountsHigh);
 
-		var account = await accountService.GetAccountAsync(EpicID.FromString(id));
+		Account? account = await accountService.GetAccountAsync(EpicID.FromString(id));
 		if (account is null)
 		{
 			return NotFound(new ErrorResponse() { ErrorMessage = $"Failed to find account {id}" });
 		}
 
-		var flags = account.Flags;
-		var logLevel = LogLevel.Warning;
+		AccountFlags flags = account.Flags;
+		LogLevel logLevel = LogLevel.Warning;
 
 		try
 		{
@@ -211,14 +210,14 @@ public sealed class AdminPanelController : ControllerBase
 
 				if (AccountFlagsHelper.IsACLFlag(flags))
 				{
-					return Unauthorized($"Cannot change password of an account with ACL flag");
+					return Unauthorized("Cannot change password of an account with ACL flag");
 				}
 			}
 
 			// passwords should already be hashed, but check its length just in case
 			if (!ValidationHelper.ValidatePassword(body.NewPassword))
 			{
-				return BadRequest($"newPassword is not a SHA512 hash");
+				return BadRequest("newPassword is not a SHA512 hash");
 			}
 
 			if (account.Email != body.Email)
@@ -228,7 +227,7 @@ public sealed class AdminPanelController : ControllerBase
 
 			if (body.IAmSure != true)
 			{
-				return BadRequest($"'iAmSure' was not 'true'");
+				return BadRequest("'iAmSure' was not 'true'");
 			}
 
 			await accountService.UpdateAccountPasswordAsync(account.ID, body.NewPassword);
@@ -254,12 +253,12 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpDelete("account/{id}")]
 	public async Task<IActionResult> DeleteAccountInfo(string id, [FromBody] bool? forceCheckBroken)
 	{
-		var admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsHigh | AccountFlags.ACL_Maintenance);
+		(Session Session, Account Account) admin = await VerifyAccessAsync(AccountFlags.ACL_AccountsHigh | AccountFlags.ACL_Maintenance);
 
 		var accountID = EpicID.FromString(id);
-		var account = await accountService.GetAccountUsernameAndFlagsAsync(accountID);
+		Account? account = await accountService.GetAccountUsernameAndFlagsAsync(accountID);
 
-		var logLevel = LogLevel.Warning;
+		LogLevel logLevel = LogLevel.Warning;
 		try
 		{
 			if (account is null)
@@ -287,7 +286,7 @@ public sealed class AdminPanelController : ControllerBase
 
 					if (AccountFlagsHelper.IsACLFlag(account.Flags))
 					{
-						return Unauthorized($"Cannot delete account with ACL flag");
+						return Unauthorized("Cannot delete account with ACL flag");
 					}
 				}
 				else // if (admin.Account.Flags.HasFlag(AccountFlags.ACL_Maintenance))
@@ -344,7 +343,7 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAccessAsync(AccountFlags.ACL_Clients);
 
-		var clients = await clientService.ListAsync();
+		List<Client>? clients = await clientService.ListAsync();
 		return Ok(clients);
 	}
 
@@ -353,7 +352,7 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAccessAsync(AccountFlags.ACL_Clients);
 
-		var client = await clientService.GetAsync(EpicID.FromString(id));
+		Client? client = await clientService.GetAsync(EpicID.FromString(id));
 		if (client == null)
 		{
 			return NotFound();
@@ -379,8 +378,8 @@ public sealed class AdminPanelController : ControllerBase
 			return Forbid("Cannot modify reserved clients");
 		}
 
-		var taskUpdateClient = clientService.UpdateAsync(client);
-		var taskUpdateServerName = matchmakingService.UpdateServerNameAsync(client.ID, client.Name);
+		Task<bool?>? taskUpdateClient = clientService.UpdateAsync(client);
+		Task? taskUpdateServerName = matchmakingService.UpdateServerNameAsync(client.ID, client.Name);
 
 		await taskUpdateClient;
 		await taskUpdateServerName;
@@ -421,18 +420,18 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
 
-		var trustedServers = await trustedGameServerService.ListAsync();
+		List<TrustedGameServer>? trustedServers = await trustedGameServerService.ListAsync();
 
-		var trustedServerIDs = trustedServers.Select(t => t.ID);
-		var trustedServerOwnerIDs = trustedServers.Select(t => t.OwnerID).Distinct();
+		IEnumerable<EpicID>? trustedServerIDs = trustedServers.Select(t => t.ID);
+		IEnumerable<EpicID>? trustedServerOwnerIDs = trustedServers.Select(t => t.OwnerID).Distinct();
 
-		var taskClients = clientService.GetManyAsync(trustedServerIDs);
-		var taskAccounts = accountService.GetAccountsAsync(trustedServerOwnerIDs);
+		Task<List<Client>>? taskClients = clientService.GetManyAsync(trustedServerIDs);
+		Task<IEnumerable<Account>>? taskAccounts = accountService.GetAccountsAsync(trustedServerOwnerIDs);
 
-		var clients = await taskClients;
-		var accounts = await taskAccounts;
+		List<Client>? clients = await taskClients;
+		IEnumerable<Account>? accounts = await taskAccounts;
 
-		var response = trustedServers.Select(t => new TrustedGameServerResponse
+		IEnumerable<TrustedGameServerResponse>? response = trustedServers.Select(t => new TrustedGameServerResponse
 		{
 			ID = t.ID,
 			OwnerID = t.OwnerID,
@@ -448,7 +447,7 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
 
-		var ret = await trustedGameServerService.GetAsync(EpicID.FromString(id));
+		TrustedGameServer? ret = await trustedGameServerService.GetAsync(EpicID.FromString(id));
 		return Ok(ret);
 	}
 
@@ -457,19 +456,19 @@ public sealed class AdminPanelController : ControllerBase
 	{
 		await VerifyAccessAsync(AccountFlags.ACL_TrustedServers);
 
-		var client = await clientService.GetAsync(body.ID);
+		Client? client = await clientService.GetAsync(body.ID);
 		if (client is null)
 		{
 			return BadRequest("Trusted server does not have a matching client with same ID");
 		}
 
-		var server = await trustedGameServerService.GetAsync(body.ID);
+		TrustedGameServer? server = await trustedGameServerService.GetAsync(body.ID);
 		if (server is not null)
 		{
 			return BadRequest($"Trusted server {body.ID} already exists");
 		}
 
-		var owner = await accountService.GetAccountAsync(body.OwnerID);
+		Account? owner = await accountService.GetAccountAsync(body.OwnerID);
 		if (owner is null)
 		{
 			return BadRequest($"OwnerID {body.OwnerID} is not a valid account ID");
@@ -524,24 +523,24 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("mcp_files")]
 	public async Task<IActionResult> GetMCPFiles()
 	{
-		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
-		var files = await cloudStorageService.ListFilesAsync(EpicID.Empty, false);
-		var responseFiles = files.Select(x => new CloudFileAdminPanelResponse(x, IsAccessibleCloudStorageFile(admin.Account.Flags, x.Filename)));
+		(Session Session, Account Account) admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+		List<CloudFile>? files = await cloudStorageService.ListFilesAsync(EpicID.Empty, false);
+		IEnumerable<CloudFileAdminPanelResponse>? responseFiles = files.Select(x => new CloudFileAdminPanelResponse(x, IsAccessibleCloudStorageFile(admin.Account.Flags, x.Filename)));
 		return Ok(responseFiles);
 	}
 
 	[HttpPost("mcp_files")]
 	public async Task<IActionResult> UpdateMCPFile()
 	{
-		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+		(Session Session, Account Account) admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
 
-		var formCollection = await Request.ReadFormAsync();
+		IFormCollection? formCollection = await Request.ReadFormAsync();
 		if (formCollection.Files.Count < 1)
 		{
 			return BadRequest("Missing file");
 		}
 
-		var file = formCollection.Files[0];
+		IFormFile? file = formCollection.Files[0];
 		var filename = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.ToString().Trim('"');
 		if (file.Length <= 0)
 		{
@@ -553,7 +552,7 @@ public sealed class AdminPanelController : ControllerBase
 			return Unauthorized("You are not authorized to upload this file");
 		}
 
-		using (var stream = file.OpenReadStream())
+		using (Stream? stream = file.OpenReadStream())
 		{
 			await cloudStorageService.UpdateFileAsync(EpicID.Empty, filename, stream);
 		}
@@ -563,9 +562,9 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpGet("mcp_files/{filename}"), Produces("application/octet-stream")]
 	public async Task<IActionResult> GetMCPFile(string filename)
 	{
-		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+		(Session Session, Account Account) admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
 
-		var file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
+		CloudFile? file = await cloudStorageService.GetFileAsync(EpicID.Empty, filename);
 		if (file is null)
 		{
 			return NotFound(new ErrorResponse() { ErrorMessage = "File not found" });
@@ -577,7 +576,7 @@ public sealed class AdminPanelController : ControllerBase
 	[HttpDelete("mcp_files/{filename}")]
 	public async Task<IActionResult> DeleteMCPFile(string filename)
 	{
-		var admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
+		(Session Session, Account Account) admin = await VerifyAccessAsync(AccountFlags.ACL_CloudStorageAnnouncements | AccountFlags.ACL_CloudStorageRulesets | AccountFlags.ACL_CloudStorageChallenges);
 
 		if (!IsAccessibleCloudStorageFile(admin.Account.Flags, filename))
 		{
@@ -601,13 +600,13 @@ public sealed class AdminPanelController : ControllerBase
 			throw new UnauthorizedAccessException("User not logged in");
 		}
 
-		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		Account? account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
 		{
 			throw new UnauthorizedAccessException("User not found");
 		}
 
-		var combinedAcl = aclAny.Aggregate((x, y) => x | y) | AccountFlags.Admin;
+		AccountFlags combinedAcl = aclAny.Aggregate((x, y) => x | y) | AccountFlags.Admin;
 
 		if (!account.Flags.HasFlagAny(combinedAcl))
 		{
