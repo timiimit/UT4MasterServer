@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check if PRs are dirty
-        uses: eps1lon/actions-label-merge-conflict@releases/2.x
+        uses: eps1lon/actions-label-merge-conflict@v3
         with:
           dirtyLabel: "Conflicts"
           repoToken: "${{ secrets.GITHUB_TOKEN }}"

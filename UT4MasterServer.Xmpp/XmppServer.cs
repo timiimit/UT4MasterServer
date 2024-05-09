@@ -1,6 +1,5 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using UT4MasterServer.Xmpp.Stanzas;
 
@@ -8,10 +7,10 @@ namespace UT4MasterServer.Xmpp;
 
 public class XmppServer
 {
-	private TcpListener listener;
-	private List<XmppConnection> connections;
+	private readonly TcpListener listener;
+	private readonly List<XmppConnection> connections;
 
-	private DateTimeOffset lastAcceptTime = default;
+	private DateTimeOffset lastAcceptTime;
 	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
 
 	public string Domain { get; private set; }
@@ -40,7 +39,7 @@ public class XmppServer
 		{
 			while (!cancellationToken.IsCancellationRequested)
 			{
-				var tcpConnection = await listener.AcceptTcpClientAsync(cancellationToken);
+				TcpClient? tcpConnection = await listener.AcceptTcpClientAsync(cancellationToken);
 				_ = OnConnectionAcceptedAsync(tcpConnection, cancellationToken);
 			}
 		}
@@ -50,7 +49,6 @@ public class XmppServer
 
 			listener.Stop();
 		}
-
 	}
 
 	public async Task<bool> SendMessageAsync(StanzaMessage message)
@@ -59,7 +57,7 @@ public class XmppServer
 
 		lock (connections)
 		{
-			foreach (var connection in connections)
+			foreach (XmppConnection? connection in connections)
 			{
 				if (connection.ID.Equals(message.To))
 				{
@@ -67,6 +65,7 @@ public class XmppServer
 				}
 			}
 		}
+
 		return true;
 	}
 
@@ -76,10 +75,12 @@ public class XmppServer
 
 		lock (connections)
 		{
-			foreach (var connection in connections)
+			foreach (XmppConnection? connection in connections)
 			{
 				if (connection.ID.Equals(presence.From))
+				{
 					continue;
+				}
 
 				// TODO: only send presence to friends
 				connection.QueueStanza(presence);
@@ -93,10 +94,12 @@ public class XmppServer
 	{
 		await Task.Yield();
 
-		foreach (var c in connections)
+		foreach (XmppConnection? c in connections)
 		{
 			if (ReferenceEquals(c, connection))
+			{
 				continue;
+			}
 
 			// TODO: check if connection is a friend
 			var presenceProbe = new StanzaPresence()
@@ -129,10 +132,12 @@ public class XmppServer
 
 		lock (connections)
 		{
-			foreach (var connection in connections)
+			foreach (XmppConnection? connection in connections)
 			{
 				if (connection.ID.Equals(jid))
+				{
 					return connection;
+				}
 			}
 		}
 
@@ -150,7 +155,9 @@ public class XmppServer
 		Console.WriteLine("Client connected");
 
 		if (cancellationToken.IsCancellationRequested)
+		{
 			return;
+		}
 
 		XmppConnection? connection = null;
 		try
@@ -160,6 +167,7 @@ public class XmppServer
 			{
 				connections.Add(connection);
 			}
+
 			await connection.HandleXmppStreamAsync(cancellationToken);
 		}
 		catch (Exception ex)

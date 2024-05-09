@@ -1,6 +1,5 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
@@ -38,18 +37,18 @@ public sealed class StatisticsService
 	{
 		logger.LogInformation("Calculating {StatisticWindow} statistics for account: {AccountID}.", statisticWindow.ToString().ToLower(), accountID);
 
-		var dateFrom = DateTime.UtcNow.Date;
+		DateTime dateFrom = DateTime.UtcNow.Date;
 		if (statisticWindow != StatisticWindow.Daily)
 		{
 			dateFrom = DateTime.UtcNow.AddDays(-(int)statisticWindow).Date;
 		}
-		var dateTo = DateTime.UtcNow.AddDays(1).Date;
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
-					 Builders<Statistic>.Filter.In(f => f.Window, new[] { StatisticWindow.Daily, StatisticWindow.DailyMerged }) &
-					 Builders<Statistic>.Filter.Gte(f => f.CreatedAt, dateFrom) &
-					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateTo);
+		DateTime dateTo = DateTime.UtcNow.AddDays(1).Date;
+		FilterDefinition<Statistic>? filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
+											  Builders<Statistic>.Filter.In(f => f.Window, new[] { StatisticWindow.Daily, StatisticWindow.DailyMerged }) &
+											  Builders<Statistic>.Filter.Gte(f => f.CreatedAt, dateFrom) &
+											  Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateTo);
 
-		var statisticsGrouped = await statisticsCollection
+		StatisticBase? statisticsGrouped = await statisticsCollection
 			.Aggregate()
 			.Match(filter)
 			.Group(k => k.AccountID,
@@ -206,10 +205,10 @@ public sealed class StatisticsService
 	{
 		logger.LogInformation("Calculating all-time statistics for account: {AccountID}.", accountID);
 
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
-					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime);
+		FilterDefinition<Statistic>? filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
+											  Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime);
 
-		var statistics = await statisticsCollection.Find(filter).FirstOrDefaultAsync();
+		Statistic? statistics = await statisticsCollection.Find(filter).FirstOrDefaultAsync();
 
 		var result = new List<StatisticDTO>();
 
@@ -232,7 +231,7 @@ public sealed class StatisticsService
 			Window = StatisticWindow.Daily,
 		};
 
-		var flags = statisticBase.Validate();
+		List<string>? flags = statisticBase.Validate();
 		if (flags.Any())
 		{
 			newStatistic.Flagged = flags;
@@ -248,17 +247,20 @@ public sealed class StatisticsService
 	/// <returns></returns>
 	public async Task MergeOldStatisticsAsync()
 	{
-		var dateBefore = DateTime.UtcNow.AddDays(-7).Date;
+		DateTime dateBefore = DateTime.UtcNow.AddDays(-7).Date;
 
 		logger.LogInformation("Merging statistics older than: {Date}.", dateBefore);
 
-		var filter = Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
-					 Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateBefore) &
-					 Builders<Statistic>.Filter.Exists(f => f.Flagged, false);
+		FilterDefinition<Statistic>? filter = Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.Daily) &
+											  Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateBefore) &
+											  Builders<Statistic>.Filter.Exists(f => f.Flagged, false);
 
-		var statistics = await statisticsCollection.Find(filter).ToListAsync();
+		List<Statistic>? statistics = await statisticsCollection.Find(filter).ToListAsync();
 
-		if (!statistics.Any()) return;
+		if (!statistics.Any())
+		{
+			return;
+		}
 
 		var statisticsGrouped = statistics
 			.GroupBy(g => new { g.AccountID, g.CreatedAt.Date })
@@ -271,14 +273,14 @@ public sealed class StatisticsService
 			})
 			.ToList();
 
-		var accountIds = statisticsGrouped.Select(s => s.AccountId).ToArray();
-		var dates = statisticsGrouped.Select(s => s.CreatedAt).ToArray();
-		var alreadyMergedFilter = Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.DailyMerged) &
-								  Builders<Statistic>.Filter.In(f => f.AccountID, accountIds) &
-								  Builders<Statistic>.Filter.In(f => f.CreatedAt, dates);
+		EpicID[]? accountIds = statisticsGrouped.Select(s => s.AccountId).ToArray();
+		DateTime[]? dates = statisticsGrouped.Select(s => s.CreatedAt).ToArray();
+		FilterDefinition<Statistic>? alreadyMergedFilter = Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.DailyMerged) &
+														   Builders<Statistic>.Filter.In(f => f.AccountID, accountIds) &
+														   Builders<Statistic>.Filter.In(f => f.CreatedAt, dates);
 
 		// This will fetch previously merged records so that un-flagged records can be merged with them
-		var alreadyMergedStatistics = await statisticsCollection.Find(alreadyMergedFilter).ToListAsync();
+		List<Statistic>? alreadyMergedStatistics = await statisticsCollection.Find(alreadyMergedFilter).ToListAsync();
 
 		var mergedStatistics = new List<Statistic>();
 		var modifiedStatisticIds = new List<string>();
@@ -297,7 +299,7 @@ public sealed class StatisticsService
 					statisticsToMerge.Add(alreadyMergedStatistic);
 				}
 
-				var mergedStatistic = MergeStatistics(statisticsToMerge);
+				Statistic? mergedStatistic = MergeStatistics(statisticsToMerge);
 				mergedStatistic.CreatedAt = mergedStatistic.CreatedAt.Date;
 				mergedStatistic.Window = StatisticWindow.DailyMerged;
 				mergedStatistics.Add(mergedStatistic);
@@ -315,7 +317,7 @@ public sealed class StatisticsService
 																f.CreatedAt.Date == statisticsGroup.CreatedAt.Date) is { } alreadyMergedStatistic)
 				{
 					var statisticsToMerge = new List<Statistic>(statisticsGroup.Statistics) { alreadyMergedStatistic };
-					var mergedStatistic = MergeStatistics(statisticsToMerge);
+					Statistic? mergedStatistic = MergeStatistics(statisticsToMerge);
 					mergedStatistic.CreatedAt = mergedStatistic.CreatedAt.Date;
 					mergedStatistic.Window = StatisticWindow.DailyMerged;
 					mergedStatistics.Add(mergedStatistic);
@@ -340,7 +342,7 @@ public sealed class StatisticsService
 		{
 			await statisticsCollection.InsertManyAsync(mergedStatistics);
 
-			var deleteFilter = Builders<Statistic>.Filter.In(f => f.ID, statisticIdsToDelete);
+			FilterDefinition<Statistic>? deleteFilter = Builders<Statistic>.Filter.In(f => f.ID, statisticIdsToDelete);
 			await statisticsCollection.DeleteManyAsync(deleteFilter);
 			logger.LogInformation("Deleting the following statistics: {StatisticIds}.", string.Join(", ", statisticIdsToDelete));
 		}
@@ -351,8 +353,8 @@ public sealed class StatisticsService
 			var bulkWriteModelList = new List<WriteModel<Statistic>>();
 			foreach (var modifiedStatisticId in modifiedStatisticIds)
 			{
-				var updateFilter = Builders<Statistic>.Filter.Eq(f => f.ID, modifiedStatisticId);
-				var updateDefinition = Builders<Statistic>.Update
+				FilterDefinition<Statistic>? updateFilter = Builders<Statistic>.Filter.Eq(f => f.ID, modifiedStatisticId);
+				UpdateDefinition<Statistic>? updateDefinition = Builders<Statistic>.Update
 					.Set(s => s.Window, StatisticWindow.DailyMerged)
 					.Unset(u => u.Flagged);
 				bulkWriteModelList.Add(new UpdateOneModel<Statistic>(updateFilter, updateDefinition));
@@ -372,14 +374,14 @@ public sealed class StatisticsService
 	{
 		logger.LogInformation("Updating all-time statistics for account: {AccountID}.", newStatistic.AccountID);
 
-		var filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, newStatistic.AccountID) &
-					 Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime);
+		FilterDefinition<Statistic>? filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, newStatistic.AccountID) &
+											  Builders<Statistic>.Filter.Eq(f => f.Window, StatisticWindow.AllTime);
 
-		var existingStatistic = await statisticsCollection.Find(filter).FirstOrDefaultAsync();
+		Statistic? existingStatistic = await statisticsCollection.Find(filter).FirstOrDefaultAsync();
 
 		if (existingStatistic is not null)
 		{
-			var mergedStatistic = MergeStatistics(new List<Statistic>() { existingStatistic, newStatistic });
+			Statistic? mergedStatistic = MergeStatistics(new List<Statistic>() { existingStatistic, newStatistic });
 			mergedStatistic.Window = StatisticWindow.AllTime;
 			mergedStatistic.ModifiedAt = DateTime.UtcNow;
 
@@ -409,9 +411,12 @@ public sealed class StatisticsService
 
 		if (statisticBase is not null)
 		{
-			foreach (var element in statisticBase.ToBsonDocument().Elements)
+			foreach (BsonElement element in statisticBase.ToBsonDocument().Elements)
 			{
-				if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower())) continue;
+				if (!StatisticBase.StatisticProperties.Contains(element.Name.ToLower()))
+				{
+					continue;
+				}
 
 				var value = element.Value.ToInt64();
 
@@ -438,7 +443,7 @@ public sealed class StatisticsService
 	/// <returns>Statistic object</returns>
 	private static Statistic MergeStatistics(List<Statistic> statistics)
 	{
-		var merged = statistics
+		Statistic? merged = statistics
 			.GroupBy(g => g.AccountID)
 			.Select(s => new Statistic
 			{
@@ -609,17 +614,17 @@ public sealed class StatisticsService
 			throw new ArgumentException($"You can delete only statistics that are at least {MinimumDaysForDeletingOldStatistics} days old.", nameof(days));
 		}
 
-		var removeBeforeDate = DateTime.UtcNow.Date.AddDays(-days);
+		DateTime removeBeforeDate = DateTime.UtcNow.Date.AddDays(-days);
 
-		var filter = Builders<Statistic>.Filter.Lt(f => f.CreatedAt, removeBeforeDate) &
-					 Builders<Statistic>.Filter.In(f => f.Window, new List<StatisticWindow>() { StatisticWindow.Daily });
+		FilterDefinition<Statistic>? filter = Builders<Statistic>.Filter.Lt(f => f.CreatedAt, removeBeforeDate) &
+											  Builders<Statistic>.Filter.In(f => f.Window, new List<StatisticWindow>() { StatisticWindow.Daily });
 
 		if (skipFlagged)
 		{
 			filter &= Builders<Statistic>.Filter.Exists(f => f.Flagged, false);
 		}
 
-		var result = await statisticsCollection.DeleteManyAsync(filter);
+		DeleteResult? result = await statisticsCollection.DeleteManyAsync(filter);
 
 		logger.LogInformation("Deleted {Count} statistics successfully.", result.DeletedCount);
 
@@ -628,9 +633,11 @@ public sealed class StatisticsService
 
 	public async Task<long?> RemoveAllByAccountAsync(EpicID accountID)
 	{
-		var result = await statisticsCollection.DeleteManyAsync(x => x.AccountID == accountID);
+		DeleteResult? result = await statisticsCollection.DeleteManyAsync(x => x.AccountID == accountID);
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return result.DeletedCount;
 	}

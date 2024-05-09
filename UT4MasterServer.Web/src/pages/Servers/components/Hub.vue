@@ -8,13 +8,21 @@
       <div class="server-name" :title="hub.serverName">
         {{ hub.serverName }}
       </div>
-      <div class="text-info" title="Trusted Hub">
-        <FontAwesomeIcon v-if="trustedHub" icon="fa-solid fa-certificate" />
+      <div class="text-info">
+        <FontAwesomeIcon
+          v-if="trustedHub"
+          title="Trusted Hub"
+          icon="fa-solid fa-certificate"
+        />
+        <FontAwesomeIcon v-if="ut4uu" title="UT4UU" icon="fa-solid fa-u" />
       </div>
     </div>
     <div class="d-flex justify-content-between">
       <div>{{ hub.matches.length }} Matches</div>
       <div>{{ hub.totalPlayers }} Players</div>
+    </div>
+    <div v-if="hub.forcedMutators?.length" class="mutators">
+      <strong>Mutators:</strong> {{ hub.forcedMutators?.join(', ') }}
     </div>
     <MatchList v-if="showMatches" :hub="hub" />
   </div>
@@ -38,6 +46,14 @@
     white-space: nowrap;
     max-width: 80vw;
   }
+
+  .mutators {
+    font-size: 0.7rem;
+  }
+
+  .text-info svg:not(:first-child) {
+    margin-left: 0.5rem;
+  }
 }
 </style>
 
@@ -60,4 +76,6 @@ const showMatches = shallowRef(false);
 const trustedHub = computed(
   () => props.hub.serverTrustLevel !== GameServerTrust.Untrusted
 );
+
+const ut4uu = computed(() => props.hub.uuInstalled);
 </script>

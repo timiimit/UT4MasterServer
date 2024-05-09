@@ -45,11 +45,13 @@ public sealed class CodeService
 		{
 			lock (codes) // Make sure codes are thread-safe
 			{
-				int i = codes.FindIndex(x => x.Token.Value == code && x.Kind == kind);
+				var i = codes.FindIndex(x => x.Token.Value == code && x.Kind == kind);
 				if (i == -1)
+				{
 					return null;
+				}
 
-				var ret = codes[i];
+				Code? ret = codes[i];
 				codes.RemoveAt(i);
 				return ret;
 			}

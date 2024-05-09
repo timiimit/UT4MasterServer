@@ -1,5 +1,6 @@
 export enum GameMode {
   duel = '/Script/UnrealTournament.UTDuelGameMode',
+  duel2 = '/Script/UnrealTournament.UTDuelGame',
   deathmatch = '/Script/UnrealTournament.UTDMGameMode',
   ctf = '/Script/UnrealTournament.UTCTFGameMode',
   blitz = '/Script/UnrealTournament.UTFlagRunGame',

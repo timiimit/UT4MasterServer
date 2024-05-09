@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 
 namespace UT4MasterServer.Models;
 
@@ -40,10 +40,12 @@ public class GameServerAttributes
 
 	public void Update(GameServerAttributes other)
 	{
-		foreach (var attribute in other.serverConfigs)
+		foreach (KeyValuePair<string, object> attribute in other.serverConfigs)
 		{
 			if (UnownedAttributeNames.Contains(attribute.Key))
+			{
 				continue;
+			}
 
 			SetDirect(attribute.Key, attribute.Value);
 		}
@@ -57,7 +59,10 @@ public class GameServerAttributes
 	public object? Get(string key)
 	{
 		if (!Contains(key))
+		{
 			return null;
+		}
+
 		return serverConfigs[key];
 	}
 
@@ -70,8 +75,8 @@ public class GameServerAttributes
 	{
 		var attrs = new KeyValuePair<string, JsonNode?>[serverConfigs.Count];
 
-		int i = 0;
-		foreach (var kvp in serverConfigs)
+		var i = 0;
+		foreach (KeyValuePair<string, object> kvp in serverConfigs)
 		{
 			if (kvp.Key.EndsWith("_b"))
 			{
@@ -96,14 +101,20 @@ public class GameServerAttributes
 		if (value != null)
 		{
 			if (serverConfigs.ContainsKey(key))
+			{
 				serverConfigs[key] = value;
+			}
 			else
+			{
 				serverConfigs.Add(key, value);
+			}
 		}
 		else
 		{
 			if (serverConfigs.ContainsKey(key))
+			{
 				serverConfigs.Remove(key);
+			}
 		}
 	}
 }

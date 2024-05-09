@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Common.Enums;
+namespace UT4MasterServer.Common.Enums;
 
 [Flags]
 public enum AccountFlags

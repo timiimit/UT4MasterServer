@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using UT4MasterServer.Models.Settings;
 
 namespace UT4MasterServer.Controllers;
@@ -32,7 +34,7 @@ public class JsonAPIController : ControllerBase
 	public ContentResult Json(string content, int status)
 	{
 		// i cant find a better way than to do this.
-		var r = Content(content, MimeJson);
+		ContentResult? r = Content(content, MimeJson);
 		r.StatusCode = status;
 		return r;
 	}
@@ -40,13 +42,13 @@ public class JsonAPIController : ControllerBase
 	[NonAction]
 	public ContentResult Json(JToken content)
 	{
-		return Json(content.ToString(Newtonsoft.Json.Formatting.None));
+		return Json(content.ToString(Formatting.None));
 	}
 
 	[NonAction]
 	public ContentResult Json(JToken content, int status)
 	{
-		var r = Json(content.ToString(Newtonsoft.Json.Formatting.None));
+		ContentResult? r = Json(content.ToString(Formatting.None));
 		r.StatusCode = status;
 		return r;
 	}
@@ -54,15 +56,15 @@ public class JsonAPIController : ControllerBase
 	[NonAction]
 	public ContentResult Json(JToken content, bool humanReadable)
 	{
-		var formatting = humanReadable ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+		Formatting formatting = humanReadable ? Formatting.Indented : Formatting.None;
 		return Json(content.ToString(formatting));
 	}
 
 	[NonAction]
 	public ContentResult Json(JToken content, int status, bool humanReadable)
 	{
-		var formatting = humanReadable ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
-		var r = Json(content.ToString(formatting));
+		Formatting formatting = humanReadable ? Formatting.Indented : Formatting.None;
+		ContentResult? r = Json(content.ToString(formatting));
 		r.StatusCode = status;
 		return r;
 	}
@@ -82,36 +84,44 @@ public class JsonAPIController : ControllerBase
 	[NonAction]
 	protected IPAddress? GetClientIP(IOptions<ApplicationSettings>? proxyInfo)
 	{
-		var ipAddress = HttpContext.Connection.RemoteIpAddress;
+		IPAddress? ipAddress = HttpContext.Connection.RemoteIpAddress;
 		if (ipAddress == null)
+		{
 			return null;
+		}
 
 		// if we have no proxy info, we can only trust the actual ip
 		if (proxyInfo == null)
+		{
 			return ipAddress;
+		}
 
 		// if we don't know the header that proxy is supposed to use,
 		// we can only trust the actual ip
 		if (string.IsNullOrWhiteSpace(proxyInfo.Value.ProxyClientIPHeader))
+		{
 			return ipAddress;
+		}
 
 		// get all instances of specified header
-		var headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
+		StringValues headers = HttpContext.Request.Headers[proxyInfo.Value.ProxyClientIPHeader];
 
 		// info on how to generally handle X-Forwarded-For:
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
 
 		// look through each instance of the header bottom-to-top
-		for (int hi = headers.Count - 1; hi >= 0; hi--)
+		for (var hi = headers.Count - 1; hi >= 0; hi--)
 		{
 			var header = headers[hi];
 			if (header == null)
+			{
 				continue;
+			}
 
 			string[] headerParts = header.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 			// look through each part of header from right-to-left
-			for (int i = headerParts.Length - 1; i >= 0; i--)
+			for (var i = headerParts.Length - 1; i >= 0; i--)
 			{
 				// determine whether we trust last sender
 				if (ipAddress != null &&
@@ -131,15 +141,19 @@ public class JsonAPIController : ControllerBase
 		return ipAddress;
 	}
 
-	private bool IsTrustedMachine(IOptions<ApplicationSettings> proxyInfo, IPAddress ip)
+	private static bool IsTrustedMachine(IOptions<ApplicationSettings> proxyInfo, IPAddress ip)
 	{
 		foreach (var trustedProxyString in proxyInfo.Value.ProxyServers)
 		{
-			if (!IPAddress.TryParse(trustedProxyString, out var trustedProxy))
+			if (!IPAddress.TryParse(trustedProxyString, out IPAddress? trustedProxy))
+			{
 				continue;
+			}
 
 			if (trustedProxy.Equals(ip))
+			{
 				return true;
+			}
 		}
 		return false;
 	}

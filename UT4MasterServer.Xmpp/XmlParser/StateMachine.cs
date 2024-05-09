@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Xmpp.XmlParser;
+namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class StateMachine<T>
 {
@@ -77,15 +77,18 @@ public class StateMachine<T>
 				return exact.NextState;
 			}
 		}
+
 		return -1;
 	}
 
 	public int NextChar(int currentState, T value)
 	{
-		if (!automata.ContainsKey(currentState))
+		if (!automata.TryGetValue(currentState, out List<StateCondition>? automaton))
+		{
 			return -1;
+		}
 
-		foreach (var condition in automata[currentState])
+		foreach (StateCondition? condition in automaton)
 		{
 			var nextState = CheckCondition(currentState, value, condition);
 			if (nextState >= 0)

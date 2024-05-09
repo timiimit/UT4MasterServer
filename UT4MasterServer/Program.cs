@@ -1,17 +1,19 @@
+using System.Configuration;
+using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson.Serialization;
 using Serilog;
-using System.Net;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Common;
 using UT4MasterServer.Configuration;
 using UT4MasterServer.Formatters;
 using UT4MasterServer.Models.Database;
-using UT4MasterServer.Common;
-using UT4MasterServer.Services;
 using UT4MasterServer.Models.Settings;
 using UT4MasterServer.Serializers.Bson;
 using UT4MasterServer.Serializers.Json;
+using UT4MasterServer.Services;
+using UT4MasterServer.Services.Hosted;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
 using UT4MasterServer.Services.Hosted;
@@ -47,7 +49,7 @@ public static class Program
 		});
 
 		// start up asp.net
-		var builder = WebApplication.CreateBuilder(args);
+		WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
 		builder.Services.AddControllers(o =>
 		{
@@ -71,15 +73,19 @@ public static class Program
 		{
 			// handle proxy list loading
 			if (string.IsNullOrWhiteSpace(x.ProxyServersFile))
+			{
 				return;
+			}
 
 			try
 			{
 				var proxies = File.ReadAllLines(x.ProxyServersFile);
 				foreach (var proxy in proxies)
 				{
-					if (!IPAddress.TryParse(proxy, out var ip))
+					if (!IPAddress.TryParse(proxy, out IPAddress? ip))
+					{
 						continue;
+					}
 
 					x.ProxyServers.Add(ip.ToString());
 				}
@@ -96,7 +102,7 @@ public static class Program
 			{
 				if (string.IsNullOrWhiteSpace(x.SecretKey) || string.IsNullOrWhiteSpace(x.SiteKey))
 				{
-					throw new Exception("Must specify ApplicationSettings.ReCaptchaSettings in production environment");
+					throw new ConfigurationErrorsException("Must specify ApplicationSettings.ReCaptchaSettings in production environment");
 				}
 			}
 		});
@@ -166,7 +172,7 @@ public static class Program
 							Id = HttpAuthorization.BearerScheme,
 						}
 					},
-					new string[] { }
+					Array.Empty<string>()
 				},
 			});
 		});
@@ -193,7 +199,7 @@ public static class Program
 				var websiteDomain = builder.Configuration.GetSection("ApplicationSettings")["WebsiteDomain"];
 				if (string.IsNullOrWhiteSpace(websiteDomain))
 				{
-					throw new Exception("Must specify ApplicationSettings.WebsiteDomain in production environment");
+					throw new ConfigurationErrorsException("Must specify ApplicationSettings.WebsiteDomain in production environment");
 				}
 
 				options.AddPolicy(
@@ -208,7 +214,7 @@ public static class Program
 			}
 		});
 
-		var app = builder.Build();
+		WebApplication? app = builder.Build();
 
 		InternalLoggerConfiguration.Configure(app.Environment, app.Configuration);
 

@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Primitives;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Database;
 using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Authentication;
@@ -23,7 +25,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 	{
 		return await Task.Run(async () =>
 		{
-			var authorizationHeader = Request.Headers[HttpAuthorization.AuthorizationHeader];
+			StringValues authorizationHeader = Request.Headers[HttpAuthorization.AuthorizationHeader];
 			var authorization = new HttpAuthorization(authorizationHeader);
 			if (!authorization.IsBasic)
 			{
@@ -36,7 +38,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 				return AuthenticateResult.Fail("unexpected value in authorization header");
 			}
 
-			var client = await clientService.GetAsync(clientParser.ID);
+			Client? client = await clientService.GetAsync(clientParser.ID);
 			if (client == null)
 			{
 				return AuthenticateResult.Fail("unknown client tried to authenticate");

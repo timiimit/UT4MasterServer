@@ -1,10 +1,10 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 
 namespace UT4MasterServer.Models.Database;
 using System.Text.Json.Serialization;
-using UT4MasterServer.Common.Enums;
-using UT4MasterServer.Common.Helpers;
+using Common.Enums;
+using Common.Helpers;
 
 [BsonIgnoreExtraElements]
 public class Account
@@ -89,13 +89,19 @@ public class Account
 			// calculation for levels over 50 from UT4UU - port from c++ to c# is untested
 			// find required xp per certain level here: https://docs.google.com/spreadsheets/d/1gvoxW2UMk8_O1E1emObkQNy1kzPOQ1Wmu0YvslMAwyE
 
-			ulong xp_in = (ulong)XP;
+			var xp_in = (ulong)XP;
 			if (xp_in < 50)
+			{
 				return 1;
+			}
+
 			if (xp_in < 150)
+			{
 				return 2;
+			}
+
 			// note: req to next level, so element 0 is XP required for level 1
-			ulong xp = 0;
+			ulong xp;
 			ulong Increment = 50;
 			ulong Step = 50;
 			xp = Step;
@@ -126,13 +132,7 @@ public class Account
 	public int LevelStockLimited => Math.Min(50, (int)Level);
 
 	[BsonIgnore]
-	public string[]? Roles
-	{
-		get
-		{
-			return EnumHelpers.EnumToStrings(Flags).ToArray();
-		}
-	}
+	public string[]? Roles => EnumHelpers.EnumToStrings(Flags).ToArray();
 
 	public bool CheckPassword(string password, bool allowPasswordGrant)
 	{
@@ -140,7 +140,9 @@ public class Account
 		if (Password != PasswordHelper.GetPasswordHash(ID, password))
 		{
 			if (!allowPasswordGrant)
+			{
 				return false;
+			}
 
 			// when user uses the website, password is never transmitted to us, only it's hash.
 			// when user logs into the game via the stock in-game login window, password IS transmitted to us.
@@ -151,7 +153,9 @@ public class Account
 
 			// hash the password with account id
 			if (Password != PasswordHelper.GetPasswordHash(ID, password))
+			{
 				return false;
+			}
 		}
 		return true;
 	}

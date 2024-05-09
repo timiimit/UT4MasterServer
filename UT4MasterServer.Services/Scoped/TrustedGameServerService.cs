@@ -16,7 +16,7 @@ public sealed class TrustedGameServerService
 	public async Task<TrustedGameServer?> GetAsync(EpicID id)
 	{
 		var options = new FindOptions<TrustedGameServer>() { Limit = 1 };
-		var cursor = await collection.FindAsync(x => x.ID == id, options);
+		IAsyncCursor<TrustedGameServer>? cursor = await collection.FindAsync(x => x.ID == id, options);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
@@ -28,15 +28,17 @@ public sealed class TrustedGameServerService
 
 	public async Task<List<TrustedGameServer>> ListAsync()
 	{
-		var result = await collection.FindAsync(x => true);
+		IAsyncCursor<TrustedGameServer>? result = await collection.FindAsync(x => true);
 		return await result.ToListAsync();
 	}
 
 	public async Task<bool?> RemoveAsync(EpicID id)
 	{
-		var result = await collection.DeleteOneAsync(x => x.ID == id);
+		DeleteResult? result = await collection.DeleteOneAsync(x => x.ID == id);
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return result.DeletedCount > 0;
 	}

@@ -67,7 +67,9 @@ public class StanzaPresence : Stanza
 	public static async Task<StanzaPresence?> ReadAsync(XmlReader reader, CancellationToken cancellationToken)
 	{
 		if (reader.Name != "presence")
+		{
 			return null;
+		}
 
 		try
 		{
@@ -77,7 +79,7 @@ public class StanzaPresence : Stanza
 			var type = reader.GetAttribute("type");
 			if (type == "error")
 			{
-				var stanzaError = await StanzaError.ReadAsync(reader, cancellationToken);
+				StanzaError? stanzaError = await StanzaError.ReadAsync(reader, cancellationToken);
 				if (stanzaError is null)
 				{
 					return null;
@@ -85,12 +87,14 @@ public class StanzaPresence : Stanza
 
 				await reader.ReadAsync();
 				if (reader.NodeType != XmlNodeType.EndElement || reader.Name != "presence")
+				{
 					return null;
+				}
 
 				return new StanzaPresence() { From = JID.Parse(from), Error = stanzaError };
 			}
 
-			var show = ShowElementValues.Available;
+			ShowElementValues show = ShowElementValues.Available;
 			var status = string.Empty;
 
 			await reader.ReadAsync();
@@ -117,7 +121,9 @@ public class StanzaPresence : Stanza
 
 				await reader.ReadAsync();
 				if (reader.NodeType != XmlNodeType.EndElement || reader.Name != "show")
+				{
 					return null;
+				}
 
 				await reader.ReadAsync();
 			}
@@ -129,7 +135,9 @@ public class StanzaPresence : Stanza
 
 				await reader.ReadAsync();
 				if (reader.NodeType != XmlNodeType.EndElement || reader.Name != "status")
+				{
 					return null;
+				}
 
 				await reader.ReadAsync();
 			}

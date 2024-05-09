@@ -1,4 +1,4 @@
-﻿using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Enums;
 
 namespace UT4MasterServer.Common.Helpers;
 

@@ -1,19 +1,19 @@
-﻿#define USE_LOCALHOST_TEST
+#define USE_LOCALHOST_TEST
 
+using System.Net;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
+using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Models;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Requests;
-using UT4MasterServer.Models.Settings;
-using UT4MasterServer.Common;
-using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Models.DTO.Responses;
-using UT4MasterServer.Common.Enums;
-using System.Text.Json.Nodes;
-using UT4MasterServer.Models;
+using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers.UT;
 
@@ -51,9 +51,11 @@ public sealed class MatchmakingController : JsonAPIController
 	public async Task<IActionResult> CreateGameServer([FromBody] GameServer server)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
-		var ipClient = GetClientIP(configuration);
+		IPAddress? ipClient = GetClientIP(configuration);
 		if (ipClient == null)
 		{
 			logger.LogError("Could not determine IP Address of remote machine.");
@@ -76,7 +78,7 @@ public sealed class MatchmakingController : JsonAPIController
 		server.Started = false;
 
 		GameServerTrust trust = GameServerTrust.Untrusted;
-		var trusted = await trustedGameServerService.GetAsync(server.OwningClientID);
+		TrustedGameServer? trusted = await trustedGameServerService.GetAsync(server.OwningClientID);
 		if (trusted != null)
 		{
 			trust = trusted.TrustLevel;
@@ -89,13 +91,13 @@ public sealed class MatchmakingController : JsonAPIController
 			if (!isGameInstance)
 			{
 				// Hubs/servers listed in server browser are required to have specific name
-				var client = await clientService.GetAsync(server.OwningClientID);
+				Client? client = await clientService.GetAsync(server.OwningClientID);
 				if (client == null)
 				{
-					throw new Exception("This should never happen");
+					throw new InvalidOperationException("Client with the specified ID was not found.");
 				}
 
-				var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string;
+				var serverName = server.Attributes.Get(GameServerAttributes.UT_SERVERNAME_s) as string ?? string.Empty;
 				var isRanked = (int?)server.Attributes.Get(GameServerAttributes.UT_RANKED_i) == 1;
 				if (trust != GameServerTrust.Epic && !isRanked && serverName.Trim() != client.Name.Trim())
 				{
@@ -104,7 +106,6 @@ public sealed class MatchmakingController : JsonAPIController
 				}
 			}
 		}
-
 
 		if (await matchmakingService.DoesExistWithSessionAsync(server.SessionID))
 		{
@@ -121,22 +122,30 @@ public sealed class MatchmakingController : JsonAPIController
 	public async Task<IActionResult> UpdateGameServer(string id, [FromBody] GameServer updatedServer)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
 		var serverID = EpicID.FromString(id);
 
 		if (updatedServer.ID != serverID)
+		{
 			return UnknownSessionId(id);
+		}
 
 		updatedServer.SessionID = user.Session.ID;
 		updatedServer.OwningClientID = user.Session.ClientID;
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
+		{
 			return UnknownSessionId(id);
+		}
 
 		if (server.OwningClientID != user.Session.ClientID)
+		{
 			Unauthorized();
+		}
 
 		server.Update(updatedServer);
 
@@ -150,13 +159,17 @@ public sealed class MatchmakingController : JsonAPIController
 	{
 		// NOTE: this method is called by client game after server resets session
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
+		{
 			return UnknownSessionId(id);
+		}
 
 		return Ok(server.ToJson(false));
 	}
@@ -165,23 +178,31 @@ public sealed class MatchmakingController : JsonAPIController
 	public async Task<IActionResult> DeleteGameServer(string id)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
+		{
 			return UnknownSessionId(id);
+		}
 
 		if (server.OwningClientID != user.Session.ClientID)
+		{
 			Unauthorized();
+		}
 
-		bool wasDeleted = await matchmakingService.RemoveAsync(EpicID.FromString(id));
+		var wasDeleted = await matchmakingService.RemoveAsync(EpicID.FromString(id));
 
 		// TODO: unknown actual responses but these seem to work
 
 		if (!wasDeleted)
+		{
 			return UnknownSessionId(id);
+		}
 
 		return Ok();
 	}
@@ -202,14 +223,20 @@ public sealed class MatchmakingController : JsonAPIController
 	public async Task<IActionResult> GameServerHeartbeat(string id)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
-		var server = await matchmakingService.GetAsync(EpicID.FromString(id));
+		GameServer? server = await matchmakingService.GetAsync(EpicID.FromString(id));
 		if (server == null)
+		{
 			return UnknownSessionId(id);
+		}
 
 		if (server.OwningClientID != user.Session.ClientID)
+		{
 			Unauthorized();
+		}
 
 #if false
 		// HACK: server will create new session 2h before current one expires.
@@ -248,19 +275,25 @@ public sealed class MatchmakingController : JsonAPIController
 	public async Task<IActionResult> UpdateGameServerPlayers(string id, [FromBody] GameServer serverOnlyWithPlayers)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
+		{
 			return NoContent();
+		}
 
 		if (server.OwningClientID != user.Session.ClientID)
+		{
 			Unauthorized();
+		}
 
 		// handle player list update
-		foreach (var player in serverOnlyWithPlayers.PublicPlayers)
+		foreach (EpicID player in serverOnlyWithPlayers.PublicPlayers)
 		{
 			if (!server.PublicPlayers.Where(x => x == player).Any())
 			{
@@ -271,7 +304,7 @@ public sealed class MatchmakingController : JsonAPIController
 				server.PrivatePlayers.Remove(player);
 			}
 		}
-		foreach (var player in serverOnlyWithPlayers.PrivatePlayers)
+		foreach (EpicID player in serverOnlyWithPlayers.PrivatePlayers)
 		{
 			if (!server.PrivatePlayers.Where(x => x == player).Any())
 			{
@@ -292,16 +325,22 @@ public sealed class MatchmakingController : JsonAPIController
 	public async Task<IActionResult> RemovePlayer(string id, [FromBody] EpicID[] players)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
-		var server = await matchmakingService.GetAsync(EpicID.FromString(id));
+		GameServer? server = await matchmakingService.GetAsync(EpicID.FromString(id));
 		if (server == null)
+		{
 			return UnknownSessionId(id);
+		}
 
 		if (server.OwningClientID != user.Session.ClientID)
+		{
 			Unauthorized();
+		}
 
-		foreach (var player in players)
+		foreach (EpicID player in players)
 		{
 			server.PublicPlayers.Remove(player);
 			server.PrivatePlayers.Remove(player);
@@ -325,7 +364,7 @@ public sealed class MatchmakingController : JsonAPIController
 			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
 
-		var servers = await matchmakingService.ListAsync(filter);
+		List<GameServer>? servers = await matchmakingService.ListAsync(filter);
 
 		//var list = new GameServer[]
 		//{
@@ -340,7 +379,7 @@ public sealed class MatchmakingController : JsonAPIController
 		//};
 
 		var arr = new JsonArray();
-		foreach (var server in servers)
+		foreach (GameServer? server in servers)
 		{
 #if DEBUG && USE_LOCALHOST_TEST
 			server.ServerAddress = "127.0.0.1";
@@ -375,12 +414,16 @@ public sealed class MatchmakingController : JsonAPIController
 	public async Task<IActionResult> PlayerJoinGameServer(string id, [FromQuery(Name = "accountId")] string accountID)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
-		EpicID eid = EpicID.FromString(id);
+		var eid = EpicID.FromString(id);
 
 		if (!await matchmakingService.DoesExistAsync(eid))
+		{
 			return UnknownSessionId(id);
+		}
 
 		// TODO: we should verify that specific user has joined specific GameServer
 		//       instead of just relying on GameServer blindly believing that user
@@ -411,16 +454,22 @@ public sealed class MatchmakingController : JsonAPIController
 	private async Task<IActionResult> ChangeGameServerStarted(string id, bool started)
 	{
 		if (User.Identity is not EpicUserIdentity user)
+		{
 			return Unauthorized();
+		}
 
 		var serverID = EpicID.FromString(id);
 
-		var server = await matchmakingService.GetAsync(serverID);
+		GameServer? server = await matchmakingService.GetAsync(serverID);
 		if (server == null)
+		{
 			return UnknownSessionId(id);
+		}
 
 		if (server.OwningClientID != user.Session.ClientID)
+		{
 			Unauthorized();
+		}
 
 		server.Started = started;
 

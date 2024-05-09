@@ -7,6 +7,11 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["UT4MasterServer/UT4MasterServer.csproj", "UT4MasterServer/"]
+COPY ["UT4MasterServer.Authentication/UT4MasterServer.Authentication.csproj", "UT4MasterServer.Authentication/"]
+COPY ["UT4MasterServer.Common/UT4MasterServer.Common.csproj", "UT4MasterServer.Common/"]
+COPY ["UT4MasterServer.Models/UT4MasterServer.Models.csproj", "UT4MasterServer.Models/"]
+COPY ["UT4MasterServer.Serializers/UT4MasterServer.Serializers.csproj", "UT4MasterServer.Serializers/"]
+COPY ["UT4MasterServer.Services/UT4MasterServer.Services.csproj", "UT4MasterServer.Services/"]
 RUN dotnet restore "UT4MasterServer/UT4MasterServer.csproj"
 COPY . .
 WORKDIR "/src/UT4MasterServer"

@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 using System.Security.Cryptography;
 
 namespace UT4MasterServer.Models.Database;
@@ -15,13 +15,13 @@ public class Token
 	public DateTime ExpirationTime { get; set; }
 
 	[BsonIgnore]
-	public TimeSpan ExpirationDuration { get => ExpirationTime - DateTime.UtcNow; }
+	public TimeSpan ExpirationDuration => ExpirationTime - DateTime.UtcNow;
 
 	[BsonIgnore]
-	public int ExpirationDurationInSeconds { get => (int)ExpirationDuration.TotalSeconds; }
+	public int ExpirationDurationInSeconds => (int)ExpirationDuration.TotalSeconds;
 
 	[BsonIgnore]
-	public bool HasExpired { get => DateTime.UtcNow > ExpirationTime; }
+	public bool HasExpired => DateTime.UtcNow > ExpirationTime;
 
 	public Token(string value, DateTime expiration)
 	{
@@ -48,7 +48,7 @@ public class Token
 
 		// we could infer importance of length/security based on expiration
 
-		byte[] bytes = new byte[32];
+		var bytes = new byte[32];
 		r.GetBytes(bytes);
 
 		var tokenString = Convert.ToHexString(bytes).ToLower();

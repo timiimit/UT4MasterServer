@@ -29,8 +29,8 @@ public sealed class AccountService
 
 	public async Task CreateIndexesAsync()
 	{
-		var indexKeys = Builders<Account>.IndexKeys;
-		var indexes = new[]
+		IndexKeysDefinitionBuilder<Account>? indexKeys = Builders<Account>.IndexKeys;
+		CreateIndexModel<Account>[]? indexes = new[]
 		{
 			new CreateIndexModel<Account>(indexKeys.Ascending(f => f.Username)),
 			new CreateIndexModel<Account>(indexKeys.Ascending(f => f.Email))
@@ -57,19 +57,19 @@ public sealed class AccountService
 
 	public async Task<Account?> GetAccountByEmailAsync(string email)
 	{
-		var cursor = await accountCollection.FindAsync(account => account.Email == email);
+		IAsyncCursor<Account>? cursor = await accountCollection.FindAsync(account => account.Email == email);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<Account?> GetAccountAsync(EpicID id)
 	{
-		var cursor = await accountCollection.FindAsync(account => account.ID == id);
+		IAsyncCursor<Account>? cursor = await accountCollection.FindAsync(account => account.ID == id);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
 	public async Task<Account?> GetAccountAsync(string username)
 	{
-		var cursor = await accountCollection.FindAsync(account => account.Username == username);
+		IAsyncCursor<Account>? cursor = await accountCollection.FindAsync(account => account.Username == username);
 		return await cursor.SingleOrDefaultAsync();
 	}
 
@@ -90,11 +90,11 @@ public sealed class AccountService
 			Limit = limit
 		};
 
-		var taskCount = accountCollection.CountDocumentsAsync(filter);
-		var taskCursor = accountCollection.FindAsync(filter, options);
+		Task<long>? taskCount = accountCollection.CountDocumentsAsync(filter);
+		Task<IAsyncCursor<Account>>? taskCursor = accountCollection.FindAsync(filter, options);
 
 		var count = await taskCount;
-		var cursor = await taskCursor;
+		IAsyncCursor<Account>? cursor = await taskCursor;
 
 		return new PagedResponse<Account>()
 		{
@@ -105,12 +105,14 @@ public sealed class AccountService
 
 	public async Task<Account?> GetAccountUsernameOrEmailAsync(string username)
 	{
-		var account = await GetAccountAsync(username);
+		Account? account = await GetAccountAsync(username);
 		if (account == null)
 		{
 			account = await GetAccountByEmailAsync(username);
 			if (account == null)
+			{
 				return null;
+			}
 		}
 
 		return account;
@@ -118,14 +120,14 @@ public sealed class AccountService
 
 	public async Task<IEnumerable<Account>> GetAccountsAsync(IEnumerable<EpicID> ids)
 	{
-		var result = await accountCollection.FindAsync(account => ids.Contains(account.ID));
+		IAsyncCursor<Account>? result = await accountCollection.FindAsync(account => ids.Contains(account.ID));
 		return await result.ToListAsync();
 	}
 
 	[Obsolete("This should never be used due to being expensive")]
 	public async Task<IEnumerable<Account>> GetAllAccountsAsync()
 	{
-		var result = await accountCollection.FindAsync(account => true);
+		IAsyncCursor<Account>? result = await accountCollection.FindAsync(account => true);
 		return await result.ToListAsync();
 	}
 
@@ -137,26 +139,26 @@ public sealed class AccountService
 
 	public async Task<Account?> GetAccountUsernameAndFlagsAsync(EpicID accountID)
 	{
-		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		FilterDefinition<Account>? filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
 		var options = new FindOptions<Account>()
 		{
 			Projection = Builders<Account>.Projection
 				.Include(x => x.Username)
 				.Include(x => x.Flags)
 		};
-		var result = await accountCollection.FindAsync(filter, options);
+		IAsyncCursor<Account>? result = await accountCollection.FindAsync(filter, options);
 		return await result.FirstOrDefaultAsync();
 	}
 
 	public async Task<AccountFlags?> GetAccountFlagsAsync(EpicID accountID)
 	{
-		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		FilterDefinition<Account>? filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
 		var options = new FindOptions<Account>()
 		{
 			Projection = Builders<Account>.Projection.Include(x => x.Flags)
 		};
-		var result = await accountCollection.FindAsync(filter, options);
-		var account = await result.FirstOrDefaultAsync();
+		IAsyncCursor<Account>? result = await accountCollection.FindAsync(filter, options);
+		Account? account = await result.FirstOrDefaultAsync();
 		if (account is null)
 		{
 			return null;
@@ -167,8 +169,8 @@ public sealed class AccountService
 
 	public async Task UpdateAccountFlagsAsync(EpicID accountID, AccountFlags flags)
 	{
-		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
-		var update = Builders<Account>.Update.Set(x => x.Flags, flags);
+		FilterDefinition<Account>? filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		UpdateDefinition<Account>? update = Builders<Account>.Update.Set(x => x.Flags, flags);
 		await accountCollection.UpdateOneAsync(filter, update);
 	}
 
@@ -176,8 +178,8 @@ public sealed class AccountService
 	{
 		password = PasswordHelper.GetPasswordHash(accountID, password);
 
-		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
-		var update = Builders<Account>.Update.Set(x => x.Password, password);
+		FilterDefinition<Account>? filter = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		UpdateDefinition<Account>? update = Builders<Account>.Update.Set(x => x.Password, password);
 		await accountCollection.UpdateOneAsync(filter, update);
 	}
 

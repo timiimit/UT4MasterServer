@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
@@ -7,6 +7,7 @@ using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models;
+using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Settings;
 using UT4MasterServer.Services.Scoped;
@@ -50,18 +51,23 @@ public sealed class AccountController : JsonAPIController
 	public async Task<IActionResult> GetAccount(string id)
 	{
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		{
 			return Unauthorized();
+		}
 
 		// TODO: EPIC doesn't throw here if id is invalid (like 'abc'). Return this same ErrorResponse like for account_not_found
-		EpicID eid = EpicID.FromString(id);
+		var eid = EpicID.FromString(id);
 
 		if (eid != authenticatedUser.Session.AccountID)
+		{
 			return Unauthorized();
+		}
 
 		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for account {id}");
 
-		var account = await accountService.GetAccountAsync(eid);
+		Account? account = await accountService.GetAccountAsync(eid);
 		if (account == null)
+		{
 			return NotFound(new ErrorResponse
 			{
 				ErrorCode = "errors.com.epicgames.account.account_not_found",
@@ -71,12 +77,13 @@ public sealed class AccountController : JsonAPIController
 				OriginatingService = "com.epicgames.account.public",
 				Intent = "prod",
 			});
+		}
 
 		var obj = new JObject();
 		obj.Add("id", account.ID.ToString());
 		obj.Add("displayName", account.Username);
 		obj.Add("name", $"{account.Username}"); // fake a random one
-		obj.Add("email", account.Email);//$"{account.ID}@{Request.Host}"); // fake a random one
+		obj.Add("email", account.Email); //$"{account.ID}@{Request.Host}"); // fake a random one
 		obj.Add("failedLoginAttempts", 0);
 		obj.Add("lastLogin", account.LastLoginAt.ToStringISO());
 		obj.Add("numberOfDisplayNameChanges", 0);
@@ -87,7 +94,7 @@ public sealed class AccountController : JsonAPIController
 		obj.Add("preferredLanguage", "en"); // two letter language code
 		obj.Add("canUpdateDisplayName", true);
 		obj.Add("tfaEnabled", true);
-		obj.Add("emailVerified", false);//true);
+		obj.Add("emailVerified", false); //true);
 		obj.Add("minorVerified", false);
 		obj.Add("minorExpected", false);
 		obj.Add("minorStatus", "UNKNOWN");
@@ -101,7 +108,9 @@ public sealed class AccountController : JsonAPIController
 	public async Task<IActionResult> GetAccounts([FromQuery(Name = "accountId")] List<string> accountIDs)
 	{
 		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		{
 			return Unauthorized();
+		}
 
 		if (accountIDs.Count == 0 || accountIDs.Count > 100)
 		{
@@ -116,15 +125,15 @@ public sealed class AccountController : JsonAPIController
 			});
 		}
 
-		var ids = accountIDs.Distinct().Select(x => EpicID.FromString(x));
-		var accounts = await accountService.GetAccountsAsync(ids.ToList());
+		IEnumerable<EpicID> ids = accountIDs.Distinct().Select(x => EpicID.FromString(x));
+		IEnumerable<Account> accounts = await accountService.GetAccountsAsync(ids.ToList());
 
-		var retrievedAccountIDs = accounts.Select(x => x.ID.ToString());
+		IEnumerable<string> retrievedAccountIDs = accounts.Select(x => x.ID.ToString());
 		logger.LogInformation($"{authenticatedUser.Session.AccountID} is looking for {string.Join(", ", retrievedAccountIDs)}");
 
 		// create json response
 		var arr = new JArray();
-		foreach (var account in accounts)
+		foreach (Account account in accounts)
 		{
 			var obj = new JObject();
 			obj.Add("id", account.ID.ToString());
@@ -151,7 +160,7 @@ public sealed class AccountController : JsonAPIController
 	[HttpGet("accounts/{id}/metadata")]
 	public IActionResult GetMetadata(string id)
 	{
-		EpicID eid = EpicID.FromString(id);
+		var eid = EpicID.FromString(id);
 
 		logger.LogInformation($"Get metadata of {eid}");
 
@@ -162,7 +171,7 @@ public sealed class AccountController : JsonAPIController
 	[HttpGet("public/account/{id}/externalAuths")]
 	public IActionResult GetExternalAuths(string id)
 	{
-		EpicID eid = EpicID.FromString(id);
+		var eid = EpicID.FromString(id);
 
 		logger.LogInformation($"Get external auths of {eid}");
 		// we don't really care about these, but structure for my github externalAuth is the following:
@@ -192,11 +201,11 @@ public sealed class AccountController : JsonAPIController
 
 	#region NON-EPIC API
 
-    [HttpPost("create/account")]
-    [AllowAnonymous]
-    public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string? recaptchaToken)
-    {
-        var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
+	[HttpPost("create/account")]
+	[AllowAnonymous]
+	public async Task<IActionResult> RegisterAccount([FromForm] string username, [FromForm] string email, [FromForm] string password, [FromForm] string? recaptchaToken)
+	{
+		var reCaptchaSecret = reCaptchaSettings.Value.SecretKey;
 		if (!string.IsNullOrWhiteSpace(reCaptchaSecret))
 		{
 			if (recaptchaToken is null)
@@ -205,7 +214,7 @@ public sealed class AccountController : JsonAPIController
 			}
 
 			var httpClient = new HttpClient();
-			var httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
+			HttpResponseMessage httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
 			if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
 			{
 				return Conflict("Recaptcha validation failed");
@@ -219,7 +228,7 @@ public sealed class AccountController : JsonAPIController
 			}
 		}
 
-		var account = await accountService.GetAccountAsync(username);
+		Account? account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
 			logger.LogInformation("Could not register duplicate account: {Username}.", username);
@@ -273,22 +282,22 @@ public sealed class AccountController : JsonAPIController
 			return ValidationProblem();
 		}
 
-		var matchingAccount = await accountService.GetAccountAsync(newUsername);
+		Account? matchingAccount = await accountService.GetAccountAsync(newUsername);
 		if (matchingAccount != null)
 		{
 			logger.LogInformation($"Change Username failed, already taken: {newUsername}");
 			return Conflict(new ErrorResponse()
 			{
-				ErrorMessage = $"Username already taken"
+				ErrorMessage = "Username already taken"
 			});
 		}
 
-		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		Account? account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
 		{
 			return NotFound(new ErrorResponse()
 			{
-				ErrorMessage = $"Failed to retrieve your account"
+				ErrorMessage = "Failed to retrieve your account"
 			});
 		}
 
@@ -314,12 +323,12 @@ public sealed class AccountController : JsonAPIController
 			return ValidationProblem();
 		}
 
-		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		Account? account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
 		{
 			return NotFound(new ErrorResponse()
 			{
-				ErrorMessage = $"Failed to retrieve your account"
+				ErrorMessage = "Failed to retrieve your account"
 			});
 		}
 
@@ -353,16 +362,16 @@ public sealed class AccountController : JsonAPIController
 		{
 			return BadRequest(new ErrorResponse()
 			{
-				ErrorMessage = $"newPassword is not a SHA512 hash"
+				ErrorMessage = "newPassword is not a SHA512 hash"
 			});
 		}
 
-		var account = await accountService.GetAccountAsync(user.Session.AccountID);
+		Account? account = await accountService.GetAccountAsync(user.Session.AccountID);
 		if (account == null)
 		{
 			return NotFound(new ErrorResponse()
 			{
-				ErrorMessage = $"Failed to retrieve your account"
+				ErrorMessage = "Failed to retrieve your account"
 			});
 		}
 
@@ -370,7 +379,7 @@ public sealed class AccountController : JsonAPIController
 		{
 			return BadRequest(new ErrorResponse()
 			{
-				ErrorMessage = $"Current Password is invalid"
+				ErrorMessage = "Current Password is invalid"
 			});
 		}
 

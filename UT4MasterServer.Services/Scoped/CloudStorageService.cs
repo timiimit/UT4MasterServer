@@ -47,7 +47,7 @@ public sealed class CloudStorageService
 	public async Task EnsureSystemFilesExistAsync()
 	{
 		// get a list of already stored system files
-		var stored = await ListFilesAsync(EpicID.Empty, true);
+		List<CloudFile>? stored = await ListFilesAsync(EpicID.Empty, true);
 
 		// ensure that all default files exist in db
 		foreach (var filename in commonSystemFileFilenames)
@@ -67,7 +67,7 @@ public sealed class CloudStorageService
 
 			// file is not in db, save it
 			logger.LogInformation("Adding cloud storage system file to database: {filename}", filename);
-			using var stream = File.OpenRead(file);
+			using FileStream? stream = File.OpenRead(file);
 			await UpdateFileAsync(EpicID.Empty, filename, stream);
 		}
 	}
@@ -78,7 +78,9 @@ public sealed class CloudStorageService
 		{
 			// for now we only care about specific files
 			if (!IsCommonUserFileFilename(filename))
+			{
 				return;
+			}
 		}
 
 		var buffer = await dataStream.ReadAsBytesAsync(1024 * 1024);
@@ -102,7 +104,7 @@ public sealed class CloudStorageService
 
 	public async Task<CloudFile?> GetFileAsync(EpicID accountID, string filename)
 	{
-		var cursor = await cloudStorageCollection.FindAsync(GetFilter(accountID, filename));
+		IAsyncCursor<CloudFile>? cursor = await cloudStorageCollection.FindAsync(GetFilter(accountID, filename));
 		return await cursor.SingleOrDefaultAsync();
 	}
 
@@ -113,7 +115,7 @@ public sealed class CloudStorageService
 			Projection = Builders<CloudFile>.Projection.Exclude(x => x.RawContent)
 		};
 
-		var filter = GetFilter(accountID);
+		FilterDefinition<CloudFile>? filter = GetFilter(accountID);
 		if (hideCustomFiles)
 		{
 			if (accountID.IsEmpty)
@@ -125,27 +127,33 @@ public sealed class CloudStorageService
 				filter &= Builders<CloudFile>.Filter.In(x => x.Filename, commonUserFileFilenames);
 			}
 		}
-		var cursor = await cloudStorageCollection.FindAsync(filter, options);
+		IAsyncCursor<CloudFile>? cursor = await cloudStorageCollection.FindAsync(filter, options);
 		return await cursor.ToListAsync();
 	}
 
 	public async Task<bool?> DeleteFileAsync(EpicID accountID, string filename)
 	{
 		if (accountID.IsEmpty && IsCommonSystemFileFilename(filename))
+		{
 			return false;
+		}
 
-		var result = await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
+		DeleteResult? result = await cloudStorageCollection.DeleteOneAsync(GetFilter(accountID, filename));
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return result.DeletedCount > 0;
 	}
 
 	public async Task<int?> RemoveAllByAccountAsync(EpicID accountID)
 	{
-		var result = await cloudStorageCollection.DeleteManyAsync(GetFilter(accountID));
+		DeleteResult? result = await cloudStorageCollection.DeleteManyAsync(GetFilter(accountID));
 		if (!result.IsAcknowledged)
+		{
 			return null;
+		}
 
 		return (int)result.DeletedCount;
 	}

@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Xmpp.XmlParser;
+namespace UT4MasterServer.Xmpp.XmlParser;
 
 public class XmlNode
 {
@@ -10,7 +10,10 @@ public class XmlNode
 		get
 		{
 			if (string.IsNullOrEmpty(Prefix))
+			{
 				return LocalName;
+			}
+
 			return $"{Prefix}:{LocalName}";
 		}
 
@@ -30,13 +33,13 @@ public class XmlNode
 		}
 	}
 
-    public XmlNode(string name)
-    {
+	public XmlNode(string name)
+	{
 		// Prefix and LocalName are set by Name setter
 		Prefix = null!;
 		LocalName = null!;
 		Name = name;
-    }
+	}
 
 	public override string ToString()
 	{

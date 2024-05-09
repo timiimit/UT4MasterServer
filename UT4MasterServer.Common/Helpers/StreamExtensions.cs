@@ -13,11 +13,11 @@ public static class StreamExtensions
 	public static async Task<byte[]> ReadAsBytesAsync(this Stream stream, int maxByteLength)
 	{
 		var bytes = ArrayPool<byte>.Shared.Rent(maxByteLength);
-		int fillCount = 0;
+		var fillCount = 0;
 
 		while (true)
 		{
-			int readCount = await stream.ReadAsync(bytes.AsMemory(fillCount, bytes.Length - fillCount));
+			var readCount = await stream.ReadAsync(bytes.AsMemory(fillCount, bytes.Length - fillCount));
 
 			if (readCount <= 0)
 			{
@@ -28,7 +28,7 @@ public static class StreamExtensions
 			fillCount += readCount;
 		}
 
-		byte[] ret = new byte[fillCount];
+		var ret = new byte[fillCount];
 		Array.Copy(bytes, ret, fillCount);
 		ArrayPool<byte>.Shared.Return(bytes);
 
