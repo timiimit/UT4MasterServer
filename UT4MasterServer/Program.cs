@@ -16,7 +16,6 @@ using UT4MasterServer.Services;
 using UT4MasterServer.Services.Hosted;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
-using UT4MasterServer.Services.Hosted;
 using UT4MasterServer.Services.Interfaces;
 
 namespace UT4MasterServer;
@@ -95,7 +94,7 @@ public static class Program
 				// we ignore the fact that proxy list file was not found
 			}
 		});
-	
+
 		builder.Services.Configure<ReCaptchaSettings>(x =>
 		{
 			if (builder.Environment.IsProduction())
