@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Models.Settings;
+namespace UT4MasterServer.Models.Settings;
 
 public sealed class ApplicationSettings
 {
@@ -16,7 +16,9 @@ public sealed class ApplicationSettings
 	public string WebsiteScheme { get; set; } = string.Empty;
 
 	/// <summary>
-	/// Used just to redirect users to correct domain when UT4UU is being used.
+	/// Used for
+	/// - email verification links
+	/// - reset password links
 	/// </summary>
 	public string WebsiteDomain { get; set; } = string.Empty;
 
