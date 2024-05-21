@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using UT4MasterServer.Common;
@@ -16,15 +17,18 @@ public sealed class AccountService
 	private readonly IMongoCollection<Account> accountCollection;
 	private readonly ApplicationSettings applicationSettings;
 	private readonly IEmailService emailService;
+	private readonly ILogger<AccountService> _logger;
 
 	public AccountService(
 		DatabaseContext dbContext,
 		IOptions<ApplicationSettings> applicationSettings,
-		IEmailService emailService)
+		IEmailService emailService,
+		ILogger<AccountService> logger)
 	{
 		this.applicationSettings = applicationSettings.Value;
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
 		this.emailService = emailService;
+		_logger = logger;
 	}
 
 	public async Task CreateIndexesAsync()
@@ -299,6 +303,14 @@ public sealed class AccountService
 			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to verify your email.</p>
 		";
 
+		if (!ValidationHelper.ValidateEmail(applicationSettings.NoReplyEmail))
+		{
+			_logger.LogWarning("Invalid or missing no-reply email: {Value}.", applicationSettings.NoReplyEmail);
+			return;
+		}
+
+		_logger.LogDebug("Sending email verification link: {Uri}", uriBuilder.Uri);
+
 		await emailService.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Email Verification", html);
 	}
 
@@ -317,6 +329,14 @@ public sealed class AccountService
 			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to reset your password for UT4 Master Server account.</p>
 			<p>If you didn't initiate password reset, ignore this message.</p>
 		";
+
+		if (!ValidationHelper.ValidateEmail(applicationSettings.NoReplyEmail))
+		{
+			_logger.LogWarning("Invalid or missing no-reply email: {Value}.", applicationSettings.NoReplyEmail);
+			return;
+		}
+
+		_logger.LogDebug("Sending reset password link: {Uri}", uriBuilder.Uri);
 
 		await emailService.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Reset Password", html);
 	}
