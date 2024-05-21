@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
@@ -208,7 +208,7 @@ public sealed class AccountService
 
 		if (account is null)
 		{
-			throw new AccountActivationException("Email verification failed: requested account not found, verification link not found or expired.");
+			throw new EmailVerificationException("Email verification failed: requested account not found, verification link not found or expired.");
 		}
 
 		var updateDefinition = Builders<Account>.Update

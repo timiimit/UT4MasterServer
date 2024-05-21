@@ -38,71 +38,71 @@ public sealed class ErrorsController : ControllerBase
 		switch (exception)
 		{
 			case InvalidEpicIDException invalidEpicIDException:
-			{
-				var err = new ErrorResponse()
 				{
-					ErrorCode = invalidEpicIDException.ErrorCode,
-					ErrorMessage = invalidEpicIDException.Message,
-					MessageVars = new string[] { invalidEpicIDException.ID },
-					NumericErrorCode = invalidEpicIDException.NumericErrorCode
-				};
+					var err = new ErrorResponse()
+					{
+						ErrorCode = invalidEpicIDException.ErrorCode,
+						ErrorMessage = invalidEpicIDException.Message,
+						MessageVars = new string[] { invalidEpicIDException.ID },
+						NumericErrorCode = invalidEpicIDException.NumericErrorCode
+					};
 
-				logger.LogError(exception, "Tried using {ID} as EpicID.", invalidEpicIDException.ID);
-				return StatusCode(400, err);
-			}
+					logger.LogError(exception, "Tried using {ID} as EpicID.", invalidEpicIDException.ID);
+					return StatusCode(400, err);
+				}
 
 			case UnauthorizedAccessException unauthorizedAccessException:
-			{
-				logger.LogWarning(exception, UnauthorizedError);
-				return StatusCode(401, new ErrorResponse()
 				{
-					ErrorCode = "com.epicgames.errors.unauthorized",
-					ErrorMessage = string.IsNullOrWhiteSpace(unauthorizedAccessException.Message) ? UnauthorizedError : unauthorizedAccessException.Message,
-					NumericErrorCode = 401
-				});
-			}
+					logger.LogWarning(exception, UnauthorizedError);
+					return StatusCode(401, new ErrorResponse()
+					{
+						ErrorCode = "com.epicgames.errors.unauthorized",
+						ErrorMessage = string.IsNullOrWhiteSpace(unauthorizedAccessException.Message) ? UnauthorizedError : unauthorizedAccessException.Message,
+						NumericErrorCode = 401
+					});
+				}
 
-			case AccountActivationException accountActivationException:
-			{
-				var err = new ErrorResponse()
+			case EmailVerificationException emailVerificationException:
 				{
-					ErrorCode = "ut4masterserver.errors.accountactivation",
-					ErrorMessage = accountActivationException.Message,
-					MessageVars = Array.Empty<string>(),
-					NumericErrorCode = 404
-				};
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.emailverification",
+						ErrorMessage = emailVerificationException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 404
+					};
 
-				logger.LogError(accountActivationException, "Account activation failed.");
-				return StatusCode(404, err);
-			}
+					logger.LogError(emailVerificationException, "Email verification failed.");
+					return StatusCode(404, err);
+				}
 
 			case NotFoundException notFoundException:
-			{
-				var err = new ErrorResponse()
 				{
-					ErrorCode = "ut4masterserver.errors.notfound",
-					ErrorMessage = notFoundException.Message,
-					MessageVars = Array.Empty<string>(),
-					NumericErrorCode = 404
-				};
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.notfound",
+						ErrorMessage = notFoundException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 404
+					};
 
-				logger.LogWarning(notFoundException, NotFoundError);
-				return StatusCode(404, err);
-			}
+					logger.LogWarning(notFoundException, NotFoundError);
+					return StatusCode(404, err);
+				}
 
 			case RateLimitExceededException rateLimitExceededException:
-			{
-				var err = new ErrorResponse()
 				{
-					ErrorCode = "ut4masterserver.errors.ratelimitexceeded",
-					ErrorMessage = rateLimitExceededException.Message,
-					MessageVars = Array.Empty<string>(),
-					NumericErrorCode = 400
-				};
+					var err = new ErrorResponse()
+					{
+						ErrorCode = "ut4masterserver.errors.ratelimitexceeded",
+						ErrorMessage = rateLimitExceededException.Message,
+						MessageVars = Array.Empty<string>(),
+						NumericErrorCode = 400
+					};
 
-				logger.LogWarning(rateLimitExceededException, BadRequestError);
-				return StatusCode(400, err);
-			}
+					logger.LogWarning(rateLimitExceededException, BadRequestError);
+					return StatusCode(400, err);
+				}
 		}
 
 		logger.LogError(exception, InternalServerError);
