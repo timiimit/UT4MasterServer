@@ -46,5 +46,6 @@ public sealed class ApplicationSettings
 	/// <summary>
 	/// No-reply email that will be used for activation links, reset password links, etc
 	/// </summary>
+	/// <example>no-reply@example.com</example>
 	public string NoReplyEmail { get; set; } = string.Empty;
 }
