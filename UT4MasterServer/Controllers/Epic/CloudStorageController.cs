@@ -76,7 +76,7 @@ public sealed class CloudStorageController : JsonAPIController
 				playerID = account.ID;
 			}
 
-			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",StatsID:\"{playerID}\",Version:0}}") };
+			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",\"StatsID\":\"{playerID}\",\"Version\":0}}") };
 		}
 
 		if (isStatsFile)
