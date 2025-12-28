@@ -60,12 +60,14 @@ public sealed class EntitlementController : JsonAPIController
 
 		List<EntitlementResponse> entitlements =
 		[
-			new EntitlementResponse("UnrealTournament", UTEntitlementID, eid)
+			new("UnrealTournament", UTEntitlementID, eid)
 		];
+
 		foreach (var entitlementID in mapEntitlementIDs)
 		{
 			entitlements.Add(new EntitlementResponse(entitlementID, entitlementID, eid));
 		}
+
 		// TODO: decide how players unlock these special cosmetics
 		//foreach (var entitlementID in cosmeticEntitlementIDs)
 		//{

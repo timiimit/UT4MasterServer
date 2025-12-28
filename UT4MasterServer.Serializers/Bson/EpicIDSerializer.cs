@@ -13,7 +13,7 @@ public class EpicIDSerializer : StructSerializerBase<EpicID>, IRepresentationCon
 {
 	#region static
 
-	private static readonly StringSerializer __instance = new StringSerializer();
+	private static readonly StringSerializer __instance = new();
 
 	// public static properties
 	/// <summary>

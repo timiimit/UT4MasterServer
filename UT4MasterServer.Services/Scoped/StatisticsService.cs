@@ -27,8 +27,8 @@ public sealed class StatisticsService
 	{
 		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
 			{
-				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
-				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt)),
+				new(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
+				new(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt)),
 			};
 		await statisticsCollection.Indexes.CreateManyAsync(statisticsIndexes);
 	}
