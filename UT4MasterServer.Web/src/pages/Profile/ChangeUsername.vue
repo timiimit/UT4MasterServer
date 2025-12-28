@@ -1,55 +1,55 @@
 <template>
-  <LoadingPanel :status="status" :error="errorMessage">
-    <form
-      :class="{ 'was-validated': submitAttempted }"
-      novalidate
-      @submit.prevent="handleSubmit"
-    >
-      <fieldset>
-        <legend>Change Username</legend>
-        <div class="form-group row">
-          <label for="currentUsername" class="col-sm-12 col-form-label"
-            >Current Username</label
-          >
-          <div class="col-sm-6">
-            <input
-              id="currentUsername"
-              v-model="currentUsername"
-              type="text"
-              class="form-control"
-              name="currentUsername"
-              readonly
-              disabled
-            />
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="newUsername" class="col-sm-12 col-form-label"
-            >New Username</label
-          >
-          <div class="col-sm-6">
-            <input
-              id="newUsername"
-              v-model="newUsername"
-              type="text"
-              class="form-control"
-              name="newUsername"
-              placeholder="New Username"
-              required
-            />
-            <div class="invalid-feedback">New Username is required</div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="col-sm-12">
-            <button type="submit" class="btn btn-primary">
-              Change Username
-            </button>
-          </div>
-        </div>
-      </fieldset>
-    </form>
-  </LoadingPanel>
+	<LoadingPanel :status="status" :error="errorMessage">
+		<form
+			:class="{ 'was-validated': submitAttempted }"
+			novalidate
+			@submit.prevent="handleSubmit"
+		>
+			<fieldset>
+				<legend>Change Username</legend>
+				<div class="form-group row">
+					<label for="currentUsername" class="col-sm-12 col-form-label"
+						>Current Username</label
+					>
+					<div class="col-sm-6">
+						<input
+							id="currentUsername"
+							v-model="currentUsername"
+							type="text"
+							class="form-control"
+							name="currentUsername"
+							readonly
+							disabled
+						/>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="newUsername" class="col-sm-12 col-form-label"
+						>New Username</label
+					>
+					<div class="col-sm-6">
+						<input
+							id="newUsername"
+							v-model="newUsername"
+							type="text"
+							class="form-control"
+							name="newUsername"
+							placeholder="New Username"
+							required
+						/>
+						<div class="invalid-feedback">New Username is required</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-sm-12">
+						<button type="submit" class="btn btn-primary">
+							Change Username
+						</button>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</LoadingPanel>
 </template>
 
 <script setup lang="ts">
@@ -72,27 +72,27 @@ const formValid = computed(() => newUsername.value?.length);
 const errorMessage = shallowRef('Error changing username. Please try again.');
 
 async function handleSubmit() {
-  submitAttempted.value = true;
-  if (!formValid.value) {
-    return;
-  }
-  try {
-    status.value = AsyncStatus.BUSY;
-    const request: IChangeUsernameRequest = {
-      newUsername: newUsername.value
-    };
-    await accountService.changeUsername(request);
-    status.value = AsyncStatus.OK;
-    AccountStore.fetchUserAccount();
-    router.push('/Profile');
-  } catch (err: unknown) {
-    status.value = AsyncStatus.ERROR;
-    errorMessage.value = (err as Error)?.message;
-  }
+	submitAttempted.value = true;
+	if (!formValid.value) {
+		return;
+	}
+	try {
+		status.value = AsyncStatus.BUSY;
+		const request: IChangeUsernameRequest = {
+			newUsername: newUsername.value
+		};
+		await accountService.changeUsername(request);
+		status.value = AsyncStatus.OK;
+		AccountStore.fetchUserAccount();
+		router.push('/Profile');
+	} catch (err: unknown) {
+		status.value = AsyncStatus.ERROR;
+		errorMessage.value = (err as Error)?.message;
+	}
 }
 
 onMounted(async () => {
-  // force account to be up to date before allowing a user to change
-  AccountStore.fetchUserAccount();
+	// force account to be up to date before allowing a user to change
+	AccountStore.fetchUserAccount();
 });
 </script>
