@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Models.Settings;
+namespace UT4MasterServer.Models.Settings;
 
 public sealed class ApplicationSettings
 {
@@ -8,7 +8,7 @@ public sealed class ApplicationSettings
 	/// <remarks>
 	/// Check comments in <see cref="Controllers.SessionController.Authenticate"/> for <c>password</c> <c>grant_type</c>
 	/// </remarks>
-	public bool AllowPasswordGrantType { get; set; } = false;
+	public bool AllowPasswordGrantType { get; set; }
 
 	/// <summary>
 	/// Used just to redirect users to correct domain when UT4UU is being used.

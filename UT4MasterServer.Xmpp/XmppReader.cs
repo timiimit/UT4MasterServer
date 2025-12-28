@@ -5,7 +5,7 @@ public class XmppReader
 	private class Node
 	{
 		public string Name { get; set; } = string.Empty;
-		public bool HasOpenTagEnded { get; set; } = false;
+		public bool HasOpenTagEnded { get; set; }
 
 		public Node(string name)
 		{
