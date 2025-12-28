@@ -1,15 +1,15 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace UT4MasterServer.Models.DTO;
 
 public class MMRBulk
 {
 	[JsonPropertyName("ratingTypes")]
-	public List<string> RatingTypes { get; set; } = new List<string>();
+	public List<string> RatingTypes { get; set; } = [];
 
 	[JsonPropertyName("ratings")]
-	public List<int> Ratings { get; set; } = new List<int>();
+	public List<int> Ratings { get; set; } = [];
 
 	[JsonPropertyName("numGamesPlayed")]
-	public List<int> NumGamesPlayed { get; set; } = new List<int>();
+	public List<int> NumGamesPlayed { get; set; } = [];
 }

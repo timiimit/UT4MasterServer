@@ -16,7 +16,7 @@ public sealed class MatchmakingWaitTimeEstimateService
 	{
 		if (!estimates.TryGetValue(mode, out List<(DateTime DeleteTime, double WaitTime)>? estimateValue))
 		{
-			estimateValue = new List<(DateTime, double)>();
+			estimateValue = [];
 			estimates.Add(mode, estimateValue);
 		}
 

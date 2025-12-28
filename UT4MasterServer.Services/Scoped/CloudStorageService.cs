@@ -21,22 +21,22 @@ public sealed class CloudStorageService
 	private readonly IMongoCollection<CloudFile> cloudStorageCollection;
 	private readonly ILogger<CloudStorageService> logger;
 
-	private static readonly string[] commonSystemFileFilenames = new string[]
-	{
+	private static readonly string[] commonSystemFileFilenames =
+	[
 		// yes, 3 of these are misspelled by epic
 		"UnrealTournamentOnlineSettings.json",
 		"UnrealTournmentMCPAnnouncement.json",
 		"UnrealTournmentMCPGameRulesets.json",
 		"UnrealTournmentMCPStorage.json",
 		"UTMCPPlaylists.json"
-	};
-	private static readonly string[] commonUserFileFilenames = new string[]
-	{
+	];
+	private static readonly string[] commonUserFileFilenames =
+	[
 		// old players might also have "user_profile_1", but it is not used for anything anymore
 		"user_profile_2",
 		"user_progression_1",
 		"stats.json"
-	};
+	];
 
 	public CloudStorageService(DatabaseContext dbContext, ILogger<CloudStorageService> logger)
 	{

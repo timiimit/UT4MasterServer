@@ -18,7 +18,7 @@ public sealed class CodeService
 
 	public CodeService(IOptions<ApplicationSettings> settings)
 	{
-		codes = new List<Code>();
+		codes = [];
 	}
 
 	public async Task<Code?> CreateCodeAsync(CodeKind kind, EpicID accountID, EpicID clientID)

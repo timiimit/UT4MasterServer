@@ -25,7 +25,7 @@ jobs:
   build-server:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Docker Image
         run: docker build --pull -t ${{ env.IMAGE_NAME }} -f ./UT4MasterServer/Dockerfile .
       - name: Clean Up

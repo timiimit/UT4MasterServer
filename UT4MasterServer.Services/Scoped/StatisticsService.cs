@@ -27,8 +27,8 @@ public sealed class StatisticsService
 	{
 		var statisticsIndexes = new List<CreateIndexModel<Statistic>>()
 			{
-				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
-				new CreateIndexModel<Statistic>(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt)),
+				new(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.AccountID)),
+				new(Builders<Statistic>.IndexKeys.Ascending(indexKey => indexKey.CreatedAt)),
 			};
 		await statisticsCollection.Indexes.CreateManyAsync(statisticsIndexes);
 	}
@@ -44,7 +44,7 @@ public sealed class StatisticsService
 		}
 		DateTime dateTo = DateTime.UtcNow.AddDays(1).Date;
 		FilterDefinition<Statistic>? filter = Builders<Statistic>.Filter.Eq(f => f.AccountID, accountID) &
-											  Builders<Statistic>.Filter.In(f => f.Window, new[] { StatisticWindow.Daily, StatisticWindow.DailyMerged }) &
+											  Builders<Statistic>.Filter.In(f => f.Window, [StatisticWindow.Daily, StatisticWindow.DailyMerged]) &
 											  Builders<Statistic>.Filter.Gte(f => f.CreatedAt, dateFrom) &
 											  Builders<Statistic>.Filter.Lt(f => f.CreatedAt, dateTo);
 
@@ -381,7 +381,7 @@ public sealed class StatisticsService
 
 		if (existingStatistic is not null)
 		{
-			Statistic? mergedStatistic = MergeStatistics(new List<Statistic>() { existingStatistic, newStatistic });
+			Statistic? mergedStatistic = MergeStatistics([existingStatistic, newStatistic]);
 			mergedStatistic.Window = StatisticWindow.AllTime;
 			mergedStatistic.ModifiedAt = DateTime.UtcNow;
 

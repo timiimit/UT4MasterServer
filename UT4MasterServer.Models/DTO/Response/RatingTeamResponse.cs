@@ -9,13 +9,13 @@ public sealed class RatingMatch
 	public string RatingType { get; set; } = string.Empty;
 
 	[JsonPropertyName("matchInfo")]
-	public RatingMatchInfo MatchInfo { get; set; } = new RatingMatchInfo();
+	public RatingMatchInfo MatchInfo { get; set; } = new();
 
 	[JsonPropertyName("redTeam")]
-	public RatingTeam RedTeam { get; set; } = new RatingTeam();
+	public RatingTeam RedTeam { get; set; } = new();
 
 	[JsonPropertyName("blueTeam")]
-	public RatingTeam BlueTeam { get; set; } = new RatingTeam();
+	public RatingTeam BlueTeam { get; set; } = new();
 }
 
 public sealed class RatingMatchInfo
@@ -45,7 +45,7 @@ public sealed class RatingTeam
 	}
 
 	[JsonPropertyName("members")]
-	public List<Member> Members { get; set; } = new List<Member>();
+	public List<Member> Members { get; set; } = [];
 
 	[JsonPropertyName("socialPartySize")]
 	public int SocialPartySize { get; set; }

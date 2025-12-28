@@ -10,11 +10,11 @@ public class GameServerAttributes
 	public const string UT_RANKED_i = "UT_RANKED_i";
 	public const string UT_GAMEINSTANCE_i = "UT_GAMEINSTANCE_i";
 
-	public static readonly string[] UnownedAttributeNames = new[]
-	{
+	public static readonly string[] UnownedAttributeNames =
+	[
 		UT_SERVERTRUSTLEVEL_i,
 		//UT_SERVERNAME_s
-	};
+	];
 
 	private readonly Dictionary<string, object> serverConfigs;
 

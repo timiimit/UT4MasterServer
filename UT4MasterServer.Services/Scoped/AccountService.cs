@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
@@ -21,11 +21,11 @@ public sealed class AccountService
 	public async Task CreateIndexesAsync()
 	{
 		IndexKeysDefinitionBuilder<Account>? indexKeys = Builders<Account>.IndexKeys;
-		CreateIndexModel<Account>[]? indexes = new[]
-		{
+		CreateIndexModel<Account>[]? indexes =
+		[
 			new CreateIndexModel<Account>(indexKeys.Ascending(f => f.Username)),
 			new CreateIndexModel<Account>(indexKeys.Ascending(f => f.Email))
-		};
+		];
 		await accountCollection.Indexes.CreateManyAsync(indexes);
 	}
 

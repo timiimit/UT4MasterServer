@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using UT4MasterServer.Common.Exceptions;
 using UT4MasterServer.Models.DTO.Responses;
@@ -41,7 +41,7 @@ public sealed class ErrorsController : ControllerBase
 				{
 					ErrorCode = invalidEpicIDException.ErrorCode,
 					ErrorMessage = invalidEpicIDException.Message,
-					MessageVars = new string[] { invalidEpicIDException.ID },
+					MessageVars = [invalidEpicIDException.ID],
 					NumericErrorCode = invalidEpicIDException.NumericErrorCode
 				};
 

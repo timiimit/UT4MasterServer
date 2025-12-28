@@ -1,5 +1,4 @@
 using Serilog;
-using Serilog.Enrichers;
 
 namespace UT4MasterServer.Configuration;
 
@@ -16,7 +15,7 @@ public class InternalLoggerConfiguration
 			.WriteTo.Console(outputTemplate: outputTemplate)
 			.WriteTo.Debug(outputTemplate: outputTemplate)
 			.WriteTo.File(filePath, rollOnFileSizeLimit: true, rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate, shared: true)
-			.Enrich.With<ThreadIdEnricher>()
+			.Enrich.WithThreadId()
 			.CreateLogger();
 	}
 }

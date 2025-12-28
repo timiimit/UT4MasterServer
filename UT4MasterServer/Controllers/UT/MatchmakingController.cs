@@ -443,7 +443,7 @@ public sealed class MatchmakingController : JsonAPIController
 		{
 			ErrorCode = "errors.com.epicgames.modules.matchmaking.unknown_session",
 			ErrorMessage = $"unknown session id {id}",
-			MessageVars = new[] { id },
+			MessageVars = [id],
 			NumericErrorCode = 12101,
 			OriginatingService = "utservice",
 			Intent = "prod10",

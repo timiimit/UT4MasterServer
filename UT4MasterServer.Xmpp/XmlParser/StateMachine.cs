@@ -57,7 +57,7 @@ public class StateMachine<T>
 
 		if (!automata.ContainsKey(fromState))
 		{
-			automata.Add(fromState, new List<StateCondition>());
+			automata.Add(fromState, []);
 		}
 	}
 

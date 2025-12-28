@@ -103,7 +103,7 @@ public class XmlParserPermissive
 		ElementEnd
 	}
 
-	private ParsingState parsingState = 0;
+	private ParsingState parsingState;
 	private XmlToken lastOpenType;
 	private bool hasExitedCurrent;
 

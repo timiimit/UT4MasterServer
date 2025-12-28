@@ -96,7 +96,7 @@ public sealed class RatingsService
 											   Builders<Rating>.Filter.Eq(f => f.RatingType, ratingType);
 			List<Rating>? ratings = await ratingsCollection.Find(filter).ToListAsync();
 
-			List<int> ratingValues = new();
+			List<int> ratingValues = [];
 
 			foreach (RatingTeam.Member? member in ratingTeam.Members.Where(w => !w.IsBot))
 			{

@@ -11,7 +11,7 @@ public class ErrorResponse
 	public string? ErrorMessage { get; set; }
 
 	[JsonPropertyName("messageVars")]
-	public string[] MessageVars { get; set; } = Array.Empty<string>(); // any value inside errorMessage is listed in this array
+	public string[] MessageVars { get; set; } = []; // any value inside errorMessage is listed in this array
 
 	[JsonPropertyName("numericErrorCode")]
 	public int NumericErrorCode { get; set; }

@@ -1,5 +1,5 @@
 ### From: https://github.com/dotnet/aspnetcore/blob/main/.editorconfig
-### Last sync: 120b944
+### Last sync: bf1f642
 ### Disabled: IDE0073
 ; EditorConfig to support per-solution formatting.
 ; Use the EditorConfig VS add-in to make this work.
@@ -7,7 +7,7 @@
 ;
 ; Here are some resources for what's supported for .NET/C#
 ; https://kent-boogaart.com/blog/editorconfig-reference-for-c-developers
-; https://learn.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
+; https://learn.microsoft.com/visualstudio/ide/editorconfig-code-style-settings-reference
 ;
 ; Be **careful** editing this because some of the rules don't support adding a severity level
 ; For instance if you change to `dotnet_sort_system_directives_first = true:warning` (adding `:warning`)
@@ -131,7 +131,7 @@ dotnet_diagnostic.CA1725.severity = suggestion
 dotnet_diagnostic.CA1802.severity = warning
 
 # CA1805: Do not initialize unnecessarily
-dotnet_diagnostic.CA1805.severity = suggestion	# PR#233: Changed to suggestion
+dotnet_diagnostic.CA1805.severity = warning
 
 # CA1810: Do not initialize unnecessarily
 dotnet_diagnostic.CA1810.severity = warning

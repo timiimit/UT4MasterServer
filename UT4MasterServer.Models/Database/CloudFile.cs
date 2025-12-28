@@ -26,7 +26,7 @@ public class CloudFile
 
 	[BsonElement("RawContent")]
 	[BsonRepresentation(MongoDB.Bson.BsonType.Binary)]
-	public byte[] RawContent { get; set; } = Array.Empty<byte>();
+	public byte[] RawContent { get; set; } = [];
 
 	[BsonElement("Length")]
 	public int Length { get; set; } = 0;

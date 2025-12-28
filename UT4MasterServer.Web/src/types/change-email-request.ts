@@ -1,3 +1,3 @@
 export interface IChangeEmailRequest {
-  newEmail: string;
+	newEmail: string;
 }

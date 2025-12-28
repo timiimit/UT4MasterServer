@@ -49,8 +49,8 @@ public class XmlElement : XmlNode
 		parent = null;
 		depth = 0;
 
-		Attributes = new List<XmlAttribute>();
-		Elements = new List<XmlElement>();
+		Attributes = [];
+		Elements = [];
 	}
 
 	public override string ToString()
