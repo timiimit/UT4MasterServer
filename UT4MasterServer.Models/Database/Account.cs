@@ -33,7 +33,7 @@ public class Account
 	[BsonIgnoreIfDefault] // default value is set in Program.cs
 	[BsonElement("DeviceIDs")]
 	[JsonIgnore]
-	public string[] DeviceIDs { get; set; } = Array.Empty<string>();
+	public string[] DeviceIDs { get; set; } = [];
 
 	/************** Game Specific **************/
 

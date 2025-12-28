@@ -59,7 +59,7 @@ public sealed class CloudStorageController : JsonAPIController
 				{
 					ErrorCode = "errors.com.epicgames.cloudstorage.file_not_found",
 					ErrorMessage = $"Sorry, we couldn't find a file {filename} for account {id}",
-					MessageVars = new[] { filename, id },
+					MessageVars = [filename, id],
 					NumericErrorCode = 12007,
 					OriginatingService = "utservice",
 					Intent = "prod10"

@@ -1,11 +1,11 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace UT4MasterServer.Models.Database;
 
 public class StatisticBase
 {
-	public readonly static List<string> StatisticProperties = new()
-	{
+	public readonly static List<string> StatisticProperties =
+	[
 		"matchesplayed",
 		"matchesquit",
 		"timeplayed",
@@ -147,7 +147,7 @@ public class StatisticBase
 		"defenderscore",
 		"supporterscore",
 		"teamkills"
-	};
+	];
 
 	public StatisticBase() { }
 

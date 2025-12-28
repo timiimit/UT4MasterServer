@@ -60,7 +60,7 @@ public sealed class AccountController : JsonAPIController
 			{
 				ErrorCode = "errors.com.epicgames.account.account_not_found",
 				ErrorMessage = $"Sorry, we couldn't find an account for {id}",
-				MessageVars = new[] { id },
+				MessageVars = [id],
 				NumericErrorCode = 18007,
 				OriginatingService = "com.epicgames.account.public",
 				Intent = "prod",
@@ -106,7 +106,7 @@ public sealed class AccountController : JsonAPIController
 			{
 				ErrorCode = "errors.com.epicgames.account.invalid_account_id_count",
 				ErrorMessage = "Sorry, the number of account id should be at least one and not more than 100.",
-				MessageVars = new[] { "100" },
+				MessageVars = ["100"],
 				NumericErrorCode = 18066,
 				OriginatingService = "com.epicgames.account.public",
 				Intent = "prod",

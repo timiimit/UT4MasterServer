@@ -45,7 +45,7 @@ public sealed class RatingTeam
 	}
 
 	[JsonPropertyName("members")]
-	public List<Member> Members { get; set; } = new List<Member>();
+	public List<Member> Members { get; set; } = [];
 
 	[JsonPropertyName("socialPartySize")]
 	public int SocialPartySize { get; set; }

@@ -12,7 +12,7 @@ public class GameServerAttributeCriteria
 
 public class GameServerFilterRequest
 {
-	public List<GameServerAttributeCriteria> Criteria { get; set; } = new();
+	public List<GameServerAttributeCriteria> Criteria { get; set; } = [];
 	public string? BuildUniqueId { get; set; }
 	public int? OpenPlayersRequired { get; set; }
 	public int? MaxCurrentPlayers { get; set; }

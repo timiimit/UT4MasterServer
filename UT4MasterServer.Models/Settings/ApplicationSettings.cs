@@ -29,5 +29,5 @@ public sealed class ApplicationSettings
 	/// <summary>
 	/// IP addresses of trusted proxy servers.
 	/// </summary>
-	public List<string> ProxyServers { get; set; } = new List<string>();
+	public List<string> ProxyServers { get; set; } = [];
 }

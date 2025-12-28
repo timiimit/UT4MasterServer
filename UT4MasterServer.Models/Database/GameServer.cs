@@ -90,11 +90,11 @@ public class GameServer
 
 	[BsonElement("PublicPlayers")]
 	[JsonPropertyName("publicPlayers")]
-	public List<EpicID> PublicPlayers { get; set; } = new();
+	public List<EpicID> PublicPlayers { get; set; } = [];
 
 	[BsonElement("PrivatePlayers")]
 	[JsonPropertyName("privatePlayers")]
-	public List<EpicID> PrivatePlayers { get; set; } = new();
+	public List<EpicID> PrivatePlayers { get; set; } = [];
 
 	//[BsonElement("TotalPlayers")]
 	//[JsonPropertyName("totalPlayers")]
@@ -252,7 +252,7 @@ public class GameServer
 		}
 
 		obj.Add(new("publicPlayers", arr));
-		arr = new JsonArray();
+		arr = [];
 		foreach (EpicID player in PrivatePlayers)
 		{
 			arr.Add(JsonValue.Create(player.ToString()));

@@ -26,7 +26,7 @@ public class XmppServer
 		Certificate = certificate;
 
 		listener = new TcpListener(IPAddress.Any, Port);
-		connections = new List<XmppConnection>();
+		connections = [];
 	}
 
 	public async Task StartAsync(CancellationToken cancellationToken)

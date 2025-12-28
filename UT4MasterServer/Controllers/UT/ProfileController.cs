@@ -23,8 +23,8 @@ public sealed class ProfileController : JsonAPIController
 
 	static ProfileController()
 	{
-		profileItems = new()
-		{
+		profileItems =
+		[
 			("BeanieBlack", 2),
 			("Sunglasses", 3),
 			("HockeyMask", 4),
@@ -55,7 +55,7 @@ public sealed class ProfileController : JsonAPIController
 			//("Infiltrator", 0),
 			//("EnergyHelm", 0),
 			//("EliteAssassinHelm", 0),
-		};
+		];
 	}
 
 	private readonly AccountService accountService;

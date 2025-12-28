@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using UT4MasterServer.Common;
 
@@ -9,13 +9,13 @@ public sealed class Rating
 	public const int DefaultRating = 1500;
 	public const int Precision = 1000;
 
-	public static readonly List<string> DmRatingTypes = new()
-	{
+	public static readonly List<string> DmRatingTypes =
+	[
 		"DMSkillRating",
-	};
+	];
 
-	public static readonly List<string> TeamRatingTypes = new()
-	{
+	public static readonly List<string> TeamRatingTypes =
+	[
 		"SkillRating",
 		"TDMSkillRating",
 		"CTFSkillRating",
@@ -25,7 +25,7 @@ public sealed class Rating
 		"RankedCTFSkillRating",
 		"RankedShowdownSkillRating",
 		"RankedFlagRunSkillRating",
-	};
+	];
 
 	public static readonly List<string> AllowedRatingTypes = DmRatingTypes.Union(TeamRatingTypes).ToList();
 
