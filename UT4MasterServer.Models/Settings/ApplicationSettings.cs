@@ -1,4 +1,4 @@
-﻿namespace UT4MasterServer.Models.Settings;
+namespace UT4MasterServer.Models.Settings;
 
 public sealed class ApplicationSettings
 {
@@ -11,9 +11,21 @@ public sealed class ApplicationSettings
 	public bool AllowPasswordGrantType { get; set; } = false;
 
 	/// <summary>
-	/// Used just to redirect users to correct domain when UT4UU is being used.
+	/// Used for URL generation when sending activation link, reset links, etc.
+	/// </summary>
+	public string WebsiteScheme { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Used for
+	/// - email verification links
+	/// - reset password links
 	/// </summary>
 	public string WebsiteDomain { get; set; } = string.Empty;
+
+	/// <summary>
+	/// Used for URL generation when sending activation link, reset links, etc.
+	/// </summary>
+	public int WebsitePort { get; set; } = -1;
 
 	/// <summary>
 	/// File containing a list of trusted proxy servers (one per line).
@@ -30,4 +42,10 @@ public sealed class ApplicationSettings
 	/// IP addresses of trusted proxy servers.
 	/// </summary>
 	public List<string> ProxyServers { get; set; } = new List<string>();
+
+	/// <summary>
+	/// No-reply email that will be used for activation links, reset password links, etc
+	/// </summary>
+	/// <example>no-reply@example.com</example>
+	public string NoReplyEmail { get; set; } = string.Empty;
 }

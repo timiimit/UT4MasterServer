@@ -6,6 +6,7 @@ using MongoDB.Bson.Serialization;
 using Serilog;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Configuration;
 using UT4MasterServer.Formatters;
 using UT4MasterServer.Models.Database;
@@ -14,6 +15,7 @@ using UT4MasterServer.Serializers.Bson;
 using UT4MasterServer.Serializers.Json;
 using UT4MasterServer.Services;
 using UT4MasterServer.Services.Hosted;
+using UT4MasterServer.Services.Interfaces;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Services.Singleton;
 
@@ -63,11 +65,36 @@ public static class Program
 		// load settings objects
 		builder.Services
 			.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"))
+			.Configure<AWSSettings>(builder.Configuration.GetSection("AWS"))
 			.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"))
 			.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptchaSettings"));
 
 		builder.Services.Configure<ApplicationSettings>(x =>
 		{
+			if (builder.Environment.IsProduction())
+			{
+				if (string.IsNullOrWhiteSpace(x.WebsiteScheme))
+				{
+					Log.Logger.Error("Missing website scheme: {Value}.", x.WebsiteScheme);
+					return;
+				}
+				if (string.IsNullOrWhiteSpace(x.WebsiteDomain))
+				{
+					Log.Logger.Error("Missing website domain: {Value}.", x.WebsiteDomain);
+					return;
+				}
+				if (x.WebsitePort == -1)
+				{
+					Log.Logger.Error("Missing website port: {Value}.", x.WebsitePort);
+					return;
+				}
+				if (!ValidationHelper.ValidateEmail(x.NoReplyEmail))
+				{
+					Log.Logger.Error("Invalid or missing no-reply email: {Value}.", x.NoReplyEmail);
+					return;
+				}
+			}
+
 			// handle proxy list loading
 			if (string.IsNullOrWhiteSpace(x.ProxyServersFile))
 			{
@@ -104,6 +131,9 @@ public static class Program
 			}
 		});
 
+		// Microsoft services
+		builder.Services.AddMemoryCache();
+
 		// services whose instance is created per-request
 		builder.Services
 			.AddScoped<DatabaseContext>()
@@ -115,13 +145,16 @@ public static class Program
 			.AddScoped<TrustedGameServerService>()
 			.AddScoped<MatchmakingService>()
 			.AddScoped<StatisticsService>()
-			.AddScoped<RatingsService>();
+			.AddScoped<RatingsService>()
+			.AddScoped<IEmailService, AwsSesClient>()
+			.AddScoped<CleanupService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
 			.AddSingleton<RuntimeInfoService>()
 			.AddSingleton<CodeService>()
-			.AddSingleton<MatchmakingWaitTimeEstimateService>();
+			.AddSingleton<MatchmakingWaitTimeEstimateService>()
+			.AddSingleton<RateLimitService>();
 
 		// hosted services
 		builder.Services

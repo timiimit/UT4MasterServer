@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
-using UT4MasterServer.Authentication;
-using UT4MasterServer.Common.Helpers;
-using UT4MasterServer.Models.Database;
-using UT4MasterServer.Models.DTO.Requests;
-using UT4MasterServer.Common;
-using UT4MasterServer.Services.Scoped;
-using UT4MasterServer.Services.Singleton;
-using UT4MasterServer.Models.DTO.Responses;
-using UT4MasterServer.Models;
-using UT4MasterServer.Models.Responses;
 using Microsoft.Net.Http.Headers;
+using UT4MasterServer.Authentication;
+using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Helpers;
+using UT4MasterServer.Models;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.DTO.Request;
+using UT4MasterServer.Models.DTO.Requests;
+using UT4MasterServer.Models.DTO.Responses;
+using UT4MasterServer.Models.Responses;
+using UT4MasterServer.Services.Interfaces;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Controllers;
 
@@ -22,40 +23,33 @@ public sealed class AdminPanelController : ControllerBase
 	private readonly ILogger<AdminPanelController> logger;
 	private readonly AccountService accountService;
 	private readonly SessionService sessionService;
-	private readonly CodeService codeService;
-	private readonly FriendService friendService;
 	private readonly CloudStorageService cloudStorageService;
-	private readonly StatisticsService statisticsService;
 	private readonly ClientService clientService;
 	private readonly TrustedGameServerService trustedGameServerService;
-	private readonly RatingsService ratingsService;
-
 	private readonly MatchmakingService matchmakingService;
+	private readonly CleanupService cleanupService;
+	private readonly IEmailService emailService;
 
 	public AdminPanelController(
 		ILogger<AdminPanelController> logger,
 		AccountService accountService,
 		SessionService sessionService,
-		CodeService codeService,
-		FriendService friendService,
 		CloudStorageService cloudStorageService,
-		StatisticsService statisticsService,
 		ClientService clientService,
 		TrustedGameServerService trustedGameServerService,
-		RatingsService ratingsService,
-		MatchmakingService matchmakingService)
+		MatchmakingService matchmakingService,
+		CleanupService cleanupService,
+		IEmailService emailService)
 	{
 		this.logger = logger;
 		this.accountService = accountService;
 		this.sessionService = sessionService;
-		this.codeService = codeService;
-		this.friendService = friendService;
 		this.cloudStorageService = cloudStorageService;
-		this.statisticsService = statisticsService;
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
-		this.ratingsService = ratingsService;
 		this.matchmakingService = matchmakingService;
+		this.cleanupService = cleanupService;
+		this.emailService = emailService;
 	}
 
 	#region Accounts
@@ -293,19 +287,10 @@ public sealed class AdminPanelController : ControllerBase
 				{
 					return Unauthorized("You do not possess sufficient permissions to delete an existing account");
 				}
-
-				await accountService.RemoveAccountAsync(account.ID);
 			}
 
-			// remove all associated data
-			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, accountID, EpicID.Empty);
-			await codeService.RemoveAllByAccountAsync(accountID);
-			await cloudStorageService.RemoveAllByAccountAsync(accountID);
-			await statisticsService.RemoveAllByAccountAsync(accountID);
-			await ratingsService.RemoveAllByAccountAsync(accountID);
-			await friendService.RemoveAllByAccountAsync(accountID);
-			await trustedGameServerService.RemoveAllByAccountAsync(accountID);
-			// NOTE: missing removal of account from live servers. this should take care of itself in a relatively short time.
+			// Remove account and all of its associated data
+			await cleanupService.RemoveAccountAndAssociatedDataAsync(accountID);
 
 			logLevel = LogLevel.Information;
 
@@ -591,6 +576,20 @@ public sealed class AdminPanelController : ControllerBase
 	}
 
 	#endregion
+
+	[HttpPost("send-text-email")]
+	public async Task<IActionResult> SendTextEmail([FromBody] SendEmailRequest sendEmailRequest)
+	{
+		await emailService.SendTextEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
+		return Ok();
+	}
+
+	[HttpPost("send-html-email")]
+	public async Task<IActionResult> SendHtmlEmail([FromBody] SendEmailRequest sendEmailRequest)
+	{
+		await emailService.SendHTMLEmailAsync(sendEmailRequest.From, sendEmailRequest.To, sendEmailRequest.Subject, sendEmailRequest.Body);
+		return Ok();
+	}
 
 	[NonAction]
 	private async Task<(Session Session, Account Account)> VerifyAccessAsync(params AccountFlags[] aclAny)

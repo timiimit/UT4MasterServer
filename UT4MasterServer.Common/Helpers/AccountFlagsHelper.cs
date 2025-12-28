@@ -16,6 +16,7 @@ public static class AccountFlagsHelper
 			AccountFlags.ACL_CloudStorageAnnouncements |
 			AccountFlags.ACL_CloudStorageRulesets |
 			AccountFlags.ACL_CloudStorageChallenges |
-			AccountFlags.ACL_Maintenance);
+			AccountFlags.ACL_Maintenance |
+			AccountFlags.EmailVerified);
 	}
 }

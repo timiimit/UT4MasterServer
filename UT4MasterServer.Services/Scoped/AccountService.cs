@@ -1,21 +1,34 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using UT4MasterServer.Common;
 using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Exceptions;
 using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services.Interfaces;
 
 namespace UT4MasterServer.Services.Scoped;
 
 public sealed class AccountService
 {
 	private readonly IMongoCollection<Account> accountCollection;
+	private readonly ApplicationSettings applicationSettings;
+	private readonly IEmailService emailService;
+	private readonly ILogger<AccountService> _logger;
 
-	public AccountService(DatabaseContext dbContext, IOptions<ApplicationSettings> settings)
+	public AccountService(
+		DatabaseContext dbContext,
+		IOptions<ApplicationSettings> applicationSettings,
+		IEmailService emailService,
+		ILogger<AccountService> logger)
 	{
+		this.applicationSettings = applicationSettings.Value;
 		accountCollection = dbContext.Database.GetCollection<Account>("accounts");
+		this.emailService = emailService;
+		_logger = logger;
 	}
 
 	public async Task CreateIndexesAsync()
@@ -35,11 +48,15 @@ public sealed class AccountService
 		{
 			ID = EpicID.GenerateNew(),
 			Username = username,
-			Email = email
+			Email = email,
+			VerificationLinkGUID = Guid.NewGuid().ToString(),
+			VerificationLinkExpiration = DateTime.UtcNow.AddMinutes(5),
 		};
 		newAccount.Password = PasswordHelper.GetPasswordHash(newAccount.ID, password);
 
 		await accountCollection.InsertOneAsync(newAccount);
+
+		await SendVerificationLinkAsync(email, newAccount.ID, newAccount.VerificationLinkGUID);
 	}
 
 	public async Task<Account?> GetAccountByEmailAsync(string email)
@@ -174,5 +191,153 @@ public sealed class AccountService
 	{
 		await accountCollection.DeleteOneAsync(user => user.ID == id);
 	}
-}
 
+	public async Task<List<EpicID>> GetNonVerifiedAccountsAsync()
+	{
+		var filter = (Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
+					  Builders<Account>.Filter.Exists(f => f.Flags, false)) &
+					  Builders<Account>.Filter.Lt(f => f.LastLoginAt, DateTime.UtcNow.AddMonths(-3));
+		var accountsIDs = await accountCollection.Find(filter).Project(p => p.ID).ToListAsync();
+		return accountsIDs;
+	}
+
+	public async Task VerifyEmailAsync(EpicID accountID, string guid)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.ID, accountID) &
+					 Builders<Account>.Filter.Eq(f => f.VerificationLinkGUID, guid) &
+					 Builders<Account>.Filter.Gt(f => f.VerificationLinkExpiration, DateTime.UtcNow) &
+					(Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
+					 Builders<Account>.Filter.Exists(f => f.Flags, false));
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new EmailVerificationException("Email verification failed: requested account not found, verification link not found or expired.");
+		}
+
+		var updateDefinition = Builders<Account>.Update
+			.BitwiseOr(s => s.Flags, AccountFlags.EmailVerified)
+			.Unset(u => u.VerificationLinkGUID)
+			.Unset(u => u.VerificationLinkExpiration);
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+	}
+
+	public async Task ResendVerificationLinkAsync(string email)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+					(Builders<Account>.Filter.BitsAnyClear(f => f.Flags, (long)AccountFlags.EmailVerified) |
+					 Builders<Account>.Filter.Exists(f => f.Flags, false));
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Email not found or already verified.");
+		}
+
+		var activationGUID = Guid.NewGuid().ToString();
+
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.VerificationLinkGUID, activationGUID)
+			.Set(s => s.VerificationLinkExpiration, DateTime.UtcNow.AddMinutes(5));
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+
+		await SendVerificationLinkAsync(email, account.ID, activationGUID);
+	}
+
+	public async Task InitiateResetPasswordAsync(string email)
+	{
+		var filter = Builders<Account>.Filter.Eq(f => f.Email, email) &
+					 Builders<Account>.Filter.BitsAnySet(f => f.Flags, (long)AccountFlags.EmailVerified);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Email not found or not verified.");
+		}
+
+		var guid = Guid.NewGuid().ToString();
+
+		var updateDefinition = Builders<Account>.Update
+			.Set(s => s.ResetLinkGUID, guid)
+			.Set(u => u.ResetLinkExpiration, DateTime.UtcNow.AddMinutes(5));
+		await accountCollection.UpdateOneAsync(filter, updateDefinition);
+
+		await SendResetPasswordLinkAsync(email, account.ID, guid);
+	}
+
+	public async Task ResetPasswordAsync(EpicID accountID, string guid, string newPassword)
+	{
+		var filter = Builders<Account>.Filter.Eq(x => x.ID, accountID) &
+					 Builders<Account>.Filter.Eq(x => x.ResetLinkGUID, guid) &
+					 Builders<Account>.Filter.Gt(x => x.ResetLinkExpiration, DateTime.UtcNow);
+		var account = await accountCollection.Find(filter).FirstOrDefaultAsync();
+
+		if (account is null)
+		{
+			throw new NotFoundException("Requested account not found or reset link expired.");
+		}
+
+		newPassword = PasswordHelper.GetPasswordHash(accountID, newPassword);
+
+		var filterForUpdate = Builders<Account>.Filter.Eq(x => x.ID, accountID);
+		var update = Builders<Account>.Update
+			.Set(x => x.Password, newPassword)
+			.Unset(x => x.ResetLinkGUID)
+			.Unset(x => x.ResetLinkExpiration);
+		await accountCollection.UpdateOneAsync(filterForUpdate, update);
+	}
+
+	private async Task SendVerificationLinkAsync(string email, EpicID accountID, string guid)
+	{
+		UriBuilder uriBuilder = new()
+		{
+			Scheme = applicationSettings.WebsiteScheme,
+			Host = applicationSettings.WebsiteDomain,
+			Port = applicationSettings.WebsitePort,
+			Path = "VerifyEmail",
+			Query = $"accountId={accountID}&guid={guid}"
+		};
+
+		var html = @$"
+			<p>Welcome to UT4 Master Server!</p>
+			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to verify your email.</p>
+		";
+
+		if (!ValidationHelper.ValidateEmail(applicationSettings.NoReplyEmail))
+		{
+			_logger.LogWarning("Invalid or missing no-reply email: {Value}.", applicationSettings.NoReplyEmail);
+			return;
+		}
+
+		_logger.LogDebug("Sending email verification link: {Uri}", uriBuilder.Uri);
+
+		await emailService.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Email Verification", html);
+	}
+
+	private async Task SendResetPasswordLinkAsync(string email, EpicID accountID, string guid)
+	{
+		UriBuilder uriBuilder = new()
+		{
+			Scheme = applicationSettings.WebsiteScheme,
+			Host = applicationSettings.WebsiteDomain,
+			Port = applicationSettings.WebsitePort,
+			Path = "ResetPassword",
+			Query = $"accountId={accountID}&guid={guid}"
+		};
+
+		var html = @$"
+			<p>Click <a href='{uriBuilder.Uri}' target='_blank'>here</a> to reset your password for UT4 Master Server account.</p>
+			<p>If you didn't initiate password reset, ignore this message.</p>
+		";
+
+		if (!ValidationHelper.ValidateEmail(applicationSettings.NoReplyEmail))
+		{
+			_logger.LogWarning("Invalid or missing no-reply email: {Value}.", applicationSettings.NoReplyEmail);
+			return;
+		}
+
+		_logger.LogDebug("Sending reset password link: {Uri}", uriBuilder.Uri);
+
+		await emailService.SendHTMLEmailAsync(applicationSettings.NoReplyEmail, new List<string>() { email }, "Reset Password", html);
+	}
+}

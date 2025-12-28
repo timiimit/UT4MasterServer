@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
-using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Common;
+using UT4MasterServer.Common.Enums;
+using UT4MasterServer.Common.Helpers;
 using UT4MasterServer.Models;
 using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.DTO.Responses;
 using UT4MasterServer.Models.Settings;
 using UT4MasterServer.Services.Scoped;
+using UT4MasterServer.Services.Singleton;
 
 namespace UT4MasterServer.Controllers.Epic;
 
@@ -24,12 +26,22 @@ public sealed class AccountController : JsonAPIController
 {
 	private readonly SessionService sessionService;
 	private readonly AccountService accountService;
+	private readonly RateLimitService rateLimitService;
+	private readonly IOptions<ApplicationSettings>? applicationSettings;
 	private readonly IOptions<ReCaptchaSettings> reCaptchaSettings;
 
-	public AccountController(ILogger<AccountController> logger, AccountService accountService, SessionService sessionService, IOptions<ReCaptchaSettings> reCaptchaSettings) : base(logger)
+	public AccountController(
+		ILogger<AccountController> logger,
+		AccountService accountService,
+		SessionService sessionService,
+		RateLimitService rateLimitService,
+		IOptions<ApplicationSettings> applicationSettings,
+		IOptions<ReCaptchaSettings> reCaptchaSettings) : base(logger)
 	{
 		this.accountService = accountService;
 		this.sessionService = sessionService;
+		this.rateLimitService = rateLimitService;
+		this.applicationSettings = applicationSettings;
 		this.reCaptchaSettings = reCaptchaSettings;
 	}
 
@@ -219,39 +231,40 @@ public sealed class AccountController : JsonAPIController
 		Account? account = await accountService.GetAccountAsync(username);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate account: {username}");
+			logger.LogInformation("Could not register duplicate account: {Username}.", username);
 			return Conflict("Username already exists");
 		}
 
 		if (!ValidationHelper.ValidateUsername(username))
 		{
-			logger.LogInformation($"Entered an invalid username: {username}");
-			return Conflict("You have entered an invalid username");
+			logger.LogInformation("Entered an invalid username: {Username}.", username);
+			return BadRequest("You have entered an invalid username");
 		}
 
 		email = email.ToLower();
 		account = await accountService.GetAccountByEmailAsync(email);
 		if (account != null)
 		{
-			logger.LogInformation($"Could not register duplicate email: {email}");
+			logger.LogInformation("Entered an existing email: {Email}.", email);
 			return Conflict("Email already exists");
 		}
 
 		if (!ValidationHelper.ValidateEmail(email))
 		{
-			logger.LogInformation($"Entered an invalid email format: {email}");
-			return Conflict("You have entered an invalid email address");
+			logger.LogInformation("Entered an invalid email: {Email}.", email);
+			return BadRequest("You have entered an invalid email address");
 		}
 
 		if (!ValidationHelper.ValidatePassword(password))
 		{
-			logger.LogInformation("Entered password was in invalid format");
-			return Conflict("Unexpected password format");
+			logger.LogInformation("Entered an invalid password.");
+			return BadRequest("You have entered an invalid password");
 		}
 
 		await accountService.CreateAccountAsync(username, email, password); // TODO: this cannot fail?
 
-		logger.LogInformation($"Registered new user: {username}");
+
+		logger.LogInformation("Registered new user: {Username}.", username);
 
 		return Ok("Account created successfully");
 	}
@@ -320,9 +333,13 @@ public sealed class AccountController : JsonAPIController
 		}
 
 		account.Email = newEmail;
+		account.Flags &= ~AccountFlags.EmailVerified;
+		account.VerificationLinkGUID = null;
+		account.VerificationLinkExpiration = null;
 		await accountService.UpdateAccountAsync(account);
+		await accountService.ResendVerificationLinkAsync(newEmail);
 
-		logger.LogInformation($"Updated email for {user.Session.AccountID} to: {newEmail}");
+		logger.LogInformation("Updated email for {AccountID} to: {Email}.", user.Session.AccountID, newEmail);
 
 		return Ok("Changed email successfully");
 	}
@@ -375,6 +392,58 @@ public sealed class AccountController : JsonAPIController
 		logger.LogInformation($"Updated password for {user.Session.AccountID}");
 
 		return Ok("Changed password successfully");
+	}
+
+	[AllowAnonymous]
+	[HttpPost("verify-email")]
+	public async Task<IActionResult> VerifyEmail([FromForm] string accountID, [FromForm] string guid)
+	{
+		EpicID eid = EpicID.FromString(accountID);
+		await accountService.VerifyEmailAsync(eid, guid);
+		return Ok();
+	}
+
+	[AllowAnonymous]
+	[HttpPost("resend-verification-link")]
+	public async Task<IActionResult> ResendVerificationLink([FromForm] string email)
+	{
+		var clientIpAddress = GetClientIP(applicationSettings);
+		if (clientIpAddress == null)
+		{
+			logger.LogError("Could not determine IP Address of remote machine.");
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		rateLimitService.CheckRateLimit($"{nameof(ResendVerificationLink)}-{clientIpAddress}");
+
+		await accountService.ResendVerificationLinkAsync(email);
+		return Ok();
+	}
+
+	[AllowAnonymous]
+	[HttpPost("initiate-reset-password")]
+	public async Task<IActionResult> InitiateResetPassword([FromForm] string email)
+	{
+		var clientIpAddress = GetClientIP(applicationSettings);
+		if (clientIpAddress == null)
+		{
+			logger.LogError("Could not determine IP Address of remote machine.");
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		rateLimitService.CheckRateLimit($"{nameof(InitiateResetPassword)}-{clientIpAddress}");
+
+		await accountService.InitiateResetPasswordAsync(email);
+		return Ok();
+	}
+
+	[AllowAnonymous]
+	[HttpPost("reset-password")]
+	public async Task<IActionResult> ResetPassword([FromForm] string accountID, [FromForm] string guid, [FromForm] string newPassword)
+	{
+		EpicID eid = EpicID.FromString(accountID);
+		await accountService.ResetPasswordAsync(eid, guid, newPassword);
+		return Ok();
 	}
 
 	#endregion

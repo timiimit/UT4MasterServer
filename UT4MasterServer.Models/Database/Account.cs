@@ -69,6 +69,18 @@ public class Account
 	[BsonElement("Flags")]
 	public AccountFlags Flags { get; set; } = 0;
 
+	[BsonIgnoreIfNull]
+	public string? VerificationLinkGUID { get; set; }
+
+	[BsonIgnoreIfNull]
+	public DateTime? VerificationLinkExpiration { get; set; }
+
+	[BsonIgnoreIfNull]
+	public string? ResetLinkGUID { get; set; }
+
+	[BsonIgnoreIfNull]
+	public DateTime? ResetLinkExpiration { get; set; }
+
 	[BsonIgnore]
 	public float Level
 	{

@@ -72,5 +72,10 @@ public enum AccountFlags
 	/// </summary>
 	ACL_Maintenance = 0x1000,
 
+	/// <summary>
+	/// Flag to determine if email was verified
+	/// </summary>
+	EmailVerified = 0x2000,
+
 	/// NOTE: if you add more flags, make sure to update <see cref="AccountFlagsHelper"/> checks.
 }
