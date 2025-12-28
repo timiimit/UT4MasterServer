@@ -1,14 +1,14 @@
 <template>
-  <Header />
-  <div class="container main-content">
-    <router-view :key="$route.fullPath" />
-  </div>
-  <Footer />
+	<Header />
+	<div class="container main-content">
+		<router-view :key="$route.fullPath" />
+	</div>
+	<Footer />
 </template>
 
 <style lang="scss" scoped>
 .container {
-  padding: 1rem;
+	padding: 1rem;
 }
 </style>
 

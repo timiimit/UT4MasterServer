@@ -1,88 +1,88 @@
 <template>
-  <LoadingPanel :status="status" :error="errorMessage">
-    <form
-      :class="{ 'was-validated': submitAttempted }"
-      novalidate
-      @submit.prevent="handleSubmit"
-    >
-      <fieldset>
-        <legend>Change Password</legend>
-        <div class="form-group row">
-          <label for="currentPassword" class="col-sm-12 col-form-label"
-            >Current Password</label
-          >
-          <div class="col-sm-6">
-            <input
-              id="currentPassword"
-              v-model="currentPassword"
-              type="password"
-              class="form-control"
-              name="currentPassword"
-              required
-              placeholder="Current Password"
-              autocomplete="off"
-              minlength="7"
-            />
-            <div class="invalid-feedback">
-              Current password must be at least 7 characters
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="newPassword" class="col-sm-12 col-form-label"
-            >New Password</label
-          >
-          <div class="col-sm-6">
-            <input
-              id="newPassword"
-              v-model="newPassword"
-              v-valid="newPasswordValid"
-              type="password"
-              class="form-control"
-              name="newPassword"
-              placeholder="New Password"
-              autocomplete="off"
-              required
-              minlength="7"
-            />
-            <div v-if="!newPasswordLength" class="invalid-feedback">
-              New Password must be at least 7 characters
-            </div>
-            <div v-if="!newPasswordDiffers" class="invalid-feedback">
-              New Password must differ from Current Password
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="confirmPassword" class="col-sm-12 col-form-label"
-            >Confirm Password</label
-          >
-          <div class="col-sm-6">
-            <input
-              v-model="confirmPassword"
-              v-valid="confirmPasswordValid"
-              type="password"
-              class="form-control"
-              placeholder="Confirm Password"
-              autocomplete="off"
-              required
-              minlength="7"
-            />
-            <div v-if="!confirmPasswordValid" class="invalid-feedback">
-              Confirm Password must match New Password
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="col-sm-12">
-            <button type="submit" class="btn btn-primary">
-              Change Password
-            </button>
-          </div>
-        </div>
-      </fieldset>
-    </form>
-  </LoadingPanel>
+	<LoadingPanel :status="status" :error="errorMessage">
+		<form
+			:class="{ 'was-validated': submitAttempted }"
+			novalidate
+			@submit.prevent="handleSubmit"
+		>
+			<fieldset>
+				<legend>Change Password</legend>
+				<div class="form-group row">
+					<label for="currentPassword" class="col-sm-12 col-form-label"
+						>Current Password</label
+					>
+					<div class="col-sm-6">
+						<input
+							id="currentPassword"
+							v-model="currentPassword"
+							type="password"
+							class="form-control"
+							name="currentPassword"
+							required
+							placeholder="Current Password"
+							autocomplete="off"
+							minlength="7"
+						/>
+						<div class="invalid-feedback">
+							Current password must be at least 7 characters
+						</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="newPassword" class="col-sm-12 col-form-label"
+						>New Password</label
+					>
+					<div class="col-sm-6">
+						<input
+							id="newPassword"
+							v-model="newPassword"
+							v-valid="newPasswordValid"
+							type="password"
+							class="form-control"
+							name="newPassword"
+							placeholder="New Password"
+							autocomplete="off"
+							required
+							minlength="7"
+						/>
+						<div v-if="!newPasswordLength" class="invalid-feedback">
+							New Password must be at least 7 characters
+						</div>
+						<div v-if="!newPasswordDiffers" class="invalid-feedback">
+							New Password must differ from Current Password
+						</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="confirmPassword" class="col-sm-12 col-form-label"
+						>Confirm Password</label
+					>
+					<div class="col-sm-6">
+						<input
+							v-model="confirmPassword"
+							v-valid="confirmPasswordValid"
+							type="password"
+							class="form-control"
+							placeholder="Confirm Password"
+							autocomplete="off"
+							required
+							minlength="7"
+						/>
+						<div v-if="!confirmPasswordValid" class="invalid-feedback">
+							Confirm Password must match New Password
+						</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-sm-12">
+						<button type="submit" class="btn btn-primary">
+							Change Password
+						</button>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</LoadingPanel>
 </template>
 
 <script setup lang="ts">
@@ -107,43 +107,43 @@ const confirmPassword = shallowRef<string>('');
 const submitAttempted = shallowRef(false);
 
 const currentPasswordValid = computed(() =>
-  validatePassword(currentPassword.value)
+	validatePassword(currentPassword.value)
 );
 const newPasswordLength = computed(() => validatePassword(newPassword.value));
 const newPasswordDiffers = computed(
-  () => newPassword.value !== currentPassword.value
+	() => newPassword.value !== currentPassword.value
 );
 const newPasswordValid = computed(
-  () => newPasswordDiffers.value && newPasswordLength.value
+	() => newPasswordDiffers.value && newPasswordLength.value
 );
 const confirmPasswordValid = computed(
-  () => confirmPassword.value === newPassword.value
+	() => confirmPassword.value === newPassword.value
 );
 const formValid = computed(
-  () =>
-    currentPasswordValid.value &&
-    newPasswordValid.value &&
-    confirmPasswordValid.value
+	() =>
+		currentPasswordValid.value &&
+		newPasswordValid.value &&
+		confirmPasswordValid.value
 );
 const errorMessage = shallowRef('Error changing email. Please try again.');
 
 async function handleSubmit() {
-  submitAttempted.value = true;
-  if (!formValid.value || !AccountStore.account?.id) {
-    return;
-  }
-  try {
-    status.value = AsyncStatus.BUSY;
-    const request: IChangePasswordRequest = {
-      currentPassword: CryptoJS.SHA512(currentPassword.value).toString(),
-      newPassword: CryptoJS.SHA512(newPassword.value).toString()
-    };
-    await accountService.changePassword(request);
-    status.value = AsyncStatus.OK;
-    router.push('/Profile');
-  } catch (err: unknown) {
-    status.value = AsyncStatus.ERROR;
-    errorMessage.value = (err as Error)?.message;
-  }
+	submitAttempted.value = true;
+	if (!formValid.value || !AccountStore.account?.id) {
+		return;
+	}
+	try {
+		status.value = AsyncStatus.BUSY;
+		const request: IChangePasswordRequest = {
+			currentPassword: CryptoJS.SHA512(currentPassword.value).toString(),
+			newPassword: CryptoJS.SHA512(newPassword.value).toString()
+		};
+		await accountService.changePassword(request);
+		status.value = AsyncStatus.OK;
+		router.push('/Profile');
+	} catch (err: unknown) {
+		status.value = AsyncStatus.ERROR;
+		errorMessage.value = (err as Error)?.message;
+	}
 }
 </script>

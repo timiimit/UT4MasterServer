@@ -1,86 +1,86 @@
 <template>
-  <CrudPage title="Clients">
-    <template #add="p">
-      <AddClient
-        :all-clients="clients"
-        @cancel="p.cancel"
-        @added="
-          loadClients();
-          p.cancel();
-        "
-      />
-    </template>
-    <template #filters>
-      <div>
-        <input
-          v-model="filterText"
-          type="text"
-          class="form-control"
-          placeholder="Filter by Name..."
-        />
-      </div>
-    </template>
-    <LoadingPanel :status="status" auto-load @load="loadClients">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>ID</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          <template
-            v-for="client in filteredClients.slice(pageStart, pageEnd)"
-            :key="objectHash(client)"
-          >
-            <tr :class="{ 'table-light': client.editing }">
-              <td>{{ client.name }}</td>
-              <td>{{ client.id }}</td>
-              <td class="actions">
-                <button
-                  class="btn btn-icon"
-                  @click="client.editing = !client.editing"
-                >
-                  <FontAwesomeIcon icon="fa-regular fa-pen-to-square" />
-                </button>
-                <button
-                  v-if="canDelete(client)"
-                  class="btn btn-icon"
-                  @click="handleDelete(client)"
-                >
-                  <FontAwesomeIcon icon="fa-solid fa-trash-can" />
-                </button>
-              </td>
-            </tr>
-            <tr v-if="client.editing" class="edit-row table-light">
-              <td colspan="3">
-                <EditClient
-                  :client="client"
-                  @cancel="client.editing = false"
-                  @updated="handleUpdated(client)"
-                />
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-      <Paging
-        :item-count="filteredClients.length"
-        :page-size="pageSize"
-        @update="handlePagingUpdate"
-      />
-    </LoadingPanel>
-  </CrudPage>
+	<CrudPage title="Clients">
+		<template #add="p">
+			<AddClient
+				:all-clients="clients"
+				@cancel="p.cancel"
+				@added="
+					loadClients();
+					p.cancel();
+				"
+			/>
+		</template>
+		<template #filters>
+			<div>
+				<input
+					v-model="filterText"
+					type="text"
+					class="form-control"
+					placeholder="Filter by Name..."
+				/>
+			</div>
+		</template>
+		<LoadingPanel :status="status" auto-load @load="loadClients">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>ID</th>
+						<th />
+					</tr>
+				</thead>
+				<tbody>
+					<template
+						v-for="client in filteredClients.slice(pageStart, pageEnd)"
+						:key="objectHash(client)"
+					>
+						<tr :class="{ 'table-light': client.editing }">
+							<td>{{ client.name }}</td>
+							<td>{{ client.id }}</td>
+							<td class="actions">
+								<button
+									class="btn btn-icon"
+									@click="client.editing = !client.editing"
+								>
+									<FontAwesomeIcon icon="fa-regular fa-pen-to-square" />
+								</button>
+								<button
+									v-if="canDelete(client)"
+									class="btn btn-icon"
+									@click="handleDelete(client)"
+								>
+									<FontAwesomeIcon icon="fa-solid fa-trash-can" />
+								</button>
+							</td>
+						</tr>
+						<tr v-if="client.editing" class="edit-row table-light">
+							<td colspan="3">
+								<EditClient
+									:client="client"
+									@cancel="client.editing = false"
+									@updated="handleUpdated(client)"
+								/>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+			<Paging
+				:item-count="filteredClients.length"
+				:page-size="pageSize"
+				@update="handlePagingUpdate"
+			/>
+		</LoadingPanel>
+	</CrudPage>
 </template>
 
 <style lang="scss" scoped>
 td.actions {
-  width: 6rem;
+	width: 6rem;
 
-  button:not(:last-child) {
-    margin-right: 1rem;
-  }
+	button:not(:last-child) {
+		margin-right: 1rem;
+	}
 }
 </style>
 
@@ -100,7 +100,7 @@ import { usePaging } from '@/hooks/use-paging.hook';
 import { useClientOptions } from './hooks/use-client-options.hook';
 
 interface IGridClient extends IClient {
-  editing?: boolean;
+	editing?: boolean;
 }
 
 const adminService = new AdminService();
@@ -108,48 +108,48 @@ const clients = ref<IGridClient[]>([]);
 const status = shallowRef(AsyncStatus.OK);
 const filterText = shallowRef('');
 const filteredClients = computed(() =>
-  clients.value.filter((c) =>
-    c.name.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())
-  )
+	clients.value.filter((c) =>
+		c.name.toLocaleLowerCase().includes(filterText.value.toLocaleLowerCase())
+	)
 );
 
 const { pageSize, pageStart, pageEnd, handlePagingUpdate } = usePaging();
 const { isReservedClient } = useClientOptions();
 
 async function loadClients() {
-  try {
-    status.value = AsyncStatus.BUSY;
-    clients.value = await adminService.getClients();
-    status.value = AsyncStatus.OK;
-  } catch (err: unknown) {
-    status.value = AsyncStatus.ERROR;
-    console.error('Error loading clients', err);
-  }
+	try {
+		status.value = AsyncStatus.BUSY;
+		clients.value = await adminService.getClients();
+		status.value = AsyncStatus.OK;
+	} catch (err: unknown) {
+		status.value = AsyncStatus.ERROR;
+		console.error('Error loading clients', err);
+	}
 }
 
 function canDelete(client: IGridClient) {
-  return !isReservedClient(client);
+	return !isReservedClient(client);
 }
 
 function handleUpdated(client: IGridClient) {
-  client.editing = false;
-  loadClients();
+	client.editing = false;
+	loadClients();
 }
 
 async function handleDelete(client: IGridClient) {
-  const confirmDelete = confirm(
-    `Are you sure you want to delete client ${client.name}?`
-  );
-  if (confirmDelete) {
-    try {
-      status.value = AsyncStatus.BUSY;
-      await adminService.deleteClient(client.id);
-      loadClients();
-      status.value = AsyncStatus.OK;
-    } catch (err: unknown) {
-      status.value = AsyncStatus.ERROR;
-      console.error('Error deleting client', err);
-    }
-  }
+	const confirmDelete = confirm(
+		`Are you sure you want to delete client ${client.name}?`
+	);
+	if (confirmDelete) {
+		try {
+			status.value = AsyncStatus.BUSY;
+			await adminService.deleteClient(client.id);
+			loadClients();
+			status.value = AsyncStatus.OK;
+		} catch (err: unknown) {
+			status.value = AsyncStatus.ERROR;
+			console.error('Error deleting client', err);
+		}
+	}
 }
 </script>
