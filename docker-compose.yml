@@ -10,7 +10,7 @@ services:
     volumes:
       - ./logs:/app/Logs
     ports:
-      - "5000:80"
+      - "5000:8080"
     networks:
       - net
     depends_on:

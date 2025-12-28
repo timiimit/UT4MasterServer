@@ -21,7 +21,7 @@ jobs:
   build-frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Frontend Docker Image
         run: docker build --pull -t ${{ env.IMAGE_NAME }} -f ./UT4MasterServer.Web/.docker/Development.Dockerfile ./UT4MasterServer.Web/
       - name: Clean Up

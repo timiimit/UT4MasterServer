@@ -1,94 +1,94 @@
 {
-  "name": "ut4masterserver-web",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "dev-open": "vite --host 0.0.0.0 --open",
-    "build": "vite build --mode production",
-    "build-dev": "vite build --mode development",
-    "format": "prettier . --write",
-    "format-check": "prettier . --check",
-    "lint": "eslint . --ext .ts,.vue",
-    "lint-fix": "eslint . --ext .ts,.vue --fix",
-    "prepare": "cd .. && husky install client/.husky"
-  },
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.5.2",
-    "@fortawesome/free-brands-svg-icons": "^6.5.2",
-    "@fortawesome/free-regular-svg-icons": "^6.5.2",
-    "@fortawesome/free-solid-svg-icons": "^6.5.2",
-    "@fortawesome/vue-fontawesome": "^3.0.6",
-    "@types/crypto-js": "^4.2.2",
-    "@types/lodash": "^4.17.0",
-    "@vueform/multiselect": "^2.6.7",
-    "crypto-js": "^4.2.0",
-    "lodash": "^4.17.21",
-    "sass": "^1.75.0",
-    "ts-debounce": "^4.0.0",
-    "ts-md5": "^1.3.1",
-    "vue": "^3.4.25",
-    "vue-recaptcha": "^2.0.3",
-    "vue-router": "^4.3.2"
-  },
-  "devDependencies": {
-    "@types/node": "^18.19.31",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "@vitejs/plugin-vue": "^4.6.2",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-vue": "^9.25.0",
-    "husky": "^8.0.3",
-    "prettier": "^2.8.8",
-    "pretty-quick": "^3.3.1",
-    "typescript": "^4.9.5",
-    "vite": "^4.5.3",
-    "vue-eslint-parser": "^9.4.2",
-    "vue-tsc": "^1.8.27"
-  },
-  "eslintConfig": {
-    "env": {
-      "node": true,
-      "vue/setup-compiler-macros": true
-    },
-    "parser": "vue-eslint-parser",
-    "parserOptions": {
-      "parser": "@typescript-eslint/parser"
-    },
-    "plugins": [
-      "@typescript-eslint"
-    ],
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:vue/vue3-recommended",
-      "prettier"
-    ],
-    "rules": {
-      "vue/multi-word-component-names": "off",
-      "vue/component-tags-order": [
-        "error",
-        {
-          "order": [
-            "template",
-            "style",
-            "script"
-          ]
-        }
-      ]
-    },
-    "globals": {
-      "__BACKEND_URL": "readonly",
-      "__RECAPTCHA_SITE_KEY": "readonly"
-    }
-  },
-  "prettier": {
-    "trailingComma": "none",
-    "semi": true,
-    "singleQuote": true,
-    "endOfLine": "lf"
-  }
+	"name": "ut4masterserver-web",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite --host 0.0.0.0",
+		"dev-open": "vite --host 0.0.0.0 --open",
+		"build": "vite build --mode production",
+		"build-dev": "vite build --mode development",
+		"format": "prettier . --write",
+		"format-check": "prettier . --check",
+		"lint": "eslint . --ext .ts,.vue",
+		"lint-fix": "eslint . --ext .ts,.vue --fix",
+		"prepare": "cd .. && husky install client/.husky"
+	},
+	"dependencies": {
+		"@fortawesome/fontawesome-svg-core": "^6.5.2",
+		"@fortawesome/free-brands-svg-icons": "^6.5.2",
+		"@fortawesome/free-regular-svg-icons": "^6.5.2",
+		"@fortawesome/free-solid-svg-icons": "^6.5.2",
+		"@fortawesome/vue-fontawesome": "^3.0.8",
+		"@types/crypto-js": "^4.2.2",
+		"@types/lodash": "^4.17.21",
+		"@vueform/multiselect": "^2.6.11",
+		"crypto-js": "^4.2.0",
+		"lodash": "^4.17.21",
+		"sass": "^1.75.0",
+		"ts-debounce": "^4.0.0",
+		"ts-md5": "^1.3.1",
+		"vue": "^3.4.38",
+		"vue-recaptcha": "^2.0.3",
+		"vue-router": "^4.3.3"
+	},
+	"devDependencies": {
+		"@types/node": "^18.19.130",
+		"@typescript-eslint/eslint-plugin": "^5.62.0",
+		"@typescript-eslint/parser": "^5.62.0",
+		"@vitejs/plugin-vue": "^4.6.2",
+		"eslint": "^8.57.1",
+		"eslint-config-prettier": "^8.10.2",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-vue": "^9.25.0",
+		"husky": "^8.0.3",
+		"prettier": "^2.8.8",
+		"pretty-quick": "^3.3.1",
+		"typescript": "^4.9.5",
+		"vite": "^4.5.14",
+		"vue-eslint-parser": "^9.4.3",
+		"vue-tsc": "^1.8.27"
+	},
+	"eslintConfig": {
+		"env": {
+			"node": true,
+			"vue/setup-compiler-macros": true
+		},
+		"parser": "vue-eslint-parser",
+		"parserOptions": {
+			"parser": "@typescript-eslint/parser"
+		},
+		"plugins": [
+			"@typescript-eslint"
+		],
+		"extends": [
+			"eslint:recommended",
+			"plugin:@typescript-eslint/recommended",
+			"plugin:vue/vue3-recommended",
+			"prettier"
+		],
+		"rules": {
+			"vue/multi-word-component-names": "off",
+			"vue/component-tags-order": [
+				"error",
+				{
+					"order": [
+						"template",
+						"style",
+						"script"
+					]
+				}
+			]
+		},
+		"globals": {
+			"__BACKEND_URL": "readonly",
+			"__RECAPTCHA_SITE_KEY": "readonly"
+		}
+	},
+	"prettier": {
+		"trailingComma": "none",
+		"semi": true,
+		"singleQuote": true,
+		"endOfLine": "lf"
+	}
 }

@@ -8,20 +8,20 @@ If you want to play, go to https://ut4.timiimit.com/
 
 There is not much documentation on how to get started. I will create issues that need resolving as time goes on, but there are also a bunch of `// TODO` comments which tell what is still missing.
 
-### Required packages for running with Visual Studio 2022
+### Required packages for running with Visual Studio
 
 - .NET desktop development
 - Container development tools
 
-### Running & debugging with Visual Studio 2022
+### Running & debugging with Visual Studio
 
 1. Install Docker
-2. Install Visual Studio 2022
-3. Open `UT4MasterServer.sln` with Visual Studio 2022
+2. Install Visual Studio
+3. Open `UT4MasterServer.sln` with Visual Studio
 4. Set `docker-compose` as the Startup Project
 5. Start Debugging
 
-### Running without Visual Studio 2022
+### Running without Visual Studio
 
 To run in development mode use `docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d` inside repository's root.
 

@@ -1,55 +1,55 @@
 <template>
-  <LoadingPanel :status="status" :error="errorMessage">
-    <form
-      :class="{ 'was-validated': submitAttempted }"
-      novalidate
-      @submit.prevent="handleSubmit"
-    >
-      <fieldset>
-        <legend>Change Email</legend>
-        <div class="form-group row">
-          <label for="currentEmail" class="col-sm-12 col-form-label"
-            >Current Email</label
-          >
-          <div class="col-sm-6">
-            <input
-              id="currentEmail"
-              v-model="currentEmail"
-              type="email"
-              class="form-control"
-              name="currentEmail"
-              readonly
-              disabled
-            />
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="newEmail" class="col-sm-12 col-form-label"
-            >New Email</label
-          >
-          <div class="col-sm-6">
-            <input
-              id="newEmail"
-              v-model="newEmail"
-              type="email"
-              placeholder="player@example.com"
-              class="form-control"
-              name="newEmail"
-              required
-            />
-            <div class="invalid-feedback">
-              A valid email address is required
-            </div>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="col-sm-12">
-            <button type="submit" class="btn btn-primary">Change Email</button>
-          </div>
-        </div>
-      </fieldset>
-    </form>
-  </LoadingPanel>
+	<LoadingPanel :status="status" :error="errorMessage">
+		<form
+			:class="{ 'was-validated': submitAttempted }"
+			novalidate
+			@submit.prevent="handleSubmit"
+		>
+			<fieldset>
+				<legend>Change Email</legend>
+				<div class="form-group row">
+					<label for="currentEmail" class="col-sm-12 col-form-label"
+						>Current Email</label
+					>
+					<div class="col-sm-6">
+						<input
+							id="currentEmail"
+							v-model="currentEmail"
+							type="email"
+							class="form-control"
+							name="currentEmail"
+							readonly
+							disabled
+						/>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label for="newEmail" class="col-sm-12 col-form-label"
+						>New Email</label
+					>
+					<div class="col-sm-6">
+						<input
+							id="newEmail"
+							v-model="newEmail"
+							type="email"
+							placeholder="player@example.com"
+							class="form-control"
+							name="newEmail"
+							required
+						/>
+						<div class="invalid-feedback">
+							A valid email address is required
+						</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<div class="col-sm-12">
+						<button type="submit" class="btn btn-primary">Change Email</button>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</LoadingPanel>
 </template>
 
 <script setup lang="ts">
@@ -73,28 +73,28 @@ const formValid = computed(() => newEmail.value?.length);
 const errorMessage = shallowRef('Error changing email. Please try again.');
 
 async function handleSubmit() {
-  submitAttempted.value = true;
-  if (!formValid.value) {
-    return;
-  }
+	submitAttempted.value = true;
+	if (!formValid.value) {
+		return;
+	}
 
-  try {
-    status.value = AsyncStatus.BUSY;
-    const request: IChangeEmailRequest = {
-      newEmail: newEmail.value
-    };
-    await accountService.changeEmail(request);
-    status.value = AsyncStatus.OK;
-    AccountStore.fetchUserAccount();
-    router.push('/Profile');
-  } catch (err: unknown) {
-    status.value = AsyncStatus.ERROR;
-    errorMessage.value = (err as Error)?.message;
-  }
+	try {
+		status.value = AsyncStatus.BUSY;
+		const request: IChangeEmailRequest = {
+			newEmail: newEmail.value
+		};
+		await accountService.changeEmail(request);
+		status.value = AsyncStatus.OK;
+		AccountStore.fetchUserAccount();
+		router.push('/Profile');
+	} catch (err: unknown) {
+		status.value = AsyncStatus.ERROR;
+		errorMessage.value = (err as Error)?.message;
+	}
 }
 
 onMounted(async () => {
-  // force account to be up to date before allowing a user to change
-  AccountStore.fetchUserAccount();
+	// force account to be up to date before allowing a user to change
+	AccountStore.fetchUserAccount();
 });
 </script>

@@ -15,8 +15,8 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 	private readonly ClientService clientService;
 
 	public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
-		UrlEncoder encoder, ISystemClock clock,
-		ClientService clientService) : base(options, logger, encoder, clock)
+		UrlEncoder encoder,
+		ClientService clientService) : base(options, logger, encoder)
 	{
 		this.clientService = clientService;
 	}

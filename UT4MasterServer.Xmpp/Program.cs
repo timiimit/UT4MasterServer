@@ -16,7 +16,7 @@ internal class Program
 
 		var cts = new CancellationTokenSource();
 
-		var cert = new X509Certificate2("../../../Certs/master-ut4.pfx", "");
+		var cert = X509CertificateLoader.LoadCertificateFromFile("../../../Certs/master-ut4.pfx");
 
 		var server = new XmppServer("master-ut4.timiimit.com", cert);
 		Task? serverTask = server.StartAsync(cts.Token);

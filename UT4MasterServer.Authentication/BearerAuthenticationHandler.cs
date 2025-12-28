@@ -17,7 +17,7 @@ public class BearerAuthenticationHandler : AuthenticationHandler<AuthenticationS
 	private readonly SessionService sessionService;
 
 	public BearerAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
-		UrlEncoder encoder, ISystemClock clock, SessionService sessionService) : base(options, logger, encoder, clock)
+		UrlEncoder encoder, SessionService sessionService) : base(options, logger, encoder)
 	{
 		this.sessionService = sessionService;
 	}

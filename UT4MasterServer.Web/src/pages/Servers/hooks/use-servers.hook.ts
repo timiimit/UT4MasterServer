@@ -8,35 +8,35 @@ import { useHubs } from './use-hubs.hook';
 import { useMatch } from './use-match.hook';
 
 export function useServers() {
-  const { mapMatch } = useMatch();
-  const { hubFilter } = useHubs();
+	const { mapMatch } = useMatch();
+	const { hubFilter } = useHubs();
 
-  function serverFilter(r: IMatchmakingResponse) {
-    return (
-      r.attributes[ServerAttribute.gameInstance] !== 1 &&
-      r.attributes[ServerAttribute.gameMode] !== 'EMPTY' &&
-      !hubFilter(r)
-    );
-  }
+	function serverFilter(r: IMatchmakingResponse) {
+		return (
+			r.attributes[ServerAttribute.gameInstance] !== 1 &&
+			r.attributes[ServerAttribute.gameMode] !== 'EMPTY' &&
+			!hubFilter(r)
+		);
+	}
 
-  function mapServer(response: IMatchmakingResponse): IServer {
-    return {
-      ...mapMatch(response, {}),
-      serverTrustLevel: response.attributes[
-        ServerAttribute.serverTrustLevel
-      ] as GameServerTrust
-    };
-  }
+	function mapServer(response: IMatchmakingResponse): IServer {
+		return {
+			...mapMatch(response, {}),
+			serverTrustLevel: response.attributes[
+				ServerAttribute.serverTrustLevel
+			] as GameServerTrust
+		};
+	}
 
-  if (!ServerStore.allServers.length) {
-    ServerStore.fetchAllServers();
-  }
+	if (!ServerStore.allServers.length) {
+		ServerStore.fetchAllServers();
+	}
 
-  const servers = computed(() =>
-    ServerStore.allServers.filter(serverFilter).map(mapServer)
-  );
+	const servers = computed(() =>
+		ServerStore.allServers.filter(serverFilter).map(mapServer)
+	);
 
-  return {
-    servers
-  };
+	return {
+		servers
+	};
 }
