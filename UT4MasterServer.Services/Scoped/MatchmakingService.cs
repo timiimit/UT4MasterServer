@@ -119,9 +119,22 @@ public sealed class MatchmakingService
 
 		foreach (GameServerAttributeCriteria? condition in inputFilter.Criteria)
 		{
-			// TODO: use skipped conditions to query dynamic value and sort results
-			//       (UTMatchmakingGather.cpp - search for SETTING_NEEDSSORT)
-			if (condition.Key == "NEEDS" || condition.Key == "NEEDSSORT")
+			// Quick-Play search hints UT4 always sends but the master server
+			// either tracks differently or doesn't track at all:
+			//   * NEEDS / NEEDS_i           - "needs at least N more players";
+			//                                  redundant with OpenPlayersRequired
+			//                                  which is enforced below.
+			//   * NEEDSSORT / NEEDSSORT_i   - DISTANCE sort hint (UTMatchmakingGather.cpp).
+			//   * REGION_s                  - Epic GeoIP region; not modeled.
+			//   * UT_SERVERTRUSTLEVEL_i     - UT4 always asks for "0" but our
+			//                                  hub-spawned children advertise the
+			//                                  hub's actual trust level. Letting
+			//                                  this through excludes every valid
+			//                                  Quick-Play server.
+			if (condition.Key == "NEEDS" || condition.Key == "NEEDSSORT" ||
+				condition.Key == "NEEDS_i" || condition.Key == "NEEDSSORT_i" ||
+				condition.Key == "REGION_s" ||
+				condition.Key == "UT_SERVERTRUSTLEVEL_i")
 			{
 				continue;
 			}
@@ -163,8 +176,33 @@ public sealed class MatchmakingService
 
 			if (compElem != null)
 			{
-				var attrCheck = new BsonElement($"{nameof(GameServer.Attributes)}.{condition.Key}", new BsonDocument(compElem.Value));
-				doc.Add(attrCheck);
+				// UT4 search criteria use unprefixed keys (PLAYLISTID_i, REGION_s)
+				// but game servers register them with the UT_ prefix
+				// (UT_PLAYLISTID_i, UT_REGION_s). Normalize to the prefixed form
+				// so the criterion lines up with how servers advertise attributes.
+				string attrKey = condition.Key.StartsWith("UT_")
+					? condition.Key
+					: $"UT_{condition.Key}";
+
+				// AUTGameSessionRanked servers PUT their own session settings on
+				// every heartbeat, which overwrites UT_PLAYLISTID_i back to 0
+				// and erases UT_RULETAG_s. The matchmaker then can't find them
+				// via the PLAYLISTID_i criterion. Treat any UT_RANKED_i=1 server
+				// as a valid PLAYLISTID candidate so the criterion still matches
+				// the Ranked QuickPlay pool. (Local-dev convention: every Ranked
+				// server in the registry is implicitly part of the QuickPlay
+				// pool. Tighten this if you ever run multiple Ranked playlists.)
+				if (attrKey == "UT_PLAYLISTID_i")
+				{
+					var playlistMatch = new BsonDocument($"{nameof(GameServer.Attributes)}.{attrKey}", new BsonDocument(compElem.Value));
+					var rankedMatch = new BsonDocument($"{nameof(GameServer.Attributes)}.UT_RANKED_i", 1);
+					doc.Add("$or", new BsonArray { playlistMatch, rankedMatch });
+				}
+				else
+				{
+					var attrCheck = new BsonElement($"{nameof(GameServer.Attributes)}.{attrKey}", new BsonDocument(compElem.Value));
+					doc.Add(attrCheck);
+				}
 			}
 		}
 
@@ -199,6 +237,79 @@ public sealed class MatchmakingService
 		// TODO: handle body.RequireDedicated and body.MaxCurrentPlayers
 
 		return ret;
+	}
+
+	/// <summary>
+	/// Find one running game server suitable for a Quick-Play join.
+	///
+	/// Selection rules:
+	///   * server must be non-stale (LastUpdated within StaleAfter)
+	///   * if <paramref name="rulesetTag"/> is supplied, the server must
+	///     advertise UT_RULETAG_s = rulesetTag
+	///   * if <paramref name="preferredMap"/> is supplied, MAPNAME_s must match
+	///   * if <paramref name="buildUniqueId"/> is supplied, BuildUniqueID must match
+	///   * server must have at least one open public slot
+	///
+	/// Among candidates, the server with the fewest open public slots wins
+	/// (i.e. fillest server with capacity), so Quick-Play players concentrate
+	/// onto the busiest valid server — humans displace bots on the curated
+	/// always-on pool instead of spreading thin.
+	///
+	/// Returns null when no server matches.
+	/// </summary>
+	public async Task<GameServer?> FindQuickPlayServerAsync(
+		string? rulesetTag,
+		string? preferredMap,
+		string? buildUniqueId)
+	{
+		var doc = new BsonDocument();
+
+		if (DateTime.UtcNow - runtimeInfoService.StartupTime > StaleAfter)
+		{
+			doc.Add(new BsonElement(nameof(GameServer.LastUpdated), new BsonDocument("$gt", DateTime.UtcNow - StaleAfter)));
+		}
+
+		if (!string.IsNullOrWhiteSpace(buildUniqueId))
+		{
+			doc.Add(new BsonElement(nameof(GameServer.BuildUniqueID), buildUniqueId));
+		}
+
+		if (!string.IsNullOrWhiteSpace(rulesetTag))
+		{
+			doc.Add(new BsonElement($"{nameof(GameServer.Attributes)}.UT_RULETAG_s", rulesetTag));
+		}
+
+		if (!string.IsNullOrWhiteSpace(preferredMap))
+		{
+			doc.Add(new BsonElement($"{nameof(GameServer.Attributes)}.MAPNAME_s", preferredMap));
+		}
+
+		var options = new FindOptions<GameServer>
+		{
+			AllowPartialResults = true,
+			MaxAwaitTime = TimeSpan.FromSeconds(1.0),
+		};
+
+		var filter = new BsonDocumentFilterDefinition<GameServer>(doc);
+		IAsyncCursor<GameServer>? cursor = await serverCollection.FindAsync(filter, options);
+		List<GameServer>? candidates = await cursor.ToListAsync();
+
+		// Filter for spare capacity in memory — MaxPublicPlayers vs PublicPlayers.Count
+		// is awkward to express in Bson without computed fields.
+		List<GameServer> withCapacity = candidates
+			.Where(s => s.MaxPublicPlayers - s.PublicPlayers.Count > 0)
+			.ToList();
+
+		if (withCapacity.Count == 0)
+		{
+			return null;
+		}
+
+		// Fewest open slots wins → concentrate Quick-Play players onto the
+		// fullest server with capacity.
+		return withCapacity
+			.OrderBy(s => s.MaxPublicPlayers - s.PublicPlayers.Count)
+			.First();
 	}
 
 	public async Task<int> RemoveAllStaleAsync()

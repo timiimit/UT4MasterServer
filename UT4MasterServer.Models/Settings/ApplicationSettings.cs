@@ -30,4 +30,12 @@ public sealed class ApplicationSettings
 	/// IP addresses of trusted proxy servers.
 	/// </summary>
 	public List<string> ProxyServers { get; set; } = new List<string>();
+
+	/// <summary>
+	/// SMTP transport for outbound mail (password resets, etc.). When
+	/// <see cref="MailSettings.IsConfigured"/> is false, mail-dependent
+	/// features no-op (request accepted, no email sent — anti-enumeration
+	/// surface still preserved).
+	/// </summary>
+	public MailSettings Mail { get; set; } = new MailSettings();
 }

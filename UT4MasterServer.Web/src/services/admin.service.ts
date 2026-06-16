@@ -3,7 +3,8 @@ import { IAdminChangePasswordRequest } from '@/pages/Admin/Accounts/types/admin-
 import { IClient } from '@/pages/Admin/Clients/types/client';
 import { ICloudFile } from '@/pages/Admin/CloudFiles/types/cloud-file';
 import { ITrustedGameServer } from '@/pages/Admin/TrustedServers/types/trusted-game-server';
-import HttpService from './http.service';
+import HttpService, { HttpError } from './http.service';
+import { SessionStore } from '@/stores/session-store';
 
 export default class AdminService extends HttpService {
   private baseUrl = `${__BACKEND_URL}/admin`;
@@ -96,6 +97,24 @@ export default class AdminService extends HttpService {
   // Cloud Files
   async getCloudFiles() {
     return await this.get<ICloudFile[]>(`${this.baseUrl}/mcp_files`);
+  }
+
+  async getCloudFileText(filename: string): Promise<string> {
+    const headers: HeadersInit = { SameSite: 'Strict' };
+    if (SessionStore.token) {
+      headers.Authorization = `bearer ${SessionStore.token}`;
+    }
+    const response = await fetch(
+      `${this.baseUrl}/mcp_files/${encodeURIComponent(filename)}`,
+      { method: 'GET', headers }
+    );
+    if (!response.ok) {
+      throw new HttpError(
+        response.status,
+        `Failed to fetch ${filename}: ${response.status} ${response.statusText}`
+      );
+    }
+    return await response.text();
   }
 
   async upsertCloudFile(formData: FormData) {

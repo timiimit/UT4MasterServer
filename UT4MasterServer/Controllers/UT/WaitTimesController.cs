@@ -30,7 +30,18 @@ public sealed class WaitTimesController : JsonAPIController
 			return Unauthorized();
 		}
 
-		return Ok(service.GetWaitTimes());
+		// Per UTMcpUtils.cpp:186-223: response must be a bare JSON array of
+		// FWaitTimeInfo. Content-Type is compared by exact string match —
+		// emit "application/json" without a charset suffix or the client
+		// logs "Error: 1" (HTTP 200 but Content-Type mismatch).
+		List<UT4MasterServer.Models.DTO.Responses.WaitTimeEstimateResponse> times = service.GetWaitTimes();
+		if (times.Count == 0)
+		{
+			times.Add(new UT4MasterServer.Models.DTO.Responses.WaitTimeEstimateResponse(
+				"FlagRunSkillRating", 0.0, 1));
+		}
+		var json = System.Text.Json.JsonSerializer.Serialize(times);
+		return Content(json, "application/json");
 	}
 
 	[HttpGet("report/{ratingType}/{timeWaited}")]

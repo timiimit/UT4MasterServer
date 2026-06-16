@@ -75,6 +75,18 @@ public sealed class MatchmakingController : JsonAPIController
 		server.LastUpdated = DateTime.UtcNow;
 
 		server.ServerAddress = ipClient.ToString();
+
+		// Local-dev: heartbeats from a game-server on the docker host arrive
+		// at the api container via the docker0 bridge gateway (172.x.x.x).
+		// UT4 clients can't reach that, so collapse the docker-bridge view
+		// back to the loopback the user actually has.
+		var ipBytes = ipClient.GetAddressBytes();
+		if (ipClient.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork &&
+			ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31)
+		{
+			server.ServerAddress = "127.0.0.1";
+		}
+
 		server.Started = false;
 
 		GameServerTrust trust = GameServerTrust.Untrusted;
@@ -359,7 +371,12 @@ public sealed class MatchmakingController : JsonAPIController
 	[HttpPost("session/matchMakingRequest")]
 	public async Task<IActionResult> ListGameServers([FromBody] GameServerFilterRequest filter)
 	{
-		if (User.Identity is not EpicUserIdentity)
+		if (User.Identity is EpicUserIdentity euid)
+		{
+			logger.LogInformation("matchMakingRequest from {Who} buildId={Build} criteria={N}",
+				euid.Session.AccountID, filter.BuildUniqueId, filter.Criteria?.Count);
+		}
+		else
 		{
 			logger.LogInformation($"'{Request.HttpContext.Connection.RemoteIpAddress}' accessed GameServer list without authentication");
 		}
@@ -408,6 +425,47 @@ public sealed class MatchmakingController : JsonAPIController
 
 		// TODO: implement query filters
 		return await ListGameServers(new GameServerFilterRequest());
+	}
+
+	/// <summary>
+	/// Quick-Play: pick one running game server suitable for an immediate join.
+	///
+	/// Servers participate in the Quick-Play pool by advertising
+	/// <c>UT_RULETAG_s</c> in their attributes (e.g. "QuickPlay_iDM",
+	/// "QuickPlay_CTF", "QuickPlay_DUEL" — tags match the
+	/// <c>UniqueTag</c> values in <c>UnrealTournmentMCPGameRulesets.json</c>).
+	///
+	/// The intended deployment is a small pool of always-on bot-filled
+	/// servers per ruleset. The fullest server with capacity wins, so
+	/// human Quick-Play players concentrate onto the same instance and
+	/// displace bots rather than spawning fresh empty matches.
+	/// </summary>
+	[AllowAnonymous]
+	[HttpPost("quickplay")]
+	public async Task<IActionResult> QuickPlay([FromBody] QuickPlayRequest request)
+	{
+		GameServer? server = await matchmakingService.FindQuickPlayServerAsync(
+			request.RulesetTag,
+			request.PreferredMap,
+			request.BuildUniqueId);
+
+		if (server == null)
+		{
+			return NotFound(new ErrorResponse
+			{
+				ErrorCode = "errors.com.ut4masterserver.matchmaking.no_quickplay_server",
+				ErrorMessage = "No Quick-Play server is available for the requested ruleset.",
+				NumericErrorCode = 18007,
+				OriginatingService = "utservice",
+				Intent = "prod10"
+			});
+		}
+
+#if DEBUG && USE_LOCALHOST_TEST
+		server.ServerAddress = "127.0.0.1";
+#endif
+
+		return Ok(server.ToJson(true));
 	}
 
 	[HttpPost("session/{id}/join")]

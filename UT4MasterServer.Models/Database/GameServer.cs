@@ -226,6 +226,60 @@ public class GameServer
 		// Do some preprocessing on attributes
 		JsonObject? attrs = Attributes.ToJObject();
 
+		// UT4's matchmaking gather (UTSearchPass + UTMatchmakingGather) does
+		// client-side validation against attributes the server may not
+		// advertise. Backfill sane defaults so the candidate isn't dropped:
+		//   * UT_NEEDS_i      — free slots; matchmaker requires NEEDS_i >= partySize
+		//   * UT_TEAMELO_i    — team ELO mid-point; default 1500 when untracked
+		//   * UT_TEAMELO2_i   — secondary team ELO mid-point
+		if (isResponseToClient)
+		{
+			int openPublic = Math.Max(0, MaxPublicPlayers - PublicPlayers.Count);
+			if (attrs!["UT_NEEDS_i"] is null)
+				attrs["UT_NEEDS_i"] = openPublic;
+			if (attrs["UT_TEAMELO_i"] is null)
+				attrs["UT_TEAMELO_i"] = 1500;
+			if (attrs["UT_TEAMELO2_i"] is null)
+				attrs["UT_TEAMELO2_i"] = 1500;
+
+			// AUTGameSessionRanked servers (UT_RANKED_i=1) PUT their own
+			// session settings on every heartbeat and that overwrites any
+			// QuickPlay tags an operator added via mongo updateOne. Without
+			// those tags the matchmaker filter returns 0 candidates and the
+			// QuickPlay tile spins forever. Auto-inject the standard tags
+			// so the operator never has to re-apply them after the server
+			// loses its FlagRun config (e.g. after a match cycles back to
+			// UTEmptyServerGameMode).
+			//
+			// This is local-dev-curated-pool behavior: every Ranked server
+			// is treated as a QuickPlay_Blitz candidate. If you ever run
+			// multiple Ranked playlists (DM, CTF, Showdown) on the same
+			// master, gate this off a server-tag lookup table keyed by
+			// e.g. ServerPort or OwningClientID instead.
+			if (attrs["UT_RANKED_i"]?.GetValue<int>() == 1)
+			{
+				if (attrs["UT_RULETAG_s"] is null)
+					attrs["UT_RULETAG_s"] = "QuickPlay_Blitz";
+				if (attrs["UT_PLAYLISTID_i"] is null || attrs["UT_PLAYLISTID_i"]?.GetValue<int>() == 0)
+					attrs["UT_PLAYLISTID_i"] = 11;
+				if (attrs["PLAYLISTID_i"] is null || attrs["PLAYLISTID_i"]?.GetValue<int>() == 0)
+					attrs["PLAYLISTID_i"] = 11;
+				// UTSERVERTRUSTLEVEL_i: UTGameSessionRanked sets this to 1
+				// (Trusted) but UT4's QuickPlay tile criteria asks for
+				// UT_SERVERTRUSTLEVEL_i=0 (Epic-curated). Master-side
+				// criteria-key normalization already skips this filter, but
+				// fix it in the response too so any future client-side
+				// validation we don't know about doesn't drop the candidate.
+				attrs["UT_SERVERTRUSTLEVEL_i"] = 0;
+				if (attrs["UT_GAMEINSTANCE_i"] is null)
+					attrs["UT_GAMEINSTANCE_i"] = 0;
+				if (attrs["UT_MATCHSTATE_s"] is null || attrs["UT_MATCHSTATE_s"]?.GetValue<string>() == "EMPTY")
+					attrs["UT_MATCHSTATE_s"] = "WaitingToStart";
+				if (attrs["UT_SERVERNAME_s"] is null)
+					attrs["UT_SERVERNAME_s"] = "Blitz Quick Play";
+			}
+		}
+
 		// build json
 		var obj = new List<KeyValuePair<string, JsonNode?>>();
 
@@ -268,7 +322,18 @@ public class GameServer
 		obj.Add(new("usesPresence", UsesPresence));
 		obj.Add(new("allowJoinViaPresence", AllowJoinViaPresence));
 		obj.Add(new("allowJoinViaPresenceFriendsOnly", AllowJoinViaPresenceFriendsOnly));
-		obj.Add(new("buildUniqueId", BuildUniqueID));
+		// UE4's FOnlineSessionSettings::BuildUniqueId is int32. If we emit it
+		// as a JSON string, FJsonObject::GetIntegerField returns 0 (or fails
+		// silently depending on the build), which doesn't match the client's
+		// BuildUniqueId so the session is dropped from SearchResults entirely.
+		if (int.TryParse(BuildUniqueID, out int buildIdNum))
+		{
+			obj.Add(new("buildUniqueId", buildIdNum));
+		}
+		else
+		{
+			obj.Add(new("buildUniqueId", BuildUniqueID));
+		}
 		obj.Add(new("lastUpdated", LastUpdated.ToStringISO()));
 		obj.Add(new("started", Started));
 		if (!isResponseToClient)

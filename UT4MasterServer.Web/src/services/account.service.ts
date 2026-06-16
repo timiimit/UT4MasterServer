@@ -39,6 +39,20 @@ export default class AccountService extends HttpService {
     );
   }
 
+  async forgotPassword(email: string) {
+    return await this.post<unknown, { email: string }>(
+      `${this.baseUrl}/forgot-password`,
+      { body: { email } }
+    );
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    return await this.post<unknown, { token: string; newPassword: string }>(
+      `${this.baseUrl}/reset-password`,
+      { body: { token, newPassword } }
+    );
+  }
+
   async getAccount(id: string) {
     return await this.get<IAccountExtended>(
       `${this.personaBaseUrl}/account/${id}`

@@ -48,12 +48,18 @@ public sealed class CloudStorageController : JsonAPIController
 	public async Task<IActionResult> GetFile(string id, string filename)
 	{
 		var isStatsFile = filename == "stats.json";
+		// 'oldplayercard' is requested by SUTPlayerInfoDialog::OnReadUserFileComplete.
+		// If we 404, the dialog hangs forever on "Requesting Player Information..."
+		// because the bWasSuccessful=false branch never invokes UpdatePlayerCustomization
+		// (which is what hides the loading text). Stub it with an empty JSON object so
+		// the success path runs and the dialog populates.
+		var isPlayerCardFile = filename == "oldplayercard";
 
 		var accountID = EpicID.FromString(id);
 		CloudFile? file = await cloudStorageService.GetFileAsync(accountID, filename);
 		if (file == null)
 		{
-			if (!isStatsFile)
+			if (!isStatsFile && !isPlayerCardFile)
 			{
 				return NotFound(new ErrorResponse()
 				{
@@ -66,17 +72,24 @@ public sealed class CloudStorageController : JsonAPIController
 				});
 			}
 
-			// Send a fake response in order to fix #109 (which is a game bug)
-			var playerName = "New Player";
-			EpicID playerID = EpicID.Empty;
-			Account? account = await accountService.GetAccountAsync(accountID);
-			if (account != null)
+			if (isPlayerCardFile)
 			{
-				playerName = account.Username;
-				playerID = account.ID;
+				file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes("{}") };
 			}
+			else
+			{
+				// Send a fake response in order to fix #109 (which is a game bug)
+				var playerName = "New Player";
+				EpicID playerID = EpicID.Empty;
+				Account? account = await accountService.GetAccountAsync(accountID);
+				if (account != null)
+				{
+					playerName = account.Username;
+					playerID = account.ID;
+				}
 
-			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",\"StatsID\":\"{playerID}\",\"Version\":0}}") };
+				file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",\"StatsID\":\"{playerID}\",\"Version\":0}}") };
+			}
 		}
 
 		if (isStatsFile)

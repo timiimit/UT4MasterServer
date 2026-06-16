@@ -24,12 +24,19 @@ public sealed class AccountController : JsonAPIController
 {
 	private readonly SessionService sessionService;
 	private readonly AccountService accountService;
+	private readonly PasswordResetService passwordResetService;
 	private readonly IOptions<ReCaptchaSettings> reCaptchaSettings;
 
-	public AccountController(ILogger<AccountController> logger, AccountService accountService, SessionService sessionService, IOptions<ReCaptchaSettings> reCaptchaSettings) : base(logger)
+	public AccountController(
+		ILogger<AccountController> logger,
+		AccountService accountService,
+		SessionService sessionService,
+		PasswordResetService passwordResetService,
+		IOptions<ReCaptchaSettings> reCaptchaSettings) : base(logger)
 	{
 		this.accountService = accountService;
 		this.sessionService = sessionService;
+		this.passwordResetService = passwordResetService;
 		this.reCaptchaSettings = reCaptchaSettings;
 	}
 
@@ -375,6 +382,74 @@ public sealed class AccountController : JsonAPIController
 		logger.LogInformation($"Updated password for {user.Session.AccountID}");
 
 		return Ok("Changed password successfully");
+	}
+
+	[HttpPost("forgot-password")]
+	[AllowAnonymous]
+	public async Task<IActionResult> ForgotPassword([FromForm] string email)
+	{
+		// Anti-enumeration: this endpoint MUST return the same shape regardless
+		// of whether the email is registered. Don't 404, don't differentiate the
+		// response body. Always 200 "ok".
+		if (string.IsNullOrWhiteSpace(email))
+		{
+			return Ok("If that email matches an account, a reset link has been sent.");
+		}
+
+		try
+		{
+			var issued = await passwordResetService.IssueAsync(email);
+			if (issued is not null)
+			{
+				var (resetToken, account) = issued.Value;
+				// Send is best-effort: failure logged inside EmailService, response
+				// stays identical to the no-account-found path.
+				_ = passwordResetService.SendResetEmailAsync(account, resetToken.Token);
+			}
+		}
+		catch (Exception ex)
+		{
+			// Swallow logged — the response surface must remain uniform.
+			logger.LogWarning(ex, "ForgotPassword: internal error processing email={Email}", email);
+		}
+
+		return Ok("If that email matches an account, a reset link has been sent.");
+	}
+
+	[HttpPost("reset-password")]
+	[AllowAnonymous]
+	public async Task<IActionResult> ResetPassword(
+		[FromForm] string token,
+		[FromForm] string newPassword)
+	{
+		if (string.IsNullOrWhiteSpace(token))
+		{
+			return BadRequest(new ErrorResponse { ErrorMessage = "Token is required" });
+		}
+
+		if (!ValidationHelper.ValidatePassword(newPassword))
+		{
+			return BadRequest(new ErrorResponse { ErrorMessage = "Unexpected password format" });
+		}
+
+		var valid = await passwordResetService.FindValidAsync(token);
+		if (valid is null)
+		{
+			return BadRequest(new ErrorResponse { ErrorMessage = "Reset link is invalid or expired" });
+		}
+
+		// Atomically mark token consumed — guards against the same token being
+		// used twice by concurrent requests.
+		if (!await passwordResetService.ConsumeAsync(token))
+		{
+			return BadRequest(new ErrorResponse { ErrorMessage = "Reset link is invalid or expired" });
+		}
+
+		await accountService.UpdateAccountPasswordAsync(valid.AccountID, newPassword);
+		await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, valid.AccountID, EpicID.Empty);
+
+		logger.LogInformation("Password reset completed for account {AccountID}", valid.AccountID);
+		return Ok("Password reset successfully");
 	}
 
 	#endregion

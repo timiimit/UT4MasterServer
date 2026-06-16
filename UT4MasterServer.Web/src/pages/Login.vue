@@ -73,6 +73,8 @@
     </form>
   </LoadingPanel>
   <RouterLink to="/Register">Create an account</RouterLink>
+  &middot;
+  <RouterLink to="/ForgotPassword">Forgot password?</RouterLink>
 </template>
 
 <script setup lang="ts">

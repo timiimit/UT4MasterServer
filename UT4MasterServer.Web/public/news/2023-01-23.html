@@ -1,15 +1,45 @@
 <html>
   <head>
-    <link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      html, body {
+        margin: 0; padding: 16px;
+        background: #1a1a1a; color: #eaeaea;
+        font-family: Verdana, sans-serif; font-size: 14px;
+      }
+      h1 { color: #ffb400; margin: 0 0 8px 0; font-size: 22px; }
+      h2 { color: #ffb400; margin: 16px 0 6px 0; font-size: 16px; }
+      ul.roadmap { list-style: none; padding-left: 0; margin: 0; }
+      ul.roadmap li { padding: 3px 0; color: #eaeaea; }
+      .done::before { content: "[DONE] "; color: #6fcf6f; font-weight: bold; }
+      .todo::before { content: "[TODO] "; color: #ffb400; font-weight: bold; }
+      hr { border: 0; border-top: 1px solid #444; margin: 12px 0; }
+      .footer { color: #888; font-size: 12px; }
+      a { color: #ffd47a; }
+    </style>
   </head>
   <body>
-    <h1>Hi there!</h1>
+    <h1>Dallas Pick &mdash; UT4 Local Stack Roadmap</h1>
+    <p>Reviving UT4 pre-alpha (XAN-3525360) against a self-hosted master server.</p>
 
-    <p>
-      This is a small test of fancy announcements that we'll be able to use in
-      the future.
-    </p>
+    <h2>Shipped</h2>
+    <ul class="roadmap">
+      <li class="done">Username/email + password auth in game (no "auth token" copy/paste)</li>
+      <li class="done">"Forgot password" link in the login dialog goes to the master-server reset page</li>
+      <li class="done">Password reset via email (Resend in prod, mailpit locally)</li>
+      <li class="done">Quick-Play Blitz tile lands you in a real FlagRun match</li>
+      <li class="done">Announcement panel populated from the master server (this page)</li>
+      <li class="done">In-game chat works in-match (everyone + team channels)</li>
+    </ul>
 
-    <p>Enjoy the game after the official shutdown! :D</p>
+    <h2>Coming soon</h2>
+    <ul class="roadmap">
+      <li class="todo">Voice chat (push-to-talk)</li>
+      <li class="todo">Collectable items / cosmetics</li>
+      <li class="todo">OnlineFriendsMcp wired up &mdash; friends list + chat</li>
+      <li class="todo">Show Player Card from scoreboard + friends UI</li>
+    </ul>
+
+    <hr />
+    <p class="footer">Local stack served from localhost:5001. Source: github.com/ut4-hub</p>
   </body>
 </html>

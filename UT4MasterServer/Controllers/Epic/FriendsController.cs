@@ -56,8 +56,8 @@ public sealed class FriendsController : JsonAPIController
 			obj.Add("accountId", other.ToString());
 			obj.Add("status", status);
 			obj.Add("direction", direction);
-			obj.Add("created", DateTime.UtcNow.ToStringISO()); // should we care?
-			obj.Add("favourite", false); // TODO: figure out if it's possible to set to true normally
+			obj.Add("created", friend.Created.ToStringISO());
+			obj.Add("favorite", false);
 			arr.Add(obj);
 		}
 
@@ -104,6 +104,46 @@ public sealed class FriendsController : JsonAPIController
 		return NoContent();
 	}
 
+	[HttpDelete("friends/{id}")]
+	public async Task<ActionResult> ClearFriends(string id)
+	{
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		{
+			return Unauthorized();
+		}
+
+		var eid = EpicID.FromString(id);
+
+		if (eid != authenticatedUser.Session.AccountID)
+		{
+			return Json("[]", StatusCodes.Status401Unauthorized);
+		}
+
+		await friendService.RemoveAllByAccountAsync(eid);
+
+		return NoContent();
+	}
+
+	[HttpGet("list/{ns}/{id}/recentPlayers")]
+	public IActionResult GetRecentPlayers(string ns, string id)
+	{
+		if (User.Identity is not EpicUserIdentity authenticatedUser)
+		{
+			return Unauthorized();
+		}
+
+		var eid = EpicID.FromString(id);
+
+		if (eid != authenticatedUser.Session.AccountID)
+		{
+			return Json("[]", StatusCodes.Status401Unauthorized);
+		}
+
+		var obj = new JObject();
+		obj.Add("recentplayers", new JArray());
+		return Json(obj);
+	}
+
 	#endregion
 
 	#region blocklist
@@ -127,12 +167,17 @@ public sealed class FriendsController : JsonAPIController
 
 		List<FriendRequest>? blockedUsers = await friendService.GetBlockedUsersAsync(eid);
 
+		// UE4 FOnlineFriendsMcp::QueryBlockedPlayers expects an object with
+		// blockedUsers array, not a bare array. Returning [] makes the client
+		// log "QueryBlockedPlayers request failed. Invalid response payload=[]".
 		var arr = new JArray();
 		foreach (FriendRequest? blockedUser in blockedUsers)
 		{
 			arr.Add(blockedUser.Receiver.ToString());
 		}
-		return Json(arr);
+		var obj = new JObject();
+		obj.Add("blockedUsers", arr);
+		return Json(obj);
 	}
 
 	[HttpPost("blocklist/{id}/{friendID}")]

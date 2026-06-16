@@ -21,4 +21,7 @@ public class FriendRequest
 
 	[BsonElement("Status")]
 	public FriendStatus Status { get; set; } = FriendStatus.Pending;
+
+	[BsonElement("Created")]
+	public DateTime Created { get; set; } = DateTime.UtcNow;
 }
