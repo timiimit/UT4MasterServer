@@ -1,129 +1,80 @@
-/*
-using System.Text;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 using UT4MasterServer.Models;
 
 namespace XUnit.Tests;
 
 public class GameServerAttributeTest
 {
-	public static TheoryData<object?, object?, bool, bool, bool> TestCases = new()
+	[Fact]
+	public void ToJObject_EmitsEachStoredType()
 	{
-		{ "3", "3", true, false, true },
-		{ "3", 3, false, false, false },
-		{ "3", true, false, false, false },
-		{ "3", false, false, false, false },
-		{ "3", null, false, false, false },
-		{ "2", "3", false, true, true },
-		{ "4", "3", false, false, false },
+		var attributes = new GameServerAttributes();
+		attributes.Set("UT_SERVERNAME_s", "My Server");
+		attributes.Set("UT_RANKED_i", 1);
+		attributes.Set("UT_PRIVATE_b", true);
 
-		{ 3, "3", false, false, false },
-		{ 3, 3, true, false, true },
-		{ 3, true, false, false, false },
-		{ 3, false, false, false, false },
-		{ 3, null, false, false, false },
+		JsonObject obj = attributes.ToJObject();
 
-		{ true, true, true, false, true },
-		{ true, "true", false, false, false },
-		{ true, 1, false, false, false },
-		{ true, null, false, false, false },
-		{ false, false, true, false, true },
-		{ false, null, false, false, false },
-		{ true, false, false, false, false },
-		{ false, true, false, true, true },
-
-		{ " ", "", false, false, false },
-		{ " ", " ", true, false, true },
-		{ "", " ", false, true, true },
-	};
-
-	public static TheoryData<object?, bool, bool, bool> TestCasesNull = new()
-	{
-
-		{ null, true, false, true },
-		{ true, false, false, false },
-		{ 3, false, false, false },
-		{ "null", false, false, false },
-	};
-
-	[Theory]
-	[MemberData(nameof(TestCases))]
-	public void TestAttributesNonNull(object? attrValue, object? compareValue, bool expectedEq, bool expectedLt, bool expectedLte)
-	{
-		JsonElement jsonElem = CreateJsonElement(compareValue);
-		var gsa = new GameServerAttributes();
-		if (attrValue is string attrValueString)
-		{
-			gsa.Set("key", attrValueString);
-		}
-		else if (attrValue is int attrValueInt)
-		{
-			gsa.Set("key", attrValueInt);
-		}
-		else if (attrValue is bool attrValueBool)
-		{
-			gsa.Set("key", attrValueBool);
-		}
-		else
-		{
-			Assert.Fail("undesired test case");
-		}
-
-		Assert.Equal(expectedEq, gsa.Eq("key", jsonElem));
-		Assert.Equal(expectedLt, gsa.Lt("key", jsonElem));
-		Assert.Equal(expectedLte, gsa.Lte("key", jsonElem));
+		Assert.Equal(3, obj.Count);
+		Assert.Equal("My Server", obj["UT_SERVERNAME_s"]!.GetValue<string>());
+		Assert.Equal(1, obj["UT_RANKED_i"]!.GetValue<int>());
+		Assert.True(obj["UT_PRIVATE_b"]!.GetValue<bool>());
 	}
 
-	[Theory]
-	[MemberData(nameof(TestCasesNull))]
-	public void TestAttributesNull(object? compareValue, bool expectedEq, bool expectedLt, bool expectedLte)
+	[Fact]
+	public void ToJObject_KeyWithoutTypeSuffix_DoesNotThrow()
 	{
-		JsonElement jsonElem = CreateJsonElement(compareValue);
-		var gsa = new GameServerAttributes();
-		gsa.Set("key", null as string);
-		Assert.Equal(expectedEq, gsa.Eq("key", jsonElem));
-		Assert.Equal(expectedLt, gsa.Lt("key", jsonElem));
-		Assert.Equal(expectedLte, gsa.Lte("key", jsonElem));
+		var attributes = new GameServerAttributes();
+		attributes.Set("CUSTOMKEY", "value");
 
-		gsa.Set("key", null as int?);
-		Assert.Equal(expectedEq, gsa.Eq("key", jsonElem));
-		Assert.Equal(expectedLt, gsa.Lt("key", jsonElem));
-		Assert.Equal(expectedLte, gsa.Lte("key", jsonElem));
+		// used to throw while serializing the server list because the key
+		// does not end in a known type suffix
+		JsonObject obj = attributes.ToJObject();
 
-		gsa.Set("key", null as bool?);
-		Assert.Equal(expectedEq, gsa.Eq("key", jsonElem));
-		Assert.Equal(expectedLt, gsa.Lt("key", jsonElem));
-		Assert.Equal(expectedLte, gsa.Lte("key", jsonElem));
+		Assert.Equal("value", obj["CUSTOMKEY"]!.GetValue<string>());
 	}
 
-	private static JsonElement CreateJsonElement(object? obj)
+	[Fact]
+	public void ToJObject_KeyWithMismatchedTypeSuffix_EmitsActualStoredType()
 	{
-		StringBuilder sb = new();
-		if (obj is null)
-		{
-			sb.Append("null");
-		}
-		else if (obj is string objString)
-		{
-			sb.Append($"\"{objString}\"");
-		}
-		else if (obj is int objInt)
-		{
-			sb.Append(objInt.ToString());
-		}
-		else if (obj is bool objBool)
-		{
-			sb.Append(objBool ? "true" : "false");
-		}
-		else
-		{
-			Assert.Fail("undesired test case");
-		}
+		var attributes = new GameServerAttributes();
+		attributes.Set("UT_MISMATCH_i", "not an int");
+		attributes.Set("UT_MISMATCH_s", 42);
+		attributes.Set("UT_MISMATCH_b", 7);
 
-		var utf8 = Encoding.UTF8.GetBytes(sb.ToString());
+		// used to throw an invalid cast because the value type did not
+		// match the key suffix
+		JsonObject obj = attributes.ToJObject();
 
-		Utf8JsonReader jsonReader = new(utf8);
-		return JsonElement.ParseValue(ref jsonReader);
+		Assert.Equal("not an int", obj["UT_MISMATCH_i"]!.GetValue<string>());
+		Assert.Equal(42, obj["UT_MISMATCH_s"]!.GetValue<int>());
+		Assert.Equal(7, obj["UT_MISMATCH_b"]!.GetValue<int>());
+	}
+
+	[Fact]
+	public void ToJObject_MixedAttributes_SerializesToJson()
+	{
+		var attributes = new GameServerAttributes();
+		attributes.Set("UT_SERVERNAME_s", "Server");
+		attributes.Set("UT_SERVERTRUSTLEVEL_i", 2);
+		attributes.Set("BADKEY", true);
+		attributes.Set("UT_WEIRD_i", "string stored under int key");
+
+		var json = attributes.ToJObject().ToJsonString();
+
+		Assert.False(string.IsNullOrEmpty(json));
+	}
+
+	[Fact]
+	public void ToJObject_NullValue_RemovesAttribute()
+	{
+		var attributes = new GameServerAttributes();
+		attributes.Set("UT_SERVERNAME_s", "Server");
+		attributes.Set("UT_SERVERNAME_s", (string?)null);
+
+		JsonObject obj = attributes.ToJObject();
+
+		Assert.False(attributes.Contains("UT_SERVERNAME_s"));
+		Assert.Empty(obj);
 	}
 }
-*/

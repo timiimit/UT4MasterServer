@@ -73,24 +73,26 @@ public class GameServerAttributes
 
 	public JsonObject ToJObject()
 	{
-		var attrs = new KeyValuePair<string, JsonNode?>[serverConfigs.Count];
+		var attrs = new List<KeyValuePair<string, JsonNode?>>(serverConfigs.Count);
 
-		var i = 0;
 		foreach (KeyValuePair<string, object> kvp in serverConfigs)
 		{
-			if (kvp.Key.EndsWith("_b"))
+			// emit based on the actual stored type. keys without a known type
+			// suffix or with a value that mismatches their suffix used to leave
+			// a null-key entry or throw an invalid cast, crashing serialization
+			// of the entire server list.
+			if (kvp.Value is bool valueBool)
 			{
-				attrs[i] = new(kvp.Key, (bool)kvp.Value);
+				attrs.Add(new(kvp.Key, valueBool));
 			}
-			else if (kvp.Key.EndsWith("_i"))
+			else if (kvp.Value is int valueInt)
 			{
-				attrs[i] = new(kvp.Key, (int)kvp.Value);
+				attrs.Add(new(kvp.Key, valueInt));
 			}
-			else if (kvp.Key.EndsWith("_s"))
+			else if (kvp.Value is string valueString)
 			{
-				attrs[i] = new(kvp.Key, (string)kvp.Value);
+				attrs.Add(new(kvp.Key, valueString));
 			}
-			i++;
 		}
 
 		return new JsonObject(attrs);

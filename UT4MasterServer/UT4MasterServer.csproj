@@ -27,4 +27,8 @@
     <ProjectReference Include="..\UT4MasterServer.Serializers\UT4MasterServer.Serializers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="XUnit.Tests" />
+  </ItemGroup>
+
 </Project>

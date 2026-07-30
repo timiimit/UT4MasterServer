@@ -303,6 +303,13 @@ public sealed class ProfileController : JsonAPIController
 		const double maxXPPerHour = 500.0;
 		var hoursSinceLastMatch = (DateTime.UtcNow - acc.LastMatchAt).TotalHours;
 
+		// XP can only be granted, never taken away
+		if (body.XPAmount < 0)
+		{
+			logger.LogWarning("{User} supposedly earned negative XP ({XP}) in a match.", acc.ToString(), body.XPAmount);
+			body.XPAmount = 0;
+		}
+
 		// this is just some hard limit on max xp allowed per request/match
 		if (body.XPAmount > 300)
 		{

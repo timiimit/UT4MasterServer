@@ -236,6 +236,8 @@ public sealed class AdminPanelController : ControllerBase
 			// as well as prevent anyone else from using this account after successful password change.
 			await sessionService.RemoveSessionsWithFilterAsync(EpicID.Empty, account.ID, EpicID.Empty);
 
+			logLevel = LogLevel.Information;
+
 			return Ok();
 		}
 		finally
@@ -375,7 +377,7 @@ public sealed class AdminPanelController : ControllerBase
 
 		if (IsSpecialClientID(eid))
 		{
-			return Forbid("Cannot modify reserved clients");
+			return StatusCode(StatusCodes.Status403Forbidden, "Cannot modify reserved clients");
 		}
 
 		Task<bool?>? taskUpdateClient = clientService.UpdateAsync(client);
@@ -396,7 +398,7 @@ public sealed class AdminPanelController : ControllerBase
 
 		if (IsSpecialClientID(eid))
 		{
-			return Forbid("Cannot delete reserved clients");
+			return StatusCode(StatusCodes.Status403Forbidden, "Cannot delete reserved clients");
 		}
 
 		var success = await clientService.RemoveAsync(eid);
@@ -585,7 +587,7 @@ public sealed class AdminPanelController : ControllerBase
 
 		if (await cloudStorageService.DeleteFileAsync(EpicID.Empty, filename) != true)
 		{
-			return Forbid("Cannot delete file. Either this file is not deletable or something went wrong.");
+			return StatusCode(StatusCodes.Status403Forbidden, "Cannot delete file. Either this file is not deletable or something went wrong.");
 		}
 		return Ok();
 	}

@@ -144,9 +144,9 @@ public sealed class RatingsService
 		return new RankingsResponse()
 		{
 			Rank = rank,
-			AccountID = account.ID,
-			Player = account.Username,
-			CountryFlag = account.CountryFlag,
+			AccountID = accountID,
+			Player = account?.Username ?? UnknownUser,
+			CountryFlag = account?.CountryFlag ?? DefaultCountryFlag,
 			Rating = selectedRating.RatingValue / Rating.Precision,
 			GamesPlayed = selectedRating.GamesPlayed
 		};

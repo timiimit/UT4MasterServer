@@ -49,32 +49,45 @@ public sealed class ApplicationBackgroundCleanupService : IHostedService, IDispo
 	{
 		Task.Run(async () =>
 		{
-			using IServiceScope? scope = services.CreateScope();
-
-			SessionService? sessionService = scope.ServiceProvider.GetRequiredService<SessionService>();
-			var deleteCount = await sessionService.RemoveAllExpiredSessionsAsync();
-			if (deleteCount > 0)
+			try
 			{
-				logger.LogInformation("Background task deleted {DeleteCount} expired sessions.", deleteCount);
+				await DoWorkAsync();
 			}
-
-			CodeService? codeService = scope.ServiceProvider.GetRequiredService<CodeService>();
-			deleteCount = await codeService.RemoveAllExpiredCodesAsync();
-			if (deleteCount > 0)
+			catch (Exception ex)
 			{
-				logger.LogInformation("Background task deleted {DeleteCount} expired codes.", deleteCount);
+				// without this, a failing cleanup pass faults the task and is silently discarded
+				logger.LogError(ex, "Background cleanup task failed.");
 			}
-
-			MatchmakingService? matchmakingService = scope.ServiceProvider.GetRequiredService<MatchmakingService>();
-			deleteCount = await matchmakingService.RemoveAllStaleAsync();
-			if (deleteCount > 0)
-			{
-				logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
-			}
-
-			await DeleteOldStatisticsAsync(scope);
-			await MergeOldStatisticsAsync(scope);
 		});
+	}
+
+	private async Task DoWorkAsync()
+	{
+		using IServiceScope? scope = services.CreateScope();
+
+		SessionService? sessionService = scope.ServiceProvider.GetRequiredService<SessionService>();
+		var deleteCount = await sessionService.RemoveAllExpiredSessionsAsync();
+		if (deleteCount > 0)
+		{
+			logger.LogInformation("Background task deleted {DeleteCount} expired sessions.", deleteCount);
+		}
+
+		CodeService? codeService = scope.ServiceProvider.GetRequiredService<CodeService>();
+		deleteCount = await codeService.RemoveAllExpiredCodesAsync();
+		if (deleteCount > 0)
+		{
+			logger.LogInformation("Background task deleted {DeleteCount} expired codes.", deleteCount);
+		}
+
+		MatchmakingService? matchmakingService = scope.ServiceProvider.GetRequiredService<MatchmakingService>();
+		deleteCount = await matchmakingService.RemoveAllStaleAsync();
+		if (deleteCount > 0)
+		{
+			logger.LogInformation("Background task deleted {DeleteCount} stale game servers.", deleteCount);
+		}
+
+		await DeleteOldStatisticsAsync(scope);
+		await MergeOldStatisticsAsync(scope);
 	}
 
 	public void Dispose()

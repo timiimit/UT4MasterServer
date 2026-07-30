@@ -26,6 +26,9 @@ public sealed class AccountController : JsonAPIController
 	private readonly AccountService accountService;
 	private readonly IOptions<ReCaptchaSettings> reCaptchaSettings;
 
+	// reuse a single HttpClient instead of creating (and leaking) one per request
+	private static readonly HttpClient httpClient = new();
+
 	public AccountController(ILogger<AccountController> logger, AccountService accountService, SessionService sessionService, IOptions<ReCaptchaSettings> reCaptchaSettings) : base(logger)
 	{
 		this.accountService = accountService;
@@ -201,8 +204,7 @@ public sealed class AccountController : JsonAPIController
 				return Conflict("Recaptcha token is missing");
 			}
 
-			var httpClient = new HttpClient();
-			HttpResponseMessage httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={reCaptchaSecret}&response={recaptchaToken}");
+			using HttpResponseMessage httpResponse = await httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret={Uri.EscapeDataString(reCaptchaSecret)}&response={Uri.EscapeDataString(recaptchaToken)}");
 			if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
 			{
 				return Conflict("Recaptcha validation failed");

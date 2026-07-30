@@ -144,7 +144,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		if (server.OwningClientID != user.Session.ClientID)
 		{
-			Unauthorized();
+			return Unauthorized();
 		}
 
 		server.Update(updatedServer);
@@ -192,7 +192,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		if (server.OwningClientID != user.Session.ClientID)
 		{
-			Unauthorized();
+			return Unauthorized();
 		}
 
 		var wasDeleted = await matchmakingService.RemoveAsync(EpicID.FromString(id));
@@ -235,7 +235,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		if (server.OwningClientID != user.Session.ClientID)
 		{
-			Unauthorized();
+			return Unauthorized();
 		}
 
 #if false
@@ -289,31 +289,25 @@ public sealed class MatchmakingController : JsonAPIController
 
 		if (server.OwningClientID != user.Session.ClientID)
 		{
-			Unauthorized();
+			return Unauthorized();
 		}
 
 		// handle player list update
 		foreach (EpicID player in serverOnlyWithPlayers.PublicPlayers)
 		{
-			if (!server.PublicPlayers.Where(x => x == player).Any())
+			if (!server.PublicPlayers.Contains(player))
 			{
 				server.PublicPlayers.Add(player);
 			}
-			if (server.PrivatePlayers.Where(x => x == player).Any())
-			{
-				server.PrivatePlayers.Remove(player);
-			}
+			server.PrivatePlayers.Remove(player);
 		}
 		foreach (EpicID player in serverOnlyWithPlayers.PrivatePlayers)
 		{
-			if (!server.PrivatePlayers.Where(x => x == player).Any())
+			if (!server.PrivatePlayers.Contains(player))
 			{
 				server.PrivatePlayers.Add(player);
 			}
-			if (server.PublicPlayers.Where(x => x == player).Any())
-			{
-				server.PublicPlayers.Remove(player);
-			}
+			server.PublicPlayers.Remove(player);
 		}
 
 		await matchmakingService.UpdateAsync(server);
@@ -337,7 +331,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		if (server.OwningClientID != user.Session.ClientID)
 		{
-			Unauthorized();
+			return Unauthorized();
 		}
 
 		foreach (EpicID player in players)
@@ -468,7 +462,7 @@ public sealed class MatchmakingController : JsonAPIController
 
 		if (server.OwningClientID != user.Session.ClientID)
 		{
-			Unauthorized();
+			return Unauthorized();
 		}
 
 		server.Started = started;

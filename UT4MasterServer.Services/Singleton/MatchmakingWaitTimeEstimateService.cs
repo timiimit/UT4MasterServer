@@ -14,29 +14,36 @@ public sealed class MatchmakingWaitTimeEstimateService
 
 	public void AddWaitTime(string mode, double seconds)
 	{
-		if (!estimates.TryGetValue(mode, out List<(DateTime DeleteTime, double WaitTime)>? estimateValue))
+		lock (estimates)
 		{
-			estimateValue = new List<(DateTime, double)>();
-			estimates.Add(mode, estimateValue);
-		}
+			if (!estimates.TryGetValue(mode, out List<(DateTime DeleteTime, double WaitTime)>? estimateValue))
+			{
+				estimateValue = new List<(DateTime, double)>();
+				estimates.Add(mode, estimateValue);
+			}
 
-		estimateValue.Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
+			estimateValue.Add((DateTime.UtcNow + RelevantReportTimeDuration, seconds));
+		}
 	}
 
 	public List<WaitTimeEstimateResponse> GetWaitTimes()
 	{
-		Clean();
-
 		var waitTimes = new List<WaitTimeEstimateResponse>();
-		foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> estimate in estimates)
-		{
-			if (estimate.Value.Count <= 0)
-			{
-				continue;
-			}
 
-			var estimatedModeWait = estimate.Value.Average(x => x.WaitTime);
-			waitTimes.Add(new WaitTimeEstimateResponse(estimate.Key, estimatedModeWait, estimate.Value.Count));
+		lock (estimates)
+		{
+			Clean();
+
+			foreach (KeyValuePair<string, List<(DateTime DeleteTime, double WaitTime)>> estimate in estimates)
+			{
+				if (estimate.Value.Count <= 0)
+				{
+					continue;
+				}
+
+				var estimatedModeWait = estimate.Value.Average(x => x.WaitTime);
+				waitTimes.Add(new WaitTimeEstimateResponse(estimate.Key, estimatedModeWait, estimate.Value.Count));
+			}
 		}
 
 		return waitTimes;

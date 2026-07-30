@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
+using Newtonsoft.Json.Linq;
 using UT4MasterServer.Authentication;
 using UT4MasterServer.Common;
 using UT4MasterServer.Models.Database;
@@ -76,7 +77,14 @@ public sealed class CloudStorageController : JsonAPIController
 				playerID = account.ID;
 			}
 
-			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes($"{{\"PlayerName\":\"{playerName}\",\"StatsID\":\"{playerID}\",\"Version\":0}}") };
+			// build via JObject so a username containing '"' or '\' cannot break the json
+			var fakeStats = new JObject
+			{
+				{ "PlayerName", playerName },
+				{ "StatsID", playerID.ToString() },
+				{ "Version", 0 }
+			};
+			file = new CloudFile() { RawContent = Encoding.UTF8.GetBytes(fakeStats.ToString(Newtonsoft.Json.Formatting.None)) };
 		}
 
 		if (isStatsFile)
