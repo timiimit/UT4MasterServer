@@ -64,7 +64,8 @@ public static class Program
 		builder.Services
 			.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"))
 			.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"))
-			.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptchaSettings"));
+			.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptchaSettings"))
+			.Configure<LogReportSettings>(builder.Configuration.GetSection("LogReportSettings"));
 
 		builder.Services.Configure<ApplicationSettings>(x =>
 		{
@@ -115,13 +116,15 @@ public static class Program
 			.AddScoped<TrustedGameServerService>()
 			.AddScoped<MatchmakingService>()
 			.AddScoped<StatisticsService>()
-			.AddScoped<RatingsService>();
+			.AddScoped<RatingsService>()
+			.AddScoped<LogReportService>();
 
 		// services whose instance is created once and are persistent
 		builder.Services
 			.AddSingleton<RuntimeInfoService>()
 			.AddSingleton<CodeService>()
-			.AddSingleton<MatchmakingWaitTimeEstimateService>();
+			.AddSingleton<MatchmakingWaitTimeEstimateService>()
+			.AddSingleton<LogReportRateLimitService>();
 
 		// hosted services
 		builder.Services

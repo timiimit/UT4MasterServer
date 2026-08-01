@@ -14,13 +14,16 @@ public sealed class ApplicationStartupService : IHostedService
 	private readonly CloudStorageService cloudStorageService;
 	private readonly ClientService clientService;
 	private readonly RatingsService ratingsService;
+	private readonly LogReportService logReportService;
 
 	public ApplicationStartupService(
 		ILogger<ApplicationStartupService> logger,
 		ILogger<StatisticsService> statsLogger,
 		IOptions<ApplicationSettings> settings,
 		ILogger<CloudStorageService> cloudStorageLogger,
-		ILogger<RatingsService> ratingsLogger)
+		ILogger<RatingsService> ratingsLogger,
+		ILogger<LogReportService> logReportLogger,
+		IOptions<LogReportSettings> logReportSettings)
 	{
 		this.logger = logger;
 		var db = new DatabaseContext(settings);
@@ -29,6 +32,7 @@ public sealed class ApplicationStartupService : IHostedService
 		cloudStorageService = new CloudStorageService(db, cloudStorageLogger);
 		clientService = new ClientService(db);
 		ratingsService = new RatingsService(ratingsLogger, db);
+		logReportService = new LogReportService(logReportLogger, db, logReportSettings);
 	}
 
 	public async Task StartAsync(CancellationToken cancellationToken)
@@ -37,6 +41,7 @@ public sealed class ApplicationStartupService : IHostedService
 		await accountService.CreateIndexesAsync();
 		await statisticsService.CreateIndexesAsync();
 		await ratingsService.CreateIndexesAsync();
+		await logReportService.CreateIndexesAsync();
 
 		logger.LogInformation("Initializing MongoDB CloudStorage.");
 		await cloudStorageService.EnsureSystemFilesExistAsync();
