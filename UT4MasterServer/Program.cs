@@ -64,6 +64,7 @@ public static class Program
 		builder.Services
 			.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"))
 			.Configure<StatisticsSettings>(builder.Configuration.GetSection("StatisticsSettings"))
+			.Configure<TrustedGameServerSettings>(builder.Configuration.GetSection("Trusted"))
 			.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptchaSettings"));
 
 		builder.Services.Configure<ApplicationSettings>(x =>

@@ -31,15 +31,18 @@ public sealed class MatchmakingController : JsonAPIController
 	private readonly TrustedGameServerService trustedGameServerService;
 
 	private readonly IOptions<ApplicationSettings> configuration;
+	private readonly IOptions<TrustedGameServerSettings> trustedServerSettings;
 
 	public MatchmakingController(
 		ILogger<MatchmakingController> logger,
 		IOptions<ApplicationSettings> configuration,
+		IOptions<TrustedGameServerSettings> trustedServerSettings,
 		MatchmakingService matchmakingService,
 		ClientService clientService,
 		TrustedGameServerService trustedGameServerService) : base(logger)
 	{
 		this.configuration = configuration;
+		this.trustedServerSettings = trustedServerSettings;
 		this.matchmakingService = matchmakingService;
 		this.clientService = clientService;
 		this.trustedGameServerService = trustedGameServerService;
@@ -74,6 +77,35 @@ public sealed class MatchmakingController : JsonAPIController
 		server.ID = EpicID.GenerateNew();
 		server.LastUpdated = DateTime.UtcNow;
 
+		// Capture any address the server declared in its request body BEFORE we
+		// overwrite it, so a trusted server behind NAT/tunnels can opt in to
+		// advertising it (see the override block below).
+		// Trim so a stray-whitespace value (e.g. " 0.0.0.0") cannot slip past the
+		// "0.0.0.0" guard below while IPAddress.TryParse still accepts it.
+		var declaredAddress = server.ServerAddress?.Trim();
+
+		// The UE5.8 UT client shim (OnlineSessionUT RegisterServer) advertises its
+		// ServerAddressOverride via an X-Forwarded-For request header rather than in
+		// the body, so also capture the left-most XFF entry BEFORE we overwrite
+		// ServerAddress. This is only consulted as a fallback for TRUSTED servers when
+		// the body declares no valid address (see the override block below).
+		string? forwardedForAddress = null;
+		foreach (var xffHeader in HttpContext.Request.Headers["X-Forwarded-For"])
+		{
+			if (string.IsNullOrWhiteSpace(xffHeader))
+			{
+				continue;
+			}
+
+			// Left-most entry is the originally forwarded (client-declared) address.
+			var xffParts = xffHeader.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+			if (xffParts.Length > 0)
+			{
+				forwardedForAddress = xffParts[0];
+				break;
+			}
+		}
+
 		server.ServerAddress = ipClient.ToString();
 		server.Started = false;
 
@@ -84,6 +116,64 @@ public sealed class MatchmakingController : JsonAPIController
 			trust = trusted.TrustLevel;
 		}
 		server.Attributes.Set(GameServerAttributes.UT_SERVERTRUSTLEVEL_i, (int)trust);
+
+		// By default the advertised address is the request's source IP (upstream
+		// behavior, set above). Game servers behind NAT/tunnels (playit.gg,
+		// Cloudflare Spectrum, home servers behind CGNAT) register from an egress
+		// IP that differs from the ingress address players must connect to, so
+		// that default lists an unreachable server. For TRUSTED servers only, an
+		// operator can opt in (both mechanisms default OFF) to advertise the real
+		// public address. Untrusted-server behavior is intentionally unchanged.
+		if (trust != GameServerTrust.Untrusted)
+		{
+			var overrides = trustedServerSettings.Value;
+
+			// The override map is keyed by the client's egress IP. Normalize an
+			// IPv4-mapped IPv6 source (e.g. "::ffff:1.2.3.4") back to plain IPv4 so it
+			// matches config keys written as IPv4.
+			var overrideKey = ipClient.IsIPv4MappedToIPv6 ? ipClient.MapToIPv4().ToString() : ipClient.ToString();
+
+			if (overrides.AllowDeclaredAddress
+				&& !string.IsNullOrWhiteSpace(declaredAddress)
+				&& declaredAddress != "0.0.0.0"
+				&& IPAddress.TryParse(declaredAddress, out _))
+			{
+				logger.LogInformation(
+					"Trusted server {ServerID} (client {ClientID}) address override {From} -> {To} (reason: declared address)",
+					server.ID, server.OwningClientID, server.ServerAddress, declaredAddress);
+				server.ServerAddress = declaredAddress;
+			}
+			// The UE5.8 client shim declares its address via an X-Forwarded-For header
+			// instead of the request body, so fall back to the left-most XFF entry when
+			// no valid declared body address was provided. Same AllowDeclaredAddress gate
+			// and validation (non-empty, not "0.0.0.0", parseable IP) as the body path.
+			else if (overrides.AllowDeclaredAddress
+				&& !string.IsNullOrWhiteSpace(forwardedForAddress)
+				&& forwardedForAddress != "0.0.0.0"
+				&& IPAddress.TryParse(forwardedForAddress, out _))
+			{
+				logger.LogInformation(
+					"Trusted server {ServerID} (client {ClientID}) address override {From} -> {To} (reason: xff-fallback)",
+					server.ID, server.OwningClientID, server.ServerAddress, forwardedForAddress);
+				server.ServerAddress = forwardedForAddress;
+			}
+			// Validate the config-driven override the same way as the declared one:
+			// trim, reject empty/"0.0.0.0", and require a parseable IP so a misconfigured
+			// entry can't make the master advertise an invalid/unreachable address.
+			// Null-guard AddressOverrides (e.g. JSON "AddressOverrides": null) so
+			// TryGetValue can't throw, and look it up by the normalized IPv4 key.
+			else if (overrides.AddressOverrides is { } addressOverrides
+				&& addressOverrides.TryGetValue(overrideKey, out var mappedAddress)
+				&& mappedAddress?.Trim() is { Length: > 0 } trimmedMapped
+				&& trimmedMapped != "0.0.0.0"
+				&& IPAddress.TryParse(trimmedMapped, out _))
+			{
+				logger.LogInformation(
+					"Trusted server {ServerID} (client {ClientID}) address override {From} -> {To} (reason: egress->ingress map)",
+					server.ID, server.OwningClientID, server.ServerAddress, trimmedMapped);
+				server.ServerAddress = trimmedMapped;
+			}
+		}
 
 		if (trust != GameServerTrust.Untrusted)
 		{
