@@ -76,7 +76,7 @@ public class XmppServer
 
 	public async Task<bool> BroadcastPresenceAsync(StanzaPresence presence)
 	{
-		await Task.Yield();
+     HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(presence.From.Username);
 
 		lock (connections)
 		{
@@ -87,7 +87,11 @@ public class XmppServer
 					continue;
 				}
 
-				// TODO: only send presence to friends
+              if (!acceptedFriendIDs.Contains(connection.ID.Username))
+				{
+					continue;
+				}
+
 				connection.QueueStanza(presence);
 			}
 		}
@@ -97,7 +101,7 @@ public class XmppServer
 
 	public async Task SendPresenceOfFriendsAsync(XmppConnection connection)
 	{
-		await Task.Yield();
+     HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(connection.ID.Username);
 
 		foreach (XmppConnection? c in connections)
 		{
@@ -106,14 +110,18 @@ public class XmppServer
 				continue;
 			}
 
-			// TODO: check if connection is a friend
+            if (!acceptedFriendIDs.Contains(c.ID.Username))
+			{
+				continue;
+			}
+
 			var presenceProbe = new StanzaPresence()
 			{
 				//Type = StanzaPresence.TypeAttributeValues.Probe,
 				From = c.ID,
 				To = connection.ID,
-				Show = connection.Show,
-				Status = connection.Status,
+             Show = c.Show,
+				Status = c.Status,
 			};
 			connection.QueueStanza(presenceProbe);
 		}
@@ -151,41 +159,44 @@ public class XmppServer
 
 	public async Task<IReadOnlyList<JID>> GetRosterItemsAsync(JID requestingJid)
 	{
-     if (friendService == null)
-		{
-			return Array.Empty<JID>();
-		}
-
-		EpicID requestingAccountID;
-		try
-		{
-			requestingAccountID = EpicID.FromString(requestingJid.Username);
-		}
-		catch
-		{
-			return Array.Empty<JID>();
-		}
-
-		List<FriendRequest> friends = await friendService.GetFriendsAsync(requestingAccountID);
-		HashSet<string> acceptedFriendIDs = friends
-			.Where(friend => friend.Status == FriendStatus.Accepted)
-			.Select(friend => (friend.Sender == requestingAccountID ? friend.Receiver : friend.Sender).ToString())
-			.ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-		await Task.Yield();
+     HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(requestingJid.Username);
 
 		lock (connections)
 		{
 			return connections
 				.Where(connection => connection.IsStreamAuthenticated)
 				.Select(connection => connection.ID)
-             .Where(id => id.Bare != requestingJid.Bare)
+                .Where(id => id.Bare != requestingJid.Bare)
 				.Where(id => acceptedFriendIDs.Contains(id.Username))
 				.GroupBy(id => id.Bare, StringComparer.OrdinalIgnoreCase)
 				.Select(group => new JID(group.First().Username, group.First().Domain))
 				.Cast<JID>()
 				.ToList();
 		}
+	}
+
+	private async Task<HashSet<string>> GetAcceptedFriendIDsAsync(string accountIDString)
+	{
+		if (friendService == null)
+		{
+			return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		}
+
+		EpicID accountID;
+		try
+		{
+			accountID = EpicID.FromString(accountIDString);
+		}
+		catch
+		{
+			return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		}
+
+		List<FriendRequest> friends = await friendService.GetFriendsAsync(accountID);
+		return friends
+			.Where(friend => friend.Status == FriendStatus.Accepted)
+			.Select(friend => (friend.Sender == accountID ? friend.Receiver : friend.Sender).ToString())
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 	}
 
 	private async Task OnConnectionAcceptedAsync(TcpClient tcpConnection, CancellationToken cancellationToken)
