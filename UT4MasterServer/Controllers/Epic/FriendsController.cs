@@ -5,6 +5,7 @@ using UT4MasterServer.Models.Database;
 using UT4MasterServer.Common;
 using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Common.Helpers;
+using UT4MasterServer.Models.DTO.Responses;
 
 namespace UT4MasterServer.Controllers.Epic;
 
@@ -38,10 +39,8 @@ public sealed class FriendsController : JsonAPIController
 
 		if (eid != authenticatedUser.Session.AccountID)
 		{
-			return Json("[]", StatusCodes.Status401Unauthorized);
+			return ErrorMissingPermission($"friends:{id}", "READ");
 		}
-
-		// TODO: Check permission: "Sorry your login does not posses the permission 'friends:{id_from_parameter} READ' needed to perform the requested operation"
 
 		List<FriendRequest>? friends = await friendService.GetFriendsAsync(eid);
 
@@ -63,7 +62,7 @@ public sealed class FriendsController : JsonAPIController
 			obj.Add("accountId", other.ToString());
 			obj.Add("status", status);
 			obj.Add("direction", direction);
-			obj.Add("created", DateTime.UtcNow.ToStringISO()); // should we care?
+			obj.Add("created", DateTime.UtcNow.ToStringISO());
 			obj.Add("favorite", false);
 			arr.Add(obj);
 		}
@@ -127,10 +126,8 @@ public sealed class FriendsController : JsonAPIController
 
 		if (eid != authenticatedUser.Session.AccountID)
 		{
-			return Json("[]", StatusCodes.Status401Unauthorized);
+			return ErrorMissingPermission($"blockList:{id}", "READ");
 		}
-
-		// TODO: Check permission: "Sorry your login does not posses the permission 'blockList:{id_from_parameter} READ' needed to perform the requested operation"
 
 		List<FriendRequest>? blockedUsers = await friendService.GetBlockedUsersAsync(eid);
 
@@ -139,6 +136,7 @@ public sealed class FriendsController : JsonAPIController
 		{
 			arr.Add(blockedUser.Receiver.ToString());
 		}
+
 		return Json(arr);
 	}
 
@@ -183,4 +181,20 @@ public sealed class FriendsController : JsonAPIController
 	}
 
 	#endregion
+
+	[NonAction]
+	private ObjectResult ErrorMissingPermission(string permissionName, string action)
+	{
+		var permission = $"{permissionName} {action}";
+
+		return StatusCode(StatusCodes.Status403Forbidden, new ErrorResponse
+		{
+			ErrorCode = "errors.com.epicgames.common.missing_permission",
+			ErrorMessage = $"Sorry your login does not posses the permission '{permission}' needed to perform the requested operation",
+			MessageVars = new[] { permissionName, action },
+			NumericErrorCode = 1023,
+			OriginatingService = "com.epicgames.friends.public",
+			Intent = "prod",
+		});
+	}
 }
