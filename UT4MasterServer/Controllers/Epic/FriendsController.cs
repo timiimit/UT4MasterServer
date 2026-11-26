@@ -45,9 +45,16 @@ public sealed class FriendsController : JsonAPIController
 
 		List<FriendRequest>? friends = await friendService.GetFriendsAsync(eid);
 
+		bool includePendingFriends = includePending == true;
+
 		var arr = new JArray();
 		foreach (FriendRequest? friend in friends)
 		{
+			if (!includePendingFriends && friend.Status != FriendStatus.Accepted)
+			{
+				continue;
+			}
+
 			EpicID other = friend.Sender == eid ? friend.Receiver : friend.Sender;
 			var status = friend.Status == FriendStatus.Accepted ? "ACCEPTED" : "PENDING";
 			var direction = friend.Sender == eid ? "OUTBOUND" : "INBOUND";
@@ -57,7 +64,7 @@ public sealed class FriendsController : JsonAPIController
 			obj.Add("status", status);
 			obj.Add("direction", direction);
 			obj.Add("created", DateTime.UtcNow.ToStringISO()); // should we care?
-			obj.Add("favourite", false); // TODO: figure out if it's possible to set to true normally
+			obj.Add("favorite", false);
 			arr.Add(obj);
 		}
 
