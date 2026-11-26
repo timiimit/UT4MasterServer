@@ -144,6 +144,23 @@ public class XmppServer
 		return null;
 	}
 
+	public async Task<IReadOnlyList<JID>> GetRosterItemsAsync(JID requestingJid)
+	{
+		await Task.Yield();
+
+		lock (connections)
+		{
+			return connections
+				.Where(connection => connection.IsStreamAuthenticated)
+				.Select(connection => connection.ID)
+				.Where(id => id.Bare != requestingJid.Bare)
+				.GroupBy(id => id.Bare, StringComparer.OrdinalIgnoreCase)
+				.Select(group => new JID(group.First().Username, group.First().Domain))
+				.Cast<JID>()
+				.ToList();
+		}
+	}
+
 	private async Task OnConnectionAcceptedAsync(TcpClient tcpConnection, CancellationToken cancellationToken)
 	{
 		if (DateTimeOffset.UtcNow < lastAcceptTime + onlyAcceptEvery)

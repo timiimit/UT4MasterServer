@@ -367,6 +367,33 @@ public class XmppConnection : IDisposable
 			Writer.Attribute("from", Server.Domain);
 			Writer.Attribute("type", "result");
 		}
+		else if (Reader.LocalName == "query" && Reader.NamespaceURI == "jabber:iq:roster" && type == "get")
+		{
+			Writer.Attribute("to", ID.Full);
+			Writer.Attribute("from", Server.Domain);
+			Writer.Attribute("type", "result");
+
+			Writer.OpenTagNS("query", "jabber:iq:roster");
+			{
+				IReadOnlyList<JID> rosterItems = await Server.GetRosterItemsAsync(ID);
+				foreach (JID rosterItem in rosterItems)
+				{
+					Writer.OpenTag("item");
+					Writer.Attribute("jid", rosterItem.Bare);
+					Writer.Attribute("name", rosterItem.Username);
+					Writer.Attribute("subscription", "both");
+					Writer.CloseTag();
+				}
+			}
+			Writer.CloseTag();
+		}
+		else if (Reader.LocalName == "query" && Reader.NamespaceURI == "jabber:iq:roster" && type == "set")
+		{
+			// minimal support: acknowledge roster pushes/changes
+			Writer.Attribute("to", ID.Full);
+			Writer.Attribute("from", Server.Domain);
+			Writer.Attribute("type", "result");
+		}
 		else
 		{
 			Writer.Attribute("type", "error");
