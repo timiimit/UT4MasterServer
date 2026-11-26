@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
+using UT4MasterServer.Common;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Xmpp.Stanzas;
 
 namespace UT4MasterServer.Xmpp;
@@ -9,6 +12,7 @@ public class XmppServer
 {
 	private readonly TcpListener listener;
 	private readonly List<XmppConnection> connections;
+	private readonly FriendService? friendService;
 
 	private DateTimeOffset lastAcceptTime;
 	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
@@ -18,12 +22,13 @@ public class XmppServer
 	public JID AdminID { get; private set; }
 	public X509Certificate2 Certificate { get; private set; }
 
-	public XmppServer(string domain, X509Certificate2 certificate, int port = 5222)
+ public XmppServer(string domain, X509Certificate2 certificate, FriendService? friendService = null, int port = 5222)
 	{
 		Domain = domain;
 		Port = port;
 		AdminID = new JID("xmpp-admin", Domain);
 		Certificate = certificate;
+		this.friendService = friendService;
 
 		listener = new TcpListener(IPAddress.Any, Port);
 		connections = new List<XmppConnection>();
@@ -146,6 +151,27 @@ public class XmppServer
 
 	public async Task<IReadOnlyList<JID>> GetRosterItemsAsync(JID requestingJid)
 	{
+     if (friendService == null)
+		{
+			return Array.Empty<JID>();
+		}
+
+		EpicID requestingAccountID;
+		try
+		{
+			requestingAccountID = EpicID.FromString(requestingJid.Username);
+		}
+		catch
+		{
+			return Array.Empty<JID>();
+		}
+
+		List<FriendRequest> friends = await friendService.GetFriendsAsync(requestingAccountID);
+		HashSet<string> acceptedFriendIDs = friends
+			.Where(friend => friend.Status == FriendStatus.Accepted)
+			.Select(friend => (friend.Sender == requestingAccountID ? friend.Receiver : friend.Sender).ToString())
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
 		await Task.Yield();
 
 		lock (connections)
@@ -153,7 +179,8 @@ public class XmppServer
 			return connections
 				.Where(connection => connection.IsStreamAuthenticated)
 				.Select(connection => connection.ID)
-				.Where(id => id.Bare != requestingJid.Bare)
+             .Where(id => id.Bare != requestingJid.Bare)
+				.Where(id => acceptedFriendIDs.Contains(id.Username))
 				.GroupBy(id => id.Bare, StringComparer.OrdinalIgnoreCase)
 				.Select(group => new JID(group.First().Username, group.First().Domain))
 				.Cast<JID>()

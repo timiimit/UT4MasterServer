@@ -1,4 +1,8 @@
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Options;
+using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Services;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Xmpp;
 
@@ -18,7 +22,25 @@ internal class Program
 
 		var cert = new X509Certificate2("../../../Certs/master-ut4.pfx", "");
 
-		var server = new XmppServer("master-ut4.timiimit.com", cert);
+		FriendService? friendService = null;
+		string? dbConnectionString = Environment.GetEnvironmentVariable("UT4MS_DB_CONNECTION_STRING");
+		string? dbName = Environment.GetEnvironmentVariable("UT4MS_DB_NAME");
+		if (!string.IsNullOrWhiteSpace(dbConnectionString) && !string.IsNullOrWhiteSpace(dbName))
+		{
+			var settings = Options.Create(new ApplicationSettings
+			{
+				DatabaseConnectionString = dbConnectionString,
+				DatabaseName = dbName
+			});
+
+			friendService = new FriendService(new DatabaseContext(settings));
+		}
+		else
+		{
+			Console.WriteLine("UT4MS_DB_CONNECTION_STRING and UT4MS_DB_NAME are not set. Roster responses will be empty.");
+		}
+
+       var server = new XmppServer("master-ut4.timiimit.com", cert, friendService);
 		Task? serverTask = server.StartAsync(cts.Token);
 		while (true)
 		{

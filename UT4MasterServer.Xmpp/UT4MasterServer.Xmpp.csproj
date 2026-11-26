@@ -7,4 +7,8 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UT4MasterServer.Services\UT4MasterServer.Services.csproj" />
+  </ItemGroup>
+
 </Project>
