@@ -7,80 +7,80 @@ import { IMatch } from '../types/match';
 import { IMatchmakingResponse } from '../types/matchmaking-response';
 
 export function useMatch() {
-  function mapGameOptions(optionsString?: string): Record<string, string> {
-    if (!optionsString) {
-      return {};
-    }
-    const params = optionsString.split('?').filter((s) => s.length);
-    const optionsMap: Record<string, string> = {};
-    params.forEach((p) => {
-      const kvPair = p.split('=');
-      const key = kvPair[0];
-      const value = kvPair[1];
-      optionsMap[key] = value;
-    });
-    return optionsMap;
-  }
+	function mapGameOptions(optionsString?: string): Record<string, string> {
+		if (!optionsString) {
+			return {};
+		}
+		const params = optionsString.split('?').filter((s) => s.length);
+		const optionsMap: Record<string, string> = {};
+		params.forEach((p) => {
+			const kvPair = p.split('=');
+			const key = kvPair[0];
+			const value = kvPair[1];
+			optionsMap[key] = value;
+		});
+		return optionsMap;
+	}
 
-  function mapMatch(
-    response: IMatchmakingResponse,
-    customMatchNames: Record<string, string>
-  ): IMatch {
-    const matchState = response.attributes[
-      ServerAttribute.matchState
-    ] as MatchState;
+	function mapMatch(
+		response: IMatchmakingResponse,
+		customMatchNames: Record<string, string>
+	): IMatch {
+		const matchState = response.attributes[
+			ServerAttribute.matchState
+		] as MatchState;
 
-    const id = response.attributes[
-      ServerAttribute.serverInstanceGuid
-    ] as string;
-    const gameMode = response.attributes[ServerAttribute.gameMode] as GameMode;
-    const gameOptions = mapGameOptions(
-      response.attributes[ServerAttribute.uuGameOptions] as string
-    );
-    const mutators = gameOptions['mutator']?.split(',') ?? [];
-    const forcedMutatorsString = response.attributes[
-      ServerAttribute.uuForcedMutators
-    ] as string;
-    const forcedMutators = forcedMutatorsString?.split(',') ?? [];
-    const elapsedTimeRaw = response.attributes[
-      ServerAttribute.elapsedTime
-    ] as number;
-    const elapsedTimeAccurate = Math.round(
-      (Date.now() -
-        (new Date(response.lastUpdated).getTime() - elapsedTimeRaw * 1000)) /
-        1000
-    );
-    return {
-      id,
-      name:
-        customMatchNames[id] ??
-        (response.attributes[ServerAttribute.serverName] as string),
-      gameType: response.attributes[ServerAttribute.gameType] as string,
-      map: response.attributes[ServerAttribute.mapName] as string,
-      matchState: matchState,
-      matchStateDisplay: matchStateMap[matchState] ?? matchState,
-      maxPlayers: response.attributes[ServerAttribute.maxPlayers] as number,
-      playersOnline: response.attributes[
-        ServerAttribute.playersOnline
-      ] as number,
-      duration: response.attributes[ServerAttribute.matchDuration] as number,
-      elapsedTime: elapsedTimeRaw > 0 ? elapsedTimeAccurate : elapsedTimeRaw,
-      publicPlayers: response.publicPlayers,
-      mutators,
-      gameMode,
-      gameModeDisplay: gameModeMap[gameMode] ?? gameMode,
-      uuInstalled: (response.attributes[ServerAttribute.uu] as number) === 1,
-      gameOptions,
-      forcedMutators,
-      passwordProtected:
-        (response.attributes[ServerAttribute.uuServerFlags] as number) === 1,
-      soloScores: response.attributes[ServerAttribute.uuSoloScores] as string,
-      teamScores: response.attributes[ServerAttribute.uuTeamScores] as string,
-      teamSizes: response.attributes[ServerAttribute.uuTeamSizes] as string
-    };
-  }
+		const id = response.attributes[
+			ServerAttribute.serverInstanceGuid
+		] as string;
+		const gameMode = response.attributes[ServerAttribute.gameMode] as GameMode;
+		const gameOptions = mapGameOptions(
+			response.attributes[ServerAttribute.uuGameOptions] as string
+		);
+		const mutators = gameOptions['mutator']?.split(',') ?? [];
+		const forcedMutatorsString = response.attributes[
+			ServerAttribute.uuForcedMutators
+		] as string;
+		const forcedMutators = forcedMutatorsString?.split(',') ?? [];
+		const elapsedTimeRaw = response.attributes[
+			ServerAttribute.elapsedTime
+		] as number;
+		const elapsedTimeAccurate = Math.round(
+			(Date.now() -
+				(new Date(response.lastUpdated).getTime() - elapsedTimeRaw * 1000)) /
+				1000
+		);
+		return {
+			id,
+			name:
+				customMatchNames[id] ??
+				(response.attributes[ServerAttribute.serverName] as string),
+			gameType: response.attributes[ServerAttribute.gameType] as string,
+			map: response.attributes[ServerAttribute.mapName] as string,
+			matchState: matchState,
+			matchStateDisplay: matchStateMap[matchState] ?? matchState,
+			maxPlayers: response.attributes[ServerAttribute.maxPlayers] as number,
+			playersOnline: response.attributes[
+				ServerAttribute.playersOnline
+			] as number,
+			duration: response.attributes[ServerAttribute.matchDuration] as number,
+			elapsedTime: elapsedTimeRaw > 0 ? elapsedTimeAccurate : elapsedTimeRaw,
+			publicPlayers: response.publicPlayers,
+			mutators,
+			gameMode,
+			gameModeDisplay: gameModeMap[gameMode] ?? gameMode,
+			uuInstalled: (response.attributes[ServerAttribute.uu] as number) === 1,
+			gameOptions,
+			forcedMutators,
+			passwordProtected:
+				(response.attributes[ServerAttribute.uuServerFlags] as number) === 1,
+			soloScores: response.attributes[ServerAttribute.uuSoloScores] as string,
+			teamScores: response.attributes[ServerAttribute.uuTeamScores] as string,
+			teamSizes: response.attributes[ServerAttribute.uuTeamSizes] as string
+		};
+	}
 
-  return {
-    mapMatch
-  };
+	return {
+		mapMatch
+	};
 }

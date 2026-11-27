@@ -1,6 +1,6 @@
 export interface IRegisterRequest {
-  username: string;
-  password: string;
-  email: string;
-  recaptchaToken?: string;
+	username: string;
+	password: string;
+	email: string;
+	recaptchaToken?: string;
 }

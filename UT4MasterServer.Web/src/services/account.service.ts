@@ -8,62 +8,62 @@ import { ISearchAccountsResponse } from '@/types/search-accounts-response';
 import HttpService from './http.service';
 
 export default class AccountService extends HttpService {
-  private baseUrl = `${__BACKEND_URL}/account/api`;
-  private personaBaseUrl = `${__BACKEND_URL}/persona/api`;
+	private baseUrl = `${__BACKEND_URL}/account/api`;
+	private personaBaseUrl = `${__BACKEND_URL}/persona/api`;
 
-  async register(request: IRegisterRequest) {
-    return await this.post<unknown, IRegisterRequest>(
-      `${this.baseUrl}/create/account`,
-      { body: request }
-    );
-  }
+	async register(request: IRegisterRequest) {
+		return await this.post<unknown, IRegisterRequest>(
+			`${this.baseUrl}/create/account`,
+			{ body: request }
+		);
+	}
 
-  async changeUsername(request: IChangeUsernameRequest) {
-    return await this.patch<unknown, IChangeUsernameRequest>(
-      `${this.baseUrl}/update/username`,
-      { body: request }
-    );
-  }
+	async changeUsername(request: IChangeUsernameRequest) {
+		return await this.patch<unknown, IChangeUsernameRequest>(
+			`${this.baseUrl}/update/username`,
+			{ body: request }
+		);
+	}
 
-  async changePassword(request: IChangePasswordRequest) {
-    return await this.patch<unknown, IChangePasswordRequest>(
-      `${this.baseUrl}/update/password`,
-      { body: request }
-    );
-  }
+	async changePassword(request: IChangePasswordRequest) {
+		return await this.patch<unknown, IChangePasswordRequest>(
+			`${this.baseUrl}/update/password`,
+			{ body: request }
+		);
+	}
 
-  async changeEmail(request: IChangeEmailRequest) {
-    return await this.patch<unknown, IChangeEmailRequest>(
-      `${this.baseUrl}/update/email`,
-      { body: request }
-    );
-  }
+	async changeEmail(request: IChangeEmailRequest) {
+		return await this.patch<unknown, IChangeEmailRequest>(
+			`${this.baseUrl}/update/email`,
+			{ body: request }
+		);
+	}
 
-  async getAccount(id: string) {
-    return await this.get<IAccountExtended>(
-      `${this.personaBaseUrl}/account/${id}`
-    );
-  }
+	async getAccount(id: string) {
+		return await this.get<IAccountExtended>(
+			`${this.personaBaseUrl}/account/${id}`
+		);
+	}
 
-  async searchAccounts<T extends IAccount = IAccount>(
-    query = '',
-    skip = 0,
-    take = 10,
-    includeRoles = false,
-    roles: Role[] | null = null
-  ) {
-    return await this.post<ISearchAccountsResponse<T>>(
-      `${this.personaBaseUrl}/accounts/search`,
-      { body: { query, skip, take, includeRoles, roles } },
-      false
-    );
-  }
+	async searchAccounts<T extends IAccount = IAccount>(
+		query = '',
+		skip = 0,
+		take = 10,
+		includeRoles = false,
+		roles: Role[] | null = null
+	) {
+		return await this.post<ISearchAccountsResponse<T>>(
+			`${this.personaBaseUrl}/accounts/search`,
+			{ body: { query, skip, take, includeRoles, roles } },
+			false
+		);
+	}
 
-  async getAccountsByIds(ids: string[]) {
-    return await this.post<IAccount[]>(
-      `${this.personaBaseUrl}/accounts`,
-      { body: ids },
-      false
-    );
-  }
+	async getAccountsByIds(ids: string[]) {
+		return await this.post<IAccount[]>(
+			`${this.personaBaseUrl}/accounts`,
+			{ body: ids },
+			false
+		);
+	}
 }
