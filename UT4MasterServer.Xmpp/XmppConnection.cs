@@ -137,15 +137,15 @@ public class XmppConnection : IDisposable
 
 			goto LABEL_StreamStart;
 		}
-     else if (Reader.Name == "auth")
+		else if (Reader.Name == "auth")
 		{
 			if (IsStreamAuthenticated)
 			{
 				return null;
 			}
 
-         // Validate SASL credentials against an active OAuth session.
-            var username = await AuthenticateStreamAsync();
+			// Validate SASL credentials against an active OAuth session.
+			var username = await AuthenticateStreamAsync();
 			if (username is not null)
 			{
 				id = new JID(username, Server.Domain);
@@ -323,7 +323,7 @@ public class XmppConnection : IDisposable
 			if (Reader.IsEmptyElement)
 			{
 				// generate resource
-               resource = $"V2:UnrealTournamentDev:::{Guid.NewGuid():N}";
+				resource = $"V2:UnrealTournamentDev:::{Guid.NewGuid():N}";
 			}
 			else
 			{
@@ -462,7 +462,7 @@ public class XmppConnection : IDisposable
 		return true;*/
 	}
 
-    private async Task<string?> AuthenticateStreamAsync()
+	private async Task<string?> AuthenticateStreamAsync()
 	{
 		var mechanism = Reader.GetAttribute("mechanism");
 		if (mechanism != "PLAIN")
@@ -473,7 +473,7 @@ public class XmppConnection : IDisposable
 		// read content of <auth>
 		Reader.Read();
 
-     byte[] bytes;
+		byte[] bytes;
 		try
 		{
 			bytes = Convert.FromBase64String(Reader.Value);
@@ -486,7 +486,7 @@ public class XmppConnection : IDisposable
 		// read </auth>
 		Reader.Read();
 
-        var authzidSeparatorIndex = Array.IndexOf(bytes, (byte)0);
+		var authzidSeparatorIndex = Array.IndexOf(bytes, (byte)0);
 		if (authzidSeparatorIndex < 0)
 		{
 			return null;
@@ -498,11 +498,11 @@ public class XmppConnection : IDisposable
 			return null;
 		}
 
-      // PLAIN payload layout: [authzid]\0[username/login]\0[password/accessToken]
+		// PLAIN payload layout: [authzid]\0[username/login]\0[password/accessToken]
 		var username = Encoding.UTF8.GetString(bytes, authzidSeparatorIndex + 1, passwordSeparatorIndex - (authzidSeparatorIndex + 1));
 		var password = Encoding.UTF8.GetString(bytes, passwordSeparatorIndex + 1, bytes.Length - (passwordSeparatorIndex + 1));
 
-       // Accept login only when access token belongs to the same account.
+		// Accept login only when access token belongs to the same account.
 		string? accountID = await Server.AuthenticateClientAsync(username, password);
 		if (accountID == null)
 		{
@@ -517,7 +517,7 @@ public class XmppConnection : IDisposable
 		SetStream(Stream);
 
 		IsStreamAuthenticated = true;
-        return accountID;
+		return accountID;
 	}
 
 	private void WriteAvailableFeatures()

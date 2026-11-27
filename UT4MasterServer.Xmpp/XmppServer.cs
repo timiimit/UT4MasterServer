@@ -65,10 +65,10 @@ public class XmppServer
 			return null;
 		}
 
-      // Enforce account@domain login identity so clients follow Epic-style addressing.
-     if (!login.Contains('@'))
+		// Enforce account@domain login identity so clients follow Epic-style addressing.
+		if (!login.Contains('@'))
 		{
-            return null;
+			return null;
 		}
 
 		JID jid = JID.Parse(login);
@@ -89,7 +89,7 @@ public class XmppServer
 			return null;
 		}
 
-       // Password in XMPP PLAIN is expected to be an OAuth access token.
+		// Password in XMPP PLAIN is expected to be an OAuth access token.
 		Session? session = await sessionService.GetSessionAsync(accessToken);
 		if (session == null || session.AccountID != accountID)
 		{
@@ -119,7 +119,7 @@ public class XmppServer
 
 	public async Task<bool> BroadcastPresenceAsync(StanzaPresence presence)
 	{
-     HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(presence.From.Username);
+		HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(presence.From.Username);
 
 		lock (connections)
 		{
@@ -130,7 +130,7 @@ public class XmppServer
 					continue;
 				}
 
-              if (!acceptedFriendIDs.Contains(connection.ID.Username))
+				if (!acceptedFriendIDs.Contains(connection.ID.Username))
 				{
 					continue;
 				}
@@ -144,7 +144,7 @@ public class XmppServer
 
 	public async Task SendPresenceOfFriendsAsync(XmppConnection connection)
 	{
-     HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(connection.ID.Username);
+		HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(connection.ID.Username);
 
 		foreach (XmppConnection? c in connections)
 		{
@@ -153,7 +153,7 @@ public class XmppServer
 				continue;
 			}
 
-            if (!acceptedFriendIDs.Contains(c.ID.Username))
+			if (!acceptedFriendIDs.Contains(c.ID.Username))
 			{
 				continue;
 			}
@@ -163,7 +163,7 @@ public class XmppServer
 				//Type = StanzaPresence.TypeAttributeValues.Probe,
 				From = c.ID,
 				To = connection.ID,
-             Show = c.Show,
+				Show = c.Show,
 				Status = c.Status,
 			};
 			connection.QueueStanza(presenceProbe);
@@ -202,14 +202,14 @@ public class XmppServer
 
 	public async Task<IReadOnlyList<JID>> GetRosterItemsAsync(JID requestingJid)
 	{
-     HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(requestingJid.Username);
+		HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(requestingJid.Username);
 
 		lock (connections)
 		{
 			return connections
 				.Where(connection => connection.IsStreamAuthenticated)
 				.Select(connection => connection.ID)
-                .Where(id => id.Bare != requestingJid.Bare)
+				.Where(id => id.Bare != requestingJid.Bare)
 				.Where(id => acceptedFriendIDs.Contains(id.Username))
 				.GroupBy(id => id.Bare, StringComparer.OrdinalIgnoreCase)
 				.Select(group => new JID(group.First().Username, group.First().Domain))
