@@ -13,6 +13,7 @@ public class XmppServer
 	private readonly TcpListener listener;
 	private readonly List<XmppConnection> connections;
 	private readonly FriendService? friendService;
+	private readonly SessionService? sessionService;
 
 	private DateTimeOffset lastAcceptTime;
 	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
@@ -22,13 +23,14 @@ public class XmppServer
 	public JID AdminID { get; private set; }
 	public X509Certificate2 Certificate { get; private set; }
 
- public XmppServer(string domain, X509Certificate2 certificate, FriendService? friendService = null, int port = 5222)
+	public XmppServer(string domain, X509Certificate2 certificate, FriendService? friendService = null, SessionService? sessionService = null, int port = 5222)
 	{
 		Domain = domain;
 		Port = port;
 		AdminID = new JID("xmpp-admin", Domain);
 		Certificate = certificate;
 		this.friendService = friendService;
+		this.sessionService = sessionService;
 
 		listener = new TcpListener(IPAddress.Any, Port);
 		connections = new List<XmppConnection>();
@@ -54,6 +56,47 @@ public class XmppServer
 
 			listener.Stop();
 		}
+	}
+
+	public async Task<string?> AuthenticateClientAsync(string login, string accessToken)
+	{
+		if (sessionService == null)
+		{
+			return null;
+		}
+
+      // Enforce account@domain login identity so clients follow Epic-style addressing.
+     if (!login.Contains('@'))
+		{
+            return null;
+		}
+
+		JID jid = JID.Parse(login);
+		if (string.IsNullOrWhiteSpace(jid.Username) || !string.Equals(jid.Domain, Domain, StringComparison.OrdinalIgnoreCase))
+		{
+			return null;
+		}
+
+		string accountIDString = jid.Username;
+
+		EpicID accountID;
+		try
+		{
+			accountID = EpicID.FromString(accountIDString);
+		}
+		catch
+		{
+			return null;
+		}
+
+       // Password in XMPP PLAIN is expected to be an OAuth access token.
+		Session? session = await sessionService.GetSessionAsync(accessToken);
+		if (session == null || session.AccountID != accountID)
+		{
+			return null;
+		}
+
+		return session.AccountID.ToString();
 	}
 
 	public async Task<bool> SendMessageAsync(StanzaMessage message)

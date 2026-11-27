@@ -137,14 +137,15 @@ public class XmppConnection : IDisposable
 
 			goto LABEL_StreamStart;
 		}
-		else if (Reader.Name == "auth")
+     else if (Reader.Name == "auth")
 		{
 			if (IsStreamAuthenticated)
 			{
 				return null;
 			}
 
-			var username = AuthenticateStream();
+         // Validate SASL credentials against an active OAuth session.
+            var username = await AuthenticateStreamAsync();
 			if (username is not null)
 			{
 				id = new JID(username, Server.Domain);
@@ -322,7 +323,7 @@ public class XmppConnection : IDisposable
 			if (Reader.IsEmptyElement)
 			{
 				// generate resource
-				resource = $"V3:UnrealTournamentDev:GEN::{Guid.NewGuid():N}";
+               resource = $"V2:UnrealTournamentDev:::{Guid.NewGuid():N}";
 			}
 			else
 			{
@@ -461,7 +462,7 @@ public class XmppConnection : IDisposable
 		return true;*/
 	}
 
-	private string? AuthenticateStream()
+    private async Task<string?> AuthenticateStreamAsync()
 	{
 		var mechanism = Reader.GetAttribute("mechanism");
 		if (mechanism != "PLAIN")
@@ -472,29 +473,41 @@ public class XmppConnection : IDisposable
 		// read content of <auth>
 		Reader.Read();
 
-		var authSeparatorIndex = 0;
-		var bytes = Convert.FromBase64String(Reader.Value);
-		for (var i = 1; i < bytes.Length; i++)
+     byte[] bytes;
+		try
 		{
-			if (bytes[i] == 0)
-			{
-				authSeparatorIndex = i;
-				break;
-			}
+			bytes = Convert.FromBase64String(Reader.Value);
+		}
+		catch (FormatException)
+		{
+			return null;
 		}
 
 		// read </auth>
 		Reader.Read();
 
-		if (authSeparatorIndex <= 0)
+        var authzidSeparatorIndex = Array.IndexOf(bytes, (byte)0);
+		if (authzidSeparatorIndex < 0)
 		{
 			return null;
 		}
 
-		var username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
-		//var password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
+		var passwordSeparatorIndex = Array.IndexOf(bytes, (byte)0, authzidSeparatorIndex + 1);
+		if (passwordSeparatorIndex < 0)
+		{
+			return null;
+		}
 
-		// TODO: validate credentials
+      // PLAIN payload layout: [authzid]\0[username/login]\0[password/accessToken]
+		var username = Encoding.UTF8.GetString(bytes, authzidSeparatorIndex + 1, passwordSeparatorIndex - (authzidSeparatorIndex + 1));
+		var password = Encoding.UTF8.GetString(bytes, passwordSeparatorIndex + 1, bytes.Length - (passwordSeparatorIndex + 1));
+
+       // Accept login only when access token belongs to the same account.
+		string? accountID = await Server.AuthenticateClientAsync(username, password);
+		if (accountID == null)
+		{
+			return null;
+		}
 
 		Writer.OpenTagNS("success", "urn:ietf:params:xml:ns:xmpp-sasl");
 		Writer.CloseTag();
@@ -504,7 +517,7 @@ public class XmppConnection : IDisposable
 		SetStream(Stream);
 
 		IsStreamAuthenticated = true;
-		return username;
+        return accountID;
 	}
 
 	private void WriteAvailableFeatures()

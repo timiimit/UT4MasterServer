@@ -23,6 +23,7 @@ internal class Program
 		var cert = new X509Certificate2("../../../Certs/master-ut4.pfx", "");
 
 		FriendService? friendService = null;
+      SessionService? sessionService = null;
 		string? dbConnectionString = Environment.GetEnvironmentVariable("UT4MS_DB_CONNECTION_STRING");
 		string? dbName = Environment.GetEnvironmentVariable("UT4MS_DB_NAME");
 		if (!string.IsNullOrWhiteSpace(dbConnectionString) && !string.IsNullOrWhiteSpace(dbName))
@@ -32,15 +33,21 @@ internal class Program
 				DatabaseConnectionString = dbConnectionString,
 				DatabaseName = dbName
 			});
+			var dbContext = new DatabaseContext(settings);
 
-			friendService = new FriendService(new DatabaseContext(settings));
+			friendService = new FriendService(dbContext);
+			sessionService = new SessionService(dbContext);
 		}
 		else
 		{
-			Console.WriteLine("UT4MS_DB_CONNECTION_STRING and UT4MS_DB_NAME are not set. Roster responses will be empty.");
+            // DB access is required for both accepted-friends roster filtering and token validation.
+         Console.WriteLine("UT4MS_DB_CONNECTION_STRING and UT4MS_DB_NAME are not set. Roster responses will be empty and XMPP auth will fail.");
 		}
 
-       var server = new XmppServer("master-ut4.timiimit.com", cert, friendService);
+        // Default to Epic production XMPP domain unless deployment overrides it.
+     string xmppDomain = Environment.GetEnvironmentVariable("UT4MS_XMPP_DOMAIN") ?? "prod.ol.epicgames.com";
+
+		var server = new XmppServer(xmppDomain, cert, friendService, sessionService);
 		Task? serverTask = server.StartAsync(cts.Token);
 		while (true)
 		{
