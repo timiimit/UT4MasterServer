@@ -1,6 +1,10 @@
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson.Serialization;
+using UT4MasterServer.Common;
+using UT4MasterServer.Models.Database;
 using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Serializers.Bson;
 using UT4MasterServer.Services;
 using UT4MasterServer.Services.Scoped;
 
@@ -21,6 +25,15 @@ internal class Program
 		var cts = new CancellationTokenSource();
 
 		var cert = new X509Certificate2("../../../Certs/master-ut4.pfx", "");
+
+		// Same BSON setup as the web host (UT4MasterServer/Program.cs), keep in sync.
+		// Without it EpicID values in the shared database cannot be read.
+		BsonSerializer.RegisterSerializationProvider(new BsonSerializationProvider());
+		BsonClassMap.RegisterClassMap<Session>(x =>
+		{
+			x.AutoMap();
+			x.MapMember(x => x.AccountID).SetDefaultValue(EpicID.Empty);
+		});
 
 		FriendService? friendService = null;
 		SessionService? sessionService = null;

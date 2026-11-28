@@ -202,20 +202,13 @@ public class XmppServer
 
 	public async Task<IReadOnlyList<JID>> GetRosterItemsAsync(JID requestingJid)
 	{
+		// Roster lists every accepted friend, online or not.
+		// Who is online is reported separately through presence.
 		HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(requestingJid.Username);
 
-		lock (connections)
-		{
-			return connections
-				.Where(connection => connection.IsStreamAuthenticated)
-				.Select(connection => connection.ID)
-				.Where(id => id.Bare != requestingJid.Bare)
-				.Where(id => acceptedFriendIDs.Contains(id.Username))
-				.GroupBy(id => id.Bare, StringComparer.OrdinalIgnoreCase)
-				.Select(group => new JID(group.First().Username, group.First().Domain))
-				.Cast<JID>()
-				.ToList();
-		}
+		return acceptedFriendIDs
+			.Select(friendID => new JID(friendID, Domain))
+			.ToList();
 	}
 
 	private async Task<HashSet<string>> GetAcceptedFriendIDsAsync(string accountIDString)
