@@ -63,15 +63,15 @@ public class XmppConnection : IDisposable
 		// remember stream
 		this.stream = stream;
 
-		// create a proxy stream to view transfered data
-		Stream tmpStream = new DebugTextProxyStream(Stream, leaveOpen: true);
+		// NOTE: do not wrap the stream in DebugTextProxyStream here.
+		// It prints raw traffic to stdout, including the SASL auth stanza that carries an access token.
 
 		// create reader (safe to not close or dispose) for new stream
-		var rawReader = new StreamReader(tmpStream);
+		var rawReader = new StreamReader(Stream);
 		reader = XmlReader.Create(rawReader, new XmlReaderSettings() { Async = true, IgnoreWhitespace = true });
 
 		// create writer (safe to not close or dispose) for new stream
-		var rawWriter = new StreamWriter(tmpStream);
+		var rawWriter = new StreamWriter(Stream);
 		writer = new(rawWriter);
 	}
 
