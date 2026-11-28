@@ -85,7 +85,12 @@ public sealed class FriendsController : JsonAPIController
 			return Json("[]", StatusCodes.Status401Unauthorized);
 		}
 
-		await friendService.SendFriendRequestAsync(eid, EpicID.FromString(friendID));
+		var created = await friendService.SendFriendRequestAsync(eid, EpicID.FromString(friendID));
+		if (!created)
+		{
+			// the target account has blocked the caller, nothing was created
+			return ErrorCannotFriend(friendID);
+		}
 
 		return NoContent();
 	}
@@ -181,6 +186,21 @@ public sealed class FriendsController : JsonAPIController
 	}
 
 	#endregion
+
+	[NonAction]
+	private ObjectResult ErrorCannotFriend(string friendID)
+	{
+		// NOTE: error code and numeric code are not taken from a captured Epic response.
+		return StatusCode(StatusCodes.Status403Forbidden, new ErrorResponse
+		{
+			ErrorCode = "errors.com.epicgames.friends.cannot_friend_due_to_target_settings",
+			ErrorMessage = $"Cannot send a friend request to account {friendID} due to the settings of that account",
+			MessageVars = new[] { friendID },
+			NumericErrorCode = 14120,
+			OriginatingService = "com.epicgames.friends.public",
+			Intent = "prod",
+		});
+	}
 
 	[NonAction]
 	private ObjectResult ErrorMissingPermission(string permissionName, string action)
