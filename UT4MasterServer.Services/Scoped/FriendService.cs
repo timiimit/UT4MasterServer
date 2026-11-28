@@ -67,17 +67,25 @@ public sealed class FriendService
 			var reciprocal = records.Any(x => x.Record.Sender != keeper.Record.Sender);
 			FriendStatus status = reciprocal ? FriendStatus.Accepted : keeper.Record.Status;
 
-			// delete duplicates before the kept record gets its PairKey
+			// Order matters, each step leaves the data recoverable if the next one never runs:
+			// 1. save the derived status, so the acceptance decision survives once the reciprocal request is deleted
+			if (status != keeper.Record.Status)
+			{
+				await friendCollection.UpdateOneAsync(
+					Builders<FriendRequest>.Filter.Eq("_id", keeper.ID),
+					Builders<FriendRequest>.Update.Set(x => x.Status, status));
+			}
+
+			// 2. delete duplicates
 			foreach (var duplicate in records.Where(x => x.ID != keeper.ID))
 			{
 				await friendCollection.DeleteOneAsync(Builders<FriendRequest>.Filter.Eq("_id", duplicate.ID));
 			}
 
+			// 3. assign PairKey last, when no other record of the pair can collide with it in the unique index
 			await friendCollection.UpdateOneAsync(
 				Builders<FriendRequest>.Filter.Eq("_id", keeper.ID),
-				Builders<FriendRequest>.Update
-					.Set(x => x.PairKey, pair.Key)
-					.Set(x => x.Status, status));
+				Builders<FriendRequest>.Update.Set(x => x.PairKey, pair.Key));
 		}
 	}
 
