@@ -21,4 +21,11 @@ public class FriendRequest
 
 	[BsonElement("Status")]
 	public FriendStatus Status { get; set; } = FriendStatus.Pending;
+
+	/// <summary>
+	/// Identifies the unordered pair of accounts. Set on requests and friendships only, never on blocks.
+	/// A unique index on it guarantees at most one request or friendship per pair.
+	/// </summary>
+	[BsonElement("PairKey"), BsonIgnoreIfNull]
+	public string? PairKey { get; set; }
 }
