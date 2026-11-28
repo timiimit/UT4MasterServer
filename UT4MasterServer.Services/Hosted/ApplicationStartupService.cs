@@ -40,16 +40,10 @@ public sealed class ApplicationStartupService : IHostedService
 		await statisticsService.CreateIndexesAsync();
 		await ratingsService.CreateIndexesAsync();
 
-		try
-		{
-			await friendService.CreateIndexesAsync();
-		}
-		catch (Exception ex)
-		{
-			// Friends still work without the index, only without the uniqueness guarantee.
-			// Do not prevent the server from starting because of it.
-			logger.LogError(ex, "Failed to migrate friend records or create the friends index.");
-		}
+		// Must succeed before any friend write is served. Without the migration and the unique index,
+		// friend requests could create duplicate records. A failure here stops startup on purpose.
+		logger.LogInformation("Migrating friend records and configuring friends index.");
+		await friendService.CreateIndexesAsync();
 
 		logger.LogInformation("Initializing MongoDB CloudStorage.");
 		await cloudStorageService.EnsureSystemFilesExistAsync();
