@@ -147,13 +147,7 @@ public class XmppConnection : IDisposable
 			// The password is a reusable OAuth access token, never accept it over plaintext.
 			if (!IsStreamEncrypted)
 			{
-				Writer.OpenTagNS("failure", "urn:ietf:params:xml:ns:xmpp-sasl");
-				{
-					Writer.OpenTag("encryption-required");
-					Writer.CloseTag();
-				}
-				Writer.CloseTag();
-				Writer.Flush();
+				WriteSaslFailure("encryption-required");
 				return null;
 			}
 
@@ -165,7 +159,7 @@ public class XmppConnection : IDisposable
 				goto LABEL_StreamStart;
 			}
 
-			// TODO: send error
+			// AuthenticateStreamAsync already sent the SASL failure, close the connection.
 			return null;
 		}
 		else
@@ -475,11 +469,26 @@ public class XmppConnection : IDisposable
 		return true;*/
 	}
 
+	private void WriteSaslFailure(string condition)
+	{
+		Writer.OpenTagNS("failure", "urn:ietf:params:xml:ns:xmpp-sasl");
+		{
+			Writer.OpenTag(condition);
+			Writer.CloseTag();
+		}
+		Writer.CloseTag();
+		Writer.Flush();
+	}
+
+	/// <summary>
+	/// Returns the account ID on success. On failure a SASL failure has already been sent and null is returned.
+	/// </summary>
 	private async Task<string?> AuthenticateStreamAsync()
 	{
 		var mechanism = Reader.GetAttribute("mechanism");
 		if (mechanism != "PLAIN")
 		{
+			WriteSaslFailure("invalid-mechanism");
 			return null;
 		}
 
@@ -493,6 +502,7 @@ public class XmppConnection : IDisposable
 		}
 		catch (FormatException)
 		{
+			WriteSaslFailure("incorrect-encoding");
 			return null;
 		}
 
@@ -502,12 +512,14 @@ public class XmppConnection : IDisposable
 		var authzidSeparatorIndex = Array.IndexOf(bytes, (byte)0);
 		if (authzidSeparatorIndex < 0)
 		{
+			WriteSaslFailure("malformed-request");
 			return null;
 		}
 
 		var passwordSeparatorIndex = Array.IndexOf(bytes, (byte)0, authzidSeparatorIndex + 1);
 		if (passwordSeparatorIndex < 0)
 		{
+			WriteSaslFailure("malformed-request");
 			return null;
 		}
 
@@ -519,6 +531,8 @@ public class XmppConnection : IDisposable
 		string? accountID = await Server.AuthenticateClientAsync(username, password);
 		if (accountID == null)
 		{
+			// expired token, unknown token, wrong account or wrong domain
+			WriteSaslFailure("not-authorized");
 			return null;
 		}
 
