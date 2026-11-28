@@ -97,7 +97,9 @@ public class XmppServer
 		}
 
 		// Password in XMPP PLAIN is expected to be an OAuth access token.
-		Session? session = await sessionService.GetSessionAsync(accessToken);
+		// Use the non-destructive lookup: an expired token must not delete the session,
+		// otherwise the client could no longer use its refresh token.
+		Session? session = await sessionService.GetActiveSessionAsync(accessToken);
 		if (session == null || session.AccountID.IsEmpty || session.AccountID != accountID)
 		{
 			return null;

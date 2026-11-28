@@ -107,6 +107,24 @@ public sealed class SessionService
 		return await InvalidateExpiredSession(await cursor.SingleOrDefaultAsync());
 	}
 
+	/// <summary>
+	/// Same lookup as <see cref="GetSessionAsync(string)"/>, but an expired access token does not delete the session.
+	/// The session stays until cleanup removes it, so its refresh token can still be used.
+	/// </summary>
+	public async Task<Session?> GetActiveSessionAsync(string accessToken)
+	{
+		IAsyncCursor<Session>? cursor = await sessionCollection.FindAsync(s =>
+			s.AccessToken.Value == accessToken
+		);
+		Session? session = await cursor.SingleOrDefaultAsync();
+		if (session == null || session.HasExpired)
+		{
+			return null;
+		}
+
+		return session;
+	}
+
 	public async Task<Session?> RefreshSessionAsync(string refreshToken)
 	{
 		IAsyncCursor<Session>? cursor = await sessionCollection.FindAsync(s =>
