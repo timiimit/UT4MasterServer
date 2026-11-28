@@ -144,6 +144,19 @@ public class XmppConnection : IDisposable
 				return null;
 			}
 
+			// The password is a reusable OAuth access token, never accept it over plaintext.
+			if (!IsStreamEncrypted)
+			{
+				Writer.OpenTagNS("failure", "urn:ietf:params:xml:ns:xmpp-sasl");
+				{
+					Writer.OpenTag("encryption-required");
+					Writer.CloseTag();
+				}
+				Writer.CloseTag();
+				Writer.Flush();
+				return null;
+			}
+
 			// Validate SASL credentials against an active OAuth session.
 			var username = await AuthenticateStreamAsync();
 			if (username is not null)
