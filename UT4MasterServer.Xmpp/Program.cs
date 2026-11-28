@@ -1,4 +1,12 @@
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson.Serialization;
+using UT4MasterServer.Common;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Models.Settings;
+using UT4MasterServer.Serializers.Bson;
+using UT4MasterServer.Services;
+using UT4MasterServer.Services.Scoped;
 
 namespace UT4MasterServer.Xmpp;
 
@@ -18,7 +26,41 @@ internal class Program
 
 		var cert = new X509Certificate2("../../../Certs/master-ut4.pfx", "");
 
-		var server = new XmppServer("master-ut4.timiimit.com", cert);
+		// Same BSON setup as the web host (UT4MasterServer/Program.cs), keep in sync.
+		// Without it EpicID values in the shared database cannot be read.
+		BsonSerializer.RegisterSerializationProvider(new BsonSerializationProvider());
+		BsonClassMap.RegisterClassMap<Session>(x =>
+		{
+			x.AutoMap();
+			x.MapMember(x => x.AccountID).SetDefaultValue(EpicID.Empty);
+		});
+
+		FriendService? friendService = null;
+		SessionService? sessionService = null;
+		string? dbConnectionString = Environment.GetEnvironmentVariable("UT4MS_DB_CONNECTION_STRING");
+		string? dbName = Environment.GetEnvironmentVariable("UT4MS_DB_NAME");
+		if (!string.IsNullOrWhiteSpace(dbConnectionString) && !string.IsNullOrWhiteSpace(dbName))
+		{
+			var settings = Options.Create(new ApplicationSettings
+			{
+				DatabaseConnectionString = dbConnectionString,
+				DatabaseName = dbName
+			});
+			var dbContext = new DatabaseContext(settings);
+
+			friendService = new FriendService(dbContext);
+			sessionService = new SessionService(dbContext);
+		}
+		else
+		{
+			// DB access is required for both accepted-friends roster filtering and token validation.
+			Console.WriteLine("UT4MS_DB_CONNECTION_STRING and UT4MS_DB_NAME are not set. Roster responses will be empty and XMPP auth will fail.");
+		}
+
+		// Default to Epic production XMPP domain unless deployment overrides it.
+		string xmppDomain = Environment.GetEnvironmentVariable("UT4MS_XMPP_DOMAIN") ?? "prod.ol.epicgames.com";
+
+		var server = new XmppServer(xmppDomain, cert, friendService, sessionService);
 		Task? serverTask = server.StartAsync(cts.Token);
 		while (true)
 		{

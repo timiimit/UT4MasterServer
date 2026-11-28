@@ -63,15 +63,15 @@ public class XmppConnection : IDisposable
 		// remember stream
 		this.stream = stream;
 
-		// create a proxy stream to view transfered data
-		Stream tmpStream = new DebugTextProxyStream(Stream, leaveOpen: true);
+		// NOTE: do not wrap the stream in DebugTextProxyStream here.
+		// It prints raw traffic to stdout, including the SASL auth stanza that carries an access token.
 
 		// create reader (safe to not close or dispose) for new stream
-		var rawReader = new StreamReader(tmpStream);
+		var rawReader = new StreamReader(Stream);
 		reader = XmlReader.Create(rawReader, new XmlReaderSettings() { Async = true, IgnoreWhitespace = true });
 
 		// create writer (safe to not close or dispose) for new stream
-		var rawWriter = new StreamWriter(tmpStream);
+		var rawWriter = new StreamWriter(Stream);
 		writer = new(rawWriter);
 	}
 
@@ -144,14 +144,22 @@ public class XmppConnection : IDisposable
 				return null;
 			}
 
-			var username = AuthenticateStream();
+			// The password is a reusable OAuth access token, never accept it over plaintext.
+			if (!IsStreamEncrypted)
+			{
+				WriteSaslFailure("encryption-required");
+				return null;
+			}
+
+			// Validate SASL credentials against an active OAuth session.
+			var username = await AuthenticateStreamAsync();
 			if (username is not null)
 			{
 				id = new JID(username, Server.Domain);
 				goto LABEL_StreamStart;
 			}
 
-			// TODO: send error
+			// AuthenticateStreamAsync already sent the SASL failure, close the connection.
 			return null;
 		}
 		else
@@ -322,7 +330,7 @@ public class XmppConnection : IDisposable
 			if (Reader.IsEmptyElement)
 			{
 				// generate resource
-				resource = $"V3:UnrealTournamentDev:GEN::{Guid.NewGuid():N}";
+				resource = $"V2:UnrealTournamentDev:::{Guid.NewGuid():N}";
 			}
 			else
 			{
@@ -367,8 +375,30 @@ public class XmppConnection : IDisposable
 			Writer.Attribute("from", Server.Domain);
 			Writer.Attribute("type", "result");
 		}
+		else if (Reader.LocalName == "query" && Reader.NamespaceURI == "jabber:iq:roster" && type == "get")
+		{
+			Writer.Attribute("to", ID.Full);
+			Writer.Attribute("from", Server.Domain);
+			Writer.Attribute("type", "result");
+
+			Writer.OpenTagNS("query", "jabber:iq:roster");
+			{
+				IReadOnlyList<JID> rosterItems = await Server.GetRosterItemsAsync(ID);
+				foreach (JID rosterItem in rosterItems)
+				{
+					Writer.OpenTag("item");
+					Writer.Attribute("jid", rosterItem.Bare);
+					Writer.Attribute("name", rosterItem.Username);
+					Writer.Attribute("subscription", "both");
+					Writer.CloseTag();
+				}
+			}
+			Writer.CloseTag();
+		}
 		else
 		{
+			// NOTE: roster "set" lands here on purpose. Roster changes are not applied,
+			// so they must not be acknowledged as successful.
 			Writer.Attribute("type", "error");
 
 			var err = new StanzaError(StanzaError.ConditionValues.FeatureNotImplemented);
@@ -434,40 +464,72 @@ public class XmppConnection : IDisposable
 		return true;*/
 	}
 
-	private string? AuthenticateStream()
+	private void WriteSaslFailure(string condition)
+	{
+		Writer.OpenTagNS("failure", "urn:ietf:params:xml:ns:xmpp-sasl");
+		{
+			Writer.OpenTag(condition);
+			Writer.CloseTag();
+		}
+		Writer.CloseTag();
+		Writer.Flush();
+	}
+
+	/// <summary>
+	/// Returns the account ID on success. On failure a SASL failure has already been sent and null is returned.
+	/// </summary>
+	private async Task<string?> AuthenticateStreamAsync()
 	{
 		var mechanism = Reader.GetAttribute("mechanism");
 		if (mechanism != "PLAIN")
 		{
+			WriteSaslFailure("invalid-mechanism");
 			return null;
 		}
 
 		// read content of <auth>
 		Reader.Read();
 
-		var authSeparatorIndex = 0;
-		var bytes = Convert.FromBase64String(Reader.Value);
-		for (var i = 1; i < bytes.Length; i++)
+		byte[] bytes;
+		try
 		{
-			if (bytes[i] == 0)
-			{
-				authSeparatorIndex = i;
-				break;
-			}
+			bytes = Convert.FromBase64String(Reader.Value);
+		}
+		catch (FormatException)
+		{
+			WriteSaslFailure("incorrect-encoding");
+			return null;
 		}
 
 		// read </auth>
 		Reader.Read();
 
-		if (authSeparatorIndex <= 0)
+		var authzidSeparatorIndex = Array.IndexOf(bytes, (byte)0);
+		if (authzidSeparatorIndex < 0)
 		{
+			WriteSaslFailure("malformed-request");
 			return null;
 		}
 
-		var username = Encoding.UTF8.GetString(bytes, 1, authSeparatorIndex - 1);
-		//var password = Encoding.UTF8.GetString(bytes, authSeparatorIndex + 1, bytes.Length - (authSeparatorIndex + 1));
+		var passwordSeparatorIndex = Array.IndexOf(bytes, (byte)0, authzidSeparatorIndex + 1);
+		if (passwordSeparatorIndex < 0)
+		{
+			WriteSaslFailure("malformed-request");
+			return null;
+		}
 
-		// TODO: validate credentials
+		// PLAIN payload layout: [authzid]\0[username/login]\0[password/accessToken]
+		var username = Encoding.UTF8.GetString(bytes, authzidSeparatorIndex + 1, passwordSeparatorIndex - (authzidSeparatorIndex + 1));
+		var password = Encoding.UTF8.GetString(bytes, passwordSeparatorIndex + 1, bytes.Length - (passwordSeparatorIndex + 1));
+
+		// Accept login only when access token belongs to the same account.
+		string? accountID = await Server.AuthenticateClientAsync(username, password);
+		if (accountID == null)
+		{
+			// expired token, unknown token, wrong account or wrong domain
+			WriteSaslFailure("not-authorized");
+			return null;
+		}
 
 		Writer.OpenTagNS("success", "urn:ietf:params:xml:ns:xmpp-sasl");
 		Writer.CloseTag();
@@ -477,7 +539,7 @@ public class XmppConnection : IDisposable
 		SetStream(Stream);
 
 		IsStreamAuthenticated = true;
-		return username;
+		return accountID;
 	}
 
 	private void WriteAvailableFeatures()

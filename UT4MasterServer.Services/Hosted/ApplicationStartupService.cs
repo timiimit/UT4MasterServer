@@ -14,6 +14,7 @@ public sealed class ApplicationStartupService : IHostedService
 	private readonly CloudStorageService cloudStorageService;
 	private readonly ClientService clientService;
 	private readonly RatingsService ratingsService;
+	private readonly FriendService friendService;
 
 	public ApplicationStartupService(
 		ILogger<ApplicationStartupService> logger,
@@ -29,6 +30,7 @@ public sealed class ApplicationStartupService : IHostedService
 		cloudStorageService = new CloudStorageService(db, cloudStorageLogger);
 		clientService = new ClientService(db);
 		ratingsService = new RatingsService(ratingsLogger, db);
+		friendService = new FriendService(db);
 	}
 
 	public async Task StartAsync(CancellationToken cancellationToken)
@@ -37,6 +39,11 @@ public sealed class ApplicationStartupService : IHostedService
 		await accountService.CreateIndexesAsync();
 		await statisticsService.CreateIndexesAsync();
 		await ratingsService.CreateIndexesAsync();
+
+		// Must succeed before any friend write is served. Without the migration and the unique index,
+		// friend requests could create duplicate records. A failure here stops startup on purpose.
+		logger.LogInformation("Migrating friend records and configuring friends index.");
+		await friendService.CreateIndexesAsync();
 
 		logger.LogInformation("Initializing MongoDB CloudStorage.");
 		await cloudStorageService.EnsureSystemFilesExistAsync();

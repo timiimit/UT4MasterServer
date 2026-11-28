@@ -1,6 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
+using UT4MasterServer.Common;
+using UT4MasterServer.Models.Database;
+using UT4MasterServer.Services.Scoped;
 using UT4MasterServer.Xmpp.Stanzas;
 
 namespace UT4MasterServer.Xmpp;
@@ -9,6 +12,8 @@ public class XmppServer
 {
 	private readonly TcpListener listener;
 	private readonly List<XmppConnection> connections;
+	private readonly FriendService? friendService;
+	private readonly SessionService? sessionService;
 
 	private DateTimeOffset lastAcceptTime;
 	private readonly TimeSpan onlyAcceptEvery = TimeSpan.FromSeconds(1);
@@ -18,12 +23,14 @@ public class XmppServer
 	public JID AdminID { get; private set; }
 	public X509Certificate2 Certificate { get; private set; }
 
-	public XmppServer(string domain, X509Certificate2 certificate, int port = 5222)
+	public XmppServer(string domain, X509Certificate2 certificate, FriendService? friendService = null, SessionService? sessionService = null, int port = 5222)
 	{
 		Domain = domain;
 		Port = port;
 		AdminID = new JID("xmpp-admin", Domain);
 		Certificate = certificate;
+		this.friendService = friendService;
+		this.sessionService = sessionService;
 
 		listener = new TcpListener(IPAddress.Any, Port);
 		connections = new List<XmppConnection>();
@@ -51,6 +58,56 @@ public class XmppServer
 		}
 	}
 
+	public async Task<string?> AuthenticateClientAsync(string login, string accessToken)
+	{
+		if (sessionService == null)
+		{
+			return null;
+		}
+
+		// Enforce account@domain login identity so clients follow Epic-style addressing.
+		if (!login.Contains('@'))
+		{
+			return null;
+		}
+
+		JID jid = JID.Parse(login);
+		if (string.IsNullOrWhiteSpace(jid.Username) || !string.Equals(jid.Domain, Domain, StringComparison.OrdinalIgnoreCase))
+		{
+			return null;
+		}
+
+		string accountIDString = jid.Username;
+
+		EpicID accountID;
+		try
+		{
+			accountID = EpicID.FromString(accountIDString);
+		}
+		catch
+		{
+			return null;
+		}
+
+		// The all-zero ID parses fine but is not a player.
+		// Client-credentials sessions carry it, so they must not be able to log in.
+		if (accountID.IsEmpty)
+		{
+			return null;
+		}
+
+		// Password in XMPP PLAIN is expected to be an OAuth access token.
+		// Use the non-destructive lookup: an expired token must not delete the session,
+		// otherwise the client could no longer use its refresh token.
+		Session? session = await sessionService.GetActiveSessionAsync(accessToken);
+		if (session == null || session.AccountID.IsEmpty || session.AccountID != accountID)
+		{
+			return null;
+		}
+
+		return session.AccountID.ToString();
+	}
+
 	public async Task<bool> SendMessageAsync(StanzaMessage message)
 	{
 		await Task.Yield();
@@ -71,7 +128,7 @@ public class XmppServer
 
 	public async Task<bool> BroadcastPresenceAsync(StanzaPresence presence)
 	{
-		await Task.Yield();
+		HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(presence.From.Username);
 
 		lock (connections)
 		{
@@ -82,7 +139,11 @@ public class XmppServer
 					continue;
 				}
 
-				// TODO: only send presence to friends
+				if (!acceptedFriendIDs.Contains(connection.ID.Username))
+				{
+					continue;
+				}
+
 				connection.QueueStanza(presence);
 			}
 		}
@@ -92,7 +153,7 @@ public class XmppServer
 
 	public async Task SendPresenceOfFriendsAsync(XmppConnection connection)
 	{
-		await Task.Yield();
+		HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(connection.ID.Username);
 
 		foreach (XmppConnection? c in connections)
 		{
@@ -101,14 +162,18 @@ public class XmppServer
 				continue;
 			}
 
-			// TODO: check if connection is a friend
+			if (!acceptedFriendIDs.Contains(c.ID.Username))
+			{
+				continue;
+			}
+
 			var presenceProbe = new StanzaPresence()
 			{
 				//Type = StanzaPresence.TypeAttributeValues.Probe,
 				From = c.ID,
 				To = connection.ID,
-				Show = connection.Show,
-				Status = connection.Status,
+				Show = c.Show,
+				Status = c.Status,
 			};
 			connection.QueueStanza(presenceProbe);
 		}
@@ -142,6 +207,49 @@ public class XmppServer
 		}
 
 		return null;
+	}
+
+	public async Task<IReadOnlyList<JID>> GetRosterItemsAsync(JID requestingJid)
+	{
+		// Roster lists every accepted friend, online or not.
+		// Who is online is reported separately through presence.
+		HashSet<string> acceptedFriendIDs = await GetAcceptedFriendIDsAsync(requestingJid.Username);
+
+		return acceptedFriendIDs
+			.Select(friendID => new JID(friendID, Domain))
+			.ToList();
+	}
+
+	private async Task<HashSet<string>> GetAcceptedFriendIDsAsync(string accountIDString)
+	{
+		if (friendService == null)
+		{
+			return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		}
+
+		EpicID accountID;
+		try
+		{
+			accountID = EpicID.FromString(accountIDString);
+		}
+		catch
+		{
+			return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		}
+
+		List<FriendRequest> friends = await friendService.GetFriendsAsync(accountID);
+
+		// A block in either direction wins over an accepted record for the same pair.
+		List<FriendRequest> blocks = await friendService.GetBlocksInvolvingAsync(accountID);
+		HashSet<string> blockedIDs = blocks
+			.Select(block => (block.Sender == accountID ? block.Receiver : block.Sender).ToString())
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+		return friends
+			.Where(friend => friend.Status == FriendStatus.Accepted)
+			.Select(friend => (friend.Sender == accountID ? friend.Receiver : friend.Sender).ToString())
+			.Where(friendID => !blockedIDs.Contains(friendID))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 	}
 
 	private async Task OnConnectionAcceptedAsync(TcpClient tcpConnection, CancellationToken cancellationToken)
