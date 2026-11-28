@@ -395,15 +395,10 @@ public class XmppConnection : IDisposable
 			}
 			Writer.CloseTag();
 		}
-		else if (Reader.LocalName == "query" && Reader.NamespaceURI == "jabber:iq:roster" && type == "set")
-		{
-			// minimal support: acknowledge roster pushes/changes
-			Writer.Attribute("to", ID.Full);
-			Writer.Attribute("from", Server.Domain);
-			Writer.Attribute("type", "result");
-		}
 		else
 		{
+			// NOTE: roster "set" lands here on purpose. Roster changes are not applied,
+			// so they must not be acknowledged as successful.
 			Writer.Attribute("type", "error");
 
 			var err = new StanzaError(StanzaError.ConditionValues.FeatureNotImplemented);
