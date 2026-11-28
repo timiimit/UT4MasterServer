@@ -89,9 +89,16 @@ public class XmppServer
 			return null;
 		}
 
+		// The all-zero ID parses fine but is not a player.
+		// Client-credentials sessions carry it, so they must not be able to log in.
+		if (accountID.IsEmpty)
+		{
+			return null;
+		}
+
 		// Password in XMPP PLAIN is expected to be an OAuth access token.
 		Session? session = await sessionService.GetSessionAsync(accessToken);
-		if (session == null || session.AccountID != accountID)
+		if (session == null || session.AccountID.IsEmpty || session.AccountID != accountID)
 		{
 			return null;
 		}
