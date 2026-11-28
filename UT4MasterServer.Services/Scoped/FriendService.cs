@@ -15,6 +15,14 @@ public sealed class FriendService
 
 	public async Task<bool> SendFriendRequestAsync(EpicID from, EpicID to)
 	{
+		// "to" has blocked "from", no relationship may be created
+		var blockedByReceiver = await friendCollection.CountDocumentsAsync(
+			x => x.Sender == to && x.Receiver == from && x.Status == FriendStatus.Blocked);
+		if (blockedByReceiver > 0)
+		{
+			return false;
+		}
+
 		var friendRequestAccepted = false;
 
 		// check if there is already inbound request
@@ -35,6 +43,16 @@ public sealed class FriendService
 
 		if (!friendRequestAccepted)
 		{
+			// a request or friendship between the two already exists, do not create a second record
+			var existing = await friendCollection.CountDocumentsAsync(x =>
+				(x.Sender == from && x.Receiver == to ||
+				 x.Sender == to && x.Receiver == from) &&
+				x.Status != FriendStatus.Blocked);
+			if (existing > 0)
+			{
+				return true;
+			}
+
 			// if there was no inbound request initially, create a pending outgoing request
 			friend = new FriendRequest
 			{
@@ -60,10 +78,11 @@ public sealed class FriendService
 
 	public async Task<bool> BlockAccountAsync(EpicID accountID, EpicID blockedAccount)
 	{
-		// remove any kind of connection
-		await friendCollection.DeleteOneAsync(x =>
-			x.Sender == accountID && x.Receiver == blockedAccount ||
-			x.Sender == blockedAccount && x.Receiver == accountID
+		// remove every request and friendship between the two, plus any earlier block of the same account.
+		// a block made by the other account is kept.
+		await friendCollection.DeleteManyAsync(x =>
+			(x.Sender == accountID && x.Receiver == blockedAccount) ||
+			(x.Sender == blockedAccount && x.Receiver == accountID && x.Status != FriendStatus.Blocked)
 		);
 
 		// create block request
@@ -101,6 +120,17 @@ public sealed class FriendService
 	{
 		IAsyncCursor<FriendRequest>? cursor = await friendCollection.FindAsync(x =>
 			x.Sender == accountID &&
+			x.Status == FriendStatus.Blocked);
+		return await cursor.ToListAsync();
+	}
+
+	/// <summary>
+	/// Blocks in either direction: accounts blocked by <paramref name="accountID"/> and accounts that blocked it.
+	/// </summary>
+	public async Task<List<FriendRequest>> GetBlocksInvolvingAsync(EpicID accountID)
+	{
+		IAsyncCursor<FriendRequest>? cursor = await friendCollection.FindAsync(x =>
+			(x.Sender == accountID || x.Receiver == accountID) &&
 			x.Status == FriendStatus.Blocked);
 		return await cursor.ToListAsync();
 	}

@@ -238,9 +238,17 @@ public class XmppServer
 		}
 
 		List<FriendRequest> friends = await friendService.GetFriendsAsync(accountID);
+
+		// A block in either direction wins over an accepted record for the same pair.
+		List<FriendRequest> blocks = await friendService.GetBlocksInvolvingAsync(accountID);
+		HashSet<string> blockedIDs = blocks
+			.Select(block => (block.Sender == accountID ? block.Receiver : block.Sender).ToString())
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
 		return friends
 			.Where(friend => friend.Status == FriendStatus.Accepted)
 			.Select(friend => (friend.Sender == accountID ? friend.Receiver : friend.Sender).ToString())
+			.Where(friendID => !blockedIDs.Contains(friendID))
 			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 	}
 
